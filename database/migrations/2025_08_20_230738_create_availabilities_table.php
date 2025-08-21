@@ -11,10 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('availabilities', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+       Schema::create('availabilities', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
+    $table->tinyInteger('day_of_week'); // 0=Sunday
+    $table->time('start_time');
+    $table->time('end_time');
+    $table->boolean('is_available')->default(true);
+    $table->integer('appointment_duration_minutes')->default(30);
+    $table->time('break_start_time')->nullable();
+    $table->time('break_end_time')->nullable();
+    $table->timestamps();
+});
     }
 
     /**
