@@ -9,14 +9,16 @@ return new class () extends Migration {
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('breads', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 20)->unique();
-            $table->string('description', 100)->nullable();
-            $table->string('avg_weight')->nullable();
-            $table->timestamps();
-        });
+    {Schema::create('breads', function (Blueprint $table) {
+    $table->id();
+    $table->string('species');
+    $table->string('breed_name');
+    $table->decimal('avg_weight_kg', 5, 2)->nullable();
+    $table->integer('life_span_years')->nullable();
+    $table->text('common_health_issues')->nullable();
+    $table->timestamps();
+});
+
     }
 
     /**
