@@ -11,10 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vaccins', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+    Schema::create('vaccines', function (Blueprint $table) {
+    $table->id();
+    $table->unsignedBigInteger('pet_id');
+    $table->string('vaccine_name');
+    $table->date('date_administered');
+    $table->date('next_due_date')->nullable();
+    $table->timestamps();
+
+    $table->foreign('pet_id')->references('id')->on('pets')->onDelete('cascade');
+});
+
     }
 
     /**
