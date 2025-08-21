@@ -22,7 +22,6 @@ return new class extends Migration
     $table->string('specialization')->nullable();
     $table->integer('years_experience')->nullable();
     $table->string('profile_img')->nullable();
-    $table->foreignId('subscription_plan_id')->nullable()->constrained('subscription_plans');
     $table->enum('subscription_status', ['active', 'inactive', 'suspended'])->default('inactive');
     $table->date('subscription_start_date')->nullable();
     $table->date('subscription_end_date')->nullable();
