@@ -11,10 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('appointments', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+       Schema::create('appointments', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
+    $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
+    $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
+    $table->string('appointment_type');
+    $table->date('appointment_date');
+    $table->time('start_time');
+    $table->time('end_time');
+    $table->integer('duration_minutes');
+    $table->enum('status', ['scheduled', 'confirmed', 'cancelled', 'no_show', 'completed'])->default('scheduled');
+    $table->boolean('is_video_conseil')->default(false);
+    $table->string('video_meeting_id')->nullable();
+    $table->string('video_join_url')->nullable();
+    $table->string('reason_for_visit')->nullable();
+    $table->text('appointment_notes')->nullable();
+    $table->timestamps();
+});
+
     }
 
     /**
