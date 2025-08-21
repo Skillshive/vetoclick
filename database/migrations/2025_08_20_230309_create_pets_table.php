@@ -16,7 +16,7 @@ return new class extends Migration
     $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
     $table->string('name');
     $table->string('species');
-    $table->foreignId('breed_id')->nullable()->constrained('breeds');
+    $table->foreignId('bread_id')->nullable()->constrained('breads');
     $table->enum('sex', ['Male', 'Female']);
     $table->boolean('neutered_status')->default(false);
     $table->date('dob')->nullable();
