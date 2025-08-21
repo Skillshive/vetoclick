@@ -11,10 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prescriptions', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+    Schema::create('prescriptions', function (Blueprint $table) {
+    $table->id();
+    $table->unsignedBigInteger('medical_record_id');
+    $table->string('medication_name');
+    $table->string('dosage');
+    $table->string('duration');
+    $table->timestamps();
+
+    $table->foreign('medical_record_id')->references('id')->on('medical_records')->onDelete('cascade');
+});
+
     }
 
     /**
