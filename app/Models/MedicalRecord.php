@@ -1,41 +1,44 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Models;
 
-return new class extends Migration
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class MedicalRecord extends Model
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::create('medical_records', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('client_id');   // lien avec le client
-            $table->unsignedBigInteger('vet_id');      // lien avec le vétérinaire
-            $table->string('animal_name');             // nom de l’animal
-            $table->string('species');                 // espèce (chien, chat…)
-            $table->string('breed')->nullable();       // race
-            $table->integer('age')->nullable();        // âge
-            $table->text('symptoms')->nullable();      // symptômes
-            $table->text('diagnosis')->nullable();     // diagnostic
-            $table->text('treatment')->nullable();     // traitement
-            $table->date('visit_date');                // date de la visite
-            $table->timestamps();
+    use HasFactory;
 
-            // Contraintes de clés étrangères
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
-            $table->foreign('vet_id')->references('id')->on('vets')->onDelete('cascade');
-        });
+    protected $fillable = [
+        'pet_id',
+        'veterinarian_id',
+        'record_date',
+        'weight_kg',
+        'temperature',
+        'heart_rate',
+        'respiratory_rate',
+        'bcs',
+        'examination_findings',
+        'diagnosis',
+        'treatment_plan',
+        'recommendations',
+        'follow_up_instructions',
+    ];
+
+    // Relationships
+
+    public function pet()
+    {
+        return $this->belongsTo(Pet::class);
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function veterinarian()
     {
-        Schema::dropIfExists('medical_records');
+        return $this->belongsTo(Veterinary::class);
     }
-};
+
+    public function prescriptions()
+    {
+        return $this->hasMany(Prescription::class);
+    }
+}
