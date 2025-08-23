@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Mail\Message;
+use App\Jobs\SendEmailJob;
 use Exception;
 
 class EmailService
@@ -34,12 +35,10 @@ class EmailService
         string $subject,
         string $body,
         ?string $from = null,
-        array $options = []
+        array $options = [],
+        ?int $delay = null
     ): array {
         try {
-            $fromEmail = $from ?? config('mail.from.address');
-            $fromName = $options['from_name'] ?? config('mail.from.name');
-            
             $recipients = is_array($to) ? $to : [$to];
             
             foreach ($recipients as $email) {
@@ -48,58 +47,34 @@ class EmailService
                 }
             }
 
-            Mail::send([], [], function (Message $message) use ($recipients, $subject, $body, $fromEmail, $fromName, $options) {
-                $message->to($recipients)
-                       ->subject($subject)
-                       ->from($fromEmail, $fromName);
+            $emailData = [
+                'to' => $to,
+                'subject' => $subject,
+                'body' => $body,
+                'from' => $from,
+                'options' => $options
+            ];
 
-                if ($options['is_html'] ?? true) {
-                    $message->html($body);
-                } else {
-                    $message->text($body);
-                }
+            $job = new SendEmailJob($emailData);
+            
+            if ($delay) {
+                $job->delay(now()->addSeconds($delay));
+            }
+            
+            dispatch($job);
 
-                if (!empty($options['cc'])) {
-                    $message->cc($options['cc']);
-                }
-
-                if (!empty($options['bcc'])) {
-                    $message->bcc($options['bcc']);
-                }
-
-                if (!empty($options['reply_to'])) {
-                    $message->replyTo($options['reply_to']);
-                }
-
-                if (!empty($options['attachments'])) {
-                    foreach ($options['attachments'] as $attachment) {
-                        if (is_array($attachment)) {
-                            $message->attach($attachment['path'], [
-                                'as' => $attachment['name'] ?? null,
-                                'mime' => $attachment['mime'] ?? null
-                            ]);
-                        } else {
-                            $message->attach($attachment);
-                        }
-                    }
-                }
-
-                if (!empty($options['priority'])) {
-                    $message->priority($options['priority']);
-                }
-            });
-
-            $this->logEmailActivity('sent', $recipients, $subject);
+            $this->logEmailActivity('queued', $recipients, $subject);
 
             return [
                 'success' => true,
-                'message' => 'Email sent successfully',
+                'message' => 'Email queued successfully',
                 'recipients' => $recipients,
-                'provider' => $this->defaultProvider
+                'provider' => $this->defaultProvider,
+                'queued_at' => now()->toDateTimeString()
             ];
 
         } catch (Exception $e) {
-            Log::error('Email sending failed: ' . $e->getMessage());
+            Log::error('Email queueing failed: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -113,7 +88,8 @@ class EmailService
         string $template,
         array $data = [],
         ?string $from = null,
-        array $options = []
+        array $options = [],
+        ?int $delay = null
     ): array {
         try {
             if (!View::exists($template)) {
@@ -123,7 +99,7 @@ class EmailService
             $body = View::make($template, $data)->render();
             $options['is_html'] = true;
 
-            return $this->sendEmail($to, $subject, $body, $from, $options);
+            return $this->sendEmail($to, $subject, $body, $from, $options, $delay);
 
         } catch (Exception $e) {
             Log::error('Template email sending failed: ' . $e->getMessage());
@@ -144,6 +120,7 @@ class EmailService
         $results = [];
         $successCount = 0;
         $failureCount = 0;
+        $delay = 0;
 
         foreach ($recipients as $recipient) {
             $recipientEmail = is_array($recipient) ? $recipient['email'] : $recipient;
@@ -152,7 +129,11 @@ class EmailService
             $personalizedSubject = $this->replacePlaceholders($subject, $recipientData);
             $personalizedBody = $this->replacePlaceholders($body, $recipientData);
 
-            $result = $this->sendEmail($recipientEmail, $personalizedSubject, $personalizedBody, $from, $options);
+            if (!empty($options['delay_ms'])) {
+                $delay += ($options['delay_ms'] / 1000);
+            }
+
+            $result = $this->sendEmail($recipientEmail, $personalizedSubject, $personalizedBody, $from, $options, $delay);
             
             $results[] = [
                 'recipient' => $recipientEmail,
@@ -164,17 +145,14 @@ class EmailService
             } else {
                 $failureCount++;
             }
-
-            if (!empty($options['delay_ms'])) {
-                usleep($options['delay_ms'] * 1000);
-            }
         }
 
         return [
-            'total_sent' => count($recipients),
+            'total_queued' => count($recipients),
             'success_count' => $successCount,
             'failure_count' => $failureCount,
-            'results' => $results
+            'results' => $results,
+            'message' => 'All emails queued for bulk sending'
         ];
     }
 

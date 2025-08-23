@@ -28,7 +28,8 @@ class EmailController extends Controller
             'bcc' => 'nullable|array',
             'bcc.*' => 'email',
             'reply_to' => 'nullable|email',
-            'priority' => 'nullable|integer|min:1|max:5'
+            'priority' => 'nullable|integer|min:1|max:5',
+            'delay' => 'nullable|integer|min:0'
         ]);
         
         $options = [];
@@ -43,7 +44,8 @@ class EmailController extends Controller
             $request->subject,
             $request->body,
             $request->from,
-            $options
+            $options,
+            $request->delay
         );
         
         return response()->json($result);
@@ -56,7 +58,8 @@ class EmailController extends Controller
             'subject' => 'required|string',
             'template' => 'required|string',
             'data' => 'nullable|array',
-            'from' => 'nullable|email'
+            'from' => 'nullable|email',
+            'delay' => 'nullable|integer|min:0'
         ]);
         
         $result = $this->emailService->sendTemplateEmail(
@@ -64,7 +67,9 @@ class EmailController extends Controller
             $request->subject,
             $request->template,
             $request->data ?? [],
-            $request->from
+            $request->from,
+            [],
+            $request->delay
         );
         
         return response()->json($result);

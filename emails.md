@@ -1,11 +1,11 @@
-# EmailService API Testing with Postman
+# EmailService API Testing with Postman (Queue-Based)
 
 ## Base URL
 ```
 http://localhost:8000/api/email
 ```
 
-## 1. Send Basic Email
+## 1. Send Basic Email (Queued)
 **POST** `/send`
 
 ### Headers
@@ -25,7 +25,8 @@ Accept: application/json
     "cc": ["cc@example.com"],
     "bcc": ["bcc@example.com"],
     "reply_to": "noreply@yourdomain.com",
-    "priority": 1
+    "priority": 1,
+    "delay": 30
 }
 ```
 
@@ -33,15 +34,16 @@ Accept: application/json
 ```json
 {
     "success": true,
-    "message": "Email sent successfully",
+    "message": "Email queued successfully",
     "recipients": ["test@example.com"],
-    "provider": "smtp"
+    "provider": "smtp",
+    "queued_at": "2025-08-23 18:30:00"
 }
 ```
 
 ---
 
-## 2. Send Template Email
+## 2. Send Template Email (Queued)
 **POST** `/send-template`
 
 ### Body (JSON)
@@ -56,24 +58,79 @@ Accept: application/json
         "email": "user@example.com",
         "verification_url": "https://yourdomain.com/verify/abc123"
     },
-    "from": "welcome@yourdomain.com"
+    "from": "welcome@yourdomain.com",
+    "delay": 60
 }
 ```
 
 ---
 
-## 3. Send Bulk Emails
+## 3. Send Bulk Emails (Queued with Progressive Delay)
 **POST** `/send-bulk`
 
 ### Body (JSON)
 ```json
 {
     "recipients": [
-        "user1@example.com"
+        "user1@example.com",
         "user2@example.com"
     ],
-    "subject": "Hello {{name}} from {{company}}!",
-    "body": "<p>Dear {{name}},</p><p>Thank you for being part of {{company}}.</p>",
-    "delay_ms": 1000
+    "subject": "Hello from VetoClick!",
+    "body": "<p>Dear user,</p><p>Thank you for being part of our community.</p>",
+    "delay_ms": 2000
 }
 ```
+
+### Response Example
+```json
+{
+    "total_queued": 2,
+    "success_count": 2,
+    "failure_count": 0,
+    "results": [
+        {
+            "recipient": "user1@example.com",
+            "result": {
+                "success": true,
+                "message": "Email queued successfully"
+            }
+        }
+    ],
+    "message": "All emails queued for bulk sending"
+}
+```
+
+---
+
+## Queue Management
+
+### Start Queue Worker
+```bash
+php artisan queue:work
+```
+
+### Check Queue Status
+```bash
+php artisan queue:monitor
+```
+
+### Environment Variables Required
+```env
+QUEUE_CONNECTION=database
+MAIL_MAILER=smtp
+MAIL_HOST=smtp-relay.brevo.com
+MAIL_PORT=587
+MAIL_USERNAME=your-brevo-email@domain.com
+MAIL_PASSWORD=your-brevo-smtp-key
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=your-verified-sender@domain.com
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+## Benefits of Queue-Based Email System
+
+- **Performance**: Non-blocking email sending
+- **Reliability**: Failed emails can be retried
+- **Scalability**: Handle large volumes efficiently  
+- **Rate Limiting**: Progressive delays prevent overwhelming SMTP servers
+- **Monitoring**: Track email job status and failures
