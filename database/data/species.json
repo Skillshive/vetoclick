@@ -1,0 +1,94 @@
+[
+    {
+      "name": "Chien",
+      "short_desc": "Mammifère domestique fidèle, besoin d’exercice et de socialisation."
+    },
+    {
+      "name": "Chat",
+      "short_desc": "Félin indépendant, joueur, entretien régulier du pelage."
+    },
+    {
+      "name": "Lapin",
+      "short_desc": "Petit herbivore fragile, dents à croissance continue, habitat spacieux indispensable."
+    },
+    {
+      "name": "Cobaye (Cochon d’Inde)",
+      "short_desc": "Rongeur sociable, nécessite vitamine C dans l’alimentation."
+    },
+    {
+      "name": "Hamster",
+      "short_desc": "Rongeur nocturne et solitaire, habitation enrichie obligatoire."
+    },
+    {
+      "name": "Perroquet (perruche etc.)",
+      "short_desc": "Oiseau intelligent, longévité importante, socialisation et stimulation."
+    },
+    {
+      "name": "Canari",
+      "short_desc": "Passereau chanteur, alimentation variée, cage aérée et enrichie."
+    },
+    {
+      "name": "Perruche",
+      "short_desc": "Oiseau sociable, vit en groupe, jouets et interaction sollicités."
+    },
+    {
+      "name": "Poisson rouge",
+      "short_desc": "Poisson d’eau froide, aquarium filtré, entretien régulier."
+    },
+    {
+      "name": "Betta (Combattant)",
+      "short_desc": "Poisson tropical solitaire, eau chaude stable, faible courant."
+    },
+    {
+      "name": "Tortue terrestre",
+      "short_desc": "Reptile herbivore, UVB indispensables, température stable souhaitée."
+    },
+    {
+      "name": "Tortue aquatique",
+      "short_desc": "Reptile semi-aquatique, besoin d’eau filtrée et plateforme sèche."
+    },
+    {
+      "name": "Serpent (espèces exotiques)",
+      "short_desc": "Reptile carnivore, contrôle strict de température et hygrométrie."
+    },
+    {
+      "name": "Lézard (Agame, Gecko, etc.)",
+      "short_desc": "Reptile à besoins UVB / chaleur, régime selon l’espèce."
+    },
+    {
+      "name": "Furet",
+      "short_desc": "Carnivore joueur, nécessite stimulation, sommeil prolongé, soins proactifs."
+    },
+    {
+      "name": "Oiseau sauvagine (canard, oie)",
+      "short_desc": "Anatidé aquatique ou terrestre, accès à l’eau et diète adaptée."
+    },
+    {
+      "name": "Poulet",
+      "short_desc": "Volaille rustique, soins simples, prévention parasitaire utile."
+    },
+    {
+      "name": "Dinde",
+      "short_desc": "Volaille de grande taille, sensible au stress, besoin de soins méticuleux."
+    },
+    {
+      "name": "Mouton",
+      "short_desc": "Ruminant grégaire, tonte annuelle, antiparasitaire régulier."
+    },
+    {
+      "name": "Chèvre",
+      "short_desc": "Ruminant curieux et agile, clôtures solides recommandées."
+    },
+    {
+      "name": "Cheval",
+      "short_desc": "Grand herbivore, soins des sabots, vermifugation fréquente."
+    },
+    {
+      "name": "Poisson d'ornement (autres espèces)*",
+      "short_desc": "Aquarium spécifique selon espèce, qualité de l’eau cruciale."
+    },
+    {
+      "name": "Autruche (élevage)",
+      "short_desc": "Oiseau de ferme peu courant, besoins en enclos et diète spécialisée."
+    }
+  ]  

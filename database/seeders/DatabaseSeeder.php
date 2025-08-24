@@ -19,5 +19,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed species and breeds from JSON files
+        $this->call([
+            SpeciesSeeder::class,
+            BreedSeeder::class,
+        ]);
     }
 }
