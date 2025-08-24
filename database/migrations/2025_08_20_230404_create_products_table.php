@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\AvailabilityStatus;
+use App\Enums\ProductType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +15,34 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name');
+            $table->string('brand')->nullable();
+            $table->text('description')->nullable();
+            $table->string('sku')->unique();
+            $table->string('barcode')->unique()->nullable();
+            $table->foreignId('category_product_id')->constrained('category_products')->onDelete('cascade');
+
+            $table->integer('type')->default(ProductType::MEDICATION->value);
+            
+            $table->string('dosage_form')->nullable(); // tablet, injection, oral solution, etc.
+            $table->json( 'target_species')->nullable(); // ["dogs", "cats", "horses", "cattle"]
+            $table->string('administration_route')->nullable(); // oral, topical, injection, etc.
+            
+            $table->boolean('prescription_required')->default(false);
+            
+            $table->integer('minimum_stock_level')->default(0);
+            $table->integer('maximum_stock_level')->nullable();
+            
+            $table->boolean('is_active')->default(true);
+            $table->integer('availability_status')->default(AvailabilityStatus::IN_STOCK->value);
+            
+            $table->text('notes')->nullable();
+            $table->json('images')->nullable();
+                        
             $table->timestamps();
+            $table->softDeletes(); 
+            
         });
     }
 

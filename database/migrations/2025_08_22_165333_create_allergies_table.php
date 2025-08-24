@@ -8,10 +8,11 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('allergies', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('medical_record_id')->constrained('medical_records')->onDelete('cascade');
             $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
             $table->string('allergen_type'); // Food, Environmental, Medication
-            $table->string('allergen_detail'); 
+            $table->text('allergen_detail')->nullable(); 
             $table->date('start_date')->nullable();
             $table->text('reaction_description')->nullable();
             $table->enum('severity_level', ['Mild','Moderate','Severe','Life-threatening'])->nullable();
