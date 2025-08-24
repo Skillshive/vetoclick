@@ -13,16 +13,18 @@ return new class extends Migration
     {
     Schema::create('clients', function (Blueprint $table) {
     $table->id();
+    $table->uuid('uuid')->unique();
     $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
     $table->string('first_name');
     $table->string('last_name');
     $table->string('email')->nullable();
     $table->string('phone')->nullable();
-    $table->string('mobile')->nullable();
+    $table->string('fixe')->nullable();
     $table->string('address')->nullable();
     $table->string('city')->nullable();
     $table->string('postal_code')->nullable();
     $table->timestamps();
+    $table->softDeletes();
 });
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Gender;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,11 +14,11 @@ return new class extends Migration
     {
     Schema::create('pets', function (Blueprint $table) {
     $table->id();
+    $table->uuid('uuid')->unique();
     $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
     $table->string('name');
-    $table->string('species');
     $table->foreignId('breed_id')->nullable()->constrained('breeds');
-    $table->enum('sex', ['Male', 'Female']);
+    $table->integer('sex')->default(Gender::MAN->value);
     $table->boolean('neutered_status')->default(false);
     $table->date('dob')->nullable();
     $table->string('microchip_ref')->nullable();
@@ -25,9 +26,10 @@ return new class extends Migration
     $table->decimal('weight_kg', 5, 2)->nullable();
     $table->tinyInteger('bcs')->nullable(); // Body Condition Score
     $table->string('color')->nullable();
-    $table->text('notes')->nullable();
+    $table->json('notes')->nullable();
     $table->date('deceased_at')->nullable();
     $table->timestamps();
+    $table->softDeletes();
 });
     }
 

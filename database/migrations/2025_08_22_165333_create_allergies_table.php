@@ -10,7 +10,6 @@ return new class extends Migration {
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('medical_record_id')->constrained('medical_records')->onDelete('cascade');
-            $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
             $table->string('allergen_type'); // Food, Environmental, Medication
             $table->text('allergen_detail')->nullable(); 
             $table->date('start_date')->nullable();
@@ -20,6 +19,7 @@ return new class extends Migration {
             $table->date('resolution_date')->nullable();
             $table->text('treatment_given')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

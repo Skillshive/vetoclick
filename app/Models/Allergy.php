@@ -20,7 +20,6 @@ class Allergy extends Model
 
     protected $fillable = [
         'medical_record_id',
-        'pet_id',
         'allergen_type',
         'allergen_detail',
         'start_date',

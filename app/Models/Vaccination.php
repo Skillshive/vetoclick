@@ -4,33 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 class Vaccination extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
+    protected static function boot(){
+        parent::boot();
+        static::creating(function ($vaccination) {
+            $vaccination->uuid = Str::uuid();
+        });
+    }
     protected $fillable = [
-        'pet_id', 'vaccin_id', 'conseil_id', 'date_given', 'vet_id',
-        'injection_site', 'next_due_date', 'notes'
+        'consultation_id',
+        'administered_by',
+        'vaccine_id',
+        'vaccination_date',
+        'next_due_date',
     ];
-
-    public function pet()
-    {
-        return $this->belongsTo(Pet::class);
-    }
-
-    public function veterinarian()
-    {
-        return $this->belongsTo(Veterinary::class, 'vet_id');
-    }
 
     public function consultation()
     {
-        return $this->belongsTo(Consultation::class, 'conseil_id');
+        return $this->belongsTo(Consultation::class);
     }
 
-    public function vaccine()
+    public function vaccin()
     {
-        return $this->belongsTo(Vaccin::class, 'vaccin_id');
+        return $this->belongsTo(Vaccin::class);
     }
 }

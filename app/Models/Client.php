@@ -4,13 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Client extends Model
 {
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($user) {
+            $user->uuid = Str::uuid();
+        });
+    }
     protected $fillable = [
-        'first_name', 'last_name', 'email', 'phone', 'mobile',
+        'first_name', 'last_name', 'email', 'phone', 'fixe',
         'address', 'city', 'postal_code'
     ];
 

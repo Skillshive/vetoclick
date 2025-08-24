@@ -10,9 +10,8 @@ return new class extends Migration
     {
         Schema::create('medical_records', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
-            $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
-            $table->dateTime('record_date')->nullable();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
             $table->decimal('weight_kg', 5, 2)->nullable();
             $table->decimal('temperature', 4, 1)->nullable();
             $table->integer('heart_rate')->nullable();
@@ -24,6 +23,7 @@ return new class extends Migration
             $table->text('recommendations')->nullable();
             $table->text('follow_up_instructions')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

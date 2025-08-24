@@ -8,12 +8,14 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('vaccinations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
+            $table->uuid('uuid')->unique();
+            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
+            $table->foreignId('administered_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('vaccine_id')->constrained('vaccines')->onDelete('cascade');
             $table->date('vaccination_date');
             $table->date('next_due_date')->nullable();
-            $table->string('administered_by')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

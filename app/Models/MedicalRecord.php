@@ -4,14 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class MedicalRecord extends Model
 {
     use HasFactory;
 
+    protected static function boot(){
+        
+    parent::boot();
+    static::creating(function ($medicalRecord) {
+        $medicalRecord->uuid = Str::uuid();
+    });
+    }
     protected $fillable = [
-        'pet_id',
-        'veterinarian_id',
+        'consultation_id',
         'record_date',
         'weight_kg',
         'temperature',
@@ -25,20 +32,8 @@ class MedicalRecord extends Model
         'follow_up_instructions',
     ];
 
-    // Relationships
-
-    public function pet()
+    public function consultation()
     {
-        return $this->belongsTo(Pet::class);
-    }
-
-    public function veterinarian()
-    {
-        return $this->belongsTo(Veterinary::class);
-    }
-
-    public function prescriptions()
-    {
-        return $this->hasMany(Prescription::class);
+        return $this->belongsTo(Consultation::class);
     }
 }
