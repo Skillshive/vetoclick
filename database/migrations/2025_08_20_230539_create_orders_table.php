@@ -36,17 +36,17 @@ return new class extends Migration
             $table->date('order_date');
             $table->date('confirmed_delivery_date')->nullable();
             
-            $table->foreign('requested_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('requested_by')->constrained('users')->onDelete('cascade');
             $table->boolean('approved')->default(false); 
             $table->datetime('approved_at')->nullable();
             
             $table->datetime('received_at')->nullable();
-            $table->foreign('received_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('received_by')->constrained('users')->onDelete('cascade');
             $table->text('receiving_notes')->nullable();
             
             
             $table->text('cancellation_reason')->nullable();
-            $table->foreign('cancelled_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('cancelled_by')->constrained('users')->onDelete('cascade');
             $table->datetime('cancelled_at')->nullable();
             $table->text('return_reason')->nullable();
             $table->datetime('returned_at')->nullable();
