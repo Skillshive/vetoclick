@@ -4,27 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Breed extends Model
 {
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($user) {
+            $user->uuid = Str::uuid();
+        });
+    }
+    
     protected $fillable = [
-        'species',            // Animal species (Dog, Cat, Bird, etc.)
+        'species_id',            
         'breed_name',         
         'avg_weight_kg',      
         'life_span_years',    
         'common_health_issues'
     ];
 
-    // Relationships
-
-    // One breed can have many pets
     public function pets()
     {
         return $this->hasMany(Pet::class);
     }
-
-    // Optional: one breed can have multiple vaccination schedules
     
+    public function species()
+    {
+        return $this->belongsTo(Species::class);
+    }
 }

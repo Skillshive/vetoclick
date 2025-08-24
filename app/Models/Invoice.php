@@ -4,36 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Invoice extends Model
 {
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($invoice) {
+            $invoice->uuid = Str::uuid();
+        });
+    }
     protected $fillable = [
-        'conseil_id', 'client_id', 'veterinary_id', 'invoice_number',
-        'invoice_date', 'due_date', 'subtotal', 'tax_amount', 'discount_amount',
-        'total_amount', 'status', 'payment_method', 'paid_date', 'notes'
+        'order_id',
+        'reference',
+        'invoice_date',
+        'invoice_status',
+        'invoice_file',
     ];
 
-    public function consultation()
+    public function order()
     {
-        return $this->belongsTo(Consultation::class, 'conseil_id');
+        return $this->belongsTo(Order::class, 'order_id');
     }
 
-    public function client()
+    public function supplier()
     {
-        return $this->belongsTo(Client::class);
-    }
-
-    public function veterinary()
-    {
-        return $this->belongsTo(Veterinary::class, 'veterinary_id');
-    }
-
-    
-
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
+        return $this->belongsTo(Supplier::class);
     }
 }

@@ -4,11 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Appointment extends Model
 {
     use HasFactory;
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($user) {
+            $user->uuid = Str::uuid();
+        });
+    }
+    
     protected $fillable = [
         'veterinary_id', 'client_id', 'pet_id', 'appointment_type', 'appointment_date',
         'start_time', 'end_time', 'duration_minutes', 'status', 'is_video_conseil',
