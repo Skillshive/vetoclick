@@ -2,34 +2,19 @@
 
 namespace App\Enums;
 
-enum Gender: string
+enum Gender: int
 {
-    case MAN ='M';
-    case WOMAN = 'W';
+    case MAN =0;
+    case WOMAN = 1;
 
     public  function text()
     {
         return match ($this) {
-            self::MAN => trans('app.man'),
-            self::WOMAN => trans('app.woman'),
+            self::MAN => 'male',
+            self::WOMAN => 'female',
         };
     }
-    public  function class()
-    {
-        return match ($this) {
-            self::MAN => "primary",
-            self::WOMAN => "success",
-        };
-    }
-
-    public  function icon()
-    {
-        return match ($this) {
-            self::MAN => '<i class="fa-solid text-success fa-person " style="font-size: 1.5rem !important;"></i>',
-            self::WOMAN => '<i class="fa-solid text-warning fa-female " style="font-size: 1.5rem !important;"></i>',
-        };
-    }
-
+    
     public static function toArray(){
         return [
           self::MAN->value => self::MAN->text(),
