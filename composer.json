@@ -15,7 +15,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "tightenco/ziggy": "^2.0",
-        "twilio/sdk": "^8.7"
+        "spatie/laravel-permission": "^6.20"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
