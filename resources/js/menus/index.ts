@@ -1,8 +1,3 @@
-// import { adminMenu } from '../../../.apiwi/admin';
-// import { superAdminMenu } fro../../../.apiwi/super-adminmin';
-// import { doctorMenu } from '../../../.apiwi/doctor';
-// import { nurseMenu } fro../../../.apiwi/nurserse';
-// import { receptionistMenu } fro../../../.apiwi/receptionistist';
 import composeMenuForRole from './main';
 
 export interface MenuItem {
@@ -18,31 +13,13 @@ export interface MenuItem {
     level?: number; // Track nesting level
 }
 
-// export interface MenuConfig {
-//     [key: string]: MenuItem[];
-// }
-
-// const menuConfigs: MenuConfig = {
-//     'admin': adminMenu,
-//     'super-admin': superAdminMenu,
-//     'doctor': doctorMenu,
-//     'nurse': nurseMenu,
-//     'receptionist': receptionistMenu,
-//     'guest': []
-// };
-
 export const getMenuByRole = (role: string): MenuItem[] => {
-    /* !menuConfigs[role] ||  */
-    if (role === 'guest') {
-        console.log('Role not found or is guest, returning guest menu as fallback');
-        return [];
-    }
+    // if (role === 'guest') {
+    //     return [];
+    // }
     return composeMenuForRole(role);
 };
 
 export const getAllMenus = () => {
     return composeMenuForRole();
 };
-
-// Export individual menus for direct access
-//export { adminMenu, superAdminMenu, doctorMenu, nurseMenu, receptionistMenu };

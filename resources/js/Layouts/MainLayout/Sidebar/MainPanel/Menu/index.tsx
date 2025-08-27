@@ -1,15 +1,13 @@
 // Import Dependencies
-import { Dispatch, ElementType, SetStateAction } from "react";
-import { useTranslation } from "react-i18next";
+import { Dispatch, SetStateAction } from "react";
 import { Link, usePage } from "@inertiajs/react";
 // Local Imports
 import { ScrollShadow } from "@/components/ui";
-import { Item } from "./item";
 import { NavigationTree } from "@/@types/navigation";
-import { SegmentPath } from "../..";
 import { useSidebarContext } from "@/contexts/sidebar/context";
 import { useRoleBasedMenu } from "@/hooks/useRoleBasedMenu";
-import { isRouteActive, isURLMatch } from "@/utils/isRouteActive";
+import {  isURLMatch } from "@/utils/isRouteActive";
+import { Item } from "./item";
 
 export interface MenuProps {
   nav?: NavigationTree[];
@@ -35,6 +33,7 @@ export function Menu({
   };
 
   const getMainNavigationItems = (items: any[]) => {
+    console.log('items',items)
     const mainItems = items.map(item => ({
       id: item.id,
       title: item.title,
@@ -46,7 +45,7 @@ export function Menu({
   };
 
   const itemsToRender = nav || getMainNavigationItems(menuItems);
-
+console.log('itemsToRender',itemsToRender)
   return (
     <ScrollShadow
       data-root-menu

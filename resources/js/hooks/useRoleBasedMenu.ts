@@ -45,6 +45,8 @@ export const useRoleBasedMenu = () => {
     };
 
     const filterMenuByPermissions = (menuItems: MenuItem[]): MenuItem[] => {
+        console.log("menuItems",menuItems);
+        
         return menuItems.filter(item => {
             // Check if item has permission requirements
             if (item.permission && !hasPermission(item.permission)) {

@@ -1,21 +1,12 @@
 import { MenuItem } from './index';
-import UserMangementMenu from './domins/user-mangement';
+import  { AnimalsMenu } from './items/settings';
 
 const mainMenus: MenuItem[] = [
-    ...UserMangementMenu,
-
+    ...AnimalsMenu,
 ];
 
 export const composeMenuForRole = (role?: string): MenuItem[] => {
-    // if (!role) {
-    //     console.log('No role specified, returning  mainMenus');
-    //     return mainMenus;
-    // }
     return mainMenus;
-    // switch (role) {
-    //     case "super-admin": return UserMangementMenu;
-    //     case '*': return mainMenus;  //console.log(`Role not recognized: ${role}, returning mainMenus`);
-    // }
 };
 
 export default composeMenuForRole;

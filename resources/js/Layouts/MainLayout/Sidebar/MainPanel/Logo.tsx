@@ -4,7 +4,7 @@ export function Logo({ className = '', style = {} }: { className?: string; style
   return (
     <img
       src="/assets/logo.jpg"
-      alt="Hospilog Logo"
+      alt="VetoClick Logo"
       className={`object-contain ${className}`}
       style={{ borderRadius: 8, ...style }}
     />
