@@ -19,14 +19,14 @@ export const UserMangementMenu: MenuItem[] = [
             {
                 id: 'allUsers',
                 title: 'Administration des Utilisateurs',
-                path: route('users.index'),
+                path:"",
                 type: 'item' as const,
                 permission: 'view-users',
             },
             {
                 id: 'allRoles',
                 title: 'Gestion des Rôles',
-                path: route('roles.index'),
+                path: "",
                 type: 'item' as const,
                 permission: 'view-roles',
             }
