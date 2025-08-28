@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Vet Supplies Co.",
+        "address": "123 Vet Street, Animal City, AC 12345",
+        "email": "sales@vetsuppliesco.com",
+        "phone": "123-456-7890"
+    },
+    {
+        "name": "Pet Meds Inc.",
+        "address": "456 Pet Avenue, Health Town, HT 67890",
+        "email": "contact@petmedsinc.com",
+        "phone": "098-765-4321"
+    },
+    {
+        "name": "Animal Health Distributors",
+        "address": "789 Farm Road, Countryside, CS 54321",
+        "email": "info@animalhealthdist.com",
+        "phone": "555-555-5555"
+    }
+]

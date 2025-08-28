@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Amoxicillin 250mg",
+        "brand": "VetPharma",
+        "description": "Broad-spectrum antibiotic for dogs and cats.",
+        "sku": "VET-AMX-250",
+        "barcode": "123456789012",
+        "category_name": "Antibiotics",
+        "type": 1,
+        "dosage_form": "Tablet",
+        "target_species": ["dogs", "cats"],
+        "administration_route": "Oral",
+        "prescription_required": true,
+        "minimum_stock_level": 20,
+        "maximum_stock_level": 100,
+        "is_active": true,
+        "availability_status": 1,
+        "notes": "Store in a cool, dry place."
+    },
+    {
+        "name": "Carprofen 50mg",
+        "brand": "PainAway",
+        "description": "Non-steroidal anti-inflammatory drug for pain relief in dogs.",
+        "sku": "PA-CAR-50",
+        "barcode": "210987654321",
+        "category_name": "Pain Relief",
+        "type": 1,
+        "dosage_form": "Chewable Tablet",
+        "target_species": ["dogs"],
+        "administration_route": "Oral",
+        "prescription_required": true,
+        "minimum_stock_level": 15,
+        "maximum_stock_level": 80,
+        "is_active": true,
+        "availability_status": 1,
+        "notes": "Not for use in cats."
+    }
+]

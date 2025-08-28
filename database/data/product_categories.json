@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Medications",
+        "description": "All types of veterinary medications.",
+        "children": [
+            {
+                "name": "Antibiotics",
+                "description": "Medications to treat bacterial infections."
+            },
+            {
+                "name": "Pain Relief",
+                "description": "Pain relief medications for various conditions."
+            }
+        ]
+    },
+    {
+        "name": "Equipment",
+        "description": "Veterinary equipment and supplies.",
+        "children": [
+            {
+                "name": "Surgical Instruments",
+                "description": "Instruments for veterinary surgery."
+            }
+        ]
+    }
+]
