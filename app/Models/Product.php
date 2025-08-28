@@ -10,6 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
+        'uuid',
         'name',
         'brand',
         'description',
@@ -37,8 +38,8 @@ class Product extends Model
         });
     }
 
-    public function categoryProduct()
+    public function category()
     {
-        return $this->belongsTo(CategoryProduct::class);
+        return $this->belongsTo(ProductCategory::class, 'category_product_id');
     }
 }
