@@ -181,24 +181,22 @@ export default function ToolBar({
                         </Transition>
                     </Menu>
                 )}
-                {hasPermission(permission) && (
-                    <Button
-                        className="size-9 shrink-0 rounded-full"
-                        isIcon
-                        variant="flat"
-                        onClick={handleOpenCreateDialog}  // Use the new create function
-                        color={"primary"}
-                        data-tooltip
-                        data-tooltip-variant={"info"}
-                        data-tooltip-content={`Ajouter`}
-                    >
-                        <div className="relative size-5">
-                            <BsPlusCircleFill
-                                className={`absolute inset-0 size-5 transition-all duration-300 rotate-0 scale-100 opacity-100`}
-                            />
-                        </div>
-                    </Button>
-                )}
+                <Button
+                    className="size-9 shrink-0 rounded-full"
+                    isIcon
+                    variant="flat"
+                    onClick={handleOpenCreateDialog}  // Use the new create function
+                    color={"primary"}
+                    data-tooltip
+                    data-tooltip-variant={"info"}
+                    data-tooltip-content={`Ajouter`}
+                >
+                    <div className="relative size-5">
+                        <BsPlusCircleFill
+                            className={`absolute inset-0 size-5 transition-all duration-300 rotate-0 scale-100 opacity-100`}
+                        />
+                    </div>
+                </Button>
             </div>
         </div>
     )

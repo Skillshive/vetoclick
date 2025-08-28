@@ -13,5 +13,5 @@ interface ServiceInterface
      * @param $value
      * @return bool
      */
-    public static  function  isColumnValueUniqueExceptSelf(Model $model , string $attr ,string $value):bool;
+    // public static  function  isColumnValueUniqueExceptSelf(Model $model , string $attr ,string $value):bool;
 }
