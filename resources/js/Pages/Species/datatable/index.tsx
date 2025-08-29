@@ -1,8 +1,4 @@
-import React, { useState, useMemo, useCallback, Fragment, useRef } from "react";
-
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-
+// Import Dependencies
 import {
   flexRender,
   getCoreRowModel,
@@ -11,122 +7,89 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
-  ColumnFiltersState,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import {
-  Transition,
-  TransitionChild,
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-} from "@headlessui/react";
+import { Fragment } from "react";
+import { TrashIcon } from "@heroicons/react/24/outline";
+import { Transition } from "@headlessui/react";
 
-import { Table, Card, THead, TBody, Th, Tr, Td, Button, Input, Textarea } from "@/components/ui";
+// Local Imports
+import { Table, Card, THead, TBody, Th, Tr, Td, Button } from "@/components/ui";
 import { TableSortIcon } from "@/components/shared/table/TableSortIcon";
 import { Page } from "@/components/shared/Page";
-import { useLockScrollbar, useDidUpdate, useLocalStorage, useDisclosure, useClipboard } from "@/hooks";
+import { useLockScrollbar, useDidUpdate } from "@/hooks";
 import { fuzzyFilter } from "@/utils/react-table/fuzzyFilter";
-import { useSkipper } from "@/utils/react-table/useSkipper";
+import { PaginationSection } from "@/components/shared/table/PaginationSection";
 import { getUserAgentBrowser } from "@/utils/dom/getUserAgentBrowser";
-import { TableSettings } from "@/components/shared/table/TableSettings";
-import { Species, SpeciesManagementPageProps } from "@/types/Species";
-import { useSpeciesColumns } from "./columns";
-import MainLayout from '@/layouts/MainLayout';
-import { router, useForm } from "@inertiajs/react";
-import BasePagination from "@/components/shared/table/BasePagination";
-import { useToast } from "@/components/common/Toast/ToastContext";
+import { useThemeContext } from "@/contexts/theme/context";
+import SpeciesFormModal from "@/components/modals/SpeciesFormModal";
 import {
   ConfirmModal,
-  ModalState,
-  ConfirmMessages,
+  type ConfirmMessages,
 } from "@/components/shared/ConfirmModal";
-import { useRoleBasedMenu } from "@/hooks/useRoleBasedMenu";
-import ToolBar from "@/components/shared/table/Toolbar";
-import SpeciesFormModal from "@/components/modals/SpeciesFormModal";
 
-// Declare route helper
-declare const route: (name: string, params?: any, absolute?: boolean) => string;
+// Local Component Imports
+import { SpeciesDatatableProps } from "./types";
+import { createColumns } from "./columns";
+import { Toolbar } from "./Toolbar";
+import { useSpeciesTable } from "./hooks";
 
 const isSafari = getUserAgentBrowser() === "Safari";
 
-export default function SpeciesDatatable({ species, filters }: SpeciesManagementPageProps) {
-  const speciesData = useMemo(() => species.data || [], [species.data]);
+export default function SpeciesDatatable({ species: speciesData, filters }: SpeciesDatatableProps) {
+  const { cardSkin } = useThemeContext();
 
-  const [tableSettings, setTableSettings] = useState<TableSettings>({
-    enableFullScreen: false,
-    enableRowDense: false,
+  // Use custom hook for all table state management
+  const {
+    species,
+    isModalOpen,
+    setIsModalOpen,
+    selectedSpecies,
+    setSelectedSpecies,
+    bulkDeleteModalOpen,
+    setBulkDeleteModalOpen,
+    confirmBulkDeleteLoading,
+    setConfirmBulkDeleteLoading,
+    bulkDeleteSuccess,
+    setBulkDeleteSuccess,
+    bulkDeleteError,
+    setBulkDeleteError,
+    tableSettings,
+    toolbarFilters,
+    globalFilter,
+    setGlobalFilter,
+    sorting,
+    setSorting,
+    columnVisibility,
+    setColumnVisibility,
+    columnPinning,
+    setColumnPinning,
+    autoResetPageIndex,
+    tableMeta,
+  } = useSpeciesTable({
+    initialData: speciesData.data,
+    initialFilters: filters,
   });
 
-  const {hasPermission} = useRoleBasedMenu();
-  const columns = useSpeciesColumns();
-  const [rowsPerPage, setRowsPerPage] = useState(filters?.per_page || 10);
-  const [sortBy, setSortBy] = useState(filters?.sort_by || "");
-  const [sortOrder, setSortOrder] = useState(filters?.sort_direction || "");
-  const [isOpen, { open, close }] = useDisclosure(false);
-  const saveRef = useRef(null);
-  const { showToast } = useToast();
-  const [deleteSpecies, setDeleteSpecies] = useState<Species | null>(null);
+  // Create columns with modal handlers
+  const columns = createColumns({ setSelectedSpecies, setIsModalOpen });
 
-  const [isDeleteModalOpen, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-
-  // Modal states
-  const [isCreateModalOpen, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
-  const [isEditModalOpen, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
-  const [isShowModalOpen, { open: openShowModal, close: closeShowModal }] = useDisclosure(false);
-  const [selectedSpecies, setSelectedSpecies] = useState<Species | null>(null);
-
-  // Initialize form with useForm from Inertia.js
-  const [globalFilter, setGlobalFilter] = useState(filters?.search || "");
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: filters?.sort_by || "created_at", desc: filters?.sort_direction === "desc" }
-  ]);
-  const { copy } = useClipboard();
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useLocalStorage("column-visibility-species", {});
-  const [columnPinning, setColumnPinning] = useLocalStorage("column-pinning-species", {});
-  const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper();
   const table = useReactTable({
-    data: speciesData,
+    data: species,
     columns: columns,
     state: {
+      globalFilter,
       sorting,
-      columnFilters,
       columnVisibility,
       columnPinning,
       tableSettings,
+      toolbarFilters,
     },
-    meta: {
-      onEdit: (row) => {
-        console.log('Update species:', row.original);
-        handleOpenEditModal(row.original)
-      },
-      onDelete: (row) => {
-        console.log('Delete species:', row.original.uuid);
-        handleOpenDeleteModal(row.original);
-      },
-      deleteRows: (rows) => {
-        console.log('Delete species:', rows.map(r => r.original.uuid));
-      },
-      onView: (row) =>{
-        handleShowSpeciesModal(row.original);
-      },
-      copyToClipboard: (text: string) => {
-        copy(text);
-        showToast({
-            type: 'info',
-            message:'Copied to clipboard!',
-            duration: 2000,
-        });
-
-      },
-      setTableSettings,
-      hasPermission,
+    meta: tableMeta,
+    filterFns: {
+      fuzzy: fuzzyFilter,
     },
-    filterFns: { fuzzy: fuzzyFilter },
     enableSorting: tableSettings.enableSorting,
     enableColumnFilters: tableSettings.enableColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -140,263 +103,262 @@ export default function SpeciesDatatable({ species, filters }: SpeciesManagement
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onColumnPinningChange: setColumnPinning,
-    onColumnFiltersChange: setColumnFilters,
     autoResetPageIndex,
-    manualPagination: true,
-    manualSorting: false,
-    manualFiltering: false,
-    pageCount: species.meta?.last_page || 1,
   });
 
-  const handleSearchChange = (value: string) => {
-    setGlobalFilter(value);
-
-    // Debounce the API call
-    const timeoutId = setTimeout(() => {
-      router.get(route('species.index'), {
-        search: value,
-      });
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  };
-
-  const handleShowSpeciesModal = (species: Species) => {
-    setSelectedSpecies(species);
-    openShowModal();
-  };
-
-  const handleRowsPerPageChange = (newRowsPerPage: number) => {
-    setRowsPerPage(newRowsPerPage);
-
-    router.get(route('species.index'), {
-      search: globalFilter,
-      sort_by: sorting[0]?.id || sortBy,
-      sort_direction: sorting[0]?.desc ? 'desc' : 'asc',
-      per_page: newRowsPerPage,
-    });
-  };
-
-  // Handle opening create modal
-  const handleOpenCreateDialog = () => {
-    openCreateModal();
-  };
-
-  // Handle opening edit modal
-  const handleOpenEditModal = (species: Species) => {
-    setSelectedSpecies(species);
-    openEditModal();
-  };
-  // Handle opening delete confirmation modal
-  const handleOpenDeleteModal = (species: Species) => {
-    setDeleteSpecies(species);
-    openDeleteModal();
-  };
-
-  // Handle delete species confirmation
-  const handleDeleteSpecies = () => {
-    if (!deleteSpecies) return;
-
-    setConfirmLoading(true);
-
-    router.delete(route('species.destroy', deleteSpecies.uuid), {
-      onSuccess: () => {
-        showToast({
-          type: 'success',
-          message: 'Espèce supprimée avec succès',
-          duration: 3000,
-        });
-        closeDeleteModal();
-        setDeleteSpecies(null);
-      },
-      onError: () => {
-        showToast({
-          type: 'error',
-          message: 'Erreur lors de la suppression de l\'espèce',
-          duration: 3000,
-        });
-      },
-      onFinish: () => {
-        setConfirmLoading(false);
-      }
-    });
-  };
-
-  // Handle cancel delete
-  const handleCancelDelete = () => {
-    setDeleteSpecies(null);
-    closeDeleteModal();
-  };
-
-  const handlePageChange = useCallback((page: number) => {
-    router.get(route('species.index'), { ...filters, page });
-  }, [filters]);
-
-  useDidUpdate(() => table.resetRowSelection(), [speciesData]);
+  useDidUpdate(() => table.resetRowSelection(), [species]);
   useLockScrollbar(tableSettings.enableFullScreen);
 
-  // Delete confirmation messages
-  const messages: ConfirmMessages = {
-    pending: {
-      Icon: ExclamationTriangleIcon,
-      title: "Supprimer l'Espèce",
-      description: `Êtes-vous sûr de vouloir supprimer l'espèce "${deleteSpecies?.name}" ? Cette action est irréversible.`,
-      actionText: 'Supprimer',
-    }
+  // Bulk delete handlers
+  const closeBulkModal = () => {
+    setBulkDeleteModalOpen(false);
   };
 
-  const handleClearSearch = () => {
-    router.get(route('species.index'), {});
+  const openBulkModal = () => {
+    setBulkDeleteModalOpen(true);
+    setBulkDeleteError(false);
+    setBulkDeleteSuccess(false);
+  };
+
+  const handleBulkDeleteRows = () => {
+    setConfirmBulkDeleteLoading(true);
     setTimeout(() => {
-      setGlobalFilter("");
-    }, 800);
-  }
+      const selectedRows = table.getSelectedRowModel().rows;
+      table.options.meta?.deleteRows?.(selectedRows);
+      setBulkDeleteSuccess(true);
+      setConfirmBulkDeleteLoading(false);
+    }, 1000);
+  };
 
-  // Modal state
-  const state: ModalState = 'pending';
-console.log('species',species)
+  const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
+
   return (
-    <MainLayout>
-      <Page title="Espèces">
-        <div className="transition-content w-full pb-5">
-          <div className={clsx("flex h-full px-(--margin-x) w-full flex-col", tableSettings.enableFullScreen && "dark:bg-dark-900 fixed inset-0 z-61 bg-white pt-3")}>
-
-            {/* Toolbar */}
-            <ToolBar
-                title="Espèces"
-                searchQuery={globalFilter}
-                handleSearchChange={handleSearchChange}
-                handleClearSearch={handleClearSearch}
-                handleOpenCreateDialog={handleOpenCreateDialog}
-                hasPermission={hasPermission}
-                permission="create-species"
-                Fragment={Fragment}
-            />
-
-            <div className={clsx("transition-content flex grow flex-col pt-3", tableSettings.enableFullScreen ? "overflow-hidden" : "")}>
-              <Card className={clsx("relative flex grow flex-col", tableSettings.enableFullScreen && "overflow-hidden")}>
-
-                <div className="table-wrapper min-w-full grow">
-                  <Table hoverable dense={tableSettings.enableRowDense} sticky={tableSettings.enableFullScreen} className="w-full text-left rtl:text-right">
-                    <THead>
-                      {table.getHeaderGroups().map((headerGroup) => (
-                        <Tr key={headerGroup.id}>
-                          {headerGroup.headers.map((header) => (
-                            <Th key={header.id} className={clsx("dark:bg-dark-800 dark:text-dark-100 bg-gray-200 font-semibold text-gray-800 uppercase first:ltr:rounded-tl-lg last:ltr:rounded-tr-lg first:rtl:rounded-tr-lg last:rtl:rounded-tl-lg")}>
+    <>
+    <Page title="React Table">
+      <div className="transition-content w-full pb-5">
+        <div
+          className={clsx(
+            "flex h-full w-full flex-col",
+            tableSettings.enableFullScreen &&
+              "dark:bg-dark-900 fixed inset-0 z-61 bg-white pt-3",
+          )}
+        >
+          <Toolbar 
+            table={table} 
+            globalFilter={globalFilter} 
+            setGlobalFilter={setGlobalFilter} 
+            setSelectedSpecies={setSelectedSpecies} 
+            setIsModalOpen={setIsModalOpen} 
+          />
+          <div
+            className={clsx(
+              "transition-content flex grow flex-col pt-3",
+              tableSettings.enableFullScreen
+                ? "overflow-hidden"
+                : "px-(--margin-x)",
+            )}
+          >
+            <Card
+              className={clsx(
+                "relative flex grow flex-col",
+                tableSettings.enableFullScreen && "overflow-hidden",
+              )}
+            >
+              <div className="table-wrapper min-w-full grow overflow-x-auto">
+                <Table
+                  hoverable
+                  dense={tableSettings.enableRowDense}
+                  sticky={tableSettings.enableFullScreen}
+                  className="w-full text-left rtl:text-right"
+                >
+                  <THead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <Tr key={headerGroup.id}>
+                        {headerGroup.headers
+                          .filter(
+                            (header) => !header.column.columnDef.isHiddenColumn,
+                          )
+                          .map((header) => (
+                            <Th
+                              key={header.id}
+                              className={clsx(
+                                "dark:bg-dark-800 dark:text-dark-100 bg-gray-200 font-semibold text-gray-800 uppercase first:ltr:rounded-tl-lg last:ltr:rounded-tr-lg first:rtl:rounded-tr-lg last:rtl:rounded-tl-lg",
+                                header.column.getCanPin() && [
+                                  header.column.getIsPinned() === "left" &&
+                                    "sticky z-2 ltr:left-0 rtl:right-0",
+                                  header.column.getIsPinned() === "right" &&
+                                    "sticky z-2 ltr:right-0 rtl:left-0",
+                                ],
+                              )}
+                            >
                               {header.column.getCanSort() ? (
-                                <div className="flex cursor-pointer items-center space-x-3 select-none" onClick={header.column.getToggleSortingHandler()}>
+                                <div
+                                  className="flex cursor-pointer items-center space-x-3 select-none"
+                                  onClick={header.column.getToggleSortingHandler()}
+                                >
                                   <span className="flex-1">
-                                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                    {header.isPlaceholder
+                                      ? null
+                                      : flexRender(
+                                          header.column.columnDef.header,
+                                          header.getContext(),
+                                        )}
                                   </span>
-                                  <TableSortIcon sorted={header.column.getIsSorted()} />
+                                  <TableSortIcon
+                                    sorted={header.column.getIsSorted()}
+                                  />
                                 </div>
                               ) : header.isPlaceholder ? null : (
-                                flexRender(header.column.columnDef.header, header.getContext())
+                                flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )
                               )}
                             </Th>
                           ))}
-                        </Tr>
-                      ))}
-                    </THead>
-                    <TBody>
-                      {table.getRowModel().rows.length === 0 ? (
-                        <Tr>
-                          <Td colSpan={table.getHeaderGroups()[0]?.headers.length || 1} className="relative bg-white dark:bg-dark-900">
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                                Aucune espèce trouvée
-                              </h3>
-                              <p className="text-gray-500 dark:text-gray-400">
-                                {globalFilter ?
-                                  "Aucune espèce ne correspond à votre recherche. Essayez de modifier vos critères de recherche." :
-                                  "Il n'y a aucune espèce dans le système pour le moment."
-                                }
-                              </p>
-                            </div>
-                          </Td>
-                        </Tr>
-                      ) : (
-                        table.getRowModel().rows.map((row) => (
-                          <Tr key={row.id} className={clsx("dark:border-b-dark-500 relative border-y border-transparent border-b-gray-200", row.getIsSelected() && !isSafari && "row-selected after:bg-primary-500/10 ltr:after:border-l-primary-500 rtl:after:border-r-primary-500 after:pointer-events-none after:absolute after:inset-0 after:z-2 after:h-full after:w-full after:border-3 after:border-transparent")}>
-                            {row.getVisibleCells().map((cell) => (
-                              <Td key={cell.id} className="relative bg-white dark:bg-dark-900">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </Td>
-                            ))}
-                          </Tr>
-                        ))
-                      )}
-                    </TBody>
-                  </Table>
-                </div>
+                      </Tr>
+                    ))}
+                  </THead>
+                  <TBody>
+                    {table.getRowModel().rows.map((row) => {
+                      return (
+                        <Tr
+                          key={row.id}
+                          className={clsx(
+                            "dark:border-b-dark-500 relative border-y border-transparent border-b-gray-200",
+                            row.getIsSelected() &&
+                              !isSafari &&
+                              "row-selected after:bg-primary-500/10 ltr:after:border-l-primary-500 rtl:after:border-r-primary-500 after:pointer-events-none after:absolute after:inset-0 after:z-2 after:h-full after:w-full after:border-3 after:border-transparent",
+                          )}
+                        >
+                          {row
+                            .getVisibleCells()
+                            .filter(
+                              (cell) => !cell.column.columnDef.isHiddenColumn,
+                            )
+                            .map((cell) => {
+                              return (
+                                <Td
+                                  key={cell.id}
+                                  className={clsx(
+                                    "relative",
+                                    cardSkin === "shadow"
+                                      ? "dark:bg-dark-700"
+                                      : "dark:bg-dark-900",
 
-                {/* Selected Rows Actions */}
-                {(table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()) && (
-                  <div className="bg-primary-50 dark:bg-primary-900/20 border-t border-gray-200 dark:border-gray-700 px-4 py-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {table.getSelectedRowModel().rows.length} de {table.getFilteredRowModel().rows.length} ligne(s) sélectionnée(s)
-                      </span>
-                      <Button
-                        color="error"
-                        disabled={table.getSelectedRowModel().rows.length > 1}
-                        onClick={() => {
-                          const selectedRows = table.getSelectedRowModel().rows;
-                          if (selectedRows.length === 1) {
-                            const singleRow = selectedRows[0];
-                            table.options.meta?.onDelete?.(singleRow);
-                          }
-                        }}
-                      >
-                        Supprimer la sélection
-                      </Button>
+                                    cell.column.getCanPin() && [
+                                      cell.column.getIsPinned() === "left" &&
+                                        "sticky z-2 ltr:left-0 rtl:right-0",
+                                      cell.column.getIsPinned() === "right" &&
+                                        "sticky z-2 ltr:right-0 rtl:left-0",
+                                    ],
+                                  )}
+                                >
+                                  {cell.column.getIsPinned() && (
+                                    <div
+                                      className={clsx(
+                                        "dark:border-dark-500 pointer-events-none absolute inset-0 border-gray-200",
+                                        cell.column.getIsPinned() === "left"
+                                          ? "ltr:border-r rtl:border-l"
+                                          : "ltr:border-l rtl:border-r",
+                                      )}
+                                    ></div>
+                                  )}
+                                  {flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext(),
+                                  )}
+                                </Td>
+                              );
+                            })}
+                        </Tr>
+                      );
+                    })}
+                  </TBody>
+                </Table>
+              </div>
+              {/* Floating Selected Rows Actions */}
+              <Transition
+                as={Fragment}
+                show={table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()}
+                enter="transition-all duration-200"
+                enterFrom="opacity-0 translate-y-4"
+                enterTo="opacity-100 translate-y-0"
+                leave="transition-all duration-150"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 translate-y-4"
+              >
+                <div className="pointer-events-none sticky inset-x-0 bottom-0 z-5 flex items-center justify-end">
+                  <div className="w-full max-w-xl px-2 py-4 sm:absolute sm:-translate-y-1/2 sm:px-4">
+                    <div className="dark:bg-dark-50 dark:text-dark-900 pointer-events-auto flex items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 sm:px-4 sm:py-3">
+                      <p>
+                        <span>{table.getSelectedRowModel().rows.length} Selected</span>
+                        <span className="max-sm:hidden">
+                          {" "}
+                          from {table.getCoreRowModel().rows.length}
+                        </span>
+                      </p>
+                      <div className="flex space-x-1.5">
+                        <Button
+                          onClick={openBulkModal}
+                          className="text-xs-plus w-7 gap-1.5 rounded-full px-3 py-1.5 sm:w-auto sm:rounded-sm"
+                          color="error"
+                          disabled={table.getSelectedRowModel().rows.length <= 0}
+                        >
+                          <TrashIcon className="size-4 shrink-0" />
+                          <span className="max-sm:hidden">Delete</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                )}
-
-                {species.meta && species.links ? (
-                  <BasePagination
-                    meta={species.meta}
-                    links={species.links}
-                    onPageChange={handlePageChange}
-                    onRowsPerPageChange={handleRowsPerPageChange}
-                    rowsPerPage={rowsPerPage}
-                  />
-                ) : (
-                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                    <p className="text-sm text-gray-500">
-                      Pagination data not available. Meta: {species.meta ? 'exists' : 'null'}, Links: {species.links ? 'exists' : 'null'}
-                    </p>
-                  </div>
-                )}
-              </Card>
-            </div>
+                </div>
+              </Transition>
+              {table.getCoreRowModel().rows.length && (
+                <div
+                  className={clsx(
+                    "px-4 pb-4 sm:px-5 sm:pt-4",
+                    tableSettings.enableFullScreen &&
+                      "dark:bg-dark-800 bg-gray-50",
+                    !(
+                      table.getIsSomeRowsSelected() ||
+                      table.getIsAllRowsSelected()
+                    ) && "pt-4",
+                  )}
+                >
+                  <PaginationSection table={table} />
+                </div>
+              )}
+            </Card>
           </div>
         </div>
+      </div>
+    </Page>
+    
+    <SpeciesFormModal
+      isOpen={isModalOpen}
+      onClose={() => {
+        setIsModalOpen(false);
+        setSelectedSpecies(null);
+      }}
+      species={selectedSpecies}
+    />
 
-        {/* Delete Confirmation Modal */}
-        <ConfirmModal
-          show={isDeleteModalOpen}
-          onClose={handleCancelDelete}
-          messages={messages}
-          onOk={handleDeleteSpecies}
-          confirmLoading={confirmLoading}
-          state={state}
-        />
-
-        {/* CRUD Modals */}
-        <SpeciesFormModal
-          isOpen={isCreateModalOpen}
-          onClose={closeCreateModal}
-          species={null}
-        />
-
-        <SpeciesFormModal
-          isOpen={isEditModalOpen}
-          onClose={closeEditModal}
-          species={selectedSpecies}
-        />
-      </Page>
-    </MainLayout>
+    <ConfirmModal
+      show={bulkDeleteModalOpen}
+      onClose={closeBulkModal}
+      messages={{
+        pending: {
+          description: `Are you sure you want to delete ${table.getSelectedRowModel().rows.length} selected species? Once deleted, they cannot be restored.`,
+        },
+        success: {
+          title: "Species Deleted",
+          description: `Successfully deleted ${table.getSelectedRowModel().rows.length} species.`,
+        },
+      }}
+      onOk={handleBulkDeleteRows}
+      confirmLoading={confirmBulkDeleteLoading}
+      state={bulkDeleteState}
+    />
+    </>
   );
 }

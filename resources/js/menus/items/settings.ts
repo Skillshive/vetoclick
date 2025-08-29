@@ -19,7 +19,7 @@ export const AnimalsMenu: MenuItem[] = [
             {
                 id: 'allAnimals',
                 title: 'Administration des races',
-                path:"",
+                path:route('species.index'),
                 type: 'item' as const,
                 // permission: 'view-breeds',
             }
