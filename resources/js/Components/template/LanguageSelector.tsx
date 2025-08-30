@@ -12,35 +12,41 @@ import { useState } from "react";
 // Local Imports
 import { Button, Spinner } from "@/components/ui";
 import { locales, LocaleCode } from "@/i18n/langs";
+import { useLocaleContext } from "@/contexts/locale/context";
 
 // ----------------------------------------------------------------------
 
 interface LanguageItem {
   value: LocaleCode;
   label: string;
+  native: string;
   flag: string;
 }
 
 const langs: LanguageItem[] = Object.keys(locales).map((key) => ({
   value: key as LocaleCode,
-  label: locales[key as LocaleCode].label,
+  label: locales[key as LocaleCode].name,
+  native: locales[key as LocaleCode].native,
   flag: locales[key as LocaleCode].flag,
 }));
 
 const LanguageSelector = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  // const { locale, updateLocale } = useLocaleContext();
+  const { locale, updateLocale } = useLocaleContext();
 
   const onLanguageSelect = async (lang: LocaleCode) => {
+    if (lang === locale) return; // Don't switch if already selected
+    
     setLoading(true);
     try {
       await updateLocale(lang);
-      setLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error('Language switch error:', error);
       setLoading(false);
     }
   };
+
+  const currentLang = langs.find(lang => lang.value === locale) || langs[0];
 
   return (
     <Listbox as="div" value={locale} onChange={onLanguageSelect}>
@@ -50,15 +56,12 @@ const LanguageSelector = () => {
           variant="flat"
           isIcon
           className="size-9 rounded-full"
+          disabled={loading}
         >
           {loading ? (
             <Spinner color="primary" className="size-5" />
           ) : (
-            <img
-              className="size-6"
-              src={`/images/flags/svg/rounded/${locales[locale as LocaleCode].flag}.svg`}
-              alt={locale}
-            />
+            <span className="text-lg">{currentLang.flag}</span>
           )}
         </ListboxButton>
         <Transition
@@ -87,13 +90,12 @@ const LanguageSelector = () => {
                 }
                 value={lang.value}
               >
-                <div className="flex space-x-3 rtl:space-x-reverse">
-                  <img
-                    className="size-5"
-                    src={`/images/flags/svg/rounded/${lang.flag}.svg`}
-                    alt={lang.value}
-                  />
-                  <span className="block truncate">{lang.label}</span>
+                <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                  <span className="text-lg">{lang.flag}</span>
+                  <div className="flex flex-col">
+                    <span className="block truncate font-medium">{lang.native}</span>
+                    <span className="block truncate text-xs opacity-70">{lang.label}</span>
+                  </div>
                 </div>
               </ListboxOption>
             ))}

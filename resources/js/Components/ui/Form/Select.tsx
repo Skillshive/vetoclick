@@ -13,6 +13,7 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 // Local Imports
 import { useId } from "@/hooks";
+import { useRTL } from "@/hooks/useRTL";
 import { InputErrorMsg } from "@/components/ui/Form/InputErrorMsg";
 // import { useThemeContext } from "@/app/contexts/theme/context";
 
@@ -104,6 +105,7 @@ const Select = ({
 }: SelectProps) => {
   const inputId = useId(id, "select");
   const selectRef = useRef<HTMLSelectElement>(null);
+  const { rtlClasses } = useRTL();
 //   const theme = useThemeContext();
 
   const options = useMemo(
@@ -145,7 +147,7 @@ const Select = ({
       {label && (
         <label
           htmlFor={inputId}
-          className={clsx("input-label", classNames.label)}
+          className={clsx("input-label", rtlClasses.textStart, classNames.label)}
           {...labelProps}
         >
           <span className={clsx("input-label", classNames.labelText)}>
@@ -222,6 +224,7 @@ const Select = ({
         <span
           className={clsx(
             "input-description dark:text-dark-300 mt-1 text-xs text-gray-400",
+            rtlClasses.textStart,
             classNames.description,
           )}
         >

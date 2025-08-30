@@ -12,6 +12,7 @@ import {  TbUser } from "react-icons/tb";
 import { Link, router, usePage } from "@inertiajs/react";
 
 import { Avatar, AvatarDot, Button } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ColorType } from "@/constants/app";
 
 interface LinkItem {
@@ -25,16 +26,18 @@ interface LinkItem {
 
 export function Profile() {
   const { auth } = usePage().props;
+  const { t } = useTranslation();
   const user = auth?.user.data;
   
   const avatarUrl = user?.image ? `/storage/${user.image}` : "/assets/profile.jpeg";
-  const fullName = user ? `${user.firstname} ${user.lastname}` : "Utilisateur";
-  const role = user?.roles[0]?.name || "Utilisateur";
+  const fullName = user ? `${user.firstname} ${user.lastname}` : t('common.user');
+  const role = user?.roles[0]?.name || t('common.user');
+  
   const links: LinkItem[] = [
     {
       id: "1",
-      title: "Profil",
-      description: "Paramètres de votre profil",
+      title: t('common.profile'),
+      description: t('common.profile_settings'),
       to: "/profile",
       Icon: TbUser,
       color: "warning",
@@ -55,7 +58,7 @@ export function Profile() {
         size={12}
         role="button"
         src={avatarUrl}
-        alt="Profile"
+        alt={t('common.profile')}
         indicator={<AvatarDot color="success" className="ltr:right-0 rtl:left-0" />}
         className="cursor-pointer"
       />
@@ -75,7 +78,7 @@ export function Profile() {
             <>
               {/* User Info */}
               <div className="flex items-center gap-4 rounded-t-lg bg-gray-100 px-4 py-5 dark:bg-dark-800">
-                <Avatar size={14} src={avatarUrl} alt="Profile" />
+                <Avatar size={14} src={avatarUrl} alt={t('common.profile')} />
                 <div>
                   <Link
                     className="text-base font-medium text-gray-700 hover:text-primary-600 focus:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 dark:focus:text-primary-400"
@@ -121,7 +124,7 @@ export function Profile() {
                     onClick={() => router.post('/logout')}
                   >
                     <ArrowLeftStartOnRectangleIcon className="size-4.5" />
-                    <span>Logout</span>
+                    <span>{t('common.logout')}</span>
                   </Button>
                 </div>
               </div>

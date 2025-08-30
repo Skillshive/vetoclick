@@ -59,13 +59,13 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         messages={{
           pending: {
             Icon: (options?.icon as React.ComponentType<any>) || ExclamationTriangleIcon,
-            title: options?.title || "Êtes-vous sûr ?",
+            title: options?.title || "Are you sure?",
             description: options?.message || "",
-            actionText: options?.confirmLabel || "Confirmer",
+            actionText: options?.confirmLabel || "Confirm",
           },
         }}
         confirmLoading={false}
       />
     </ConfirmContext.Provider>
   );
-} 
+}

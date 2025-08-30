@@ -5,6 +5,7 @@ import invariant from "tiny-invariant";
 
 // Local Imports
 import { Button, Checkbox, Switch } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -18,6 +19,7 @@ export interface TableSettings {
 export function TableSettings({ table }: { table: Table<any> }) {
   const tableSettings = table.getState().tableSettings;
   const setTableSettings = table.options.meta?.setTableSettings;
+  const { t } = useTranslation();
 
   invariant(tableSettings, "tableSettings is required");
   invariant(setTableSettings, "setTableSettings is required");
@@ -31,7 +33,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
             "enableFullScreen",
           ) && (
             <Switch
-              label="Full Screen"
+              label={t('common.full_screen')}
               checked={tableSettings.enableFullScreen}
               onChange={(e) =>
                 setTableSettings((state) => ({
@@ -47,7 +49,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
             "enableRowDense",
           ) && (
             <Switch
-              label="Row Dense"
+              label={t('common.row_dense')}
               checked={tableSettings.enableRowDense}
               onChange={(e) =>
                 setTableSettings((state) => ({
@@ -63,7 +65,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
             "enableColumnFilters",
           ) && (
             <Switch
-              label="Column Filters"
+              label={t('common.column_filters')}
               checked={tableSettings.enableColumnFilters}
               onChange={(e) => {
                 setTableSettings((state) => ({
@@ -81,7 +83,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
             "enableSorting",
           ) && (
             <Switch
-              label="Sort"
+              label={t('common.sort')}
               checked={tableSettings.enableSorting}
               onChange={(e) => {
                 setTableSettings((state) => ({
@@ -96,8 +98,8 @@ export function TableSettings({ table }: { table: Table<any> }) {
         </div>
       )}
 
-      <div className="flex items-center space-x-2 px-3">
-        <p className="text-tiny uppercase">column visibility</p>
+      <div className="flex items-center space-x-2 rtl:space-x-reverse px-3">
+        <p className="text-tiny uppercase">{t('common.column_visibility')}</p>
         <hr className="dark:border-dark-500 flex-1 border-gray-300" />
       </div>
 
@@ -105,60 +107,70 @@ export function TableSettings({ table }: { table: Table<any> }) {
         {table
           .getAllLeafColumns()
           .filter((column) => !column.columnDef?.isHiddenColumn)
-          .map((column) => (
-            <div
-              className="flex items-center justify-between ltr:-mr-2 rtl:-ml-2"
-              key={column.id}
-            >
-              <Checkbox
-                label={column?.columnDef?.label || column.id}
-                checked={column.getIsVisible()}
-                onChange={column.getToggleVisibilityHandler()}
-                className="size-4.5"
-              />
-              {column.getCanPin() &&
-                (column.getIsPinned() ? (
-                  <Button
-                    onClick={() => column.pin(false)}
-                    variant="flat"
-                    className="size-6 rounded-full"
-                    isIcon
-                    title="UnPin Column"
-                    aria-label="UnPin Column"
-                  >
-                    <TbPinnedOff className="size-4" />
-                  </Button>
-                ) : (
-                  <div className="flex">
+          .map((column) => {
+            // Get the translated column label
+            let columnLabel = column.id;
+            if (typeof column?.columnDef?.header === 'string') {
+              columnLabel = column.columnDef.header;
+            } else if (column?.columnDef?.label) {
+              columnLabel = column.columnDef.label;
+            }
+            
+            return (
+              <div
+                className="flex items-center justify-between ltr:-mr-2 rtl:-ml-2"
+                key={column.id}
+              >
+                <Checkbox
+                  label={columnLabel}
+                  checked={column.getIsVisible()}
+                  onChange={column.getToggleVisibilityHandler()}
+                  className="size-4.5"
+                />
+                {column.getCanPin() &&
+                  (column.getIsPinned() ? (
                     <Button
-                      onClick={() => {
-                        column.pin("left");
-                      }}
+                      onClick={() => column.pin(false)}
                       variant="flat"
-                      className="size-6 rounded-full rtl:rotate-180"
+                      className="size-6 rounded-full"
                       isIcon
-                      title="Pin Left"
-                      aria-label="Pin Left"
+                      title={t('common.unpin_column')}
+                      aria-label={t('common.unpin_column')}
                     >
-                      <TbPinned className="size-4 rotate-90" />
+                      <TbPinnedOff className="size-4" />
                     </Button>
+                  ) : (
+                    <div className="flex">
+                      <Button
+                        onClick={() => {
+                          column.pin("left");
+                        }}
+                        variant="flat"
+                        className="size-6 rounded-full rtl:rotate-180"
+                        isIcon
+                        title={t('common.pin_left')}
+                        aria-label={t('common.pin_left')}
+                      >
+                        <TbPinned className="size-4 rotate-90" />
+                      </Button>
 
-                    <Button
-                      onClick={() => {
-                        column.pin("right");
-                      }}
-                      variant="flat"
-                      className="size-6 -rotate-90 rounded-full"
-                      isIcon
-                      title="Pin Right"
-                      aria-label="Pin Right"
-                    >
-                      <TbPinned className="size-4 rtl:rotate-180" />
-                    </Button>
-                  </div>
-                ))}
-            </div>
-          ))}
+                      <Button
+                        onClick={() => {
+                          column.pin("right");
+                        }}
+                        variant="flat"
+                        className="size-6 -rotate-90 rounded-full"
+                        isIcon
+                        title={t('common.pin_right')}
+                        aria-label={t('common.pin_right')}
+                      >
+                        <TbPinned className="size-4 rtl:rotate-180" />
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            );
+          })}
       </div>
 
       <Button
@@ -166,7 +178,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
         className="text-xs-plus dark:border-dark-500 h-9 w-full shrink-0 rounded-t-none border-t border-gray-300 leading-none"
         onClick={() => table.resetColumnVisibility()}
       >
-        Show All Columns
+        {t('common.show_all_columns')}
       </Button>
     </>
   );

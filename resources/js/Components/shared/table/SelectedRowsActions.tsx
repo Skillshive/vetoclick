@@ -21,6 +21,7 @@ import invariant from "tiny-invariant";
 
 // Local Imports
 import { Button, GhostSpinner } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -32,6 +33,7 @@ export function SelectedRowsActions({
   height?: number;
 }) {
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const { t } = useTranslation();
   const selectedRows = table.getSelectedRowModel().rows;
 
   const handleDeleteRows = () => {
@@ -57,13 +59,13 @@ export function SelectedRowsActions({
     >
       <div className="flex h-full items-center justify-between rounded-t-lg px-4 sm:px-5">
         <p className="font-medium">
-          <span>{selectedRows.length} Selected</span>
+          <span>{selectedRows.length} {t('common.selected')}</span>
           <span className="max-sm:hidden">
             {" "}
-            from {table.getCoreRowModel().rows.length}
+            {t('common.from')} {table.getCoreRowModel().rows.length}
           </span>
         </p>
-        <div className="flex space-x-1.5">
+        <div className="flex space-x-1.5 rtl:space-x-reverse">
           <Button
             onClick={handleDeleteRows}
             className="text-xs-plus w-7 gap-1.5 rounded-full px-3 py-1.5 sm:w-auto sm:rounded-sm"
@@ -80,14 +82,14 @@ export function SelectedRowsActions({
             ) : (
               <TrashIcon className="size-4 shrink-0" />
             )}
-            <span className="max-sm:hidden">Delete</span>
+            <span className="max-sm:hidden">{t('common.delete')}</span>
           </Button>
           <Button
             onClick={() => table.resetRowSelection()}
             className="text-xs-plus w-7 gap-1.5 rounded-full px-3 py-1.5 sm:w-auto sm:rounded-sm"
           >
             <ArrowUturnLeftIcon className="size-3.5 shrink-0" />
-            <span className="max-sm:hidden">Cancel</span>
+            <span className="max-sm:hidden">{t('common.cancel')}</span>
           </Button>
           <Menu as="div" className="relative inline-block text-left">
             <MenuButton
@@ -95,7 +97,7 @@ export function SelectedRowsActions({
               className="text-xs-plus w-7 gap-1.5 rounded-full px-3 py-1.5 sm:w-auto sm:rounded-sm"
             >
               <EllipsisHorizontalIcon className="size-4 shrink-0" />
-              <span className="max-sm:hidden"> More</span>{" "}
+              <span className="max-sm:hidden">{t('common.more')}</span>{" "}
             </MenuButton>
             <Transition
               as={Fragment}
@@ -111,13 +113,13 @@ export function SelectedRowsActions({
                   {({ focus }) => (
                     <button
                       className={clsx(
-                        "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                        "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                         focus &&
                           "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                       )}
                     >
                       <ArrowUpTrayIcon className="size-4.5" />
-                      <span>Export CVS</span>
+                      <span>{t('common.export_csv')}</span>
                     </button>
                   )}
                 </MenuItem>
@@ -125,13 +127,13 @@ export function SelectedRowsActions({
                   {({ focus }) => (
                     <button
                       className={clsx(
-                        "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                        "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                         focus &&
                           "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                       )}
                     >
                       <ArrowUpTrayIcon className="size-4.5" />
-                      <span>Export PDF</span>
+                      <span>{t('common.export_pdf')}</span>
                     </button>
                   )}
                 </MenuItem>
@@ -139,13 +141,13 @@ export function SelectedRowsActions({
                   {({ focus }) => (
                     <button
                       className={clsx(
-                        "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                        "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                         focus &&
                           "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                       )}
                     >
                       <CiViewTable className="size-4.5" />
-                      <span>Save as view</span>
+                      <span>{t('common.save_as_view')}</span>
                     </button>
                   )}
                 </MenuItem>
@@ -153,13 +155,13 @@ export function SelectedRowsActions({
                   {({ focus }) => (
                     <button
                       className={clsx(
-                        "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                        "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                         focus &&
                           "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                       )}
                     >
                       <PrinterIcon className="size-4.5" />
-                      <span>Print</span>
+                      <span>{t('common.print')}</span>
                     </button>
                   )}
                 </MenuItem>

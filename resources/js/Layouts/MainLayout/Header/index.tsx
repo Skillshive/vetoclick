@@ -8,7 +8,7 @@ import { Search } from "@/components/template/Search";
 import { Button } from "@/components/ui";
 import { Notifications } from "@/components/template/Notifications";
 import { RightSidebar } from "@/components/template/RightSidebar";
-// import { LanguageSelector } from "@/components/template/LanguageSelector";
+import { LanguageSelector } from "@/components/template/LanguageSelector";
 import { SidebarToggleBtn } from "@/components/shared/SidebarToggleBtn";
 import { useThemeContext } from "@/contexts/theme/context";
 
@@ -75,8 +75,8 @@ export function Header() {
           )}
         />
         {/* <Notifications /> */}
+        <LanguageSelector />
         <RightSidebar />
-        {/* <LanguageSelector /> */}
       </div>
     </header>
   );

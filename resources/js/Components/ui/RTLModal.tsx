@@ -8,21 +8,41 @@ import {
 import { Fragment, ReactNode, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
+
+// Local Imports
 import { Button } from "@/components/ui";
 import { useRTL } from "@/hooks/useRTL";
 
-interface ModalProps {
+interface RTLModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: ReactNode;
   children: ReactNode;
   actions?: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  className?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, actions }: ModalProps) {
+export function RTLModal({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children, 
+  actions, 
+  size = 'md',
+  className 
+}: RTLModalProps) {
   const closeRef = useRef(null);
   const { isRtl, rtlClasses } = useRTL();
-  
+
+  const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    full: 'max-w-full mx-4'
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -54,8 +74,10 @@ export function Modal({ isOpen, onClose, title, children, actions }: ModalProps)
         >
           <DialogPanel 
             className={clsx(
-              "dark:bg-dark-700 relative flex w-full max-w-lg origin-top flex-col overflow-hidden rounded-lg bg-white transition-all duration-300",
-              isRtl && "rtl"
+              "dark:bg-dark-700 relative flex w-full origin-top flex-col overflow-hidden rounded-lg bg-white transition-all duration-300",
+              sizeClasses[size],
+              isRtl && "rtl",
+              className
             )}
             dir={isRtl ? 'rtl' : 'ltr'}
           >
@@ -109,4 +131,4 @@ export function Modal({ isOpen, onClose, title, children, actions }: ModalProps)
   );
 }
 
-export default Modal; 
+export default RTLModal;

@@ -15,6 +15,7 @@ import { ElementType, useRef } from "react";
 
 // Local Imports
 import { Button, GhostSpinner } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import { AnimatedTick } from "./AnimatedTick";
 import { Modal } from "@/components/ui/Modal";
 
@@ -48,32 +49,6 @@ export type ConfirmMessages = {
   [K in ModalState]?: Partial<MessageConfig>;
 };
 
-const defaultMessages: Messages = {
-  pending: {
-    Icon: ExclamationTriangleIcon,
-    iconClassName: "text-warning",
-    title: "Are you sure?",
-    description:
-      "Are you sure you want to delete this record? Once deleted, it cannot be restored.",
-    actionText: "Delete",
-  },
-  success: {
-    Icon: AnimatedTick,
-    iconClassName: "text-success",
-    title: "Record Deleted",
-    description: "You have successfully deleted the record from the database.",
-    actionText: "Done",
-  },
-  error: {
-    Icon: XCircleIcon,
-    title: "Opps... Something failed.",
-    description:
-      "Ensure internet is on and retry. Contact support if issue remains.",
-    actionText: "Retry",
-    iconClassName: "text-error",
-  },
-};
-
 export function ConfirmModal({
   show,
   onClose,
@@ -84,22 +59,55 @@ export function ConfirmModal({
   messages,
 }: ConfirmProps & { show: boolean; className?: string }) {
   const focusRef = useRef<HTMLButtonElement>(null);
+  const { t } = useTranslation();
+
+  // Fallback translations for when translation system is not available
+  const fallbackTranslations = {
+    'common.are_you_sure': 'Are you sure?',
+    'common.confirm_delete_default': 'Are you sure you want to delete this record? Once deleted, it cannot be restored.',
+    'common.delete': 'Delete',
+    'common.deleted': 'Deleted',
+    'common.delete_success_default': 'You have successfully deleted the record from the database.',
+    'common.done': 'Done',
+    'common.error_occurred': 'Oops... Something failed.',
+    'common.error_description': 'Ensure internet is on and retry. Contact support if issue remains.',
+    'common.retry': 'Retry',
+    'common.cancel': 'Cancel',
+  };
+
+  const safeT = (key: string) => {
+    const translation = t(key);
+    // If translation returns the key itself (meaning no translation found), use fallback
+    return translation === key ? (fallbackTranslations[key] || key) : translation;
+  };
+
+  const defaultMessages: Messages = {
+    pending: {
+      Icon: ExclamationTriangleIcon,
+      iconClassName: "text-warning",
+      title: safeT('common.are_you_sure'),
+      description: safeT('common.confirm_delete_default'),
+      actionText: safeT('common.delete'),
+    },
+    success: {
+      Icon: AnimatedTick,
+      iconClassName: "text-success",
+      title: safeT('common.deleted'),
+      description: safeT('common.delete_success_default'),
+      actionText: safeT('common.done'),
+    },
+    error: {
+      Icon: XCircleIcon,
+      title: safeT('common.error_occurred'),
+      description: safeT('common.error_description'),
+      actionText: safeT('common.retry'),
+      iconClassName: "text-error",
+    },
+  };
 
   const mergedMessages = merge(defaultMessages, messages);
   const Icon = mergedMessages[state].Icon;
   const spinner = <GhostSpinner variant="soft" className="size-4 border-2 mr-2" />;
-
-  // Header title and close button
-  const title = (
-    <div className="flex items-center gap-3">
-      {state === "pending" && (
-        <span className="inline-flex items-center justify-center rounded-full bg-primary/10 dark:bg-dark-600 p-3">
-          <Icon className={clsx("size-7", mergedMessages[state].iconClassName)} />
-        </span>
-      )}
-      <span className="font-semibold text-lg text-gray-900 dark:text-dark-100 tracking-tight">{mergedMessages[state].title}</span>
-    </div>
-  );
 
   // Actions area
   let actions = null;
@@ -113,7 +121,7 @@ export function ConfirmModal({
     actions = (
       <div className="flex gap-3 justify-end">
         <Button onClick={onClose} variant="outlined" className="h-10 min-w-[8rem] rounded-full">
-          Cancel
+          {safeT('common.cancel')}
         </Button>
         <Button
           ref={focusRef}
@@ -131,7 +139,7 @@ export function ConfirmModal({
     actions = (
       <div className="flex gap-3 justify-end">
         <Button onClick={onClose} variant="outlined" className="h-10 min-w-[8rem] rounded-full">
-          Cancel
+          {safeT('common.cancel')}
         </Button>
         <Button
           onClick={onOk}
@@ -184,6 +192,52 @@ function Confirm({
   onClose,
   focusRef,
 }: ConfirmProps & { focusRef: React.RefObject<HTMLButtonElement | null> }) {
+  const { t } = useTranslation();
+  
+  // Fallback translations for when translation system is not available
+  const fallbackTranslations = {
+    'common.are_you_sure': 'Are you sure?',
+    'common.confirm_delete_default': 'Are you sure you want to delete this record? Once deleted, it cannot be restored.',
+    'common.delete': 'Delete',
+    'common.deleted': 'Deleted',
+    'common.delete_success_default': 'You have successfully deleted the record from the database.',
+    'common.done': 'Done',
+    'common.error_occurred': 'Oops... Something failed.',
+    'common.error_description': 'Ensure internet is on and retry. Contact support if issue remains.',
+    'common.retry': 'Retry',
+    'common.cancel': 'Cancel',
+  };
+
+  const safeT = (key: string) => {
+    const translation = t(key);
+    // If translation returns the key itself (meaning no translation found), use fallback
+    return translation === key ? (fallbackTranslations[key] || key) : translation;
+  };
+  
+  const defaultMessages: Messages = {
+    pending: {
+      Icon: ExclamationTriangleIcon,
+      iconClassName: "text-warning",
+      title: safeT('common.are_you_sure'),
+      description: safeT('common.confirm_delete_default'),
+      actionText: safeT('common.delete'),
+    },
+    success: {
+      Icon: AnimatedTick,
+      iconClassName: "text-success",
+      title: safeT('common.deleted'),
+      description: safeT('common.delete_success_default'),
+      actionText: safeT('common.done'),
+    },
+    error: {
+      Icon: XCircleIcon,
+      title: safeT('common.error_occurred'),
+      description: safeT('common.error_description'),
+      actionText: safeT('common.retry'),
+      iconClassName: "text-error",
+    },
+  };
+
   const mergedMessages = merge(defaultMessages, messages);
   const Icon = mergedMessages[state].Icon;
   const spinner = <GhostSpinner variant="soft" className="size-4 border-2" />;
@@ -219,7 +273,7 @@ function Confirm({
               variant="outlined"
               className="h-9 min-w-[7rem]"
             >
-              Cancel
+              {safeT('common.cancel')}
             </Button>
 
             {state === "pending" && (

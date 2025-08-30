@@ -13,12 +13,14 @@ import { Column } from "@tanstack/react-table";
 
 // Local Imports
 import { Button, Checkbox, Input } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import { DatePicker } from "../form/Datepicker";
 
 // ----------------------------------------------------------------------
 
 export function ColumnFilter({ column }: { column: Column<any> }) {
   const columnFilterValue = column.getFilterValue() as any;
+  const { t } = useTranslation();
 
   if (column.columnDef.filterColumn === "dateRange") {
     return (
@@ -53,7 +55,7 @@ export function ColumnFilter({ column }: { column: Column<any> }) {
             ) : undefined
           }
           className="text-xs-plus min-w-[8rem] rounded-none border-0 border-b px-0 pb-1.5 ltr:pr-5! rtl:pl-5!"
-          placeholder="Date Range"
+          placeholder={t('common.date_range')}
         />
       </div>
     );
@@ -68,7 +70,7 @@ export function ColumnFilter({ column }: { column: Column<any> }) {
           onChange={(e) =>
             column.setFilterValue((old: any) => [e.target.value, old?.[1]])
           }
-          placeholder="Min"
+          placeholder={t('common.min')}
           classNames={{
             root: "mt-0.5",
             input:
@@ -81,7 +83,7 @@ export function ColumnFilter({ column }: { column: Column<any> }) {
           onChange={(e) =>
             column.setFilterValue((old: any) => [old?.[0], e.target.value])
           }
-          placeholder="Max"
+          placeholder={t('common.max')}
           classNames={{
             root: "mt-0.5",
             input:
@@ -121,7 +123,7 @@ export function ColumnFilter({ column }: { column: Column<any> }) {
                   </span>
                 ) : (
                   <span className="dark:text-dark-200 font-light text-gray-600">
-                    Select Value
+                    {t('common.select_value')}
                   </span>
                 )}
 
@@ -150,7 +152,7 @@ export function ColumnFilter({ column }: { column: Column<any> }) {
                       key={item.value}
                       className={({ focus }) =>
                         clsx(
-                          "dark:text-dark-100 relative flex cursor-pointer items-center justify-between space-x-2 px-3 py-2 text-gray-800 outline-hidden transition-colors select-none",
+                          "dark:text-dark-100 relative flex cursor-pointer items-center justify-between space-x-2 rtl:space-x-reverse px-3 py-2 text-gray-800 outline-hidden transition-colors select-none",
                           focus && "dark:bg-dark-600 bg-gray-100",
                         )
                       }
@@ -180,7 +182,7 @@ export function ColumnFilter({ column }: { column: Column<any> }) {
       type="text"
       value={columnFilterValue ?? ""}
       onChange={(e) => column.setFilterValue(e.target.value)}
-      placeholder="Search..."
+      placeholder={t('common.search') + '...'}
       classNames={{
         root: "mt-0.5",
         input:

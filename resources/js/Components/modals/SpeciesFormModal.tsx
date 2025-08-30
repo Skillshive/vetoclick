@@ -4,6 +4,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@
 import { Button, Input, Textarea } from '@/components/ui';
 import { Species, SpeciesFormData } from '@/types/Species';
 import { useToast } from '@/components/common/Toast/ToastContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 // Declare route helper
@@ -18,6 +19,7 @@ interface SpeciesFormModalProps {
 
 export default function SpeciesFormModal({ isOpen, onClose, species, errors }: SpeciesFormModalProps) {
     const { showToast } = useToast();
+    const { t } = useTranslation();
     const isEditing = !!species;
     
     const { data, setData, post, put, processing, reset } = useForm<SpeciesFormData>({
@@ -45,7 +47,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                 onSuccess: () => {
                     showToast({
                         type: 'success',
-                        message: 'Espèce mise à jour avec succès',
+                        message: t('common.species_updated'),
                         duration: 3000,
                     });
                     onClose();
@@ -53,7 +55,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                 onError: () => {
                     showToast({
                         type: 'error',
-                        message: 'Erreur lors de la mise à jour de l\'espèce',
+                        message: t('common.error'),
                         duration: 3000,
                     });
                 }
@@ -64,7 +66,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                 onSuccess: () => {
                     showToast({
                         type: 'success',
-                        message: 'Espèce créée avec succès',
+                        message: t('common.species_created'),
                         duration: 3000,
                     });
                     reset();
@@ -73,7 +75,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                 onError: () => {
                     showToast({
                         type: 'error',
-                        message: 'Erreur lors de la création de l\'espèce',
+                        message: t('common.error'),
                         duration: 3000,
                     });
                 }
@@ -113,7 +115,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                             <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
                                 <div className="flex items-center justify-between mb-4">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        {isEditing ? 'Modifier l\'espèce' : 'Nouvelle espèce'}
+                                        {isEditing ? t('common.edit_species') : t('common.create_species')}
                                     </DialogTitle>
                                     <button
                                         onClick={handleClose}
@@ -125,22 +127,22 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
 
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                                     {isEditing 
-                                        ? `Modifiez les informations de l'espèce "${species.name}"`
-                                        : 'Créez une nouvelle espèce d\'animal dans le système'
+                                        ? t('common.edit_species_info') + ` "${species.name}"`
+                                        : t('common.create_new_species')
                                     }
                                 </p>
 
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
                                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Nom de l'espèce *
+                                            {t('common.species_name')} *
                                         </label>
                                         <Input
                                             id="name"
                                             type="text"
                                             value={data.name}
                                             onChange={(e) => setData('name', e.target.value)}
-                                            placeholder="Ex: Chien, Chat, Oiseau..."
+                                            placeholder={t('common.species_name')}
                                             className={errors?.name ? 'border-red-500' : ''}
                                             required
                                         />
@@ -151,13 +153,13 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
 
                                     <div>
                                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Description
+                                            {t('common.species_description')}
                                         </label>
                                         <Textarea
                                             id="description"
                                             value={data.description || ''}
                                             onChange={(e) => setData('description', e.target.value)}
-                                            placeholder="Description de l'espèce (optionnel)"
+                                            placeholder={t('common.species_description')}
                                             rows={3}
                                             className={errors?.description ? 'border-red-500' : ''}
                                         />
@@ -173,7 +175,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                                             onClick={handleClose}
                                             disabled={processing}
                                         >
-                                            Annuler
+                                            {t('common.cancel')}
                                         </Button>
                                         <Button
                                             type="submit"
@@ -181,8 +183,8 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                                             className="bg-blue-600 hover:bg-blue-700"
                                         >
                                             {processing 
-                                                ? (isEditing ? 'Mise à jour...' : 'Création...') 
-                                                : (isEditing ? 'Mettre à jour' : 'Créer')
+                                                ? (isEditing ? t('common.updating') + '...' : t('common.creating') + '...') 
+                                                : (isEditing ? t('common.update') : t('common.create'))
                                             }
                                         </Button>
                                     </div>
