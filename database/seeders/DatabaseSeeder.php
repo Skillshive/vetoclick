@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
 
         User::updateOrCreate(
             ['email' => 'test@example.com'],
-            ['name' => 'Test User', 'password' => bcrypt('password')]
+            ['name' => 'Test User', 'password' => bcrypt('Password1234!')]
         );
 
         // Seed species and breeds from JSON files
