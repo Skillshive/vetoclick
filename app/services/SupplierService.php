@@ -27,6 +27,14 @@ class SupplierService implements ServiceInterface
     }
 
     /**
+     * Get supplier by UUID
+     */
+    public function getByUuid(string $uuid): ?Supplier
+    {
+        return Supplier::where('uuid', $uuid)->first();
+    }
+
+    /**
      * Create new supplier from DTO
      */
     public function create(SupplierDto $dto): Supplier
@@ -46,6 +54,31 @@ class SupplierService implements ServiceInterface
     {
         try {
             $supplier = $this->getById($id);
+            
+            if (!$supplier) {
+                return null;
+            }
+
+            $updateData = $dto->toUpdateArray();
+            
+            if (empty($updateData)) {
+                return $supplier;
+            }
+
+            $supplier->update($updateData);
+            return $supplier->fresh();
+        } catch (Exception $e) {
+            throw new Exception("Failed to update supplier: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update supplier by UUID from DTO
+     */
+    public function updateByUuid(string $uuid, SupplierDto $dto): ?Supplier
+    {
+        try {
+            $supplier = $this->getByUuid($uuid);
             
             if (!$supplier) {
                 return null;

@@ -13,7 +13,7 @@ export interface MenuItem {
     level?: number; // Track nesting level
 }
 
-export const getMenuByRole = (role: string): MenuItem[] => {
+export const getMenuByRole = (role?: string): MenuItem[] => {
     // if (role === 'guest') {
     //     return [];
     // }

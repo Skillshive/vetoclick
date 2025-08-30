@@ -1,0 +1,223 @@
+import { useState } from "react";
+import clsx from "clsx";
+import {
+  EllipsisHorizontalIcon,
+  EyeIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from "@headlessui/react";
+import { Button } from "@/components/ui";
+import {
+  ConfirmModal,
+  type ConfirmMessages,
+} from "@/components/shared/ConfirmModal";
+import { Supplier } from "./types";
+
+interface CellProps {
+  getValue: () => any;
+}
+
+interface ActionsCellProps {
+  row: any;
+  table: any;
+  setSelectedSupplier: (supplier: Supplier | null) => void;
+  setIsModalOpen: (open: boolean) => void;
+}
+
+export function SupplierNameCell({ getValue }: CellProps) {
+  return (
+    <div className="flex max-w-xs items-center space-x-4 2xl:max-w-sm">
+      <div className="min-w-0">
+        <p className="truncate">
+          <a
+            href="##"
+            className="hover:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors"
+          >
+            {getValue()}
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function EmailCell({ getValue }: CellProps) {
+  const email = getValue();
+  return (
+    <div className="max-w-xs">
+      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+        {email || "No email"}
+      </p>
+    </div>
+  );
+}
+
+export function PhoneCell({ getValue }: CellProps) {
+  const phone = getValue();
+  return (
+    <div className="max-w-xs">
+      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+        {phone || "No phone"}
+      </p>
+    </div>
+  );
+}
+
+export function AddressCell({ getValue }: CellProps) {
+  const address = getValue();
+  return (
+    <div className="max-w-xs">
+      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+        {address || "No address"}
+      </p>
+    </div>
+  );
+}
+
+export function CreatedAtCell({ getValue }: CellProps) {
+  const createdAt = getValue();
+  const formattedDate = new Date(createdAt).toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  
+  return (
+    <div className="text-sm text-gray-600 dark:text-gray-400">
+      {formattedDate}
+    </div>
+  );
+}
+
+export function ActionsCell({ row, table, setSelectedSupplier, setIsModalOpen }: ActionsCellProps) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
+
+  const confirmMessages: ConfirmMessages = {
+    pending: {
+      description:
+        "Are you sure you want to delete this supplier? Once deleted, it cannot be restored.",
+    },
+    success: {
+      title: "Supplier Deleted",
+      description: "Successfully deleted the supplier.",
+    },
+  };
+
+  const closeModal = () => {
+    setDeleteModalOpen(false);
+  };
+
+  const openModal = () => {
+    setDeleteModalOpen(true);
+    setDeleteError(false);
+    setDeleteSuccess(false);
+  };
+
+  const handleDeleteRow = () => {
+    setConfirmDeleteLoading(true);
+    setTimeout(() => {
+      table.options.meta?.deleteRow?.(row);
+      setDeleteSuccess(true);
+      setConfirmDeleteLoading(false);
+    }, 1000);
+  };
+
+  const state = deleteError ? "error" : deleteSuccess ? "success" : "pending";
+
+  return (
+    <>
+      <div className="flex justify-center">
+        <Menu as="div" className="relative inline-block text-left">
+          <MenuButton
+            as={Button}
+            variant="flat"
+            isIcon
+            className="size-7 rounded-full"
+          >
+            <EllipsisHorizontalIcon className="size-4.5" />
+          </MenuButton>
+          <Transition
+            as={MenuItems}
+            enter="transition ease-out"
+            enterFrom="opacity-0 translate-y-2"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition ease-in"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 translate-y-2"
+            className="dark:border-dark-500 dark:bg-dark-750 absolute z-100 mt-1.5 min-w-[10rem] rounded-lg border border-gray-300 bg-white py-1 shadow-lg shadow-gray-200/50 outline-hidden focus-visible:outline-hidden ltr:right-0 rtl:left-0 dark:shadow-none"
+          >
+            <MenuItem>
+              {({ focus }) => (
+                <button
+                  onClick={() => {
+                    setSelectedSupplier(row.original);
+                    setIsModalOpen(true);
+                  }}
+                  className={clsx(
+                    "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                    focus &&
+                      "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
+                  )}
+                >
+                  <EyeIcon className="size-4.5 stroke-1" />
+                  <span>View</span>
+                </button>
+              )}
+            </MenuItem>
+            <MenuItem>
+              {({ focus }) => (
+                <button
+                  onClick={() => {
+                    setSelectedSupplier(row.original);
+                    setIsModalOpen(true);
+                  }}
+                  className={clsx(
+                    "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                    focus &&
+                      "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
+                  )}
+                >
+                  <PencilIcon className="size-4.5 stroke-1" />
+                  <span>Edit</span>
+                </button>
+              )}
+            </MenuItem>
+            <MenuItem>
+              {({ focus }) => (
+                <button
+                  onClick={openModal}
+                  className={clsx(
+                    "this:error text-this dark:text-this-light flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                    focus && "bg-this/10 dark:bg-this-light/10",
+                  )}
+                >
+                  <TrashIcon className="size-4.5 stroke-1" />
+                  <span>Delete</span>
+                </button>
+              )}
+            </MenuItem>
+          </Transition>
+        </Menu>
+      </div>
+
+      <ConfirmModal
+        show={deleteModalOpen}
+        onClose={closeModal}
+        messages={confirmMessages}
+        onOk={handleDeleteRow}
+        confirmLoading={confirmDeleteLoading}
+        state={state}
+      />
+    </>
+  );
+}

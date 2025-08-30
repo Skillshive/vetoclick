@@ -25,6 +25,22 @@ export const AnimalsMenu: MenuItem[] = [
             }
         ]
     },
+    {
+        id: 'suppliers',
+        title: 'Gestion des fournisseurs',
+        icon: 'suppliers',
+        type: 'group' as const,
+        // permissions: ['view-suppliers'],
+        submenu: [
+            {
+                id: 'allSuppliers',
+                title: 'Liste des fournisseurs',
+                path: route('suppliers.index'),
+                type: 'item' as const,
+                // permission: 'view-suppliers',
+            }
+        ]
+    },
 ];
 
 export default AnimalsMenu;
