@@ -5,6 +5,7 @@ import { Button, Input, Textarea } from '@/components/ui';
 import { Species, SpeciesFormData } from '@/types/Species';
 import { useToast } from '@/components/common/Toast/ToastContext';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { PawPrintIcon } from 'lucide-react';
 
 // Declare route helper
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
@@ -143,6 +144,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                                             placeholder="Ex: Chien, Chat, Oiseau..."
                                             className={errors?.name ? 'border-red-500' : ''}
                                             required
+                                            leftIcon={<PawPrintIcon className="size-5" />}
                                         />
                                         {errors?.name && (
                                             <p className="text-red-500 text-sm mt-1">{errors.name}</p>
