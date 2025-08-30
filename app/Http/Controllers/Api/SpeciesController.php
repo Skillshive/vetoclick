@@ -38,12 +38,12 @@ class SpeciesController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $species,
-                'message' => 'Species retrieved successfully'
+                'message' => __('common.success')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -60,12 +60,12 @@ class SpeciesController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $species,
-                'message' => 'Species created successfully'
+                'message' => __('common.species_created')
             ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -81,19 +81,19 @@ class SpeciesController extends Controller
             if (!$species) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Species not found'
+                    'message' => __('common.species_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => $species,
-                'message' => 'Species retrieved successfully'
+                'message' => __('common.success')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -109,19 +109,19 @@ class SpeciesController extends Controller
             if (!$species) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Species not found'
+                    'message' => __('common.species_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => $species,
-                'message' => 'Species retrieved successfully'
+                'message' => __('common.success')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -137,19 +137,19 @@ class SpeciesController extends Controller
             if (!$species) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Species not found'
+                    'message' => __('common.species_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => $species,
-                'message' => 'Species with breeds retrieved successfully'
+                'message' => __('common.success')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -166,19 +166,19 @@ class SpeciesController extends Controller
             if (!$species) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Species not found'
+                    'message' => __('common.species_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => $species,
-                'message' => 'Species updated successfully'
+                'message' => __('common.species_updated')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -195,19 +195,19 @@ class SpeciesController extends Controller
             if (!$species) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Species not found'
+                    'message' => __('common.species_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => $species,
-                'message' => 'Species updated successfully'
+                'message' => __('common.species_updated')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -223,18 +223,18 @@ class SpeciesController extends Controller
             if (!$deleted) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Species not found'
+                    'message' => __('common.species_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Species deleted successfully'
+                'message' => __('common.species_deleted')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -250,18 +250,18 @@ class SpeciesController extends Controller
             if (!$deleted) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Species not found'
+                    'message' => __('common.species_not_found')
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Species deleted successfully'
+                'message' => __('common.species_deleted')
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete species: ' . $e->getMessage()
+                'message' => __('common.error') . ': ' . $e->getMessage()
             ], 500);
         }
     }
