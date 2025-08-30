@@ -8,11 +8,13 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('name');
             $table->string('address')->nullable();
-            $table->string('email')->nullable();
+            $table->string('email')->nullable()->unique();
             $table->string('phone')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
