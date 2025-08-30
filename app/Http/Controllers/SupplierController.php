@@ -90,13 +90,13 @@ class SupplierController extends Controller
     }
     
     /**
-     * Update the specified supplier by ID
+     * Update the specified supplier by UUID
      */
-    public function update(UpdateSupplierRequest $request, int $id): RedirectResponse
+    public function update(UpdateSupplierRequest $request, string $uuid): RedirectResponse
     {
         try {
             $dto = SupplierDto::fromRequest($request);
-            $supplier = $this->supplierService->update($id, $dto);
+            $supplier = $this->supplierService->updateByUuid($uuid, $dto);
 
             if (!$supplier) {
                 return redirect()->back()
