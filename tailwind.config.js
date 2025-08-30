@@ -58,10 +58,72 @@ export default {
       },
       fontFamily: {
         nunito: ['Nunito', 'sans-serif'],
+        arabic: ['Noto Sans Arabic', 'sans-serif'],
+      },
+      spacing: {
+        'rtl': '0 0 0 auto',
+        'ltr': '0 auto 0 0',
       },
     },
   },
   plugins: [
     forms,
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.rtl': {
+          direction: 'rtl',
+        },
+        '.ltr': {
+          direction: 'ltr',
+        },
+        '.text-start': {
+          'text-align': 'start',
+        },
+        '.text-end': {
+          'text-align': 'end',
+        },
+        '.float-start': {
+          float: 'inline-start',
+        },
+        '.float-end': {
+          float: 'inline-end',
+        },
+        '.ms-auto': {
+          'margin-inline-start': 'auto',
+        },
+        '.me-auto': {
+          'margin-inline-end': 'auto',
+        },
+        '.ps-0': { 'padding-inline-start': '0' },
+        '.ps-1': { 'padding-inline-start': '0.25rem' },
+        '.ps-2': { 'padding-inline-start': '0.5rem' },
+        '.ps-3': { 'padding-inline-start': '0.75rem' },
+        '.ps-4': { 'padding-inline-start': '1rem' },
+        '.ps-5': { 'padding-inline-start': '1.25rem' },
+        '.ps-6': { 'padding-inline-start': '1.5rem' },
+        '.pe-0': { 'padding-inline-end': '0' },
+        '.pe-1': { 'padding-inline-end': '0.25rem' },
+        '.pe-2': { 'padding-inline-end': '0.5rem' },
+        '.pe-3': { 'padding-inline-end': '0.75rem' },
+        '.pe-4': { 'padding-inline-end': '1rem' },
+        '.pe-5': { 'padding-inline-end': '1.25rem' },
+        '.pe-6': { 'padding-inline-end': '1.5rem' },
+        '.ms-0': { 'margin-inline-start': '0' },
+        '.ms-1': { 'margin-inline-start': '0.25rem' },
+        '.ms-2': { 'margin-inline-start': '0.5rem' },
+        '.ms-3': { 'margin-inline-start': '0.75rem' },
+        '.ms-4': { 'margin-inline-start': '1rem' },
+        '.ms-5': { 'margin-inline-start': '1.25rem' },
+        '.ms-6': { 'margin-inline-start': '1.5rem' },
+        '.me-0': { 'margin-inline-end': '0' },
+        '.me-1': { 'margin-inline-end': '0.25rem' },
+        '.me-2': { 'margin-inline-end': '0.5rem' },
+        '.me-3': { 'margin-inline-end': '0.75rem' },
+        '.me-4': { 'margin-inline-end': '1rem' },
+        '.me-5': { 'margin-inline-end': '1.25rem' },
+        '.me-6': { 'margin-inline-end': '1.5rem' },
+      }
+      addUtilities(newUtilities)
+    }
   ],
 }
