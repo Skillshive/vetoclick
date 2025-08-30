@@ -16,7 +16,7 @@ return [
     'delete' => 'Delete',
     'create' => 'Create',
     'update' => 'Update',
-    'search' => 'Search',
+    'search' => 'Search here...',
     'actions' => 'Actions',
     'yes' => 'Yes',
     'no' => 'No',
@@ -51,6 +51,8 @@ return [
     'notifications' => 'Notifications',
     'species' => 'Species',
     'suppliers' => 'Suppliers',
+    'popular_search' => 'Popular search',
+    'search_results' => 'Search results',
 
     // Species specific translations
     'species_management' => 'Species Management',
@@ -79,6 +81,7 @@ return [
     'creating' => 'Creating',
     'products' => 'Products',
     'categories' => 'Categories',
+    'no_result' => 'No results found',
 
     // Table and Pagination translations
     'show' => 'Show',

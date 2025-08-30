@@ -29,6 +29,7 @@ import { NavigationTree } from "@/@types/navigation";
 import { useThemeContext } from "@/contexts/theme/context";
 import { navigation } from "@/navigation";
 import { settings } from "@/navigation/segments/settings";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -164,6 +165,7 @@ export function Search({ renderButton }: SearchProps) {
 
 export function SearchDialog({ close }: SearchDialogProps) {
   const { isDark } = useThemeContext();
+  const { t } = useTranslation();
   const searchInputId = useRef(
     `search-input-${Math.random().toString(36).substring(2, 11)}`,
   ).current;
@@ -188,7 +190,7 @@ export function SearchDialog({ close }: SearchDialogProps) {
         <div className="flex items-center justify-between pr-4 pl-2 rtl:pr-2 rtl:pl-4">
           <Input
             id={searchInputId}
-            placeholder="Recherchez ici..."
+            placeholder={t('common.search')}
             value={query}
             data-search-item
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -217,7 +219,7 @@ export function SearchDialog({ close }: SearchDialogProps) {
       {result.length === 0 && query === "" && (
         <div className="mt-4">
           <h3 className="dark:text-dark-50 px-4 text-gray-800 sm:px-5">
-            Popular search
+                                           {t('common.popular_search')}
           </h3>
           <div className="mt-3 flex flex-wrap gap-3.5 px-4">
             {popular.map(({ id, to, Icon, title, color }) => (
@@ -247,7 +249,7 @@ export function SearchDialog({ close }: SearchDialogProps) {
       {result.length === 0 && query !== "" && (
         <div className="flex flex-col overflow-y-auto py-4">
           <h3 className="dark:text-dark-50 px-4 text-gray-800 sm:px-5">
-            No Result Found
+                                           {t('common.no_result')}
           </h3>
         </div>
       )}
