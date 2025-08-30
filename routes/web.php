@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\LanguageController;
+
+// Language routes
+Route::get('/language/switch/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
+Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name('language.get');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
