@@ -51,7 +51,7 @@ return [
     'notifications' => 'الإشعارات',
     'species' => 'الأنواع',
     'suppliers' => 'الموردون',
-    
+
     // Species specific translations
     'species_management' => 'إدارة الأنواع',
     'species_table' => 'جدول الأنواع',
@@ -79,7 +79,7 @@ return [
     'creating' => 'جاري الإنشاء',
     'products' => 'المنتجات',
     'categories' => 'الفئات',
-    
+
     // Table and Pagination translations
     'show' => 'عرض',
     'entries' => 'إدخالات',
@@ -93,7 +93,7 @@ return [
     'results' => 'نتائج',
     'no_data' => 'لا توجد بيانات متاحة',
     'loading_data' => 'جاري تحميل البيانات...',
-    
+
     // Table Settings translations
     'table_view' => 'عرض الجدول',
     'full_screen' => 'ملء الشاشة',
@@ -106,13 +106,13 @@ return [
     'pin_right' => 'تثبيت يمين',
     'unpin_column' => 'إلغاء تثبيت العمود',
     'save_as_view' => 'حفظ كعرض',
-    
+
     // Column names
     'description' => 'الوصف',
     'created_date' => 'تاريخ الإنشاء',
     'updated_date' => 'تاريخ التحديث',
     'status' => 'الحالة',
-    
+
     // Profile translations
     'profile_settings' => 'إعدادات الملف الشخصي',
     'user' => 'المستخدم',
@@ -124,7 +124,7 @@ return [
     'export_csv' => 'تصدير CSV',
     'export_pdf' => 'تصدير PDF',
     'print' => 'طباعة',
-    
+
     // Confirm Modal translations
     'are_you_sure' => 'هل أنت متأكد؟',
     'confirm_delete_default' => 'هل أنت متأكد من حذف هذا السجل؟ لا يمكن استعادته بعد الحذف.',
@@ -134,10 +134,19 @@ return [
     'error_occurred' => 'عذراً... حدث خطأ.',
     'error_description' => 'تأكد من الاتصال بالإنترنت وحاول مرة أخرى. اتصل بالدعم إذا استمرت المشكلة.',
     'retry' => 'إعادة المحاولة',
-    
+
     // Filter translations
     'date_range' => 'نطاق التاريخ',
     'min' => 'الحد الأدنى',
     'max' => 'الحد الأقصى',
     'select_value' => 'اختر قيمة',
+
+
+    "menu" => [
+        "dashboard" => "لوحة التحكم",
+        "animals_management" => "إدارة الحيوانات",
+        "breed_administration" => "إدارة السلالات",
+        "suppliers_management" => "إدارة الموردين",
+        "suppliers_list" => "قائمة الموردين"
+    ]
 ];

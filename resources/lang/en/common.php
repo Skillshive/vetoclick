@@ -51,7 +51,7 @@ return [
     'notifications' => 'Notifications',
     'species' => 'Species',
     'suppliers' => 'Suppliers',
-    
+
     // Species specific translations
     'species_management' => 'Species Management',
     'species_table' => 'Species Table',
@@ -79,7 +79,7 @@ return [
     'creating' => 'Creating',
     'products' => 'Products',
     'categories' => 'Categories',
-    
+
     // Table and Pagination translations
     'show' => 'Show',
     'entries' => 'entries',
@@ -93,7 +93,7 @@ return [
     'results' => 'results',
     'no_data' => 'No data available',
     'loading_data' => 'Loading data...',
-    
+
     // Table Settings translations
     'table_view' => 'Table View',
     'full_screen' => 'Full Screen',
@@ -106,13 +106,13 @@ return [
     'pin_right' => 'Pin Right',
     'unpin_column' => 'Unpin Column',
     'save_as_view' => 'Save as view',
-    
+
     // Column names
     'description' => 'Description',
     'created_date' => 'Created Date',
     'updated_date' => 'Updated Date',
     'status' => 'Status',
-    
+
     // Profile translations
     'profile_settings' => 'Profile settings',
     'user' => 'User',
@@ -124,7 +124,7 @@ return [
     'export_csv' => 'Export CSV',
     'export_pdf' => 'Export PDF',
     'print' => 'Print',
-    
+
     // Confirm Modal translations
     'are_you_sure' => 'Are you sure?',
     'confirm_delete_default' => 'Are you sure you want to delete this record? Once deleted, it cannot be restored.',
@@ -134,10 +134,18 @@ return [
     'error_occurred' => 'Oops... Something failed.',
     'error_description' => 'Ensure internet is on and retry. Contact support if issue remains.',
     'retry' => 'Retry',
-    
+
     // Filter translations
     'date_range' => 'Date Range',
     'min' => 'Min',
     'max' => 'Max',
     'select_value' => 'Select Value',
+
+    "menu" => [
+          "dashboard" => "Dashboard",
+    "animals_management" => "Animal Management",
+    "breed_administration" => "Breed Administration",
+    "suppliers_management" => "Supplier Management",
+    "suppliers_list" => "Supplier List"
+    ]
 ];

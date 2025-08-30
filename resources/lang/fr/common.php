@@ -51,7 +51,7 @@ return [
     'notifications' => 'Notifications',
     'species' => 'Espèces',
     'suppliers' => 'Fournisseurs',
-    
+
     // Species specific translations
     'species_management' => 'Gestion des Espèces',
     'species_table' => 'Tableau des Espèces',
@@ -79,7 +79,7 @@ return [
     'creating' => 'Création',
     'products' => 'Produits',
     'categories' => 'Catégories',
-    
+
     // Table and Pagination translations
     'show' => 'Afficher',
     'entries' => 'entrées',
@@ -93,7 +93,7 @@ return [
     'results' => 'résultats',
     'no_data' => 'Aucune donnée disponible',
     'loading_data' => 'Chargement des données...',
-    
+
     // Table Settings translations
     'table_view' => 'Vue du tableau',
     'full_screen' => 'Plein écran',
@@ -106,13 +106,13 @@ return [
     'pin_right' => 'Épingler à droite',
     'unpin_column' => 'Désépingler la colonne',
     'save_as_view' => 'Enregistrer comme vue',
-    
+
     // Column names
     'description' => 'Description',
     'created_date' => 'Date de création',
     'updated_date' => 'Date de mise à jour',
     'status' => 'Statut',
-    
+
     // Profile translations
     'profile_settings' => 'Paramètres du profil',
     'user' => 'Utilisateur',
@@ -124,7 +124,7 @@ return [
     'export_csv' => 'Exporter CSV',
     'export_pdf' => 'Exporter PDF',
     'print' => 'Imprimer',
-    
+
     // Confirm Modal translations
     'are_you_sure' => 'Êtes-vous sûr ?',
     'confirm_delete_default' => 'Êtes-vous sûr de vouloir supprimer cet enregistrement ? Une fois supprimé, il ne peut pas être restauré.',
@@ -134,10 +134,18 @@ return [
     'error_occurred' => 'Oups... Quelque chose a échoué.',
     'error_description' => 'Assurez-vous que l\'internet est activé et réessayez. Contactez le support si le problème persiste.',
     'retry' => 'Réessayer',
-    
+
     // Filter translations
     'date_range' => 'Plage de dates',
     'min' => 'Min',
     'max' => 'Max',
     'select_value' => 'Sélectionner une valeur',
+
+    "menu" => [
+        "dashboard" => "Tableau de bord",
+    "animals_management" => "Gestion des animaux",
+    "breed_administration" => "Administration des races",
+    "suppliers_management" => "Gestion des fournisseurs",
+    "suppliers_list" => "Liste des fournisseurs"
+    ]
 ];
