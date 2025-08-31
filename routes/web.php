@@ -24,9 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
 });
 
-// Product Category routes
+// Category Products routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('product-categories', \App\Http\Controllers\ProductCategoryController::class);
+    Route::resource('category-products', \App\Http\Controllers\CategoryProductController::class);
 });
 
 // Product routes
