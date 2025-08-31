@@ -1,17 +1,20 @@
 import { MenuItem } from '../index';
+import { PawPrint } from "lucide-react";
+import { TruckIcon } from "@heroicons/react/24/outline";
+import { HomeIcon } from "@heroicons/react/24/outline";
 
 const AnimalsMenu: MenuItem[] = [
   {
     id: 'dashboard',
     title: 'common.dashboard',
-    icon: 'dashboards',
+    icon: HomeIcon,
     path: route('dashboard'),
     type: 'item' as const,
   },
   {
     id: 'animals',
     title: 'common.menu.animals_management',
-    icon: 'animals',
+    icon: PawPrint,
     type: 'group' as const,
     submenu: [
       {
@@ -25,7 +28,7 @@ const AnimalsMenu: MenuItem[] = [
   {
     id: 'suppliers',
     title: 'common.menu.suppliers_management',
-    icon: 'suppliers',
+    icon: TruckIcon,
     type: 'group' as const,
     submenu: [
       {

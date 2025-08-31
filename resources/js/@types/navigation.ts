@@ -1,3 +1,4 @@
+import { ElementType } from "react";
 import { NavigationType } from "@/constants/app";
 
 export interface NavigationTree {
@@ -6,6 +7,6 @@ export interface NavigationTree {
   path?: string;
   title?: string;
   transKey?: string;
-  icon?: string;
+  icon?: string | ElementType;
   childs?: NavigationTree[];
 }

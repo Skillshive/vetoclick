@@ -1,24 +1,22 @@
 // Import Dependencies
 import { ElementType, ComponentPropsWithoutRef } from "react";
 import clsx from "clsx";
-// import { type To, useRouteLoaderData } from "react-router"; // REMOVE
 
 // Local Imports
 import { Badge } from "@/components/ui";
 import { createScopedKeydownHandler } from "@/utils/dom/createScopedKeydownHandler";
 import { ColorType } from "@/constants/app";
 import { useBreakpointsContext } from "@/contexts/breakpoint/context";
-import { navigationIcons } from "@/navigation/icons";
 
 // ----------------------------------------------------------------------
 
 export interface ItemProps {
   id: string;
   title: string;
-  to?: string; // For legacy support
-  href?: string; // For Inertia Link
+  to?: string; 
+  href?: string; 
   isActive?: boolean;
-  icon?: string;
+  icon?: ElementType;
   component?: ElementType;
   onClick?: (path: string) => void;
   onKeyDown?: ComponentPropsWithoutRef<"button">["onKeyDown"];
@@ -37,13 +35,9 @@ export function Item({
   to,
   ...rest
 }: ItemProps) {
-  // Handle undefined or invalid icons gracefully
-  const iconName = icon || 'dashboards';
-  const IconComponent = navigationIcons[iconName];
+const IconComponent = icon;
 
   if (!IconComponent) {
-    console.warn(`Icon "${iconName}" not found in navigationIcons, using fallback`);
-    // Use a fallback icon or render a simple div
     return (
       <div
         data-root-menu-item
@@ -61,7 +55,6 @@ export function Item({
 
   const Element = component || "button";
   const { lgAndUp } = useBreakpointsContext();
-  // const info = useRouteLoaderData("root")?.[id]?.info as | { val?: string; color?: ColorType } | undefined; // REMOVE
 
   return (
     <Element
@@ -83,7 +76,6 @@ export function Item({
         orientation: "vertical",
         onKeyDown,
       })}
-      // Prefer href for Inertia Link, fallback to to for legacy
       {...(href ? { href } : {})}
       {...(to && !href ? { href: to } : {})}
       {...rest}
