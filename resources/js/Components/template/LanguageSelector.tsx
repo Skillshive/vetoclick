@@ -35,7 +35,7 @@ const LanguageSelector = () => {
   const { locale, updateLocale } = useLocaleContext();
 
   const onLanguageSelect = async (lang: LocaleCode) => {
-    if (lang === locale) return; // Don't switch if already selected
+    if (lang === locale) return; 
     
     setLoading(true);
     try {
@@ -46,63 +46,66 @@ const LanguageSelector = () => {
     }
   };
 
-  const currentLang = langs.find(lang => lang.value === locale) || langs[0];
-
   return (
-    <Listbox as="div" value={locale} onChange={onLanguageSelect}>
-      <div className="relative">
-        <ListboxButton
-          as={Button}
-          variant="flat"
-          isIcon
-          className="size-9 rounded-full"
-          disabled={loading}
-        >
-          {loading ? (
-            <Spinner color="primary" className="size-5" />
-          ) : (
-            <span className="text-lg">{currentLang.flag}</span>
-          )}
-        </ListboxButton>
-        <Transition
-          enter="transition ease-out"
-          enterFrom="opacity-0 translate-y-2"
-          enterTo="opacity-100 translate-y-0"
-          leave="transition ease-in"
-          leaveFrom="opacity-100 translate-y-0"
-          leaveTo="opacity-0 translate-y-2"
-        >
-          <ListboxOptions
-            anchor={{ to: "bottom end", gap: 8 }}
-            className="dark:border-dark-500 dark:bg-dark-700 z-101 w-min min-w-[10rem] overflow-y-auto rounded-lg border border-gray-300 bg-white py-1 font-medium shadow-lg shadow-gray-200/50 outline-hidden focus-visible:outline-hidden ltr:right-0 rtl:left-0 dark:shadow-none"
-          >
-            {langs.map((lang) => (
-              <ListboxOption
-                key={lang.value}
-                className={({ selected, active }) =>
-                  clsx(
-                    "relative flex cursor-pointer px-4 py-2 transition-colors select-none",
-                    active && !selected && "dark:bg-dark-600 bg-gray-100",
-                    selected
-                      ? "bg-primary-600 dark:bg-primary-500 text-white"
-                      : "dark:text-dark-100 text-gray-800",
-                  )
-                }
-                value={lang.value}
+        <Listbox as="div" value={locale} onChange={onLanguageSelect}>
+          <div className="relative">
+            <ListboxButton
+              as={Button}
+              variant="flat"
+              isIcon
+              className="size-9 rounded-full"
+            >
+              {loading ? (
+                <Spinner color="primary" className="size-5" />
+              ) : (
+                <img
+                  className="size-6"
+                  src={`/assets/flags/svg/${locales[locale as LocaleCode].code}.svg`}
+                  alt={locale}
+                />
+              )}
+            </ListboxButton>
+            <Transition
+              enter="transition ease-out"
+              enterFrom="opacity-0 translate-y-2"
+              enterTo="opacity-100 translate-y-0"
+              leave="transition ease-in"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-2"
+            >
+              <ListboxOptions
+                anchor={{ to: "bottom end", gap: 8 }}
+                className="dark:border-dark-500 dark:bg-dark-700 z-101 w-min min-w-[10rem] overflow-y-auto rounded-lg border border-gray-300 bg-white py-1 font-medium shadow-lg shadow-gray-200/50 outline-hidden focus-visible:outline-hidden ltr:right-0 rtl:left-0 dark:shadow-none"
               >
-                <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                  <span className="text-lg">{lang.flag}</span>
-                  <div className="flex flex-col">
-                    <span className="block truncate font-medium">{lang.native}</span>
-                    <span className="block truncate text-xs opacity-70">{lang.label}</span>
-                  </div>
-                </div>
-              </ListboxOption>
-            ))}
-          </ListboxOptions>
-        </Transition>
-      </div>
-    </Listbox>
+                {langs.map((lang) => (
+                  <ListboxOption
+                    key={lang.value}
+                    className={({ selected, active }) =>
+                      clsx(
+                        "relative flex cursor-pointer px-4 py-2 transition-colors select-none",
+                        active && !selected && "dark:bg-dark-600 bg-gray-100",
+                        selected
+                          ? "bg-primary-600 dark:bg-primary-500 text-white"
+                          : "dark:text-dark-100 text-gray-800",
+                      )
+                    }
+                    value={lang.value}
+                  >
+                    <div className="flex space-x-3 rtl:space-x-reverse gap-3">
+                      <img
+                        className="size-5"
+                        src={`/assets/flags/svg/${lang.value}.svg`}
+                        alt={lang.value}
+                      />
+                      <span className="block truncate">{lang.label}</span>
+                    </div>
+                  </ListboxOption>
+                ))}
+              </ListboxOptions>
+            </Transition>
+          </div>
+        </Listbox>
+     
   );
 };
 
