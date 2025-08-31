@@ -8,11 +8,24 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    /**
+     * Display the user's profile.
+     */
+    public function show(Request $request): Response
+    {
+        $user = $request->user()->load('roles');
+        
+        return Inertia::render('Profile', [
+            'user' => $user,
+        ]);
+    }
+
     /**
      * Display the user's profile form.
      */
@@ -29,15 +42,51 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($user->image) {
+                Storage::disk('public')->delete($user->image);
+            }
+            
+            $imagePath = $request->file('image')->store('profile-images', 'public');
+            $validated['image'] = $imagePath;
         }
 
-        $request->user()->save();
+        // Update the name field based on first and last name
+        if (isset($validated['firstname']) && isset($validated['lastname'])) {
+            $validated['name'] = $validated['firstname'] . ' ' . $validated['lastname'];
+        }
 
-        return Redirect::route('profile.edit');
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return Redirect::route('profile.show')->with('success', 'Profile updated successfully.');
+    }
+
+    /**
+     * Update the user's password.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()->back()->with('success', 'Password updated successfully.');
     }
 
     /**

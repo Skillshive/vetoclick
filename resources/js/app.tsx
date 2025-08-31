@@ -40,7 +40,9 @@ createInertiaApp({
       <StrictMode>
         <ErrorBoundary>
           <App>
-            <InertiaApp {...props} />
+            <ConfirmProvider>
+              <InertiaApp {...props} />
+            </ConfirmProvider>
           </App>
         </ErrorBoundary>
       </StrictMode>
@@ -54,22 +56,20 @@ interface AppProps {
 
 function App({ children }: AppProps) {
   return (
-    <ToastProvider>
-      <ConfirmProvider>
-        {/* <AuthProvider> */}
-          <ThemeProvider>
-            <LocaleProvider>
-              <BreakpointProvider>
-                <SidebarProvider>
-                  {children}
-                </SidebarProvider>
-              </BreakpointProvider>
-            </LocaleProvider>
-          </ThemeProvider>
-        {/* </AuthProvider> */}
-      </ConfirmProvider>
-      <Tooltip />
-    </ToastProvider>
+    <LocaleProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          {/* <AuthProvider> */}
+            <BreakpointProvider>
+              <SidebarProvider>
+                {children}
+              </SidebarProvider>
+            </BreakpointProvider>
+          {/* </AuthProvider> */}
+          <Tooltip />
+        </ToastProvider>
+      </ThemeProvider>
+    </LocaleProvider>
   );
 }
 

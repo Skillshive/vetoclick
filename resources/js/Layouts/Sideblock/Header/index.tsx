@@ -5,7 +5,7 @@ import clsx from "clsx";
 // Local Imports
 import SearchIcon from "@/assets/dualicons/search.svg?react";
 import { RightSidebar } from "@/components/template/RightSidebar";
-// import { LanguageSelector } from "@/components/template/LanguageSelector";
+import { LanguageSelector } from "@/components/template/LanguageSelector";
 import { Notifications } from "@/components/template/Notifications";
 import { Button } from "@/components/ui";
 import { SidebarToggleBtn } from "@/components/shared/SidebarToggleBtn";
@@ -78,7 +78,7 @@ export function Header() {
         </div>
         {/* <Notifications />
         <RightSidebar /> */}
-        {/* <LanguageSelector /> */}
+        <LanguageSelector />
         <Profile />
       </div>
     </header>

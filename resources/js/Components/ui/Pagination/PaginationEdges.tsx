@@ -40,7 +40,7 @@ function createEdgeComponent({
         {...props}
       >
         <Icon
-          className={clsx("pagination-icon rtl:rotate-180", ctx.classNames?.icon)}
+          className={clsx("pagination-icon", ctx.classNames?.icon)}
         />
       </PaginationControl>
     );

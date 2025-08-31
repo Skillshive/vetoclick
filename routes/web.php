@@ -2,36 +2,49 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SpeciesController;
+use App\Http\Controllers\SupplierController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-    ]);
-});
+// Language routes
+Route::get('/language/switch/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
+Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name('language.get');
+
+
+Route::redirect('/', '/dashboard');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Profile routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+});
+
 // Species routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('species', \App\Http\Controllers\SpeciesController::class);
+    Route::resource('species', SpeciesController::class);
 });
 
 // Supplier routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+    Route::resource('suppliers', SupplierController::class);
 });
 
 // Category Products routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('category-products', \App\Http\Controllers\CategoryProductController::class);
+    Route::resource('category-products', CategoryProductController::class);
 });
 
 // Product routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('products', \App\Http\Controllers\ProductController::class);
+    Route::resource('products', ProductController::class);
 });
 
 require __DIR__.'/auth.php';

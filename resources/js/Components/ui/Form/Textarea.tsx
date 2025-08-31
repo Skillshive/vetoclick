@@ -4,6 +4,7 @@ import clsx from "clsx";
 
 // Local Imports
 import { useId } from "@/hooks";
+import { useRTL } from "@/hooks/useRTL";
 import { InputErrorMsg } from "./InputErrorMsg";
 import {
   PolymorphicComponentProps,
@@ -56,13 +57,14 @@ const TextareaInner = <C extends ElementType = "textarea">(
   } = props as TextareaProps<C>;
   const Component = component || "textarea";
   const inputId = useId(id, "textarea");
+  const { rtlClasses } = useRTL();
 
   return (
     <div className={clsx("input-root", classNames.root)} {...rootProps}>
       {label && (
         <label
           htmlFor={inputId}
-          className={clsx("input-label", classNames.label)}
+          className={clsx("input-label", rtlClasses.textStart, classNames.label)}
           {...labelProps}
         >
           <span className={clsx("input-label", classNames.labelText)}>
@@ -108,6 +110,7 @@ const TextareaInner = <C extends ElementType = "textarea">(
         <span
           className={clsx(
             "input-description dark:text-dark-300 mt-1 text-xs text-gray-400",
+            rtlClasses.textStart,
             classNames.description,
           )}
         >

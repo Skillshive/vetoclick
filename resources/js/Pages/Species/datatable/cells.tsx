@@ -18,6 +18,7 @@ import {
   ConfirmModal,
   type ConfirmMessages,
 } from "@/components/shared/ConfirmModal";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Species } from "./types";
 
 interface CellProps {
@@ -33,7 +34,7 @@ interface ActionsCellProps {
 
 export function SpeciesNameCell({ getValue }: CellProps) {
   return (
-    <div className="flex max-w-xs items-center space-x-4 2xl:max-w-sm">
+    <div className="flex max-w-xs items-center space-x-4 rtl:space-x-reverse 2xl:max-w-sm">
       <div className="min-w-0">
         <p className="truncate">
           <a
@@ -49,19 +50,25 @@ export function SpeciesNameCell({ getValue }: CellProps) {
 }
 
 export function DescriptionCell({ getValue }: CellProps) {
+  const { t } = useTranslation();
   const description = getValue();
   return (
     <div className="max-w-xs">
       <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-        {description || "No description"}
+        {description || t('common.no_description')}
       </p>
     </div>
   );
 }
 
 export function CreatedAtCell({ getValue }: CellProps) {
+  const { locale } = useTranslation();
   const createdAt = getValue();
-  const formattedDate = new Date(createdAt).toLocaleDateString('fr-FR', {
+  
+  // Use appropriate locale for date formatting
+  const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
+  
+  const formattedDate = new Date(createdAt).toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -75,6 +82,7 @@ export function CreatedAtCell({ getValue }: CellProps) {
 }
 
 export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: ActionsCellProps) {
+  const { t } = useTranslation();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
@@ -82,12 +90,11 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
 
   const confirmMessages: ConfirmMessages = {
     pending: {
-      description:
-        "Are you sure you want to delete this species? Once deleted, it cannot be restored.",
+      description: t('common.confirm_delete_species'),
     },
     success: {
-      title: "Species Deleted",
-      description: "Successfully deleted the species.",
+      title: t('common.species_deleted'),
+      description: t('common.species_deleted_success'),
     },
   };
 
@@ -142,13 +149,13 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
                     setIsModalOpen(true);
                   }}
                   className={clsx(
-                    "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                    "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                     focus &&
                       "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                   )}
                 >
                   <EyeIcon className="size-4.5 stroke-1" />
-                  <span>View</span>
+                  <span>{t('common.view')}</span>
                 </button>
               )}
             </MenuItem>
@@ -160,13 +167,13 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
                     setIsModalOpen(true);
                   }}
                   className={clsx(
-                    "flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                    "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                     focus &&
                       "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                   )}
                 >
                   <PencilIcon className="size-4.5 stroke-1" />
-                  <span>Edit</span>
+                  <span>{t('common.edit')}</span>
                 </button>
               )}
             </MenuItem>
@@ -175,12 +182,12 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
                 <button
                   onClick={openModal}
                   className={clsx(
-                    "this:error text-this dark:text-this-light flex h-9 w-full items-center space-x-3 px-3 tracking-wide outline-hidden transition-colors",
+                    "this:error text-this dark:text-this-light flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                     focus && "bg-this/10 dark:bg-this-light/10",
                   )}
                 >
                   <TrashIcon className="size-4.5 stroke-1" />
-                  <span>Delete</span>
+                  <span>{t('common.delete')}</span>
                 </button>
               )}
             </MenuItem>

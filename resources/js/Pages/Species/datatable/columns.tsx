@@ -9,6 +9,7 @@ import {
   CreatedAtCell, 
   ActionsCell 
 } from "./cells";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Species } from "./types";
 
 interface ColumnsProps {
@@ -16,40 +17,52 @@ interface ColumnsProps {
   setIsModalOpen: (open: boolean) => void;
 }
 
-export const createColumns = ({ setSelectedSpecies, setIsModalOpen }: ColumnsProps): ColumnDef<Species>[] => [
-  {
-    id: "select",
-    header: SelectHeader,
-    cell: SelectCell,
-  },
-  {
-    id: "name",
-    accessorKey: "name",
-    header: "Species",
-    cell: SpeciesNameCell,
-  },
-  {
-    id: "description",
-    accessorKey: "description",
-    header: "Description",
-    cell: DescriptionCell,
-  },
-  {
-    id: "created_at",
-    accessorKey: "created_at",
-    header: "Created Date",
-    cell: CreatedAtCell,
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row, table }) => (
-      <ActionsCell 
-        row={row} 
-        table={table} 
-        setSelectedSpecies={setSelectedSpecies}
-        setIsModalOpen={setIsModalOpen}
-      />
-    ),
-  },
-];
+export const createColumns = ({ setSelectedSpecies, setIsModalOpen }: ColumnsProps): ColumnDef<Species>[] => {
+  // We need to use the hook inside a component, so we'll create a wrapper
+  const ColumnHeaders = () => {
+    const { t } = useTranslation();
+    return {
+      speciesName: t('common.species_name'),
+      description: t('common.description'),
+      createdDate: t('common.created_date'),
+    };
+  };
+
+  return [
+    {
+      id: "select",
+      header: SelectHeader,
+      cell: SelectCell,
+    },
+    {
+      id: "name",
+      accessorKey: "name",
+      header: "Species Name", // This will be overridden by the component using translations
+      cell: SpeciesNameCell,
+    },
+    {
+      id: "description",
+      accessorKey: "description",
+      header: "Description", // This will be overridden by the component using translations
+      cell: DescriptionCell,
+    },
+    {
+      id: "created_at",
+      accessorKey: "created_at",
+      header: "Created Date", // This will be overridden by the component using translations
+      cell: CreatedAtCell,
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row, table }) => (
+        <ActionsCell 
+          row={row} 
+          table={table} 
+          setSelectedSpecies={setSelectedSpecies}
+          setIsModalOpen={setIsModalOpen}
+        />
+      ),
+    },
+  ];
+};

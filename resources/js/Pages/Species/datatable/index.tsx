@@ -19,6 +19,7 @@ import { Table, Card, THead, TBody, Th, Tr, Td, Button } from "@/components/ui";
 import { TableSortIcon } from "@/components/shared/table/TableSortIcon";
 import { Page } from "@/components/shared/Page";
 import { useLockScrollbar, useDidUpdate } from "@/hooks";
+import { useTranslation } from "@/hooks/useTranslation";
 import { fuzzyFilter } from "@/utils/react-table/fuzzyFilter";
 import { PaginationSection } from "@/components/shared/table/PaginationSection";
 import { getUserAgentBrowser } from "@/utils/dom/getUserAgentBrowser";
@@ -39,6 +40,7 @@ const isSafari = getUserAgentBrowser() === "Safari";
 
 export default function SpeciesDatatable({ species: speciesData, filters }: SpeciesDatatableProps) {
   const { cardSkin } = useThemeContext();
+  const { t } = useTranslation();
 
   // Use custom hook for all table state management
   const {
@@ -75,9 +77,23 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
   // Create columns with modal handlers
   const columns = createColumns({ setSelectedSpecies, setIsModalOpen });
 
+  // Override column headers with translations
+  const translatedColumns = columns.map(column => {
+    if (column.id === 'name') {
+      return { ...column, header: t('common.species_name') };
+    }
+    if (column.id === 'description') {
+      return { ...column, header: t('common.description') };
+    }
+    if (column.id === 'created_at') {
+      return { ...column, header: t('common.created_date') };
+    }
+    return column;
+  });
+
   const table = useReactTable({
     data: species,
-    columns: columns,
+    columns: translatedColumns,
     state: {
       globalFilter,
       sorting,
@@ -134,7 +150,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
 
   return (
     <>
-    <Page title="React Table">
+    <Page title={t('common.species_management')}>
       <div className="transition-content w-full pb-5">
         <div
           className={clsx(
@@ -193,7 +209,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
                             >
                               {header.column.getCanSort() ? (
                                 <div
-                                  className="flex cursor-pointer items-center space-x-3 select-none"
+                                  className="flex cursor-pointer items-center space-x-3 rtl:space-x-reverse select-none"
                                   onClick={header.column.getToggleSortingHandler()}
                                 >
                                   <span className="flex-1">
@@ -292,13 +308,13 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
                   <div className="w-full max-w-xl px-2 py-4 sm:absolute sm:-translate-y-1/2 sm:px-4">
                     <div className="dark:bg-dark-50 dark:text-dark-900 pointer-events-auto flex items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 sm:px-4 sm:py-3">
                       <p>
-                        <span>{table.getSelectedRowModel().rows.length} Selected</span>
+                        <span>{table.getSelectedRowModel().rows.length} {t('common.selected')}</span>
                         <span className="max-sm:hidden">
                           {" "}
-                          from {table.getCoreRowModel().rows.length}
+                          {t('common.from')} {table.getCoreRowModel().rows.length}
                         </span>
                       </p>
-                      <div className="flex space-x-1.5">
+                      <div className="flex space-x-1.5 rtl:space-x-reverse">
                         <Button
                           onClick={openBulkModal}
                           className="text-xs-plus w-7 gap-1.5 rounded-full px-3 py-1.5 sm:w-auto sm:rounded-sm"
@@ -306,7 +322,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
                           disabled={table.getSelectedRowModel().rows.length <= 0}
                         >
                           <TrashIcon className="size-4 shrink-0" />
-                          <span className="max-sm:hidden">Delete</span>
+                          <span className="max-sm:hidden">{t('common.delete')}</span>
                         </Button>
                       </div>
                     </div>
@@ -348,11 +364,11 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
       onClose={closeBulkModal}
       messages={{
         pending: {
-          description: `Are you sure you want to delete ${table.getSelectedRowModel().rows.length} selected species? Once deleted, they cannot be restored.`,
+          description: t('common.confirm_delete_multiple_species', { count: table.getSelectedRowModel().rows.length }),
         },
         success: {
-          title: "Species Deleted",
-          description: `Successfully deleted ${table.getSelectedRowModel().rows.length} species.`,
+          title: t('common.species_deleted'),
+          description: t('common.multiple_species_deleted_success', { count: table.getSelectedRowModel().rows.length }),
         },
       }}
       onOk={handleBulkDeleteRows}

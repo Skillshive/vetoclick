@@ -1,9 +1,10 @@
 import composeMenuForRole from './main';
+import { ElementType } from 'react';
 
 export interface MenuItem {
     id: string;
     title: string;
-    icon?: string; // Changed from React component to string
+    icon?: ElementType; // Changed to accept React components directly
     path?: string;
     type: 'item' | 'group' | 'collapse'; // Added 'collapse' for nested submenus
     submenu?: MenuItem[];

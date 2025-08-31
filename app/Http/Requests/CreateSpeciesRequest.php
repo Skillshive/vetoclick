@@ -31,12 +31,12 @@ class CreateSpeciesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Species name is required.',
-            'name.string' => 'Species name must be a string.',
-            'name.max' => 'Species name cannot exceed 255 characters.',
-            'name.unique' => 'A species with this name already exists.',
-            'description.string' => 'Description must be a string.',
-            'description.max' => 'Description cannot exceed 1000 characters.',
+            'name.required' => __('validation.custom.name.required'),
+            'name.string' => __('validation.custom.name.string'),
+            'name.max' => __('validation.custom.name.max'),
+            'name.unique' => __('validation.custom.name.unique'),
+            'description.string' => __('validation.custom.description.string'),
+            'description.max' => __('validation.custom.description.max'),
         ];
     }
 }

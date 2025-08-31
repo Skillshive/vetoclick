@@ -3,6 +3,7 @@ import { ChevronRightIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import invariant from "tiny-invariant";
+import { ElementType } from "react";
 
 // Local Imports
 import {
@@ -23,10 +24,17 @@ export function CollapsibleItem({ data }: { data: NavigationTree }) {
 
   invariant(path, `[CollapsibleItem] path is required for navigation item`);
 
-  invariant(
-    icon && navigationIcons[icon],
-    `[CollapsibleItem] Icon "${icon}" not found in navigationIcons registry for item: ${path}`,
-  );
+  // Handle both direct component icons and string-based icon lookup
+  let Icon: ElementType | undefined;
+  if (typeof icon === 'string') {
+    invariant(
+      navigationIcons[icon],
+      `[CollapsibleItem] Icon "${icon}" not found in navigationIcons registry for item: ${path}`,
+    );
+    Icon = navigationIcons[icon];
+  } else if (icon) {
+    Icon = icon; // Direct component
+  }
 
   invariant(
     childs && childs.length > 0,
@@ -35,8 +43,6 @@ export function CollapsibleItem({ data }: { data: NavigationTree }) {
 
   const label = transKey ? t(transKey) : title;
   const ChevronIcon = ChevronRightIcon;
-
-  const Icon = navigationIcons[icon];
 
   return (
     <AccordionItem

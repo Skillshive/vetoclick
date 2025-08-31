@@ -7,7 +7,9 @@ import {
 } from "@headlessui/react";
 import { Fragment, ReactNode, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import clsx from "clsx";
 import { Button } from "@/components/ui";
+import { useRTL } from "@/hooks/useRTL";
 
 interface ModalProps {
   isOpen: boolean;
@@ -19,6 +21,8 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children, actions }: ModalProps) {
   const closeRef = useRef(null);
+  const { isRtl, rtlClasses } = useRTL();
+  
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -48,12 +52,24 @@ export function Modal({ isOpen, onClose, title, children, actions }: ModalProps)
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
         >
-          <DialogPanel className="dark:bg-dark-700 relative flex w-full max-w-lg origin-top flex-col overflow-hidden rounded-lg bg-white transition-all duration-300">
+          <DialogPanel 
+            className={clsx(
+              "dark:bg-dark-700 relative flex w-full max-w-lg origin-top flex-col overflow-hidden rounded-lg bg-white transition-all duration-300",
+              isRtl && "rtl"
+            )}
+            dir={isRtl ? 'rtl' : 'ltr'}
+          >
             {title && (
-              <div className="dark:bg-dark-800 flex items-center justify-between rounded-t-lg bg-gray-200 px-4 py-3 sm:px-5">
+              <div className={clsx(
+                "dark:bg-dark-800 flex items-center justify-between rounded-t-lg bg-gray-200 px-4 py-3 sm:px-5",
+                isRtl && "flex-row-reverse"
+              )}>
                 <DialogTitle
                   as="h3"
-                  className="dark:text-dark-100 text-base font-medium text-gray-800"
+                  className={clsx(
+                    "dark:text-dark-100 text-base font-medium text-gray-800",
+                    rtlClasses.textStart
+                  )}
                 >
                   {title}
                 </DialogTitle>
@@ -61,16 +77,30 @@ export function Modal({ isOpen, onClose, title, children, actions }: ModalProps)
                   onClick={onClose}
                   variant="flat"
                   isIcon
-                  className="size-7 rounded-full ltr:-mr-1.5 rtl:-ml-1.5"
+                  className={clsx(
+                    "size-7 rounded-full",
+                    isRtl ? "-ml-1.5" : "-mr-1.5"
+                  )}
                   ref={closeRef}
                 >
                   <XMarkIcon className="size-4.5" />
                 </Button>
               </div>
             )}
-            <div className="flex flex-col overflow-y-auto px-4 py-4 sm:px-5">
+            <div className={clsx(
+              "flex flex-col overflow-y-auto px-4 py-4 sm:px-5",
+              rtlClasses.textStart
+            )}>
               {children}
-              {actions && <div className="mt-4 space-x-3 text-end rtl:space-x-reverse">{actions}</div>}
+              {actions && (
+                <div className={clsx(
+                  "mt-4 flex gap-3",
+                  isRtl ? "justify-start flex-row-reverse" : "justify-end",
+                  isRtl && "space-x-reverse"
+                )}>
+                  {actions}
+                </div>
+              )}
             </div>
           </DialogPanel>
         </TransitionChild>

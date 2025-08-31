@@ -6,11 +6,11 @@ import SearchIcon from "@/assets/dualicons/search.svg?react";
 // Local Imports
 import { Search } from "@/components/template/Search";
 import { Button } from "@/components/ui";
-import { Notifications } from "@/components/template/Notifications";
 import { RightSidebar } from "@/components/template/RightSidebar";
-// import { LanguageSelector } from "@/components/template/LanguageSelector";
+import { LanguageSelector } from "@/components/template/LanguageSelector";
 import { SidebarToggleBtn } from "@/components/shared/SidebarToggleBtn";
 import { useThemeContext } from "@/contexts/theme/context";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -36,6 +36,7 @@ function SlashIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function Header() {
   const { cardSkin } = useThemeContext();
+  const { t } = useTranslation();
 
   return (
     <header
@@ -57,7 +58,7 @@ export function Header() {
                 <div className="flex items-center gap-2">
                   <MagnifyingGlassIcon className="size-4" />
                   <span className="text-gray-400 dark:text-dark-300">
-                    Recherchez ici...
+                                                             {t('common.search')}
                   </span>
                 </div>
                 <SlashIcon />
@@ -75,8 +76,8 @@ export function Header() {
           )}
         />
         {/* <Notifications /> */}
+        <LanguageSelector />
         <RightSidebar />
-        {/* <LanguageSelector /> */}
       </div>
     </header>
   );

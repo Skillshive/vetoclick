@@ -73,7 +73,7 @@ class SpeciesController extends Controller
                     'sort_by' => $sortBy,
                     'sort_direction' => $sortDirection,
                 ],
-                'error' => 'Failed to retrieve species: ' . $e->getMessage()
+                'error' => __('common.error') . ': ' . $e->getMessage()
             ]);
         }
     }
@@ -88,11 +88,11 @@ class SpeciesController extends Controller
             $this->speciesService->create($dto);
 
             return redirect()->route('species.index')
-                ->with('success', 'Species created successfully');
+                ->with('success', __('common.species_created'));
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to create species: ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
         }
     }
     
@@ -107,15 +107,15 @@ class SpeciesController extends Controller
 
             if (!$species) {
                 return redirect()->back()
-                    ->withErrors(['error' => 'Species not found']);
+                    ->withErrors(['error' => __('common.species_not_found')]);
             }
 
             return redirect()->route('species.index')
-                ->with('success', 'Species updated successfully');
+                ->with('success', __('common.species_updated'));
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to update species: ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
         }
     }
 
@@ -129,14 +129,14 @@ class SpeciesController extends Controller
 
             if (!$deleted) {
                 return redirect()->back()
-                    ->withErrors(['error' => 'Species not found']);
+                    ->withErrors(['error' => __('common.species_not_found')]);
             }
 
             return redirect()->route('species.index')
-                ->with('success', 'Species deleted successfully');
+                ->with('success', __('common.species_deleted'));
         } catch (Exception $e) {
             return redirect()->back()
-                ->withErrors(['error' => 'Failed to delete species: ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
         }
     }
 }
