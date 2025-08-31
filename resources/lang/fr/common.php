@@ -9,7 +9,8 @@ return [
     'register' => 'S\'inscrire',
     'email' => 'Email',
     'password' => 'Mot de passe',
-    
+        'avatar' => 'Avatar',
+
     // Login page specific translations
     'welcome_back' => 'Bon retour',
     'please_sign_in_to_continue' => 'Veuillez vous connecter pour continuer',
@@ -134,6 +135,30 @@ return [
     'user' => 'Utilisateur',
     'role' => 'Rôle',
     'account' => 'Compte',
+    'first_name' => 'Prénom',
+    'last_name' => 'Nom de famille',
+    'enter_first_name' => 'Entrez le prénom',
+    'enter_last_name' => 'Entrez le nom de famille',
+    'phone' => 'Téléphone',
+    'enter_phone_number' => 'Entrez le numéro de téléphone',
+    'clinic_name' => 'Nom de la clinique',
+    'enter_clinic_name' => 'Entrez le nom de la clinique',
+    'personal_information' => 'Informations personnelles',
+    'member_since' => 'Membre depuis',
+    'edit_profile' => 'Modifier le profil',
+    'saving' => 'Enregistrement...',
+    'account_settings' => 'Paramètres du compte',
+    'change_password' => 'Changer le mot de passe',
+    'update_password_description' => 'Mettez à jour votre mot de passe pour sécuriser votre compte',
+    'change' => 'Changer',
+    'two_factor_auth' => 'Authentification à deux facteurs',
+    'enhance_account_security' => 'Renforcez la sécurité de votre compte avec 2FA',
+    'enable' => 'Activer',
+    'current_password' => 'Mot de Passe Actuel',
+    'new_password' => 'Nouveau Mot de Passe',
+    'confirm_password' => 'Confirmer le Mot de Passe',
+    'update_password' => 'Mettre à Jour le Mot de Passe',
+    'updating' => 'Mise à jour...',
     'selected' => 'Sélectionné',
     'from' => 'de',
     'more' => 'Plus',
@@ -163,5 +188,5 @@ return [
     "breed_administration" => "Administration des races",
     "suppliers_management" => "Gestion des fournisseurs",
     "suppliers_list" => "Liste des fournisseurs"
-    ]
+    ],
 ];
