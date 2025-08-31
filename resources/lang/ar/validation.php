@@ -83,4 +83,52 @@ return [
             'max' => 'وصف النوع لا يمكن أن يتجاوز 1000 حرف.',
         ],
     ],
+
+       // Required field messages
+        "first_name_required" => "الاسم الأول مطلوب",
+        "last_name_required" => "اسم العائلة مطلوب",
+        "email_required" => "البريد الإلكتروني مطلوب",
+        "current_password_required" => "كلمة المرور الحالية مطلوبة",
+
+        // Minimum length messages
+        "first_name_min_length" => "يجب أن يحتوي الاسم الأول على حرفين على الأقل",
+        "last_name_min_length" => "يجب أن يحتوي اسم العائلة على حرفين على الأقل",
+        "password_min_length" => "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+
+        // Maximum length messages
+        "first_name_max_length" => "يجب أن يحتوي الاسم الأول على أقل من 50 حرفاً",
+        "last_name_max_length" => "يجب أن يحتوي اسم العائلة على أقل من 50 حرفاً",
+
+        // Format validation messages
+        "first_name_invalid_chars" => "يمكن أن يحتوي الاسم الأول على الحروف والمسافات فقط",
+        "last_name_invalid_chars" => "يمكن أن يحتوي اسم العائلة على الحروف والمسافات فقط",
+        "email_invalid" => "يرجى إدخال عنوان بريد إلكتروني صحيح",
+        "phone_invalid" => "يرجى إدخال رقم هاتف صحيح",
+
+        // Password strength messages
+        "password_uppercase_required" => "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل",
+        "password_lowercase_required" => "يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل",
+        "password_number_required" => "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل",
+        "password_special_char_required" => "يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل",
+
+        // Password confirmation messages
+        "password_confirmation_mismatch" => "كلمات المرور غير متطابقة",
+
+        // Field labels
+        "firstname_label" => "الاسم الأول",
+        "lastname_label" => "اسم العائلة",
+        "email_label" => "البريد الإلكتروني",
+        "phone_label" => "الهاتف",
+        "current_password_label" => "كلمة المرور الحالية",
+        "new_password_label" => "كلمة المرور الجديدة",
+        "confirm_password_label" => "تأكيد كلمة المرور",
+
+        // Placeholder texts
+        "firstname_placeholder" => "أدخل الاسم الأول",
+        "lastname_placeholder" => "أدخل اسم العائلة",
+        "email_placeholder" => "أدخل عنوان بريدك الإلكتروني",
+        "phone_placeholder" => "أدخل رقم الهاتف",
+        "current_password_placeholder" => "أدخل كلمة المرور الحالية",
+        "new_password_placeholder" => "أدخل كلمة المرور الجديدة",
+        "confirm_password_placeholder" => "أكد كلمة المرور الجديدة"
 ];

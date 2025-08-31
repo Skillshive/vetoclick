@@ -9,7 +9,8 @@ return [
     'register' => 'تسجيل',
     'email' => 'البريد الإلكتروني',
     'password' => 'كلمة المرور',
-    
+        'avatar' => 'الصورة',
+
     // Login page specific translations
     'welcome_back' => 'مرحباً بعودتك',
     'please_sign_in_to_continue' => 'يرجى تسجيل الدخول للمتابعة',
@@ -134,6 +135,30 @@ return [
     'user' => 'المستخدم',
     'role' => 'الدور',
     'account' => 'الحساب',
+    'first_name' => 'الاسم الأول',
+    'last_name' => 'الاسم الأخير',
+    'enter_first_name' => 'أدخل الاسم الأول',
+    'enter_last_name' => 'أدخل الاسم الأخير',
+    'phone' => 'الهاتف',
+    'enter_phone_number' => 'أدخل رقم الهاتف',
+    'clinic_name' => 'اسم العيادة',
+    'enter_clinic_name' => 'أدخل اسم العيادة',
+    'personal_information' => 'المعلومات الشخصية',
+    'member_since' => 'عضو منذ',
+    'edit_profile' => 'تعديل الملف الشخصي',
+    'saving' => 'جاري الحفظ...',
+    'account_settings' => 'إعدادات الحساب',
+    'change_password' => 'تغيير كلمة المرور',
+    'update_password_description' => 'قم بتحديث كلمة المرور للحفاظ على أمان حسابك',
+    'change' => 'تغيير',
+    'two_factor_auth' => 'المصادقة الثنائية',
+    'enhance_account_security' => 'عزز أمان حسابك بالمصادقة الثنائية',
+    'enable' => 'تفعيل',
+    'current_password' => 'كلمة المرور الحالية',
+    'new_password' => 'كلمة المرور الجديدة',
+    'confirm_password' => 'تأكيد كلمة المرور',
+    'update_password' => 'تحديث كلمة المرور',
+    'updating' => 'جاري التحديث...',
     'selected' => 'محدد',
     'from' => 'من',
     'more' => 'المزيد',
@@ -163,5 +188,5 @@ return [
     "breed_administration" => "إدارة السلالات",
     "suppliers_management" => "إدارة الموردين",
     "suppliers_list" => "قائمة الموردين"
-    ]
+    ],
 ];

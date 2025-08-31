@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\SupplierController;
 
@@ -18,6 +19,13 @@ Route::redirect('/', '/dashboard');
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Profile routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+});
 
 // Species routes
 Route::middleware(['auth', 'verified'])->group(function () {

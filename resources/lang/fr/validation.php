@@ -83,4 +83,53 @@ return [
             'max' => 'La description de l\'espèce ne peut pas dépasser 1000 caractères.',
         ],
     ],
+
+      // Required field messages
+        "first_name_required" => "Le prénom est requis",
+        "last_name_required" => "Le nom de famille est requis",
+        "email_required" => "L'email est requis",
+        "current_password_required" => "Le mot de passe actuel est requis",
+
+        // Minimum length messages
+        "first_name_min_length" => "Le prénom doit contenir au moins 2 caractères",
+        "last_name_min_length" => "Le nom de famille doit contenir au moins 2 caractères",
+        "password_min_length" => "Le mot de passe doit contenir au moins 8 caractères",
+
+        // Maximum length messages
+        "first_name_max_length" => "Le prénom doit contenir moins de 50 caractères",
+        "last_name_max_length" => "Le nom de famille doit contenir moins de 50 caractères",
+
+        // Format validation messages
+        "first_name_invalid_chars" => "Le prénom ne peut contenir que des lettres et des espaces",
+        "last_name_invalid_chars" => "Le nom de famille ne peut contenir que des lettres et des espaces",
+        "email_invalid" => "Veuillez saisir une adresse email valide",
+        "phone_invalid" => "Veuillez saisir un numéro de téléphone valide",
+
+        // Password strength messages
+        "password_uppercase_required" => "Le mot de passe doit contenir au moins une lettre majuscule",
+        "password_lowercase_required" => "Le mot de passe doit contenir au moins une lettre minuscule",
+        "password_number_required" => "Le mot de passe doit contenir au moins un chiffre",
+        "password_special_char_required" => "Le mot de passe doit contenir au moins un caractère spécial",
+
+        // Password confirmation messages
+        "password_confirmation_mismatch" => "Les mots de passe ne correspondent pas",
+
+        // Field labels
+        "firstname_label" => "Prénom",
+        "lastname_label" => "Nom de famille",
+        "email_label" => "Adresse email",
+        "phone_label" => "Téléphone",
+        "current_password_label" => "Mot de passe actuel",
+        "new_password_label" => "Nouveau mot de passe",
+        "confirm_password_label" => "Confirmer le mot de passe",
+
+        // Placeholder texts
+        "firstname_placeholder" => "Entrez le prénom",
+        "lastname_placeholder" => "Entrez le nom de famille",
+        "email_placeholder" => "Entrez votre adresse email",
+        "phone_placeholder" => "Entrez le numéro de téléphone",
+        "current_password_placeholder" => "Entrez le mot de passe actuel",
+        "new_password_placeholder" => "Entrez le nouveau mot de passe",
+        "confirm_password_placeholder" => "Confirmez le nouveau mot de passe"
+    
 ];

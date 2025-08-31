@@ -83,4 +83,52 @@ return [
             'max' => 'The species description cannot exceed 1000 characters.',
         ],
     ],
+
+  // Required field messages
+        "first_name_required" => "First name is required",
+        "last_name_required" => "Last name is required",
+        "email_required" => "Email is required",
+        "current_password_required" => "Current password is required",
+
+        // Minimum length messages
+        "first_name_min_length" => "First name must be at least 2 characters",
+        "last_name_min_length" => "Last name must be at least 2 characters",
+        "password_min_length" => "Password must be at least 8 characters",
+
+        // Maximum length messages
+        "first_name_max_length" => "First name must be less than 50 characters",
+        "last_name_max_length" => "Last name must be less than 50 characters",
+
+        // Format validation messages
+        "first_name_invalid_chars" => "First name can only contain letters and spaces",
+        "last_name_invalid_chars" => "Last name can only contain letters and spaces",
+        "email_invalid" => "Please enter a valid email address",
+        "phone_invalid" => "Please enter a valid phone number",
+
+        // Password strength messages
+        "password_uppercase_required" => "Password must contain at least one uppercase letter",
+        "password_lowercase_required" => "Password must contain at least one lowercase letter",
+        "password_number_required" => "Password must contain at least one number",
+        "password_special_char_required" => "Password must contain at least one special character",
+
+        // Password confirmation messages
+        "password_confirmation_mismatch" => "Passwords do not match",
+
+        // Field labels
+        "firstname_label" => "First Name",
+        "lastname_label" => "Last Name",
+        "email_label" => "Email Address",
+        "phone_label" => "Phone",
+        "current_password_label" => "Current Password",
+        "new_password_label" => "New Password",
+        "confirm_password_label" => "Confirm Password",
+
+        // Placeholder texts
+        "firstname_placeholder" => "Enter first name",
+        "lastname_placeholder" => "Enter last name",
+        "email_placeholder" => "Enter your email address",
+        "phone_placeholder" => "Enter phone number",
+        "current_password_placeholder" => "Enter current password",
+        "new_password_placeholder" => "Enter new password",
+        "confirm_password_placeholder" => "Confirm new password"
 ];

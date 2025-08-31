@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { SetStateAction, Dispatch } from "react";
 
 // Local Imports
-import Logo from "@/assets/appLogo.svg?react";
+import Logo from "@/assets/logo.png";
 import { Menu } from "./Menu";
 import { Item } from "./Menu/item";
 import { Profile } from "../../Profile";
