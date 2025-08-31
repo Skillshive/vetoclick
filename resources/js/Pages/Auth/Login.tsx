@@ -75,12 +75,13 @@ export default function Login() {
             </div>
             <div className="border-gray-150 dark:bg-dark-700 flex w-full flex-col items-center bg-white lg:max-w-md ltr:border-l rtl:border-r dark:border-transparent">
               <div className="flex w-full max-w-sm grow flex-col justify-center p-5">
-                <div className="mb-2">
-            <img
-              src="/assets/logo.jpg"
-              alt="VetoClick Logo"
-              className="size-24 rounded-lg shadow"
-            />                  <div className="mt-4 lg:mt-0">
+                <div className="mb-2 flex flex-col">
+                  <img
+                    src="/assets/logo.png"
+                    alt="VetoClick Logo"
+                    style={{ width: "10rem" }}
+                  />
+                  <div className="mt-4 lg:mt-0 ">
                     <h2 className="dark:text-dark-100 text-2xl font-semibold text-gray-600">
                       {t('common.welcome_back')}
                     </h2>
