@@ -20,9 +20,10 @@ class SetLocale
         $supportedLocales = ['en', 'ar', 'fr'];
         
         // Get locale from various sources in order of priority
-        $locale = $request->get('locale') 
-            ?? Session::get('locale') 
-            ?? $request->getPreferredLanguage($supportedLocales) 
+        $locale = $request->get('locale')
+            ?? Session::get('locale')
+            ?? $request->cookie('i18nextLng') // Check frontend's locale preference
+            ?? $request->getPreferredLanguage($supportedLocales)
             ?? config('app.locale');
 
         // Validate locale

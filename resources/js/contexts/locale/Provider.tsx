@@ -30,6 +30,11 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       if (typeof localStorage !== "undefined") {
         localStorage.setItem("i18nextLng", newLocale);
       }
+      
+      // Set cookie for backend to read
+      if (typeof document !== "undefined") {
+        document.cookie = `i18nextLng=${newLocale}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
+      }
 
       // Navigate to backend route to update session
       try {
@@ -58,6 +63,11 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       document.body.style.fontFamily = "'Noto Sans Arabic', 'Nunito', sans-serif";
     } else {
       document.body.style.fontFamily = "'Nunito', sans-serif";
+    }
+    
+    // Set cookie for backend to read on initial load
+    if (typeof document !== "undefined") {
+      document.cookie = `i18nextLng=${locale}; path=/; max-age=${60 * 60 * 24 * 365}`; // 1 year
     }
   }, [direction, locale]);
 

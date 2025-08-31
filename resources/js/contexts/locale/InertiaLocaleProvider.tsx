@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { usePage } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { useLocaleContext } from "./context";
 import { locales, LocaleCode } from "@/i18n/langs";
 
@@ -13,25 +14,32 @@ export function InertiaLocaleProvider({ children }: InertiaLocaleProviderProps) 
   const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    if (props?.locale?.current) {
+    if (props?.locale?.current && !hasInitialized) {
       const backendLocale = props.locale.current as LocaleCode;
-      const localeData = locales[backendLocale];
+      const frontendLocale = locale; // From localStorage
       
-      if (localeData) {
-        // Update direction based on backend locale
-        setDirection(localeData.dir);
-        
-        // Update localStorage to match backend
-        if (typeof localStorage !== "undefined") {
-          localStorage.setItem("i18nextLng", backendLocale);
-        }
-        
-        if (!hasInitialized) {
-          setHasInitialized(true);
-        }
+      console.log('Backend locale:', backendLocale);
+      console.log('Frontend locale:', frontendLocale);
+      
+      // If there's a mismatch and frontend locale is valid, sync to backend
+      if (frontendLocale !== backendLocale && locales[frontendLocale]) {
+        console.log('Syncing frontend locale to backend:', frontendLocale);
+        router.get(`/language/switch/${frontendLocale}`, {
+          preserveState: false,
+          preserveScroll: false,
+        });
+        return;
       }
+      
+      // Set direction based on current locale
+      const localeData = locales[backendLocale];
+      if (localeData) {
+        setDirection(localeData.dir);
+      }
+      
+      setHasInitialized(true);
     }
-  }, [props?.locale?.current, setDirection, hasInitialized]);
+  }, [props?.locale?.current, locale, setDirection, hasInitialized]);
 
   return <>{children}</>;
 }
