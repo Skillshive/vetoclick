@@ -75,7 +75,7 @@ export default function Login() {
             </div>
             <div className="border-gray-150 dark:bg-dark-700 flex w-full flex-col items-center bg-white lg:max-w-md ltr:border-l rtl:border-r dark:border-transparent">
               <div className="flex w-full max-w-sm grow flex-col justify-center p-5">
-                <div className="text-center mb-2">
+                <div className="mb-2">
             <img
               src="/assets/logo.jpg"
               alt="VetoClick Logo"
