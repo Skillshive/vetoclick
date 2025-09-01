@@ -14,7 +14,6 @@ import MainLayout from "@/layouts/MainLayout";
 import { profileFormSchema } from "@/schemas/profileSchema";
 import { passwordFormSchema } from "@/schemas/passwordSchema";
 
-// ----------------------------------------------------------------------
 
 interface User {
   id: number;
@@ -32,7 +31,6 @@ interface ProfilePageProps {
   user: User;
 }
 
-// ----------------------------------------------------------------------
 
 export default function Profile({ user }: ProfilePageProps) {
   const { t } = useTranslation();
