@@ -17,20 +17,20 @@ class CategoryProduct extends Model
             $user->uuid = Str::uuid();
         });
     }
-    
     protected $fillable = [
         'name',
         'description',
+        'category_product_id'
+
     ];
 
     public function products()
     {
         return $this->hasMany(Product::class);
     }   
-
-public function categorie_parent()
-{
-    return $this->belongsTo(CategoryProduct::class);
-}
+    public function parent_category()
+    {
+        return $this->belongsTo(CategoryProduct::class, 'category_product_id');
+    }
 }
 
