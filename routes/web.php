@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\CategoryProductController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
@@ -39,7 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Category Products routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('category-products', CategoryProductController::class);
+    Route::resource('category-products', CategoryProductController::class)->names('category-products');
 });
 
 // Product routes
