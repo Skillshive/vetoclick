@@ -8,6 +8,7 @@ import { useSidebarContext } from "@/contexts/sidebar/context";
 import { useRoleBasedMenu } from "@/hooks/useRoleBasedMenu";
 import {  isURLMatch } from "@/utils/isRouteActive";
 import { Item } from "./item";
+import { SegmentPath } from "@/demo/src/app/layouts/MainLayout/Sidebar";
 
 export interface MenuProps {
   nav?: NavigationTree[];
