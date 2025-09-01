@@ -1,5 +1,5 @@
 import { MenuItem } from '../index';
-import { PawPrint } from "lucide-react";
+import { BoxIcon, PawPrint } from "lucide-react";
 import { TruckIcon } from "@heroicons/react/24/outline";
 import { HomeIcon } from "@heroicons/react/24/outline";
 
@@ -35,6 +35,26 @@ const AnimalsMenu: MenuItem[] = [
         id: 'allSuppliers',
         title: 'common.menu.suppliers_list',
         path: route('suppliers.index'),
+        type: 'item' as const,
+      },
+    ],
+  },
+  {
+    id: 'Products',
+    title: 'common.menu.products_management',
+    icon: BoxIcon,
+    type: 'group' as const,
+    submenu: [
+      {
+        id: 'allProducts',
+        title: 'common.menu.products_list',
+        path: '',
+        type: 'item' as const,
+      },
+      {
+        id: 'allProducts',
+        title: 'common.menu.categories_list',
+        path: route('category-products.index'),
         type: 'item' as const,
       },
     ],
