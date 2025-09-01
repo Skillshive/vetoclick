@@ -5,15 +5,15 @@ import { ThemeProvider } from "./contexts/theme/Provider";
 import { ReactNode, StrictMode } from "react";
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
-import ErrorBoundary from './components/shared/ErrorBoundary';
+import ErrorBoundary from './Components/shared/ErrorBoundary';
 
 import "simplebar-react/dist/simplebar.min.css";
 import "./styles/index.css";
 
 import { SidebarProvider } from "./contexts/sidebar/Provider";
-import { ConfirmProvider } from './components/common/Confirm/ConfirmContext';
-import { ToastProvider } from './components/common/Toast/ToastContext';
-import Tooltip from './components/template/Tooltip';
+import { ConfirmProvider } from './Components/common/Confirm/ConfirmContext';
+import { ToastProvider } from './Components/common/Toast/ToastContext';
+import Tooltip from './Components/template/Tooltip';
 declare global {
   interface Window {
     createInertiaApp: typeof createInertiaApp;
@@ -21,13 +21,13 @@ declare global {
 }
 
 // @ts-ignore
-const pages = import.meta.glob('./pages/**/*.{tsx,jsx}');
+const pages = import.meta.glob('./Pages/**/*.{tsx,jsx}');
 
 createInertiaApp({
   resolve: name => {
     // Try .tsx first, then .jsx
-    const tsxPage = pages[`./pages/${name}.tsx`];
-    const jsxPage = pages[`./pages/${name}.jsx`];
+    const tsxPage = pages[`./Pages/${name}.tsx`];
+    const jsxPage = pages[`./Pages/${name}.jsx`];
     const importPage = tsxPage || jsxPage;
     
     if (!importPage) {
