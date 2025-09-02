@@ -5,7 +5,7 @@ export function Logo({ className = '', style = {} }: { className?: string; style
     <img
       src="/assets/logo.png"
       alt="VetoClick Logo"
-      className={`object-contain ${className}`}
+      className={`object-contain size-14`}
       style={{ borderRadius: 8, ...style }}
     />
   );
