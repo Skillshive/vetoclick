@@ -14,7 +14,8 @@ return [
     */
 
     'default' => env('FILESYSTEM_DISK', 'local'),
-
+  'images' => env('STORAGE_IMAGE_DISQUE', 'local'),
+    'files' => env('STORAGE_FILE_DISQUE', 'local'),
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -27,7 +28,8 @@ return [
     | Supported drivers: "local", "ftp", "sftp", "s3"
     |
     */
-
+  'images' => env('STORAGE_IMAGE_DISQUE', 'local'),
+    'files' => env('STORAGE_FILE_DISQUE', 'local'),
     'disks' => [
 
         'local' => [
@@ -45,6 +47,28 @@ return [
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
+        ],
+
+
+        'local_secure_images' => [
+
+            'driver'     => 'local',
+            'root'       => storage_path('app/public/uploads/images/'),
+            'visibility' => 'public',
+            'throw'      => true,
+        ],
+
+
+        'local_secure_files' => [
+            'driver' => 'local',
+            'root'   => storage_path('app/public/uploads/files/'),
+            'throw'  => true,
+        ],
+
+        'files' => [
+            'driver' => 'local',
+            'root' => storage_path('files'),
+            'throw' => false,
         ],
 
         's3' => [

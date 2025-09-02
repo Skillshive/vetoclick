@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\SupplierController;
+require_once 'common.php';
 
 // Language routes
 Route::get('/language/switch/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
@@ -24,8 +25,8 @@ Route::get('/dashboard', function () {
 // Profile routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
 // Species routes
