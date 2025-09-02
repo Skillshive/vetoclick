@@ -3,14 +3,25 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Traits\HasImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
-{
+{               
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable,HasImage;
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($user) {
+            $user->uuid = Str::uuid();
+        });
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -18,12 +29,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
         'firstname',
         'lastname',
         'email',
         'phone',
-        'image',
+        'image_id',
         'password',
     ];
 
@@ -49,12 +59,22 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    /**
+     * Get the image for the user.
+     */
+    public function image()
+    {
+        return $this->belongsTo(Image::class);
+    }
 
     /**
-     * Get the roles for the user.
+     * Get the image path attribute.
      */
-    public function roles()
+    public function getImageAttribute($value)
     {
-        return $this->belongsToMany(Role::class);
+        if ($this->image_id) {
+            return $this->image->path ?? $value;
+        }
+        return $value;
     }
 }

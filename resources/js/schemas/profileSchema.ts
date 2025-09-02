@@ -16,7 +16,7 @@ export const profileFormSchema = z.object({
     .email('validation.email_invalid'),
   phone: z.string()
     .optional()
-    .refine((val) => !val || /^[\+]?[1-9][\d]{0,15}$/.test(val), {
+    .refine((val) => !val || /^(\+212|0)[0-9]{9}$/.test(val), {
       message: 'validation.phone_invalid',
     }),
   clinic_name: z.string()

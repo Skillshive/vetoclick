@@ -14,6 +14,7 @@ import { Link, router, usePage } from "@inertiajs/react";
 import { Avatar, AvatarDot, Button } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ColorType } from "@/constants/app";
+import { getUserAvatarUrl } from "@/utils/imageHelper";
 
 interface LinkItem {
   id: string;
@@ -27,11 +28,12 @@ interface LinkItem {
 export function Profile() {
   const { auth } = usePage().props;
   const { t } = useTranslation();
-  const user = auth?.user.data;
+  const user = auth?.user;
+
+  const avatarUrl = getUserAvatarUrl(user)?getUserAvatarUrl(user):"/assets/default/person-placeholder.jpg";
   
-  const avatarUrl = user?.image ? `/storage/${user.image}` : "/assets/profile.jpeg";
   const fullName = user ? `${user.firstname} ${user.lastname}` : t('common.user');
-  const role = user?.roles[0]?.name || t('common.user');
+  // const role = user?.roles[0]?.name || t('common.user');
   
   const links: LinkItem[] = [
     {
@@ -86,9 +88,9 @@ export function Profile() {
                   >
                     {fullName}
                   </Link>
-                  <p className="mt-0.5 text-xs text-gray-400 dark:text-dark-300">
+                  {/* <p className="mt-0.5 text-xs text-gray-400 dark:text-dark-300">
                     {role}
-                  </p>
+                  </p> */}
                 </div>
               </div>
               {/* Navigation Links */}

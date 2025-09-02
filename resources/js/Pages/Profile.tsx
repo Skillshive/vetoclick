@@ -1,6 +1,6 @@
 // Import Dependencies
 import { PhoneIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import { EnvelopeIcon, UserIcon, BuildingOfficeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon, UserIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { HiPencil } from "react-icons/hi";
 
@@ -13,7 +13,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import MainLayout from "@/layouts/MainLayout";
 import { profileFormSchema } from "@/schemas/profileSchema";
 import { passwordFormSchema } from "@/schemas/passwordSchema";
-
+import { getUserAvatarUrl } from "@/utils/imageHelper";
+import { useToast } from "@/components/common/Toast/ToastContext";
 
 interface User {
   id: number;
@@ -21,7 +22,6 @@ interface User {
   lastname: string;
   email: string;
   phone?: string;
-  clinic_name?: string;
   image?: string;
   created_at: string;
   roles: Array<{ name: string }>;
@@ -33,21 +33,23 @@ interface ProfilePageProps {
 
 
 export default function Profile({ user }: ProfilePageProps) {
+
+  console.log('User:', user);
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [avatar, setAvatar] = useState<File | null>(null);
 
 
-  const { data, setData, put, processing, errors, reset } = useForm({
+  const { data, setData, post, processing, errors, reset } = useForm({
     firstname: user.firstname || "",
     lastname: user.lastname || "",
     email: user.email || "",
     phone: user.phone || "",
-    clinic_name: user.clinic_name || "",
     image: null as File | null,
   });
 
   // Password update form
-    const { data: passwordData, setData: setPasswordData, put: putPassword, processing: passwordProcessing, errors: passwordErrors, reset: resetPassword } = useForm({
+    const { data: passwordData, setData: setPasswordData, post: postPassword, processing: passwordProcessing, errors: passwordErrors, reset: resetPassword } = useForm({
       current_password: "",
       password: "",
       password_confirmation: "",
@@ -65,8 +67,8 @@ export default function Profile({ user }: ProfilePageProps) {
       password?: string;
       password_confirmation?: string;
     }>({});
-  
-    const avatarUrl = user.image ? `/storage/${user.image}` : "/assets/profile.jpeg";
+
+    const avatarUrl = getUserAvatarUrl(user);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,9 +86,19 @@ export default function Profile({ user }: ProfilePageProps) {
       return;
     }
 
-    put(route('profile.update'), {
+    post(route('profile.update'), {
       onSuccess: () => {
         setProfileValidationErrors({});
+        showToast({
+          type: 'success',
+          message: t('common.success'),
+        });
+      },
+      onError: (errors) => {
+        showToast({
+          type: 'error',
+          message: t('common.error_occurred'),
+        });
       },
     });
   };
@@ -106,10 +118,20 @@ export default function Profile({ user }: ProfilePageProps) {
       return;
     }
 
-    putPassword(route('profile.password.update'), {
+    postPassword(route('profile.password.update'), {
       onSuccess: () => {
         resetPassword();
         setPasswordValidationErrors({});
+        showToast({
+          type: 'success',
+          message: t('common.success'),
+        });
+      },
+      onError: (errors) => {
+        showToast({
+          type: 'error',
+          message: t('common.error_occurred'),
+        });
       },
     });
   };
@@ -117,10 +139,12 @@ export default function Profile({ user }: ProfilePageProps) {
   return (
         <MainLayout>
     <Page title={t('common.profile')}>
-      <main className="main-content transition-content grid flex-1 grid-cols-1 place-content-start py-6">
-        <Card className="h-full w-full p-4 sm:px-5 2xl:mx-auto 2xl:max-w-5xl">
-          <div className="w-full max-w-3xl 2xl:max-w-5xl">
-            <h5 className="dark:text-dark-50 text-lg font-medium text-gray-800">
+   <div className="transition-content w-full pb-5">
+        <div
+          className="flex h-full w-full flex-col"
+        >
+          <Card className="my-5 mx-10 p-6">
+                      <h5 className="dark:text-dark-50 text-lg font-medium text-gray-800">
               {t('common.profile')}
             </h5>
             <p className="dark:text-dark-200 mt-0.5 text-sm text-balance text-gray-500">
@@ -202,6 +226,7 @@ export default function Profile({ user }: ProfilePageProps) {
                       }));
                     }
                   }}
+                  required={true}
                   error={errors.firstname || profileValidationErrors.firstname}
                 />
                 <Input
@@ -229,6 +254,7 @@ export default function Profile({ user }: ProfilePageProps) {
                       }));
                     }
                   }}
+                                    required={true}
                   error={errors.lastname || profileValidationErrors.lastname}
                 />
                 <Input
@@ -256,6 +282,7 @@ export default function Profile({ user }: ProfilePageProps) {
                       }));
                     }
                   }}
+                                    required={true}
                   error={errors.email || profileValidationErrors.email}
                 />
                 <Input
@@ -283,6 +310,7 @@ export default function Profile({ user }: ProfilePageProps) {
                       }));
                     }
                   }}
+                                    required={true}
                   error={errors.phone || profileValidationErrors.phone}
                 />
               </div>
@@ -438,9 +466,9 @@ export default function Profile({ user }: ProfilePageProps) {
                 </div>
               </form>
             </div>
+            </Card>
+            </div>
           </div>
-        </Card>
-      </main>
     </Page>
         </MainLayout>
   );

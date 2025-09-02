@@ -3,24 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\ImageService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public function __construct(private ImageService $imageService)
+    {
+    }
+
     /**
      * Display the user's profile.
      */
     public function show(Request $request): Response
     {
-        $user = $request->user()->load('roles');
-        
+        $user = $request->user()->load(['image']);
+
         return Inertia::render('Profile', [
             'user' => $user,
         ]);
@@ -47,18 +53,29 @@ class ProfileController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($user->image) {
-                Storage::disk('public')->delete($user->image);
+            try {
+                // Delete old image if exists
+                if ($user->image) {
+                    $this->imageService->getDisk()->delete($user->image);
+                }
+
+                $image = $this->imageService->saveImage($request->file('image'), 'profile-images/');
+                $validated['image_id'] = $image->id;
+            } catch (\Exception $e) {
+                Log::error('Image upload failed: ' . $e->getMessage());
+                return back()->withErrors(['image' => 'Image upload failed.']);
             }
-            
-            $imagePath = $request->file('image')->store('profile-images', 'public');
-            $validated['image'] = $imagePath;
         }
 
-        // Update the name field based on first and last name
-        if (isset($validated['firstname']) && isset($validated['lastname'])) {
-            $validated['name'] = $validated['firstname'] . ' ' . $validated['lastname'];
+        if (isset($validated['firstname'])) {
+            $validated['firstname'] = $validated['firstname'];
+        }
+
+        if (isset($validated['lastname'])) {
+            $validated['lastname'] = $validated['lastname'];
+        }
+        if (isset($validated['phone'])) {
+            $validated['phone'] = $validated['phone'];
         }
 
         $user->fill($validated);
