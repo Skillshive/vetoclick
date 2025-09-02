@@ -142,7 +142,12 @@ export default function Login() {
                 </div>
       
                 <div className="flex gap-4">
-                  <Button className="h-10 flex-1 gap-3" variant="outlined">
+                  <Button 
+                    className="h-10 flex-1 gap-3" 
+                    variant="outlined"
+                    onClick={() => window.location.href = route('auth.google')}
+                    type="button"
+                  >
                     <span>{t('common.google_login')}</span>
                     <img
                       className="size-5.5"
