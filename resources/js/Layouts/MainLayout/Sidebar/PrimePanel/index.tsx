@@ -53,6 +53,7 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
           ? "shadow-soft dark:shadow-dark-900/60"
           : "dark:border-dark-600/80 ltr:border-r rtl:border-l",
       )}
+      onMouseLeave={close}
     >
       <div
         className={clsx(

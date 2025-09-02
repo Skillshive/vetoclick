@@ -33,8 +33,20 @@ export function Menu({
     }
   };
 
+  const handleMouseEnter = (path: string) => {
+    setActiveSegmentPath?.(path);
+    setSidebarActiveSegment(path);
+    if (!isExpanded) {
+      open();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // Close the sidebar on mouse leave
+    close();
+  };
+
   const getMainNavigationItems = (items: any[]) => {
-    console.log('items',items)
     const mainItems = items.map(item => ({
       id: item.id,
       title: item.title,
@@ -46,11 +58,11 @@ export function Menu({
   };
 
   const itemsToRender = nav || getMainNavigationItems(menuItems);
-console.log('itemsToRender',itemsToRender)
   return (
     <ScrollShadow
       data-root-menu
       className="hide-scrollbar flex w-full grow flex-col items-center space-y-4 overflow-y-auto pt-5 lg:space-y-3 xl:pt-5 2xl:space-y-4"
+      onMouseLeave={handleMouseLeave}
     >
       {itemsToRender.length === 0 ? (
         <div className="text-center text-gray-500 text-sm p-4">
@@ -73,6 +85,10 @@ console.log('itemsToRender',itemsToRender)
                 if(!isLink) handleSegmentSelect(item.id)
                 else close();
               }}
+              onMouseEnter={() => {
+                if(!isLink) handleMouseEnter(item.id);
+              }}
+              onMouseLeave={handleMouseLeave}
               isActive={isURLMatch(item.path, url)}
             />
           );

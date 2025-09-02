@@ -7,11 +7,16 @@ import { useSidebarContext } from "@/app/contexts/sidebar/context";
 // ----------------------------------------------------------------------
 
 export function SidebarToggleBtn() {
-  const { toggle, isExpanded } = useSidebarContext();
+  const { toggle, open, isExpanded } = useSidebarContext();
 
   return (
     <button
       onClick={toggle}
+      onMouseEnter={() => {
+        if (!isExpanded) {
+          open();
+        }
+      }}
       className={clsx(
         isExpanded && "active",
         "sidebar-toggle-btn cursor-pointer flex size-7 flex-col justify-center space-y-1.5 text-primary-600 outline-hidden focus:outline-hidden dark:text-primary-400 ltr:ml-0.5 rtl:mr-0.5",

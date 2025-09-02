@@ -13,12 +13,14 @@ import { useBreakpointsContext } from "@/contexts/breakpoint/context";
 export interface ItemProps {
   id: string;
   title: string;
-  to?: string; 
-  href?: string; 
+  to?: string;
+  href?: string;
   isActive?: boolean;
   icon?: ElementType;
   component?: ElementType;
   onClick?: (path: string) => void;
+  onMouseEnter?: (path: string) => void;
+  onMouseLeave?: () => void;
   onKeyDown?: ComponentPropsWithoutRef<"button">["onKeyDown"];
   info?: { val?: string; color?: ColorType };
 }
@@ -30,6 +32,8 @@ export function Item({
   icon,
   component,
   onKeyDown,
+  onMouseEnter,
+  onMouseLeave,
   info,
   href,
   to,
