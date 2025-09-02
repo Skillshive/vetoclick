@@ -53,6 +53,19 @@ class SupplierDto extends DTO
         );
     }
 
+    /**
+     * Create DTO from HTTP request
+     */
+    public static function fromRequest($request): self
+    {
+        return new self(
+            name: $request->input('name', ''),
+            address: $request->input('address'),
+            email: $request->input('email'),
+            phone: $request->input('phone')
+        );
+    }
+
     public function toArray(): array
     {
         return [
