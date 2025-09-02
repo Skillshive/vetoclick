@@ -23,5 +23,5 @@ export function getImageUrl(path: string | null, fallback: string = "/assets/def
  */
 export function getUserAvatarUrl(user) {
     console.log('path',user);
-  return getImageUrl(user.image.path || null);
+  return getImageUrl(user?.image?.path || null);
 }
