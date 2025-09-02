@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreSupplierRequest;
+use App\Http\Requests\CreateSupplierRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use App\Services\SupplierService;
 use App\common\SupplierDto;
@@ -74,7 +74,7 @@ class SupplierController extends Controller
     /**
      * Store a newly created supplier
      */
-    public function store(StoreSupplierRequest $request): RedirectResponse
+    public function store(CreateSupplierRequest $request): RedirectResponse
     {
         try {
             $dto = SupplierDto::fromRequest($request);
@@ -130,6 +130,73 @@ class SupplierController extends Controller
         } catch (Exception $e) {
             return redirect()->back()
                 ->withErrors(['error' => 'Failed to delete supplier: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * API: Get all suppliers with pagination
+     */
+    public function apiIndex(Request $request)
+    {
+        $perPage = $request->get('per_page', 15);
+        $search = $request->get('search');
+
+        try {
+            if ($search) {
+                $suppliers = $this->supplierService->searchByName($search, $perPage);
+            } else {
+                $suppliers = $this->supplierService->getAll($perPage);
+            }
+
+            return response()->json([
+                'data' => $suppliers->items(),
+                'meta' => [
+                    'current_page' => $suppliers->currentPage(),
+                    'from' => $suppliers->firstItem(),
+                    'last_page' => $suppliers->lastPage(),
+                    'per_page' => $suppliers->perPage(),
+                    'to' => $suppliers->lastItem(),
+                    'total' => $suppliers->total(),
+                ],
+                'links' => [
+                    'first' => $suppliers->url(1),
+                    'last' => $suppliers->url($suppliers->lastPage()),
+                    'prev' => $suppliers->previousPageUrl(),
+                    'next' => $suppliers->nextPageUrl(),
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to retrieve suppliers: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Search suppliers by name
+     */
+    public function searchByName(Request $request, string $name)
+    {
+        $perPage = $request->get('per_page', 15);
+
+        try {
+            $suppliers = $this->supplierService->searchByName($name, $perPage);
+            
+            return response()->json([
+                'data' => $suppliers->items(),
+                'meta' => [
+                    'current_page' => $suppliers->currentPage(),
+                    'from' => $suppliers->firstItem(),
+                    'last_page' => $suppliers->lastPage(),
+                    'per_page' => $suppliers->perPage(),
+                    'to' => $suppliers->lastItem(),
+                    'total' => $suppliers->total(),
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to search suppliers: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
