@@ -1,3 +1,5 @@
+import { log } from "console";
+
 /**
  * Get the full URL for an image path
  * @param path - The image path from storage
@@ -5,7 +7,9 @@
  * @returns The full image URL
  */
 export function getImageUrl(path: string | null, fallback: string = "/assets/default/person-placeholder.jpg"): string {
-  if (!path) {
+console.log('cc ',path);
+
+    if (!path) {
     return fallback;
   }
 
