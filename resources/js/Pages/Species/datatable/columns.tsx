@@ -3,11 +3,11 @@ import {
   SelectCell,
   SelectHeader,
 } from "@/components/shared/table/SelectCheckbox";
-import { 
-  SpeciesNameCell, 
-  DescriptionCell, 
-  CreatedAtCell, 
-  ActionsCell 
+import {
+  SpeciesNameCell,
+  DescriptionCell,
+  CreatedAtCell,
+  ActionsCell
 } from "./cells";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Species } from "./types";
@@ -37,28 +37,28 @@ export const createColumns = ({ setSelectedSpecies, setIsModalOpen }: ColumnsPro
     {
       id: "name",
       accessorKey: "name",
-      header: "Species Name", // This will be overridden by the component using translations
-      cell: SpeciesNameCell,
+      header: "Species Name",
+      cell: ({ getValue, row }) => <SpeciesNameCell getValue={getValue} row={row} />,
     },
     {
       id: "description",
       accessorKey: "description",
-      header: "Description", // This will be overridden by the component using translations
+      header: "Description", 
       cell: DescriptionCell,
     },
     {
       id: "created_at",
       accessorKey: "created_at",
-      header: "Created Date", // This will be overridden by the component using translations
+      header: "Created Date", 
       cell: CreatedAtCell,
     },
     {
       id: "actions",
       header: "",
       cell: ({ row, table }) => (
-        <ActionsCell 
-          row={row} 
-          table={table} 
+        <ActionsCell
+          row={row}
+          table={table}
           setSelectedSpecies={setSelectedSpecies}
           setIsModalOpen={setIsModalOpen}
         />

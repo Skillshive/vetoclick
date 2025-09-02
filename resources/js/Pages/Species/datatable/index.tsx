@@ -17,7 +17,6 @@ import { Transition } from "@headlessui/react";
 // Local Imports
 import { Table, Card, THead, TBody, Th, Tr, Td, Button } from "@/components/ui";
 import { TableSortIcon } from "@/components/shared/table/TableSortIcon";
-import { Page } from "@/components/shared/Page";
 import { useLockScrollbar, useDidUpdate } from "@/hooks";
 import { useTranslation } from "@/hooks/useTranslation";
 import { fuzzyFilter } from "@/utils/react-table/fuzzyFilter";
@@ -27,7 +26,6 @@ import { useThemeContext } from "@/contexts/theme/context";
 import SpeciesFormModal from "@/components/modals/SpeciesFormModal";
 import {
   ConfirmModal,
-  type ConfirmMessages,
 } from "@/components/shared/ConfirmModal";
 
 // Local Component Imports
@@ -70,7 +68,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
     autoResetPageIndex,
     tableMeta,
   } = useSpeciesTable({
-    initialData: speciesData.data,
+    initialData: speciesData.data.data,
     initialFilters: filters,
   });
 
@@ -79,6 +77,9 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
 
   // Override column headers with translations
   const translatedColumns = columns.map(column => {
+    if (column.id === 'image') {
+      return { ...column, header: t('common.image') };
+    }
     if (column.id === 'name') {
       return { ...column, header: t('common.species_name') };
     }
@@ -150,7 +151,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
 
   return (
     <>
-    <Page title={t('common.species_management')}>
+    {/* <Page title={t('common.species_management')}> */}
       <div className="transition-content w-full pb-5">
         <div
           className={clsx(
@@ -348,7 +349,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
           </div>
         </div>
       </div>
-    </Page>
+    {/* </Page> */}
     
     <SpeciesFormModal
       isOpen={isModalOpen}

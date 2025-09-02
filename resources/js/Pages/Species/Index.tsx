@@ -6,6 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Index({species, filters}: SpeciesManagementPageProps) {
     const { t } = useTranslation();
+    console.log("species",species);
     
     return (
         <MainLayout>

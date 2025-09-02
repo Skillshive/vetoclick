@@ -13,9 +13,13 @@ class SpeciesService implements ServiceInterface
     /**
      * Get all species with optional pagination
      */
-    public function getAll(int $perPage = 15): LengthAwarePaginator
+    public function getAll(?int $perPage = 15)
     {
-        return Species::paginate($perPage);
+        if ($perPage === null || $perPage === 0) {
+            // Return all records without pagination
+            return Species::with('image')->get();
+        }
+        return Species::with('image')->paginate($perPage);
     }
 
     /**
@@ -37,10 +41,19 @@ class SpeciesService implements ServiceInterface
     /**
      * Create new species from DTO
      */
-    public function create(SpeciesDto $dto): Species
+    public function create(SpeciesDto $dto, $request = null): Species
     {
         try {
-            $species = Species::create($dto->toCreateArray());
+            $createData = $dto->toCreateArray();
+
+            // Handle image upload if present
+            if ($request && $request->hasFile('image')) {
+                $imageService = app(ImageService::class);
+                $image = $imageService->saveImage($request->file('image'), 'species/');
+                $createData['image_id'] = $image->id;
+            }
+
+            $species = Species::create($createData);
             return $species;
         } catch (Exception $e) {
             throw new Exception("Failed to create species: " . $e->getMessage());
@@ -50,17 +63,25 @@ class SpeciesService implements ServiceInterface
     /**
      * Update species by UUID from DTO
      */
-    public function update(string $uuid, SpeciesDto $dto): ?Species
+    public function update(string $uuid, SpeciesDto $dto, $request = null): ?Species
     {
         try {
             $species = $this->getByUuid($uuid);
-            
+
             if (!$species) {
                 return null;
             }
 
             $updateData = $dto->toUpdateArray();
-            
+
+            // Handle image upload if present
+            if ($request && $request->hasFile('image')) {
+                $imageService = app(ImageService::class);
+                $species = $imageService->update($species, $request->file('image'));
+                // Remove image_id from updateData since it's already handled
+                unset($updateData['image_id']);
+            }
+
             if (empty($updateData)) {
                 return $species;
             }
@@ -93,9 +114,15 @@ class SpeciesService implements ServiceInterface
     /**
      * Search species by name
      */
-    public function searchByName(string $name, int $perPage = 15): LengthAwarePaginator
+    public function searchByName(string $name, ?int $perPage = 15)
     {
-        return Species::where('name', 'LIKE', "%{$name}%")
-            ->paginate($perPage);
+        $query = Species::with('image')
+            ->where('name', 'LIKE', "%{$name}%");
+
+        if ($perPage === null || $perPage === 0) {
+            // Return all records without pagination
+            return $query->get();
+        }
+        return $query->paginate($perPage);
     }
 }

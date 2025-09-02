@@ -20,9 +20,11 @@ import {
 } from "@/components/shared/ConfirmModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Species } from "./types";
+import { getImageUrl } from "@/utils/imageHelper";
 
 interface CellProps {
   getValue: () => any;
+  row?: any;
 }
 
 interface ActionsCellProps {
@@ -32,16 +34,35 @@ interface ActionsCellProps {
   setIsModalOpen: (open: boolean) => void;
 }
 
-export function SpeciesNameCell({ getValue }: CellProps) {
+export function SpeciesNameCell({ getValue, row }: CellProps) {
+  const speciesName = getValue();
+  const species = row?.original as Species;
+  const imagePath = species?.image || null;
+
+  const imageUrl = getImageUrl(imagePath, "/assets/default/species-placeholder.png");
+
+  console.log("Final imageUrl:", imageUrl);
   return (
     <div className="flex max-w-xs items-center space-x-4 rtl:space-x-reverse 2xl:max-w-sm">
+      <div className="avatar relative inline-flex shrink-0" style={{ height: "2.25rem", width: "2.25rem" }}>
+       <img
+        src={imageUrl}
+        loading="lazy"
+        alt="Species"
+        className="avatar-image avatar-display relative h-full w-full before:absolute before:inset-0 before:rounded-[inherit] before:bg-gray-150 dark:before:bg-dark-600 mask is-squircle rounded-none text-sm"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = "/assets/default/species-placeholder.png";
+        }}
+      />
+      </div>
       <div className="min-w-0">
         <p className="truncate">
           <a
             href="##"
-            className="hover:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors"
+            className="hover:text-primary-600 dark:hover:text-primary-400  transition-colors font-medium text-gray-800 dark:text-dark-100"
           >
-            {getValue()}
+            {speciesName}
           </a>
         </p>
       </div>

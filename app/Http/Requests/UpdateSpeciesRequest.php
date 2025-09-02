@@ -31,6 +31,7 @@ class UpdateSpeciesRequest extends FormRequest
                 Rule::unique('species', 'name')->ignore($speciesId)
             ],
             'description' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ];
     }
 
@@ -46,6 +47,9 @@ class UpdateSpeciesRequest extends FormRequest
             'name.unique' => __('validation.custom.name.unique'),
             'description.string' => __('validation.custom.description.string'),
             'description.max' => __('validation.custom.description.max'),
+            'image.image' => __('validation.custom.image.image'),
+            'image.mimes' => __('validation.custom.image.mimes'),
+            'image.max' => __('validation.custom.image.max'),
         ];
     }
 }

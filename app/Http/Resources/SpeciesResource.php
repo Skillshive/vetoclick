@@ -18,6 +18,7 @@ class SpeciesResource extends JsonResource
             'uuid' => $this->uuid,
             'name' => $this->name,
             'description' => $this->description,
+            'image' => $this->getImagePath(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'breeds' => $this->whenLoaded('breeds'),
