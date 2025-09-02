@@ -14,7 +14,7 @@ return [
     */
 
     'default' => env('FILESYSTEM_DISK', 'local'),
-  'images' => env('STORAGE_IMAGE_DISQUE', 'local'),
+    'images' => env('STORAGE_IMAGE_DISQUE', 'public'),
     'files' => env('STORAGE_FILE_DISQUE', 'local'),
     /*
     |--------------------------------------------------------------------------
@@ -28,8 +28,6 @@ return [
     | Supported drivers: "local", "ftp", "sftp", "s3"
     |
     */
-  'images' => env('STORAGE_IMAGE_DISQUE', 'local'),
-    'files' => env('STORAGE_FILE_DISQUE', 'local'),
     'disks' => [
 
         'local' => [
