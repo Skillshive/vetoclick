@@ -136,6 +136,32 @@ class SpeciesController extends Controller
     }
     
     /**
+     * Show the form for editing the specified species
+     */
+    public function edit(string $uuid): Response
+    {
+        try {
+            $species = $this->speciesService->getByUuid($uuid)?->load('image');
+
+            if (!$species) {
+                return Inertia::render('Error', [
+                    'message' => __('common.species_not_found'),
+                    'status' => 404
+                ]);
+            }
+
+            return Inertia::render('Species/Edit', [
+                'species' => new SpeciesResource($species),
+            ]);
+        } catch (Exception $e) {
+            return Inertia::render('Error', [
+                'message' => __('common.error') . ': ' . $e->getMessage(),
+                'status' => 500
+            ]);
+        }
+    }
+
+    /**
      * Update the specified species by UUID
      */
     public function update(UpdateSpeciesRequest $request, string $uuid): RedirectResponse

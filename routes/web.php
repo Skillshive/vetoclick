@@ -31,7 +31,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Species routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('species', SpeciesController::class);
+    Route::name('species.')->prefix('species')
+        ->controller(SpeciesController::class)
+        ->group(function () {
+            Route::get('', 'index')
+                ->name('index');
+            Route::get('data', 'data')->name('data');
+            Route::get('create', 'create')->name('create');
+            Route::post('store', 'store')->name('store');
+            Route::get('{species}/edit', 'edit')->name('edit');
+            Route::post('delete', 'destroyGroup')->name('destroyGroup');
+            Route::get('{species}/delete', 'destroy')->name('destroy');
+            Route::get('{species}/show', 'show')->name('show');
+            Route::post('{species}/update', 'update')->name('update');
+        });
 });
 
 // Supplier routes

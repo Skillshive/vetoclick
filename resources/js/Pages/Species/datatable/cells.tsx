@@ -182,11 +182,8 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
             </MenuItem>
             <MenuItem>
               {({ focus }) => (
-                <button
-                  onClick={() => {
-                    setSelectedSpecies(row.original);
-                    setIsModalOpen(true);
-                  }}
+                <a
+                  href={route('species.edit', row.original.uuid)}
                   className={clsx(
                     "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
                     focus &&
@@ -195,7 +192,7 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
                 >
                   <PencilIcon className="size-4.5 stroke-1" />
                   <span>{t('common.edit')}</span>
-                </button>
+                </a>
               )}
             </MenuItem>
             <MenuItem>
