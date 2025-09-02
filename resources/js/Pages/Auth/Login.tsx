@@ -81,7 +81,7 @@ export default function Login() {
                     alt="VetoClick Logo"
                     style={{ width: "10rem" }}
                   />
-                  <div className="mt-4 lg:mt-0 ">
+                  <div className="mt-4 lg:mt-2">
                     <h2 className="dark:text-dark-100 text-2xl font-semibold text-gray-600">
                       {t('common.welcome_back')}
                     </h2>
