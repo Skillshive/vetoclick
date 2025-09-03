@@ -141,16 +141,22 @@ export default function Login() {
                   <div className="dark:bg-dark-500 h-px flex-1 bg-gray-200"></div>
                 </div>
       
-                <div className="flex gap-4">
-                  <Button className="h-10 flex-1 gap-3" variant="outlined">
-                    <span>{t('common.google_login')}</span>
-                    <img
-                      className="size-5.5"
-                      src="/assets/google.svg"
-                      alt="logo"
-                    />
-                  </Button>
-                </div>
+              {/* <div className="flex gap-4">
+                <Button 
+                  className="h-10 flex-1 gap-3" 
+                  variant="outlined"
+                  onClick={() => window.location.href = route('auth.google')}
+                  type="button"
+                >
+                  <span>{t('common.google_login')}</span>
+                  <img
+                    className="size-5.5"
+                    src="/assets/google.svg"
+                    alt="logo"
+                  />
+                </Button>
+              </div>
+              */}
               </div>
       
               <div className="dark:text-dark-300 mt-5 mb-3 flex justify-center text-xs text-gray-400">

@@ -18,10 +18,10 @@ class CategoryProduct extends Model
         });
     }
     protected $fillable = [
+        'uuid',
         'name',
         'description',
         'category_product_id'
-
     ];
 
     public function products()

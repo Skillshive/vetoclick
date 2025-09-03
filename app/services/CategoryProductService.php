@@ -72,7 +72,7 @@ class CategoryProductService implements ServiceInterface
     }
 
     public function searchByName(string $name, int $perPage = 15): LengthAwarePaginator
-    { dd($name);
+    {
         return CategoryProduct::with('parent_category')
             ->where('name', 'LIKE', "%{$name}%")
             ->paginate($perPage);

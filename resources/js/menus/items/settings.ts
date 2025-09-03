@@ -52,7 +52,7 @@ const AnimalsMenu: MenuItem[] = [
         type: 'item' as const,
       },
       {
-        id: 'allProducts',
+        id: 'categoryProducts',
         title: 'common.menu.categories_list',
         path: route('category-products.index'),
         type: 'item' as const,

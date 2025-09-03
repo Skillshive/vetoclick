@@ -5,7 +5,7 @@ export const categoryProductFormSchema = z.object({
     .min(1, 'validation.category_name_required')
     .min(2, 'validation.category_name_min_length')
     .max(100, 'validation.category_name_max_length')
-    .regex(/^[a-zA-Z\s]+$/, 'validation.category_name_invalid_chars'),
+    .regex(/^[a-zA-ZÀ-ÿ\s\-']+$/, 'validation.category_name_invalid_chars'),
   description: z.string()
     .max(500, 'validation.description_max_length')
     .optional()
