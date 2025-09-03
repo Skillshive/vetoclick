@@ -14,14 +14,37 @@ class SpeciesResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $perPage = $request->get('breeds_per_page', 8);
+        $currentPage = $request->get('breeds_page', 1);
+
         return [
+            'id' => $this->id,
             'uuid' => $this->uuid,
             'name' => $this->name,
             'description' => $this->description,
             'image' => $this->getImagePath(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'breeds' => $this->whenLoaded('breeds'),
+            'breeds' => $this->when($this->relationLoaded('breeds'), function () use ($perPage, $currentPage) {
+                $breeds = $this->breeds()->paginate($perPage, ['*'], 'page', $currentPage);
+                return [
+                    'data' => \App\Http\Resources\BreedResource::collection($breeds->items()),
+                    'meta' => [
+                        'current_page' => $breeds->currentPage(),
+                        'from' => $breeds->firstItem(),
+                        'last_page' => $breeds->lastPage(),
+                        'per_page' => $breeds->perPage(),
+                        'to' => $breeds->lastItem(),
+                        'total' => $breeds->total(),
+                    ],
+                    'links' => [
+                        'first' => $breeds->url(1),
+                        'last' => $breeds->url($breeds->lastPage()),
+                        'prev' => $breeds->previousPageUrl(),
+                        'next' => $breeds->nextPageUrl(),
+                    ]
+                ];
+            }),
         ];
     }
 }

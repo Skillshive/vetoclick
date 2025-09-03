@@ -141,7 +141,7 @@ class SpeciesController extends Controller
     public function edit(string $uuid): Response
     {
         try {
-            $species = $this->speciesService->getByUuid($uuid)?->load('image');
+            $species = $this->speciesService->getByUuid($uuid)?->load(['image', 'breeds.image']);
 
             if (!$species) {
                 return Inertia::render('Error', [

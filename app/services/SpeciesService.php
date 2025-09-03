@@ -35,7 +35,7 @@ class SpeciesService implements ServiceInterface
      */
     public function getByUuid(string $uuid): ?Species
     {
-        return Species::where('uuid', $uuid)->first();
+        return Species::with(['image', 'breeds'])->where('uuid', $uuid)->first();
     }
 
     /**
