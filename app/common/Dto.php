@@ -19,7 +19,7 @@ abstract class DTO implements DtoInterface
 
     public static function fromRequest(Request $request)
     {
-        return static::fromArray($request->all());
+        return static::fromArray($request->input());
     }
 
     public static function fromModel(Model $model)
