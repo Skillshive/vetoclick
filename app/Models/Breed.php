@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Breed extends Model
 {
-    use HasFactory;
+    use HasFactory, HasImage;
 
     protected static function boot()
     {
@@ -19,11 +20,12 @@ class Breed extends Model
     }
     
     protected $fillable = [
-        'species_id',            
-        'breed_name',         
-        'avg_weight_kg',      
-        'life_span_years',    
-        'common_health_issues'
+        'species_id',
+        'breed_name',
+        'avg_weight_kg',
+        'life_span_years',
+        'common_health_issues',
+        'image_id'
     ];
 
     public function pets()
@@ -34,5 +36,10 @@ class Breed extends Model
     public function species()
     {
         return $this->belongsTo(Species::class);
+    }
+
+    public function getImagePath()
+    {
+        return $this->image ? $this->image->path : null;
     }
 }
