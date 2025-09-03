@@ -10,7 +10,7 @@ return [
     'email' => 'Email',
     'password' => 'Password',
     'avatar' => 'Avatar',
-    
+
     // Login page specific translations
     'welcome_back' => 'Welcome Back',
     'please_sign_in_to_continue' => 'Please sign in to continue',
@@ -182,6 +182,35 @@ return [
     'min' => 'Min',
     'max' => 'Max',
     'select_value' => 'Select Value',
+
+    // Breed specific translations
+    'breeds' => 'Breeds',
+    'breed' => 'Breed',
+    'breed_name' => 'Breed Name',
+    'avg_weight_kg' => 'Average Weight (kg)',
+    'life_span_years' => 'Life Span (years)',
+    'common_health_issues' => 'Common Health Issues',
+    'breed_image' => 'Breed Image',
+    'create_breed' => 'Create Breed',
+    'edit_breed' => 'Edit Breed',
+    'store_breed' => 'Store Breed',
+    'store_breed_info' => 'Store a new breed for this species',
+    'create_breed_info' => 'Create a new breed for this species',
+    'edit_breed_info' => 'Edit the information for this breed',
+    'manage_breeds_for_species' => 'Manage breeds for this species',
+    'no_breeds_found' => 'No breeds found',
+    'create_first_breed' => 'Create your first breed',
+    'breed_created' => 'Breed created successfully',
+    'breed_updated' => 'Breed updated successfully',
+    'breed_deleted' => 'Breed deleted successfully',
+    'confirm_delete_breed' => 'Are you sure you want to delete this breed? Once deleted, it cannot be restored.',
+    'breed_avg_weight' => 'Avg Weight',
+    'breed_life_span' => 'Life Span',
+    'breed_health_issues' => 'Common Health Issues',
+    'no_additional_info' => 'No additional information',
+    'editing_breed' => 'Editing breed: :name',
+    'weight_unit' => 'kg',
+    'years' => 'years',
 
     "menu" => [
           "dashboard" => "Dashboard",
