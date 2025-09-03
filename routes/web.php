@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\BreedController;
 require_once 'common.php';
 
 // Language routes
@@ -44,6 +45,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('{species}/delete', 'destroy')->name('destroy');
             Route::get('{species}/show', 'show')->name('show');
             Route::post('{species}/update', 'update')->name('update');
+        });
+});
+
+// Breed routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('breeds.')->prefix('breeds')
+        ->controller(BreedController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::post('store', 'store')->name('store');
+            Route::get('{breed}/edit', 'edit')->name('edit');
+            Route::post('{breed}/update', 'update')->name('update');
+            Route::delete('{breed}/delete', 'destroy')->name('destroy');
+            // Get breeds for a specific species
+            Route::get('species/{speciesUuid}', 'getBySpecies')->name('by-species');
         });
 });
 
