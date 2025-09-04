@@ -135,12 +135,12 @@ export default function Login() {
                 </form>
                
       
-                <div className="text-tiny-plus my-7 flex items-center">
+                {/* <div className="text-tiny-plus my-7 flex items-center">
                   <div className="dark:bg-dark-500 h-px flex-1 bg-gray-200"></div>
                   <p className="mx-3">{t('common.or')}</p>
                   <div className="dark:bg-dark-500 h-px flex-1 bg-gray-200"></div>
                 </div>
-      
+       */}
               {/* <div className="flex gap-4">
                 <Button 
                   className="h-10 flex-1 gap-3" 
