@@ -347,7 +347,8 @@ export default function Profile({ user }: ProfilePageProps) {
                 <p className="dark:text-dark-200 mt-0.5 text-sm text-gray-500">
                   {t('common.update_password_description')}
                 </p>
-              
+                          <div className="dark:bg-dark-500 my-5 h-px bg-gray-200" />
+
               <form onSubmit={handlePasswordSubmit} className="mt-4">
                 <div className="grid grid-cols-1 gap-4 [&_.prefix]:pointer-events-none">
                   <Input
