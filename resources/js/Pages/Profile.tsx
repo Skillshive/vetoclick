@@ -139,11 +139,10 @@ export default function Profile({ user }: ProfilePageProps) {
   return (
         <MainLayout>
     <Page title={t('common.profile')}>
-   <div className="transition-content w-full pb-5">
-        <div
-          className="flex h-full w-full flex-col"
-        >
-          <Card className="my-5 mx-10 p-6">
+  <div className="transition-content px-(--margin-x) pb-6 my-5">
+                  <div className="grid grid-cols-12 place-content-start gap-4 sm:gap-5 lg:gap-6">
+                    <div className="col-span-12 lg:col-span-8">
+                      <Card className="p-3 sm:px-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
                       <h5 className="dark:text-dark-50 text-lg font-medium text-gray-800">
               {t('common.profile')}
             </h5>
@@ -338,17 +337,16 @@ export default function Profile({ user }: ProfilePageProps) {
                 </Button>
               </div>
             </form>
-
-            {/* Password Update Section */}
-            <div className="mt-8">
-              <div>
+</Card>
+</div>
+                    <div className="col-span-12 space-y-4 sm:space-y-5 lg:col-span-4 lg:space-y-6">
+                      <Card className="p-4 sm:px-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
                 <h6 className="dark:text-dark-100 text-base font-medium text-gray-800">
                   {t('common.change_password')}
                 </h6>
                 <p className="dark:text-dark-200 mt-0.5 text-sm text-gray-500">
                   {t('common.update_password_description')}
                 </p>
-              </div>
               
               <form onSubmit={handlePasswordSubmit} className="mt-4">
                 <div className="grid grid-cols-1 gap-4 [&_.prefix]:pointer-events-none">
@@ -380,7 +378,6 @@ export default function Profile({ user }: ProfilePageProps) {
                     }}
                     error={passwordErrors.current_password || passwordValidationErrors.current_password}
                   />
-                  <div className="grid grid-cols-2 gap-4">
                     <Input
                       type="password"
                       placeholder={t('common.new_password')}
@@ -441,7 +438,6 @@ export default function Profile({ user }: ProfilePageProps) {
                       }}
                       error={passwordErrors.password_confirmation || passwordValidationErrors.password_confirmation}
                     />
-                  </div>
                 </div>
 
                 <div className="mt-6 flex justify-end space-x-3">
@@ -465,10 +461,11 @@ export default function Profile({ user }: ProfilePageProps) {
                   </Button>
                 </div>
               </form>
-            </div>
-            </Card>
-            </div>
-          </div>
+</Card></div>
+</div>
+
+</div>
+          
     </Page>
         </MainLayout>
   );
