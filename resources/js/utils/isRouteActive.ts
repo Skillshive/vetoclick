@@ -11,12 +11,10 @@ export function isRouteActive(
     path: string | undefined,
     pathname: string | undefined,
 ): boolean {
-    // Return false if either path or pathname is undefined
     if (!path || !pathname) {
         return false;
     }
 
-    // Check if the given path matches the current pathname using react-router's matchPath
     return !!matchPath({ path, end: false }, pathname);
 }
 

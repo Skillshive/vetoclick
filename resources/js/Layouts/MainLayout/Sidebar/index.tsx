@@ -22,7 +22,7 @@ export function Sidebar() {
 
   return (
     <>
-      <MainPanel activeSegmentPath={activeSegmentPath} />
+      <MainPanel />
       <PrimePanel close={close} pathname={url} />
     </>
   );

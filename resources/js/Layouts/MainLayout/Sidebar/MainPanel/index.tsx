@@ -1,26 +1,19 @@
 import { Link } from "@inertiajs/react";
 import clsx from "clsx";
-import { SetStateAction, Dispatch } from "react";
 
 import { Menu } from "./Menu";
 import { Profile } from "../../Profile";
 import { NavigationTree } from "@/@types/navigation";
-import { SegmentPath } from "..";
 import { useThemeContext } from "@/contexts/theme/context";
-import { settings } from "@/navigation/segments/settings";
 import { Logo } from "./Logo";
 
 
 interface MainPanelProps {
   nav?: NavigationTree[];
-  setActiveSegmentPath?: Dispatch<SetStateAction<SegmentPath>>;
-  activeSegmentPath: SegmentPath;
 }
 
 export function MainPanel({
   nav,
-  setActiveSegmentPath,
-  activeSegmentPath,
 }: MainPanelProps) {
   const { cardSkin } = useThemeContext();
 
@@ -32,14 +25,13 @@ export function MainPanel({
           cardSkin === "shadow" ? "dark:bg-dark-750" : "dark:bg-dark-900",
         )}
       >
-        {/* Application Logo */}
         <div className="flex pt-3.5">
           <Link href="/">
             <Logo className="size-10" />
           </Link>
         </div>
 
-        <Menu nav={nav} activeSegmentPath={activeSegmentPath} setActiveSegmentPath={setActiveSegmentPath} />
+        <Menu nav={nav} />
 
         <div className="flex flex-col items-center space-y-3 py-2.5">
           {/* <Item
