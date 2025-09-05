@@ -10,9 +10,8 @@ export const categoryProductFormSchema = z.object({
     .max(500, 'validation.description_max_length')
     .optional()
     .or(z.literal('')),
-  category_product_id: z.number()
-    .int('validation.parent_category_invalid')
-    .positive('validation.parent_category_invalid')
+  category_product_id: z.string()
+    .uuid('validation.parent_category_invalid')
     .optional()
     .nullable(),
 });

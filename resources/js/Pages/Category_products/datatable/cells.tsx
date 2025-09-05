@@ -1,24 +1,15 @@
 import { useState } from "react";
-import clsx from "clsx";
 import {
-  EllipsisHorizontalIcon,
-  EyeIcon,
   PencilIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  Transition,
-} from "@headlessui/react";
 import { Button } from "@/components/ui";
 import {
   ConfirmModal,
   type ConfirmMessages,
 } from "@/components/shared/ConfirmModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/components/common/Toast/ToastContext";
 import { CategoryProduct } from "@/types/CategoryProducts";
 
 interface CellProps {
@@ -53,10 +44,33 @@ export function DescriptionCell({ getValue }: CellProps) {
   const { t } = useTranslation();
   const description = getValue();
   return (
+   <div className="max-w-xs">
+      {description ? (
+        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+          {description}
+        </p>
+      ) : (
+        <p className="badge-base badge border border-gray-300 text-gray-900 dark:border-surface-1 dark:text-dark-50">
+          {t('common.no_description')}
+        </p>
+      )}
+    </div>
+  );
+}
+export function CategoryCell({ getValue }: CellProps) {
+  const { t } = useTranslation();
+  const category_product = getValue();
+  return (
     <div className="max-w-xs">
-      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-        {description || t('common.no_description')}
-      </p>
+      {category_product ? (
+        <p className="badge-base badge this:primary border border-this/30 text-this dark:border-this-lighter/30 dark:text-this-lighter">
+          {category_product}
+        </p>
+      ) : (
+        <p className="badge-base badge border border-gray-300 text-gray-900 dark:border-surface-1 dark:text-dark-50">
+          {t('common.no_category_product')}
+        </p>
+      )}
     </div>
   );
 }
@@ -65,7 +79,6 @@ export function CreatedAtCell({ getValue }: CellProps) {
   const { locale } = useTranslation();
   const createdAt = getValue();
   
-  // Use appropriate locale for date formatting
   const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
   
   const formattedDate = new Date(createdAt).toLocaleDateString(dateLocale, {
@@ -83,6 +96,7 @@ export function CreatedAtCell({ getValue }: CellProps) {
 
 export function ActionsCell({ row, table, setSelectedCategoryProduct, setIsModalOpen }: ActionsCellProps) {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
@@ -114,6 +128,10 @@ export function ActionsCell({ row, table, setSelectedCategoryProduct, setIsModal
       table.options.meta?.deleteRow?.(row);
       setDeleteSuccess(true);
       setConfirmDeleteLoading(false);
+      showToast({
+        type: 'success',
+        message: t('common.category_product_deleted_success'),
+      });
     }, 1000);
   };
 
@@ -121,78 +139,33 @@ export function ActionsCell({ row, table, setSelectedCategoryProduct, setIsModal
 
   return (
     <>
-      <div className="flex justify-center">
-        <Menu as="div" className="relative inline-block text-left">
-          <MenuButton
-            as={Button}
-            variant="flat"
-            isIcon
-            className="size-7 rounded-full"
-          >
-            <EllipsisHorizontalIcon className="size-4.5" />
-          </MenuButton>
-          <Transition
-            as={MenuItems}
-            enter="transition ease-out"
-            enterFrom="opacity-0 translate-y-2"
-            enterTo="opacity-100 translate-y-0"
-            leave="transition ease-in"
-            leaveFrom="opacity-100 translate-y-0"
-            leaveTo="opacity-0 translate-y-2"
-            className="dark:border-dark-500 dark:bg-dark-750 absolute z-100 mt-1.5 min-w-[10rem] rounded-lg border border-gray-300 bg-white py-1 shadow-lg shadow-gray-200/50 outline-hidden focus-visible:outline-hidden ltr:right-0 rtl:left-0 dark:shadow-none"
-          >
-            <MenuItem>
-              {({ focus }) => (
-                <button
-                  onClick={() => {
-                    setSelectedCategoryProduct(row.original);
-                    setIsModalOpen(true);
-                  }}
-                  className={clsx(
-                    "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
-                    focus &&
-                      "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
-                  )}
-                >
-                  <EyeIcon className="size-4.5 stroke-1" />
-                  <span>{t('common.view')}</span>
-                </button>
-              )}
-            </MenuItem>
-            <MenuItem>
-              {({ focus }) => (
-                <button
-                  onClick={() => {
-                    setSelectedCategoryProduct(row.original);
-                    setIsModalOpen(true);
-                  }}
-                  className={clsx(
-                    "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
-                    focus &&
-                      "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
-                  )}
-                >
-                  <PencilIcon className="size-4.5 stroke-1" />
-                  <span>{t('common.edit')}</span>
-                </button>
-              )}
-            </MenuItem>
-            <MenuItem>
-              {({ focus }) => (
-                <button
-                  onClick={openModal}
-                  className={clsx(
-                    "this:error text-this dark:text-this-light flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
-                    focus && "bg-this/10 dark:bg-this-light/10",
-                  )}
-                >
-                  <TrashIcon className="size-4.5 stroke-1" />
-                  <span>{t('common.delete')}</span>
-                </button>
-              )}
-            </MenuItem>
-          </Transition>
-        </Menu>
+      <div className="flex justify-center items-center gap-3"> 
+        <Button
+          type="button"
+          variant="flat"
+          color="info"
+          isIcon
+          className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
+          title={t('common.edit')}
+          onClick={() => {
+            setSelectedCategoryProduct(row.original);
+            setIsModalOpen(true);
+          }}
+        >
+          <PencilIcon className="size-4 stroke-1.5" />
+        </Button>
+
+        <Button
+          type="button"
+          variant="flat"
+          color="error"
+          isIcon
+          className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md hover:bg-red-50 dark:hover:bg-red-900/20"
+          title={t('common.delete')}
+          onClick={openModal}
+        >
+          <TrashIcon className="size-4 stroke-1.5" />
+        </Button>
       </div>
 
       <ConfirmModal

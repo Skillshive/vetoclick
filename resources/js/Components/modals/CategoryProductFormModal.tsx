@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm, router } from '@inertiajs/react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Button, Input, Textarea } from '@/components/ui';
+import ReactSelect from '@/components/ui/ReactSelect';
 import { CategoryProduct, CategoryProductFormData } from '@/types/CategoryProducts';
 import { useToast } from '@/components/common/Toast/ToastContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -9,17 +10,17 @@ import { categoryProductFormSchema } from '@/schemas/categoryProductSchema';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { TagIcon } from 'lucide-react';
 
-// Declare route helper
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 interface CategoryProductFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     categoryProduct?: CategoryProduct | null;
+    parentCategories?: CategoryProduct[];
     errors?: Record<string, string>;
 }
 
-export default function CategoryProductFormModal({ isOpen, onClose, categoryProduct, errors }: CategoryProductFormModalProps) {
+export default function CategoryProductFormModal({ isOpen, onClose, categoryProduct, parentCategories = [], errors }: CategoryProductFormModalProps) {
     const { showToast } = useToast();
     const { t } = useTranslation();
     const isEditing = !!categoryProduct;
@@ -33,7 +34,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
     const { data, setData, post, put, processing, reset } = useForm<CategoryProductFormData>({
         name: categoryProduct?.name || '',
         description: categoryProduct?.description || '',
-        category_product_id: categoryProduct?.category_product_id || undefined,
+        category_product_id: categoryProduct?.category_product_id || null,
     });
 
     React.useEffect(() => {
@@ -41,7 +42,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
             setData({
                 name: categoryProduct.name,
                 description: categoryProduct.description || '',
-                category_product_id: categoryProduct.category_product_id || undefined,
+                category_product_id: categoryProduct.category_product_id || null,
             });
         } else {
             reset();
@@ -51,7 +52,6 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Validate form data with Zod
         const result = categoryProductFormSchema.safeParse(data);
         if (!result.success) {
             const errors = result.error.flatten().fieldErrors;
@@ -64,7 +64,6 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
         }
         
         if (isEditing) {
-            // Update existing category product using UUID
             put(route('category-products.update', categoryProduct.uuid), {
                 onSuccess: () => {
                     showToast({
@@ -74,7 +73,10 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                     });
                     setValidationErrors({});
                     onClose();
-                    router.reload();
+                    router.visit(window.location.href, {
+                      preserveState: false, 
+                      preserveScroll: true
+                    });
                 },
                 onError: () => {
                     showToast({
@@ -85,7 +87,6 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                 }
             });
         } else {
-            // Create new category product
             post(route('category-products.store'), {
                 onSuccess: () => {
                     showToast({
@@ -96,7 +97,10 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                     reset();
                     setValidationErrors({});
                     onClose();
-                    router.reload();
+                    router.visit(window.location.href, {
+                      preserveState: false,
+                      preserveScroll: true
+                    });
                 },
                 onError: () => {
                     showToast({
@@ -195,7 +199,40 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                             <p className="text-red-500 text-sm mt-1">{errors?.name || validationErrors.name}</p>
                                         )}
                                     </div>
-
+    <div>
+                                        <label htmlFor="parent_category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            {t('common.parent_category_label')}
+                                        </label>
+                                        <ReactSelect
+                                            id="parent_category"
+                                            value={
+                                                data.category_product_id
+                                                    ? {
+                                                        value: data.category_product_id,
+                                                        label: parentCategories?.find(cat => cat.uuid === data.category_product_id)?.name || ''
+                                                    }
+                                                    : null
+                                            }
+                                            onChange={(option) => {
+                                                setData('category_product_id', option ? option.value : undefined);
+                                            }}
+                                            options={[
+                                                { value: '', label: t('common.no_parent_category') },
+                                                ...parentCategories
+                                                    ?.filter(cat => !isEditing || cat.uuid !== categoryProduct?.uuid)
+                                                    .map((category) => ({
+                                                        value: category.uuid,
+                                                        label: category.name
+                                                    })) || []
+                                            ]}
+                                            placeholder={t('common.no_parent_category')}
+                                            className={errors?.category_product_id ? 'border-red-500' : ''}
+                                            error={!!errors?.category_product_id}
+                                        />
+                                        {errors?.category_product_id && (
+                                            <p className="text-red-500 text-sm mt-1">{errors.category_product_id}</p>
+                                        )}
+                                    </div>
                                     <div>
                                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             {t('common.description_label')}
@@ -216,16 +253,17 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                     <div className="flex items-center justify-end space-x-3 pt-4">
                                         <Button
                                             type="button"
-                                            variant="outline"
+                                            variant="outlined"
                                             onClick={handleClose}
                                             disabled={processing}
-                                        >
+                                            >
                                             {t('common.cancel')}
                                         </Button>
                                         <Button
                                             type="submit"
+                                            variant="filled"
                                             disabled={processing}
-                                            className="bg-blue-600 hover:bg-blue-700"
+                                            color="primary"
                                         >
                                             {processing
                                                 ? (isEditing ? t('common.updating') : t('common.creating'))

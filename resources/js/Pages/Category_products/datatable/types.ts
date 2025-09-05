@@ -18,6 +18,7 @@ export interface CategoryProductDatatableProps {
       next: string | null;
     };
   };
+  parentCategories: CategoryProduct[];
   filters: {
     search?: string;
     per_page: number;

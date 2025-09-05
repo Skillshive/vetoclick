@@ -10,6 +10,7 @@ import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
 import { useBreakpointsContext } from "@/contexts/breakpoint/context";
 import { CategoryProduct } from "@/types/CategoryProducts";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 interface ToolbarProps {
   table: any;
@@ -18,6 +19,7 @@ interface ToolbarProps {
   setSelectedCategoryProduct: (categoryProduct: CategoryProduct | null) => void;
   setIsModalOpen: (open: boolean) => void;
 }
+
 
 export function Toolbar({
   table,
@@ -29,7 +31,12 @@ export function Toolbar({
   const { smAndDown } = useBreakpointsContext();
   const { t } = useTranslation();
   const isFullScreenEnabled = table.getState().tableSettings?.enableFullScreen;
-
+  
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: "Stock Management", path: "/tables" },
+    { title:             t('common.category_product_management')
+ },
+  ];
   return (
     <div className="table-toolbar">
       <div
@@ -38,11 +45,8 @@ export function Toolbar({
           isFullScreenEnabled ? "px-4 sm:px-5" : "px-(--margin-x) pt-4",
         )}
       >
-        <div className="min-w-0">
-          <h2 className="dark:text-dark-50 truncate text-xl font-medium tracking-wide text-gray-800">
-            {t('common.category_product_management')}
-          </h2>
-        </div>
+        <div>
+          <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />        </div>
         <div className="flex gap-2">
         </div>
       </div>
@@ -57,7 +61,6 @@ export function Toolbar({
             onChange={(e) => {
               const value = e.target.value;
               setGlobalFilter(value);
-              // Debounced search - you can add router.get here for server-side search
               table.setGlobalFilter(value);
             }}
             prefix={<MagnifyingGlassIcon className="size-4" />}
@@ -72,12 +75,11 @@ export function Toolbar({
         <div className="flex gap-2 items-center">
         <Button
             variant="filled"
+            color="primary"
             className="h-8 gap-2 rounded-md px-3 text-xs"
             onClick={() => {
-              console.log('Add Category Product button clicked');
               setSelectedCategoryProduct(null);
               setIsModalOpen(true);
-              console.log('Modal should be open now');
             }}
           >
             <PlusIcon className="size-4" />

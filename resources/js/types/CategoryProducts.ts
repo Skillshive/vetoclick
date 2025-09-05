@@ -6,7 +6,7 @@ export interface CategoryProduct {
     uuid: string;
     name: string;
     description?: string;
-    category_product_id?: number;
+    category_product_id?: string;
     parent_category?: CategoryProduct;
     created_at: string;
     updated_at: string;
@@ -21,6 +21,7 @@ export interface CategoryProductResource {
 
 export interface CategoryProductManagementPageProps {
     categoryProducts: CategoryProductResource;
+    parentCategories: CategoryProduct[];
     filters: Filters & {
         search?: string;
         per_page?: number;
@@ -33,7 +34,7 @@ export interface CategoryProductManagementPageProps {
 export interface CategoryProductFormData {
     name: string;
     description?: string;
-    category_product_id?: number;
+    category_product_id?: string;
 }
 
 export interface CategoryProductShowPageProps {

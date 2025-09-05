@@ -10,7 +10,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Transition } from "@headlessui/react";
 
@@ -25,6 +25,7 @@ import { getUserAgentBrowser } from "@/utils/dom/getUserAgentBrowser";
 import { useThemeContext } from "@/contexts/theme/context";
 import CategoryProductFormModal from "@/components/modals/CategoryProductFormModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/components/common/Toast/ToastContext";
 import {
   ConfirmModal,
   type ConfirmMessages,
@@ -38,9 +39,10 @@ import { useCategoryProductTable } from "./hooks";
 
 const isSafari = getUserAgentBrowser() === "Safari";
 
-export default function CategoryProductDatatable({ categoryProducts: categoryProductsData, filters }: CategoryProductDatatableProps) {
+export default function CategoryProductDatatable({ categoryProducts: categoryProductsData, parentCategories, filters }: CategoryProductDatatableProps) {
   const { cardSkin } = useThemeContext();
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   // Use custom hook for all table state management
   const {
@@ -78,7 +80,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
   const columns = createColumns({ setSelectedCategoryProduct, setIsModalOpen, t });
 
   const table = useReactTable({
-    data: categoryProducts,
+    data: categoryProducts.data,
     columns: columns,
     state: {
       globalFilter,
@@ -122,13 +124,28 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
     setBulkDeleteSuccess(false);
   };
 
+  const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
+
   const handleBulkDeleteRows = () => {
     setConfirmBulkDeleteLoading(true);
+    const selectedRows = table.getSelectedRowModel().rows;
+    const deleteCount = selectedRows.length;
+    setBulkDeleteCount(deleteCount);
+
     setTimeout(() => {
-      const selectedRows = table.getSelectedRowModel().rows;
       table.options.meta?.deleteRows?.(selectedRows);
       setBulkDeleteSuccess(true);
       setConfirmBulkDeleteLoading(false);
+      // Show success toast
+      showToast({
+        type: 'success',
+        message: t('common.category_products_deleted_success', { count: deleteCount }),
+      });
+      // Reset success state after showing message
+      setTimeout(() => {
+        setBulkDeleteSuccess(false);
+        setBulkDeleteCount(0);
+      }, 3000);
     }, 1000);
   };
 
@@ -343,6 +360,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
         setSelectedCategoryProduct(null);
       }}
       categoryProduct={selectedCategoryProduct}
+      parentCategories={parentCategories.data}
     />
 
     <ConfirmModal
@@ -354,7 +372,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
         },
         success: {
           title: t('common.category_products_deleted'),
-          description: t('common.category_products_deleted_success', { count: table.getSelectedRowModel().rows.length }),
+          description: t('common.category_products_deleted_success', { count: bulkDeleteCount }),
         },
       }}
       onOk={handleBulkDeleteRows}

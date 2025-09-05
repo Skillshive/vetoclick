@@ -7,10 +7,10 @@ import {
   CategoryProductNameCell,
   DescriptionCell,
   CreatedAtCell,
-  ActionsCell
+  ActionsCell,
+  CategoryCell
 } from "./cells";
 import { CategoryProduct } from "@/types/CategoryProducts";
-import { useTranslation } from "@/hooks/useTranslation";
 
 interface ColumnsProps {
   setSelectedCategoryProduct: (categoryProduct: CategoryProduct | null) => void;
@@ -35,6 +35,12 @@ export const createColumns = ({ setSelectedCategoryProduct, setIsModalOpen, t }:
     accessorKey: "description",
     header: t('common.description'),
     cell: DescriptionCell,
+  },
+  {
+    id: "parentCategory",
+    accessorKey: "category_product",
+    header: t('common.parentCategory'),
+    cell: CategoryCell,
   },
   {
     id: "created_at",
