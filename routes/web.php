@@ -87,6 +87,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('category-products', CategoryProductController::class)->names('category-products');
 });
 
+// Category Blog routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('category-blogs', \App\Http\Controllers\CategoryBlogController::class)->names('category-blogs');
+});
+
 // Product routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
