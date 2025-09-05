@@ -68,6 +68,11 @@ return [
         // Species specific attributes
         'species.name' => 'species name',
         'species.description' => 'species description',
+
+        // Category Product specific attributes
+        'category_product.name' => 'category name',
+        'category_product.description' => 'category description',
+        'category_product.category_product_id' => 'parent category',
     ],
     
     // Custom validation messages for species
@@ -130,5 +135,24 @@ return [
         "phone_placeholder" => "Enter phone number",
         "current_password_placeholder" => "Enter current password",
         "new_password_placeholder" => "Enter new password",
-        "confirm_password_placeholder" => "Confirm new password"
+        "confirm_password_placeholder" => "Confirm new password",
+
+        // Category Product validation messages
+        "category_name_required" => "Category name is required",
+        "category_name_min_length" => "Category name must be at least 2 characters",
+        "category_name_max_length" => "Category name must be less than 100 characters",
+        "category_name_invalid_chars" => "Category name can only contain letters, spaces, hyphens and apostrophes",
+        "description_max_length" => "Description must be less than 500 characters",
+        "parent_category_invalid" => "Parent category must be a valid positive integer",
+
+        // Search and pagination validation
+        "search_max_length" => "Search query must be less than 255 characters",
+        "per_page_invalid" => "Items per page must be a valid number",
+        "per_page_min" => "Items per page must be at least 5",
+        "per_page_max" => "Items per page cannot exceed 100",
+
+        // Bulk operations validation
+        "no_items_selected" => "No items selected for deletion",
+        "too_many_items_selected" => "Cannot delete more than 50 items at once",
+        "invalid_uuid" => "Invalid UUID format"
 ];

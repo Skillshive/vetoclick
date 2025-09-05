@@ -68,6 +68,11 @@ return [
         // Species specific attributes
         'species.name' => 'اسم النوع',
         'species.description' => 'وصف النوع',
+
+        // Category Product specific attributes
+        'category_product.name' => 'اسم الفئة',
+        'category_product.description' => 'وصف الفئة',
+        'category_product.category_product_id' => 'الفئة الأم',
     ],
     
     // Custom validation messages for species
@@ -130,5 +135,25 @@ return [
         "phone_placeholder" => "أدخل رقم الهاتف",
         "current_password_placeholder" => "أدخل كلمة المرور الحالية",
         "new_password_placeholder" => "أدخل كلمة المرور الجديدة",
-        "confirm_password_placeholder" => "أكد كلمة المرور الجديدة"
+        "confirm_password_placeholder" => "أكد كلمة المرور الجديدة",
+
+        // Category Product validation messages
+        "category_name_required" => "اسم الفئة مطلوب",
+        "category_name_min_length" => "يجب أن يحتوي اسم الفئة على حرفين على الأقل",
+        "category_name_max_length" => "يجب أن يحتوي اسم الفئة على أقل من 100 حرف",
+        "category_name_invalid_chars" => "يمكن أن يحتوي اسم الفئة على الحروف والمسافات والشرطات والعلامات فقط",
+        "description_max_length" => "يجب أن يحتوي الوصف على أقل من 500 حرف",
+        "parent_category_invalid" => "الفئة الأم يجب أن تكون رقماً صحيحاً موجباً",
+
+        // Search and pagination validation
+        "search_max_length" => "يجب أن تحتوي استعلام البحث على أقل من 255 حرف",
+        "per_page_invalid" => "عدد العناصر في الصفحة يجب أن يكون رقماً صحيحاً",
+        "per_page_min" => "عدد العناصر في الصفحة يجب أن يكون 5 على الأقل",
+        "per_page_max" => "عدد العناصر في الصفحة لا يمكن أن يتجاوز 100",
+
+        // Bulk operations validation
+        "no_items_selected" => "لم يتم تحديد أي عناصر للحذف",
+        "too_many_items_selected" => "لا يمكن حذف أكثر من 50 عنصراً في المرة الواحدة",
+        "invalid_uuid" => "تنسيق UUID غير صحيح"
+
 ];

@@ -68,6 +68,11 @@ return [
         // Species specific attributes
         'species.name' => 'nom de l\'espèce',
         'species.description' => 'description de l\'espèce',
+
+        // Category Product specific attributes
+        'category_product.name' => 'nom de la catégorie',
+        'category_product.description' => 'description de la catégorie',
+        'category_product.category_product_id' => 'catégorie parente',
     ],
     
     // Custom validation messages for species
@@ -130,6 +135,25 @@ return [
         "phone_placeholder" => "Entrez le numéro de téléphone",
         "current_password_placeholder" => "Entrez le mot de passe actuel",
         "new_password_placeholder" => "Entrez le nouveau mot de passe",
-        "confirm_password_placeholder" => "Confirmez le nouveau mot de passe"
-    
+        "confirm_password_placeholder" => "Confirmez le nouveau mot de passe",
+
+        // Category Product validation messages
+        "category_name_required" => "Le nom de la catégorie est requis",
+        "category_name_min_length" => "Le nom de la catégorie doit contenir au moins 2 caractères",
+        "category_name_max_length" => "Le nom de la catégorie doit contenir moins de 100 caractères",
+        "category_name_invalid_chars" => "Le nom de la catégorie ne peut contenir que des lettres, des espaces, des tirets et des apostrophes",
+        "description_max_length" => "La description doit contenir moins de 500 caractères",
+        "parent_category_invalid" => "La catégorie parente doit être un entier positif valide",
+
+        // Search and pagination validation
+        "search_max_length" => "La requête de recherche doit contenir moins de 255 caractères",
+        "per_page_invalid" => "Le nombre d'éléments par page doit être un nombre valide",
+        "per_page_min" => "Le nombre d'éléments par page doit être d'au moins 5",
+        "per_page_max" => "Le nombre d'éléments par page ne peut pas dépasser 100",
+
+        // Bulk operations validation
+        "no_items_selected" => "Aucun élément sélectionné pour la suppression",
+        "too_many_items_selected" => "Impossible de supprimer plus de 50 éléments à la fois",
+        "invalid_uuid" => "Format UUID invalide"
+
 ];
