@@ -24,6 +24,7 @@ import { PaginationSection } from "@/components/shared/table/PaginationSection";
 import { getUserAgentBrowser } from "@/utils/dom/getUserAgentBrowser";
 import { useThemeContext } from "@/contexts/theme/context";
 import CategoryProductFormModal from "@/components/modals/CategoryProductFormModal";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   ConfirmModal,
   type ConfirmMessages,
@@ -39,6 +40,7 @@ const isSafari = getUserAgentBrowser() === "Safari";
 
 export default function CategoryProductDatatable({ categoryProducts: categoryProductsData, filters }: CategoryProductDatatableProps) {
   const { cardSkin } = useThemeContext();
+  const { t } = useTranslation();
 
   // Use custom hook for all table state management
   const {
@@ -73,7 +75,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
   });
 
   // Create columns with modal handlers
-  const columns = createColumns({ setSelectedCategoryProduct, setIsModalOpen });
+  const columns = createColumns({ setSelectedCategoryProduct, setIsModalOpen, t });
 
   const table = useReactTable({
     data: categoryProducts,
@@ -134,7 +136,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
 
   return (
     <>
-    <Page title="React Table">
+    <Page title={t('common.category_products')}>
       <div className="transition-content w-full pb-5">
         <div
           className={clsx(
@@ -292,10 +294,10 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
                   <div className="w-full max-w-xl px-2 py-4 sm:absolute sm:-translate-y-1/2 sm:px-4">
                     <div className="dark:bg-dark-50 dark:text-dark-900 pointer-events-auto flex items-center justify-between rounded-lg bg-gray-800 px-3 py-2 font-medium text-gray-100 sm:px-4 sm:py-3">
                       <p>
-                        <span>{table.getSelectedRowModel().rows.length} Selected</span>
+                        <span>{table.getSelectedRowModel().rows.length} {t('common.selected')}</span>
                         <span className="max-sm:hidden">
                           {" "}
-                          from {table.getCoreRowModel().rows.length}
+                          {t('common.from')} {table.getCoreRowModel().rows.length}
                         </span>
                       </p>
                       <div className="flex space-x-1.5">
@@ -306,7 +308,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
                           disabled={table.getSelectedRowModel().rows.length <= 0}
                         >
                           <TrashIcon className="size-4 shrink-0" />
-                          <span className="max-sm:hidden">Delete</span>
+                          <span className="max-sm:hidden">{t('common.delete')}</span>
                         </Button>
                       </div>
                     </div>
@@ -348,11 +350,11 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
       onClose={closeBulkModal}
       messages={{
         pending: {
-          description: `Are you sure you want to delete ${table.getSelectedRowModel().rows.length} selected category products? Once deleted, they cannot be restored.`,
+          description: t('common.confirm_delete_category_products', { count: table.getSelectedRowModel().rows.length }),
         },
         success: {
-          title: "Category Products Deleted",
-          description: `Successfully deleted ${table.getSelectedRowModel().rows.length} category products.`,
+          title: t('common.category_products_deleted'),
+          description: t('common.category_products_deleted_success', { count: table.getSelectedRowModel().rows.length }),
         },
       }}
       onOk={handleBulkDeleteRows}

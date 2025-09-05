@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Button, Input, Textarea } from '@/components/ui';
 import { CategoryProduct, CategoryProductFormData } from '@/types/CategoryProducts';
@@ -74,6 +74,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                     });
                     setValidationErrors({});
                     onClose();
+                    router.reload();
                 },
                 onError: () => {
                     showToast({
@@ -95,6 +96,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                     reset();
                     setValidationErrors({});
                     onClose();
+                    router.reload();
                 },
                 onError: () => {
                     showToast({
@@ -139,7 +141,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                             <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
                                 <div className="flex items-center justify-between mb-4">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        {isEditing ? 'Modifier la catégorie de produit' : 'Nouvelle catégorie de produit'}
+                                        {isEditing ? t('common.edit_category_product') : t('common.new_category_product')}
                                     </DialogTitle>
                                     <button
                                         onClick={handleClose}
@@ -150,16 +152,16 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                 </div>
 
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                                    {isEditing 
-                                        ? `Modifiez les informations de la catégorie "${categoryProduct.name}"`
-                                        : 'Créez une nouvelle catégorie de produit dans le système'
+                                    {isEditing
+                                        ? t('common.edit_category_product_info', { name: categoryProduct.name })
+                                        : t('common.create_category_product_info')
                                     }
                                 </p>
 
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
                                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Nom de la catégorie *
+                                            {t('common.category_name_label')}
                                         </label>
                                         <Input
                                             id="name"
@@ -196,13 +198,13 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
 
                                     <div>
                                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Description
+                                            {t('common.description_label')}
                                         </label>
                                         <Textarea
                                             id="description"
                                             value={data.description || ''}
                                             onChange={(e) => setData('description', e.target.value)}
-                                            placeholder="Description de la catégorie (optionnel)"
+                                            placeholder={t('common.description_placeholder')}
                                             rows={3}
                                             className={errors?.description ? 'border-red-500' : ''}
                                         />
@@ -218,16 +220,16 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                             onClick={handleClose}
                                             disabled={processing}
                                         >
-                                            Annuler
+                                            {t('common.cancel')}
                                         </Button>
                                         <Button
                                             type="submit"
                                             disabled={processing}
                                             className="bg-blue-600 hover:bg-blue-700"
                                         >
-                                            {processing 
-                                                ? (isEditing ? 'Mise à jour...' : 'Création...') 
-                                                : (isEditing ? 'Mettre à jour' : 'Créer')
+                                            {processing
+                                                ? (isEditing ? t('common.updating') : t('common.creating'))
+                                                : (isEditing ? t('common.update') : t('common.create'))
                                             }
                                         </Button>
                                     </div>

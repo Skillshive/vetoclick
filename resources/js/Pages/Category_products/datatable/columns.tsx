@@ -3,20 +3,22 @@ import {
   SelectCell,
   SelectHeader,
 } from "@/components/shared/table/SelectCheckbox";
-import { 
-  CategoryProductNameCell, 
-  DescriptionCell, 
-  CreatedAtCell, 
-  ActionsCell 
+import {
+  CategoryProductNameCell,
+  DescriptionCell,
+  CreatedAtCell,
+  ActionsCell
 } from "./cells";
 import { CategoryProduct } from "@/types/CategoryProducts";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ColumnsProps {
   setSelectedCategoryProduct: (categoryProduct: CategoryProduct | null) => void;
   setIsModalOpen: (open: boolean) => void;
+  t: (key: string) => string;
 }
 
-export const createColumns = ({ setSelectedCategoryProduct, setIsModalOpen }: ColumnsProps): ColumnDef<CategoryProduct>[] => [
+export const createColumns = ({ setSelectedCategoryProduct, setIsModalOpen, t }: ColumnsProps): ColumnDef<CategoryProduct>[] => [
   {
     id: "select",
     header: SelectHeader,
@@ -25,19 +27,19 @@ export const createColumns = ({ setSelectedCategoryProduct, setIsModalOpen }: Co
   {
     id: "name",
     accessorKey: "name",
-    header: "Category Product",
+    header: t('common.category_product_name'),
     cell: CategoryProductNameCell,
   },
   {
     id: "description",
     accessorKey: "description",
-    header: "Description",
+    header: t('common.description'),
     cell: DescriptionCell,
   },
   {
     id: "created_at",
     accessorKey: "created_at",
-    header: "Created Date",
+    header: t('common.created_date'),
     cell: CreatedAtCell,
   },
   {

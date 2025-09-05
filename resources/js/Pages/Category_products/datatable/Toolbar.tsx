@@ -9,6 +9,7 @@ import { TableSettings } from "@/components/shared/table/TableSettings";
 import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
 import { useBreakpointsContext } from "@/contexts/breakpoint/context";
 import { CategoryProduct } from "@/types/CategoryProducts";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ToolbarProps {
   table: any;
@@ -18,14 +19,15 @@ interface ToolbarProps {
   setIsModalOpen: (open: boolean) => void;
 }
 
-export function Toolbar({ 
-  table, 
-  globalFilter, 
-  setGlobalFilter, 
-  setSelectedCategoryProduct, 
-  setIsModalOpen 
+export function Toolbar({
+  table,
+  globalFilter,
+  setGlobalFilter,
+  setSelectedCategoryProduct,
+  setIsModalOpen
 }: ToolbarProps) {
   const { smAndDown } = useBreakpointsContext();
+  const { t } = useTranslation();
   const isFullScreenEnabled = table.getState().tableSettings?.enableFullScreen;
 
   return (
@@ -38,7 +40,7 @@ export function Toolbar({
       >
         <div className="min-w-0">
           <h2 className="dark:text-dark-50 truncate text-xl font-medium tracking-wide text-gray-800">
-            Category Products Table
+            {t('common.category_product_management')}
           </h2>
         </div>
         <div className="flex gap-2">
@@ -59,7 +61,7 @@ export function Toolbar({
               table.setGlobalFilter(value);
             }}
             prefix={<MagnifyingGlassIcon className="size-4" />}
-            placeholder="Search Category Products, Description..."
+            placeholder={t('common.search_category_products')}
             classNames={{
               root: "shrink-0",
               input: "ring-primary-500/50 h-8 text-xs focus:ring-3",
@@ -79,14 +81,14 @@ export function Toolbar({
             }}
           >
             <PlusIcon className="size-4" />
-            <span>Add Category Product</span>
+            <span>{t('common.create_category_product')}</span>
           </Button>
         <ResponsiveFilter
           anchor={{ to: "bottom end", gap: 12 }}
           buttonContent={
             <>
               <ViewColumnsIcon className="size-4" />
-              <span>View</span>
+              <span>{t('common.view')}</span>
             </>
           }
           classNames={{
@@ -96,12 +98,12 @@ export function Toolbar({
           {smAndDown ? (
             <div className="dark:border-dark-500 mx-auto flex h-12 w-full shrink-0 items-center justify-between border-b border-gray-200 px-3">
               <p className="dark:text-dark-50 truncate text-start text-base font-medium text-gray-800">
-                Table View
+                {t('common.table_view')}
               </p>
             </div>
           ) : (
             <h3 className="text-sm-plus dark:text-dark-100 px-3 pt-2.5 font-medium tracking-wide text-gray-800">
-              Table View
+              {t('common.table_view')}
             </h3>
           )}
 
