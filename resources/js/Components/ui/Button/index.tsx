@@ -36,6 +36,15 @@ const variants: Record<Variant, string> = {
   flat: "text-this-darker hover:bg-this-darker/[.08] focus:bg-this-darker/[.08] active:bg-this-darker/[.15] dark:text-this-lighter dark:hover:bg-this-lighter/10 dark:focus:bg-this-lighter/10 dark:active:bg-this-lighter/[.15]",
 };
 
+const primaryVariants: Record<Variant, string> = {
+  filled:
+    "bg-[#4DB9AD] text-white hover:bg-[#15A093] focus:bg-[#15A093] active:bg-[#15A093]/90 disabled:bg-[#F0FCFA] dark:disabled:bg-[#1B2441]",
+  soft: "text-[#4DB9AD] bg-[#4DB9AD]/[.08] hover:bg-[#4DB9AD]/[.15] focus:bg-[#4DB9AD]/[.15] active:bg-[#4DB9AD]/20 dark:bg-[#4DB9AD]/10 dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/20 dark:focus:bg-[#4DB9AD]/20 dark:active:bg-[#4DB9AD]/25",
+  outlined:
+    "text-[#4DB9AD] border border-[#4DB9AD] hover:bg-[#4DB9AD]/[.05] focus:bg-[#4DB9AD]/[.05] active:bg-[#4DB9AD]/10 dark:border-[#4DB9AD] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/[.05] dark:focus:bg-[#4DB9AD]/[.05] dark:active:bg-[#4DB9AD]/10",
+  flat: "text-[#4DB9AD] hover:bg-[#4DB9AD]/[.08] focus:bg-[#4DB9AD]/[.08] active:bg-[#4DB9AD]/[.15] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/10 dark:focus:bg-[#4DB9AD]/10 dark:active:bg-[#4DB9AD]/[.15]",
+};
+
 const neutralVariants: Record<Variant, string> = {
   filled:
     "bg-gray-150 text-gray-900 hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-200/80 dark:bg-surface-2 dark:text-dark-50 dark:hover:bg-surface-1 dark:focus:bg-surface-1 dark:active:bg-surface-1/90",
@@ -82,6 +91,12 @@ const ButtonInner = forwardRef(
                   neutralVariants[variant],
                   isGlow &&
                   "dark:shadow-dark-450/5 shadow-lg shadow-gray-200/50",
+                ]
+                : color === "primary"
+                ? [
+                  primaryVariants[variant],
+                  isGlow &&
+                  "shadow-soft shadow-[#4DB9AD]/50 dark:shadow-[#4DB9AD]/50 dark:shadow-lg",
                 ]
                 : [
                   setThisClass(color),
