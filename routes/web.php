@@ -30,6 +30,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
+// Availability routes
+Route::middleware(['auth', 'verified'])->prefix('availability')->controller(\App\Http\Controllers\AvailabilityController::class)->group(function () {
+    Route::get('/', 'index')->name('availability.index');
+    Route::post('/', 'store')->name('availability.store');
+    Route::get('/{uuid}', 'show')->middleware('validate.uuid:uuid')->name('availability.show');
+    Route::put('/{uuid}', 'update')->middleware('validate.uuid:uuid')->name('availability.update');
+    Route::delete('/{uuid}', 'destroy')->middleware('validate.uuid:uuid')->name('availability.destroy');
+    Route::post('/weekly', 'storeWeekly')->name('availability.store-weekly');
+    Route::get('/current-week', 'getCurrentWeek')->name('availability.current-week');
+    Route::post('/check', 'checkAvailability')->name('availability.check');
+    Route::patch('/{uuid}/toggle', 'toggleAvailability')->middleware('validate.uuid:uuid')->name('availability.toggle');
+});
+
 // Species routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::name('species.')->prefix('species')

@@ -26,7 +26,7 @@ class Availability extends Model
 
     public function veterinarian()
     {
-        return $this->belongsTo(Veterinary::class);
+        return $this->belongsTo(Veterinary::class, 'veterinarian_id');
     }
 
     protected $casts = [
