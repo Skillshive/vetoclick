@@ -12,24 +12,6 @@ use Exception;
 
 class AvailabilityService implements ServiceInterface
 {
-    /**
-     * Get all availability records with optional pagination
-     */
-    public function getAll(int $perPage = 15): LengthAwarePaginator
-    {
-        return Availability::with(['veterinary'])
-            ->orderBy('day_of_week', 'asc')
-            ->orderBy('start_time', 'asc')
-            ->paginate($perPage);
-    }
-
-    /**
-     * Get availability by ID
-     */
-    public function getById(int $id): ?Availability
-    {
-        return Availability::with(['veterinary'])->find($id);
-    }
 
     /**
      * Get availability by UUID
@@ -54,33 +36,6 @@ class AvailabilityService implements ServiceInterface
             throw new Exception("Failed to create availability: " . $e->getMessage());
         }
     }
-
-    /**
-     * Update availability by UUID from DTO
-     */
-    public function update(string $uuid, AvaibilityDto $dto): ?Availability
-    {
-        try {
-            $availability = $this->getByUuid($uuid);
-            
-            if (!$availability) {
-                return null;
-            }
-
-            $updateData = $dto->toUpdateArray();
-            
-            if (empty($updateData)) {
-                return $availability;
-            }
-
-            $this->validateAvailabilityData($updateData);
-            $availability->update($updateData);
-            return $availability->fresh(['veterinary']);
-        } catch (Exception $e) {
-            throw new Exception("Failed to update availability: " . $e->getMessage());
-        }
-    }
-
     /**
      * Delete availability by UUID
      */
@@ -100,22 +55,11 @@ class AvailabilityService implements ServiceInterface
     }
 
     /**
-     * Get availability by veterinary ID
-     */
-    public function getByVeterinaryId(int $veterinaryId, int $perPage = 15): LengthAwarePaginator
-    {
-        return Availability::where('veterinary_id', $veterinaryId)
-            ->orderBy('day_of_week', 'asc')
-            ->orderBy('start_time', 'asc')
-            ->paginate($perPage);
-    }
-
-    /**
      * Get availability by veterinary ID and day of week
      */
     public function getByVeterinaryAndDay(int $veterinaryId, string $dayOfWeek): Collection
     {
-        return Availability::where('veterinary_id', $veterinaryId)
+        return Availability::where('veterinarian_id', $veterinaryId)
             ->where('day_of_week', $dayOfWeek)
             ->where('is_available', true)
             ->orderBy('start_time', 'asc')
@@ -127,7 +71,7 @@ class AvailabilityService implements ServiceInterface
      */
     public function getAvailableSlots(int $veterinaryId, string $dayOfWeek): Collection
     {
-        return Availability::where('veterinary_id', $veterinaryId)
+        return Availability::where('veterinarian_id', $veterinaryId)
             ->where('day_of_week', $dayOfWeek)
             ->where('is_available', true)
             ->orderBy('start_time', 'asc')
@@ -139,7 +83,7 @@ class AvailabilityService implements ServiceInterface
      */
     public function isVeterinaryAvailable(int $veterinaryId, string $dayOfWeek, string $time): bool
     {
-        return Availability::where('veterinary_id', $veterinaryId)
+        return Availability::where('veterinarian_id', $veterinaryId)
             ->where('day_of_week', $dayOfWeek)
             ->where('is_available', true)
             ->where('start_time', '<=', $time)
@@ -158,7 +102,7 @@ class AvailabilityService implements ServiceInterface
      */
     public function getWeeklySchedule(int $veterinaryId): Collection
     {
-        return Availability::where('veterinary_id', $veterinaryId)
+        return Availability::where('veterinarian_id', $veterinaryId)
             ->orderBy('day_of_week', 'asc')
             ->orderBy('start_time', 'asc')
             ->get()
@@ -225,7 +169,7 @@ class AvailabilityService implements ServiceInterface
      */
     public function checkForOverlaps(int $veterinaryId, string $dayOfWeek, string $startTime, string $endTime, ?int $excludeId = null): bool
     {
-        $query = Availability::where('veterinary_id', $veterinaryId)
+        $query = Availability::where('veterinarian_id', $veterinaryId)
             ->where('day_of_week', $dayOfWeek)
             ->where(function($q) use ($startTime, $endTime) {
                 $q->whereBetween('start_time', [$startTime, $endTime])
@@ -263,14 +207,10 @@ class AvailabilityService implements ServiceInterface
             foreach ($weeklyData as $dayData) {
                 if (is_array($dayData)) {
                     $dto = new AvaibilityDto(
-                        veterinary_id: $veterinaryId,
+                        veterinarian_id: $veterinaryId,
                         day_of_week: $dayData['day_of_week'] ?? '',
                         start_time: $dayData['start_time'] ?? '',
-                        end_time: $dayData['end_time'] ?? '',
-                        break_start_time: $dayData['break_start_time'] ?? null,
-                        break_end_time: $dayData['break_end_time'] ?? null,
-                        is_available: $dayData['is_available'] ?? true,
-                        notes: $dayData['notes'] ?? null
+                        end_time: $dayData['end_time'] ?? ''
                     );
                     $this->create($dto);
                 }
@@ -304,7 +244,7 @@ class AvailabilityService implements ServiceInterface
             // Convert to lowercase for database comparison
             $weekDays = array_map('strtolower', $currentWeekDays);
 
-            return Availability::where('veterinary_id', $veterinaryId)
+            return Availability::where('veterinarian_id', $veterinaryId)
                 ->whereIn('day_of_week', $weekDays)
                 ->delete();
         } catch (Exception $e) {
@@ -331,7 +271,7 @@ class AvailabilityService implements ServiceInterface
         // Convert to lowercase for database comparison
         $weekDays = array_map('strtolower', $currentWeekDays);
 
-        return Availability::where('veterinary_id', $veterinaryId)
+        return Availability::where('veterinarian_id', $veterinaryId)
             ->whereIn('day_of_week', $weekDays)
             ->exists();
     }
@@ -355,7 +295,7 @@ class AvailabilityService implements ServiceInterface
         // Convert to lowercase for database comparison
         $weekDays = array_map('strtolower', $currentWeekDays);
 
-        return Availability::where('veterinary_id', $veterinaryId)
+        return Availability::where('veterinarian_id', $veterinaryId)
             ->whereIn('day_of_week', $weekDays)
             ->orderBy('day_of_week', 'asc')
             ->orderBy('start_time', 'asc')

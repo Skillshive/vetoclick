@@ -1,7 +1,7 @@
 // Import Dependencies
 import { PhoneIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import { EnvelopeIcon, UserIcon, LockClosedIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { HiPencil } from "react-icons/hi";
 
 // Local Imports
@@ -15,6 +15,9 @@ import { profileFormSchema } from "@/schemas/profileSchema";
 import { passwordFormSchema } from "@/schemas/passwordSchema";
 import { getUserAvatarUrl } from "@/utils/imageHelper";
 import { useToast } from "@/components/common/Toast/ToastContext";
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid' // a plugin!
+import timeGridPlugin from '@fullcalendar/timegrid'
 
 interface User {
   id: number;
@@ -135,6 +138,25 @@ export default function Profile({ user }: ProfilePageProps) {
       },
     });
   };
+
+   // Example events
+  const events = [
+    { title: "Meeting", start: "2025-09-05T09:00:00", end: "2025-09-05T10:30:00" },
+    { title: "Workshop", start: "2025-09-06T16:00:00", end: "2025-09-06T18:00:00" },
+  ];
+
+  // Dynamically calculate the latest event end time
+  const slotMaxTime = useMemo(() => {
+    if (events.length === 0) return "18:00:00"; // fallback if no events
+    const latestEvent = events.reduce((latest, event) => {
+      const end = new Date(event.end);
+      return end > latest ? end : latest;
+    }, new Date(events[0].end));
+
+    // add 1 hour so you have some margin after the last event
+    latestEvent.setHours(latestEvent.getHours() + 1);
+    return latestEvent.toTimeString().split(":").slice(0, 2).join(":") + ":00";
+  }, [events]);
 
   return (
         <MainLayout>
@@ -462,9 +484,31 @@ export default function Profile({ user }: ProfilePageProps) {
                   </Button>
                 </div>
               </form>
-</Card></div>
+</Card>
+</div>
 </div>
 
+
+             <div className="row mt-6">
+                      <Card className="p-3 sm:px-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+                      <h5 className="dark:text-dark-50 text-lg font-medium text-gray-800">
+              {t('common.availability')}
+            </h5>
+            <p className="dark:text-dark-200 mt-0.5 text-sm text-balance text-gray-500">
+              {t('common.availability')}
+            </p>
+
+          <FullCalendar
+      plugins={[timeGridPlugin]}
+      initialView="timeGridWeek"
+      firstDay={1}
+      allDaySlot={false}
+      slotMinTime="08:00:00"
+      // slotMaxTime={slotMaxTime}
+      events={events}
+    />
+</Card>
+</div>
 </div>
           
     </Page>
