@@ -44,7 +44,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
               className="h-4 w-8"
             />
           )}
-          {Object.prototype.hasOwnProperty.call(
+          {/* {Object.prototype.hasOwnProperty.call(
             tableSettings,
             "enableRowDense",
           ) && (
@@ -59,7 +59,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
               }
               className="h-4 w-8"
             />
-          )}
+          )} */}
           {Object.prototype.hasOwnProperty.call(
             tableSettings,
             "enableColumnFilters",
