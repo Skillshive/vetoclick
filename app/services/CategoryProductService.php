@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\DTOs\Stock\CategoryProductDto;
 use App\Models\CategoryProduct;
-use App\common\CategoryProductDto;
 use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 class CategoryProductService implements ServiceInterface
@@ -25,14 +26,16 @@ class CategoryProductService implements ServiceInterface
     {
         return CategoryProduct::with('parent_category')->where('uuid', $uuid)->first();
     }
-
     public function create(CategoryProductDto $dto): CategoryProduct
     {
         try {
-            $createData = $dto->toCreateArray();
-            $createData['uuid'] = Str::uuid();
+            $createData = CategoryProduct::create([
+                   'name' => $dto->name,
+            'description' => $dto->description,
+            'category_product_id' =>  $this->getByUuid($dto->category_product_id)?->id ?? null,
+            ]);
             
-            return CategoryProduct::create($createData);
+            return $createData;
         } catch (Exception $e) {
             throw new Exception("Failed to create category product: " . $e->getMessage());
         }
@@ -47,12 +50,15 @@ class CategoryProductService implements ServiceInterface
                 return null;
             }
 
-            $updateData = $dto->toUpdateArray();
-            $categoryProduct->update($updateData);
+            $categoryProduct->update([
+                   'name' => $dto->name,
+            'description' => $dto->description,
+            'category_product_id' =>  $this->getByUuid($dto->category_product_id)?->id ?? null,
+            ]); ;
             
-            return $categoryProduct->fresh(['parent_category']);
+            return $categoryProduct->refresh();
         } catch (Exception $e) {
-            throw new Exception("Failed to update category product: " . $e->getMessage());
+            throw new Exception("Failed to update category product");
         }
     }
 
@@ -67,14 +73,25 @@ class CategoryProductService implements ServiceInterface
 
             return $categoryProduct->delete();
         } catch (Exception $e) {
-            throw new Exception("Failed to delete category product: " . $e->getMessage());
+            throw new Exception("Failed to delete category product");
         }
     }
 
-    public function searchByName(string $name, int $perPage = 15): LengthAwarePaginator
+    public function search(string $search, int $perPage = 15): LengthAwarePaginator
     {
         return CategoryProduct::with('parent_category')
-            ->where('name', 'LIKE', "%{$name}%")
+            ->where('name', 'LIKE', "%{$search}%")
+            ->orWhere('description', 'LIKE', "%{$search}%")
+             ->orWhere(function($query) use ($search) {
+                 $query->whereHas('parent_category', function($q) use ($search) {
+                     $q->where('name', 'LIKE', "%{$search}%");
+                 });
+             })
             ->paginate($perPage);
+    }
+
+    public function getAllWithoutPagination(): Collection
+    {
+        return CategoryProduct::whereNull('category_product_id')->get();
     }
 }

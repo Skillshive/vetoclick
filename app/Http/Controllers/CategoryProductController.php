@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateCategoryProductRequest;
-use App\Http\Requests\UpdateCategoryProductRequest;
-use App\Http\Resources\CategoryProductResource;
+use App\DTOs\Stock\CategoryProductDto;
 use App\Services\CategoryProductService;
-use App\common\CategoryProductDto;
+use App\Http\Requests\Stock\CategoryProductRequest;
+use App\Http\Resources\Stock\CategoryProductResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,14 +33,17 @@ class CategoryProductController extends Controller
 
         try {
             if ($search) {
-                $categoryProducts = $this->categoryProductService->searchByName($search, $perPage);
+                $categoryProducts = $this->categoryProductService->search($search, $perPage);
             } else {
                 $categoryProducts = $this->categoryProductService->getAll($perPage);
             }
 
+            // Get all categories for parent selection
+            $parentCategories = $this->categoryProductService->getAllWithoutPagination();
+
             return Inertia::render('Category_products/Index', [
                 'categoryProducts' => [
-                    'data' => $categoryProducts->items(),
+                    'data' => CategoryProductResource::collection($categoryProducts->items()),
                     'meta' => [
                         'current_page' => $categoryProducts->currentPage(),
                         'from' => $categoryProducts->firstItem(),
@@ -57,6 +59,7 @@ class CategoryProductController extends Controller
                         'next' => $categoryProducts->nextPageUrl(),
                     ]
                 ],
+                'parentCategories' => CategoryProductResource::collection($parentCategories),
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
@@ -73,7 +76,7 @@ class CategoryProductController extends Controller
                     'sort_by' => $sortBy,
                     'sort_direction' => $sortDirection,
                 ],
-                'error' => __('common.error') . ': ' . $e->getMessage()
+                'error' => __('common.error') 
             ]);
         }
     }
@@ -81,7 +84,7 @@ class CategoryProductController extends Controller
     /**
      * Store a newly created category product
      */
-    public function store(CreateCategoryProductRequest $request): RedirectResponse
+    public function store(CategoryProductRequest $request): RedirectResponse
     {
         try {
             $dto = CategoryProductDto::fromRequest($request);
@@ -99,7 +102,7 @@ class CategoryProductController extends Controller
     /**
      * Update the specified category product by UUID
      */
-    public function update(UpdateCategoryProductRequest $request, string $uuid): RedirectResponse
+    public function update(CategoryProductRequest $request, string $uuid): RedirectResponse
     {
         try {
             $dto = CategoryProductDto::fromRequest($request);
