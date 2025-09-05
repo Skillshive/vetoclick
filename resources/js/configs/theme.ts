@@ -8,7 +8,7 @@ import {
 
 const DEFAULT_DARK_COLOR: DarkColor = "cinder";
 const DEFAULT_LIGHT_COLOR: LightColor = "slate";
-const DEFAULT_PRIMARY_COLOR: PrimaryColor = "blue";
+const DEFAULT_PRIMARY_COLOR: PrimaryColor = "primary";
 
 // Default theme configuration
 export const defaultTheme: ThemeConfig = {

@@ -9,7 +9,8 @@ export type PrimaryColor =
   | "green"
   | "amber"
   | "purple"
-  | "rose";
+  | "rose"
+  | "primary";
 
 export type ThemeMode = "light" | "dark" | "system";
 export type IsMonochrome = boolean;

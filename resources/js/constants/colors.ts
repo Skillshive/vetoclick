@@ -89,6 +89,30 @@ const colors = {
   amber: twColors.amber,
   purple: twColors.purple,
   rose: twColors.rose,
+  primary: {
+    50: "#F0FCFA",
+    100: "#D1F4F0",
+    200: "#A3E9E1",
+    300: "#75DDD2",
+    400: "#47D2C3",
+    500: "#4DB9AD",
+    600: "#15A093",
+    700: "#117972",
+    800: "#0D5251",
+    900: "#092A30",
+  },
+  secondary: {
+    50: "#F0F2F5",
+    100: "#D9DDE4",
+    200: "#B3BBC9",
+    300: "#8D99AE",
+    400: "#677793",
+    500: "#1B2441",
+    600: "#344461",
+    700: "#27334A",
+    800: "#1A2233",
+    900: "#0D111C",
+  },
   variants: {
     "secondary-lighter": "#FF75DF",
     "secondary-light": "#FF2ECF",
@@ -116,8 +140,8 @@ const colors = {
 export { twColors, colors };
 
 export const HOSPILOG_COLORS = {
-  primary: "#0097a7",      // Teal Blue from logo
-  secondary: "#6ec6ca",    // Light Teal/Green from logo
+  primary: "#1B2441",      // Dark Navy Blue
+  secondary: "#4DB9AD",    // Teal
   white: "#ffffff",
   black: "#000000"
 };
