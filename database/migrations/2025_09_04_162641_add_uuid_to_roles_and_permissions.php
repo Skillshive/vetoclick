@@ -1,0 +1,34 @@
+
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table(config('permission.table_names.permissions'), function (Blueprint $table) {
+            if (!Schema::hasColumn(config('permission.table_names.permissions'), 'uuid')) {
+                $table->uuid('uuid')->nullable()->unique()->index()->after('id');
+            }
+        });
+
+        Schema::table(config('permission.table_names.roles'), function (Blueprint $table) {
+            if (!Schema::hasColumn(config('permission.table_names.roles'), 'uuid')) {
+                $table->uuid('uuid')->nullable()->unique()->index()->after('id');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table(config('permission.table_names.permissions'), function (Blueprint $table) {
+            $table->dropColumn('uuid');
+        });
+        Schema::table(config('permission.table_names.roles'), function (Blueprint $table) {
+            $table->dropColumn('uuid');
+        });
+    }
+};
+

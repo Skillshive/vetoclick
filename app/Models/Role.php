@@ -2,29 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUuid;
+use Spatie\Permission\Models\Role as SpatieRole;
 
-class Role extends Model
+class Role extends SpatieRole
 {
-    use HasFactory;
+    use HasUuid;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'display_name',
-        'description',
-    ];
-
-    /**
-     * Get the users for the role.
-     */
-    public function users()
-    {
-        return $this->belongsToMany(User::class);
-    }
+    protected $fillable = ['name', 'guard_name', 'uuid'];
 }
