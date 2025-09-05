@@ -11,6 +11,7 @@ import { LanguageSelector } from "@/components/template/LanguageSelector";
 import { SidebarToggleBtn } from "@/components/shared/SidebarToggleBtn";
 import { useThemeContext } from "@/contexts/theme/context";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Notifications } from "@/components/template/Notifications";
 
 // ----------------------------------------------------------------------
 
@@ -75,9 +76,9 @@ export function Header() {
             </>
           )}
         />
-        {/* <Notifications /> */}
-        <LanguageSelector />
+        <Notifications />
         <RightSidebar />
+        <LanguageSelector />
       </div>
     </header>
   );
