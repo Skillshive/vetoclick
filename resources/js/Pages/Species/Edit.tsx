@@ -393,7 +393,7 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
 
                         <form onSubmit={handleBreedSubmit}>
                           {/* Breed Image Upload */}
-                          <div className="flex flex-col items-center space-y-3 mb-4">
+                          <div className="flex flex-col items-center space-y-3">
                             <Avatar
                               size={18}
                               imgComponent={PreviewImg}
@@ -455,9 +455,10 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
                               required
                             />
 
-                            <Input
+                           <div className="grid grid-cols-2 ">
+                             <Input
                               label={t('common.avg_weight_kg')}
-                              placeholder={t('common.avg_weight_kg')}
+                              // placeholder={t('common.avg_weight_kg')}
                               type="number"
                               step="0.01"
                               value={breedData.avg_weight_kg}
@@ -472,7 +473,7 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
 
                             <Input
                               label={t('common.life_span_years')}
-                              placeholder={t('common.life_span_years')}
+                              // placeholder={t('common.life_span_years')}
                               type="number"
                               value={breedData.life_span_years}
                               onChange={(e) => {
@@ -483,8 +484,9 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
                               }}
                               error={breedErrors.life_span_years || breedValidationErrors.life_span_years}
                             />
+                           </div>
 
-                            <div>
+                            {/* <div>
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 {t('common.common_health_issues')}
                               </label>
@@ -505,7 +507,7 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
                                   {breedErrors.common_health_issues || breedValidationErrors.common_health_issues}
                                 </p>
                               )}
-                            </div>
+                            </div> */}
                           </div>
 
                           <div className="mt-4 flex justify-end space-x-3">

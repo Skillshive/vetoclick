@@ -58,18 +58,18 @@ export function BreedCard({
                 <span>{t('common.breed_life_span')}: {breed.life_span_years} {t('common.years')}</span>
               </div>
             )}
-            {breed.common_health_issues && breed.common_health_issues.trim() !== '' && (
+            {/* {breed.common_health_issues && breed.common_health_issues.trim() !== '' && (
               <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
                   <strong>{t('common.breed_health_issues')}:</strong> {breed.common_health_issues}
                 </p>
               </div>
-            )}
-            {!breed.avg_weight_kg && !breed.life_span_years && (!breed.common_health_issues || breed.common_health_issues.trim() === '') && (
+            )} */}
+            {/* {!breed.avg_weight_kg && !breed.life_span_years && (!breed.common_health_issues || breed.common_health_issues.trim() === '') && (
               <div className="text-sm text-gray-500 dark:text-gray-400 italic">
                 {t('common.no_additional_info')}
               </div>
-            )}
+            )} */}
           </div>      </div>
       <div className="mt-3 flex justify-center space-x-1">
         <Button
