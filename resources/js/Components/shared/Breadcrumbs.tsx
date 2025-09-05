@@ -1,9 +1,9 @@
 // Import Dependencies
 import { ReactNode, HTMLAttributes } from "react";
-import { NavLink } from "react-router";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import { useLocaleContext } from "@/contexts/locale/context";
+import { Link } from "@inertiajs/react";
 
 // ----------------------------------------------------------------------
 
@@ -32,15 +32,15 @@ function Breadcrumbs({
       {...rest}
     >
       {items.map((item, i) => (
-        <li key={i} className="flex items-center gap-1.5">
+        <li key={i} className="flex items-center gap-1.5 text-lg">
           {item.path ? (
             <>
-              <NavLink
+              <Link
                 to={item.path}
                 className="tracking-wide text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-500"
               >
                 {item.title}
-              </NavLink>
+              </Link>
               {i < items.length - 1 && <SeparatorIcon className="size-5" />}
             </>
           ) : (
