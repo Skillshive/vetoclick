@@ -21,8 +21,16 @@ class UpdateBlogRequest extends FormRequest
     {
         return [
             'title' => 'sometimes|string|max:255',
-            'body' => 'sometimes|string',
-            'caption' => 'sometimes|string|max:255',
+            'body' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    // Reject unsafe tags like <script>, <iframe>, <object>, <embed>, <style>
+                    if (preg_match('/<(script|iframe|object|embed|style)\b/i', $value)) {
+                        $fail("The {$attribute} contains unsafe HTML.");
+                    }
+                }
+            ],            'caption' => 'sometimes|string|max:255',
             'image_id' => 'nullable|integer|exists:images,id',
             'meta_title' => 'sometimes|string|max:255',
             'meta_desc' => 'sometimes|string',

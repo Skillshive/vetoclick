@@ -21,14 +21,15 @@ class CreateBlogRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'body' => 'required|string',
+            
+            
             'caption' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
             'meta_title' => 'required|string|max:255',
             'meta_desc' => 'required|string',
             'meta_keywords' => 'required|string|max:255',
             'category_blog_id' => 'required|integer|exists:category_blogs,id',
-            'tags' => 'nullable|string|max:255'
+            'tags' => 'nullable|string|max:255',
         ];
     }
 
@@ -46,7 +47,6 @@ class CreateBlogRequest extends FormRequest
             'meta_keywords.required' => 'Meta keywords are required.',
             'category_blog_id.required' => 'Category is required.',
             'category_blog_id.exists' => 'Selected category does not exist.',
-            'image_id.exists' => 'Selected image does not exist.',
         ];
     }
 }
