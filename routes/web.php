@@ -50,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('store', 'store')->name('store');
             Route::get('{species}/edit', 'edit')->name('edit');
             Route::post('delete', 'destroyGroup')->name('destroyGroup');
-            Route::get('{species}/delete', 'destroy')->name('destroy');
+            Route::delete('{species}/delete', 'destroy')->name('destroy');
             Route::get('{species}/show', 'show')->name('show');
             Route::post('{species}/update', 'update')->name('update');
         });

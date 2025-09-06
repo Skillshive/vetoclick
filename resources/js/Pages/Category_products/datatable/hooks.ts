@@ -61,7 +61,7 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
       
       // Optimistically remove the row from local state
       setCategoryProducts(prevProducts => 
-        prevProducts.filter(product => product.uuid !== row.original.uuid)
+        prevProducts.data.filter(product => product.uuid !== row.original.uuid)
       );
 
       // Make API call to delete the row

@@ -10,7 +10,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Transition } from "@headlessui/react";
 
@@ -33,12 +33,14 @@ import { SpeciesDatatableProps } from "./types";
 import { createColumns } from "./columns";
 import { Toolbar } from "./Toolbar";
 import { useSpeciesTable } from "./hooks";
+import { useToast } from "@/Components/common/Toast/ToastContext";
 
 const isSafari = getUserAgentBrowser() === "Safari";
 
 export default function SpeciesDatatable({ species: speciesData, filters }: SpeciesDatatableProps) {
   const { cardSkin } = useThemeContext();
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   // Use custom hook for all table state management
   const {
@@ -137,13 +139,26 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
     setBulkDeleteSuccess(false);
   };
 
+  const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
+  
   const handleBulkDeleteRows = () => {
     setConfirmBulkDeleteLoading(true);
+    const selectedRows = table.getSelectedRowModel().rows;
+    const deleteCount = selectedRows.length;
+    setBulkDeleteCount(deleteCount);
+
     setTimeout(() => {
-      const selectedRows = table.getSelectedRowModel().rows;
       table.options.meta?.deleteRows?.(selectedRows);
       setBulkDeleteSuccess(true);
       setConfirmBulkDeleteLoading(false);
+      showToast({
+        type: 'success',
+        message: t('common.species_deleted_success', { count: deleteCount }),
+      });
+      setTimeout(() => {
+        setBulkDeleteSuccess(false);
+        setBulkDeleteCount(0);
+      }, 3000);
     }, 1000);
   };
 
@@ -365,11 +380,11 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
       onClose={closeBulkModal}
       messages={{
         pending: {
-          description: t('common.confirm_delete_multiple_species', { count: table.getSelectedRowModel().rows.length }),
+          description: t('common.confirm_delete_species', { count: table.getSelectedRowModel().rows.length }),
         },
         success: {
           title: t('common.species_deleted'),
-          description: t('common.multiple_species_deleted_success', { count: table.getSelectedRowModel().rows.length }),
+          description: t('common.species_deleted_success', { count: bulkDeleteCount }),
         },
       }}
       onOk={handleBulkDeleteRows}
