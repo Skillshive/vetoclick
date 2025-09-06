@@ -16,6 +16,7 @@ import { profileFormSchema } from "@/schemas/profileSchema";
 import { passwordFormSchema } from "@/schemas/passwordSchema";
 import { getUserAvatarUrl } from "@/utils/imageHelper";
 import { useToast } from "@/components/common/Toast/ToastContext";
+import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -37,9 +38,10 @@ interface ProfilePageProps {
 
 
 export default function Profile({ user }: ProfilePageProps) {
-  const { t } = useTranslation();
-  const { showToast } = useToast();
-  const [avatar, setAvatar] = useState<File | null>(null);
+   const { t } = useTranslation();
+   const { showToast } = useToast();
+   const { confirm } = useConfirm();
+   const [avatar, setAvatar] = useState<File | null>(null);
 
 
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -149,7 +151,7 @@ export default function Profile({ user }: ProfilePageProps) {
     });
   };
 
-  const [availabilitySlots, setAvailabilitySlots] = useState([]);
+  const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -225,10 +227,18 @@ export default function Profile({ user }: ProfilePageProps) {
   };
 
   const handleEventClick = async (clickInfo: any) => {
-    if (confirm(t('common.confirm_delete_availability'))) {
+    const confirmed = await confirm({
+      title: t('common.are_you_sure'),
+      message: t('common.confirm_delete_availability'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      confirmVariant: 'danger'
+    });
+
+    if (confirmed) {
       try {
         await axios.delete(route('availability.destroy', { uuid: clickInfo.event.id }));
-        setAvailabilitySlots(prev => 
+        setAvailabilitySlots(prev =>
           prev.filter(slot => slot.id !== clickInfo.event.id)
         );
         showToast({
@@ -247,8 +257,8 @@ export default function Profile({ user }: ProfilePageProps) {
 
   // Helper functions
   const getDayNumber = (dayName: string): number => {
-    const days = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
-    return days[dayName.toLowerCase()];
+    const days: Record<string, number> = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
+    return days[dayName.toLowerCase()] ?? 0;
   };
 
   const getDayName = (dayNumber: number): string => {
