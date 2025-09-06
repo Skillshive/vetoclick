@@ -73,24 +73,22 @@ class SpeciesService implements ServiceInterface
                 return null;
             }
 
-            $updateData = $dto->toUpdateArray();
-
-            // Handle image upload if present
-            if ($request && $request->hasFile('image')) {
-                $imageService = app(ImageService::class);
-                $species = $imageService->update($species, $request->file('image'));
-                // Remove image_id from updateData since it's already handled
-                unset($updateData['image_id']);
+            if($dto->image) {
+                $image = $this->imageService->saveImage($dto->image, 'species/');
+                $image_id = $image->id;
+            } else {
+                $image_id = null;
             }
 
-            if (empty($updateData)) {
-                return $species;
-            }
+            $species->update([
+                'name' => $dto->name,
+                'description' => $dto->description,
+                'image_id' =>  $image_id,
+            ]);
 
-            $species->update($updateData);
-            return $species->fresh();
+            return $species->refresh();
         } catch (Exception $e) {
-            throw new Exception("Failed to update species: " . $e->getMessage());
+            throw new Exception("Failed to update species");
         }
     }
 
@@ -108,7 +106,7 @@ class SpeciesService implements ServiceInterface
 
             return $species->delete();
         } catch (Exception $e) {
-            throw new Exception("Failed to delete species: " . $e->getMessage());
+            throw new Exception("Failed to delete species");
         }
     }
 

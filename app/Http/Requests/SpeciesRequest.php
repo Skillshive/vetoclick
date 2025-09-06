@@ -25,8 +25,7 @@ class SpeciesRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('species', 'name')
-                    ->ignore($this->route('species')), 
+            Rule::unique('species', 'name')->ignore($this->route('species'), 'uuid'),
             ],
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
