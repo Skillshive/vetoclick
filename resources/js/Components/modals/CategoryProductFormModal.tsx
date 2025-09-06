@@ -78,7 +78,12 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                       preserveScroll: true
                     });
                 },
-                onError: () => {
+                onError: (errors) => {
+                    setValidationErrors({
+                        name: errors.name ? t(errors.name) : undefined,
+                        description: errors.description ? t(errors.description) : undefined,
+                        category_product_id: errors.category_product_id ? t(errors.category_product_id) : undefined,
+                    });
                     showToast({
                         type: 'error',
                         message: t('common.category_product_update_error'),
@@ -102,7 +107,12 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                       preserveScroll: true
                     });
                 },
-                onError: () => {
+                onError: (errors) => {
+                    setValidationErrors({
+                        name: errors.name ? t(errors.name) : undefined,
+                        description: errors.description ? t(errors.description) : undefined,
+                        category_product_id: errors.category_product_id ? t(errors.category_product_id) : undefined,
+                    });
                     showToast({
                         type: 'error',
                         message: t('common.category_product_create_error'),
@@ -195,9 +205,11 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                             required
                                             leftIcon={<TagIcon className="size-5" />}
                                         />
-                                        {(errors?.name || validationErrors.name) && (
+                                        {
+                                        // (errors?.name || validationErrors.name) && (
                                             <p className="text-red-500 text-sm mt-1">{errors?.name || validationErrors.name}</p>
-                                        )}
+                                        // )
+                                        }
                                     </div>
     <div>
                                         <label htmlFor="parent_category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

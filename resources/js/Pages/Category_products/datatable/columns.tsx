@@ -41,6 +41,12 @@ export const createColumns = ({ setSelectedCategoryProduct, setIsModalOpen, t }:
     accessorKey: "category_product",
     header: t('common.parentCategory'),
     cell: CategoryCell,
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      const parentId = row.original.category_product_id;
+      return filterValue.includes(parentId);
+    }
   },
   {
     id: "created_at",

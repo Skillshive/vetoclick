@@ -28,7 +28,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/components/common/Toast/ToastContext";
 import {
   ConfirmModal,
-  type ConfirmMessages,
 } from "@/components/shared/ConfirmModal";
 
 // Local Component Imports
@@ -162,12 +161,13 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
               "dark:bg-dark-900 fixed inset-0 z-61 bg-white pt-3",
           )}
         >
-          <Toolbar 
-            table={table} 
-            globalFilter={globalFilter} 
-            setGlobalFilter={setGlobalFilter} 
-            setSelectedCategoryProduct={setSelectedCategoryProduct} 
-            setIsModalOpen={setIsModalOpen} 
+          <Toolbar
+            table={table}
+            globalFilter={globalFilter}
+            setGlobalFilter={setGlobalFilter}
+            setSelectedCategoryProduct={setSelectedCategoryProduct}
+            setIsModalOpen={setIsModalOpen}
+            parentCategories={parentCategories}
           />
           <div
             className={clsx(

@@ -139,7 +139,7 @@ export function ActionsCell({ row, table, setSelectedCategoryProduct, setIsModal
 
   return (
     <>
-      <div className="flex justify-center items-center gap-3"> 
+      <div className="flex justify-center items-center gap-2"> 
         <Button
           type="button"
           variant="flat"

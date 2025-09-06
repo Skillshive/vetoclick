@@ -32,6 +32,7 @@ interface FacetedFilterProps {
   Icon?: ElementType;
   renderPrefix?: (item: FilterOption, selected: boolean) => ReactElement;
   showCheckbox?: boolean;
+  onFilterChange?: (selectedValues: string[]) => void;
 }
 
 export function FacedtedFilter({
@@ -43,6 +44,7 @@ export function FacedtedFilter({
   Icon,
   renderPrefix,
   showCheckbox = true,
+  onFilterChange,
 }: FacetedFilterProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => column?.setFilterValue(undefined), []);
@@ -107,6 +109,7 @@ function ComboboxFilter({
   valueField,
   renderPrefix,
   showCheckbox,
+  onFilterChange,
 }: FacetedFilterProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const {
@@ -134,7 +137,9 @@ function ComboboxFilter({
     <Combobox
       value={options?.filter((o: FilterOption) => selectedValues.includes(o[valueField as string]))}
       onChange={(list: FilterOption[]) => {
-        column.setFilterValue(list.map((item: FilterOption) => item[valueField as string]));
+        const selectedValues = list.map((item: FilterOption) => item[valueField as string]);
+        column.setFilterValue(selectedValues);
+        onFilterChange?.(selectedValues);
       }}
       multiple
     >
@@ -164,10 +169,11 @@ function ComboboxFilter({
             filteredItems.map(({ item, refIndex }: { item: FilterOption; refIndex: number }) => (
               <ComboboxOption
                 key={refIndex}
-                className={({ focus }: { focus: boolean }) =>
+                className={({ focus, selected }: { focus: boolean, selected: boolean }) =>
                   clsx(
                     "relative cursor-pointer select-none px-2.5 py-2 text-gray-800 outline-hidden transition-colors dark:text-dark-100",
                     focus && "bg-gray-100 dark:bg-dark-600",
+                    selected && "bg-primary-50 dark:bg-primary-900/20"
                   )
                 }
                 value={item}
