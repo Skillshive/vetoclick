@@ -460,9 +460,9 @@ export default function Profile({ user }: ProfilePageProps) {
                   {t('common.cancel')}
                 </Button>
                 <Button
-                  className="min-w-[7rem]"
-                  color="primary"
-                  type="submit"
+                    type="submit"
+                                            variant="filled"
+                                            color="primary"
                   disabled={processing || Object.values(profileValidationErrors).some(error => error) || !data.firstname.trim() || !data.lastname.trim() || !data.email.trim()}
                 >
                   {processing ? t('common.saving') : t('common.save')}
@@ -585,9 +585,9 @@ export default function Profile({ user }: ProfilePageProps) {
                     {t('common.cancel')}
                   </Button>
                   <Button
-                    className="min-w-[7rem]"
-                    color="primary"
-                    type="submit"
+                                        type="submit"
+                                            variant="filled"
+                                            color="primary"
                     disabled={passwordProcessing || Object.values(passwordValidationErrors).some(error => error) || !passwordData.current_password.trim() || !passwordData.password.trim() || !passwordData.password_confirmation.trim()}
                   >
                     {passwordProcessing ? t('common.updating') : t('common.update_password')}
