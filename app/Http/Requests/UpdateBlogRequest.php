@@ -28,8 +28,7 @@ class UpdateBlogRequest extends FormRequest
             'meta_desc' => 'sometimes|string',
             'meta_keywords' => 'sometimes|string|max:255',
             'category_blog_id' => 'sometimes|integer|exists:category_blogs,id',
-            'tags' => 'nullable|array',
-            'tags.*' => 'string|max:255'
+            'tags' => 'nullable|string|max:255'
         ];
     }
 
@@ -53,9 +52,8 @@ class UpdateBlogRequest extends FormRequest
             'category_blog_id.exists' => 'Selected category does not exist.',
             'image_id.integer' => 'Image ID must be an integer.',
             'image_id.exists' => 'Selected image does not exist.',
-            'tags.array' => 'Tags must be an array.',
-            'tags.*.string' => 'Each tag must be a string.',
-            'tags.*.max' => 'Each tag cannot exceed 255 characters.',
+            'tags.string' => 'Tags must be a string.',
+            'tags.max' => 'Tags cannot exceed 255 characters.',
         ];
     }
 }

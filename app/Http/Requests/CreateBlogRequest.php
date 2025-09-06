@@ -23,13 +23,12 @@ class CreateBlogRequest extends FormRequest
             'title' => 'required|string|max:255',
             'body' => 'required|string',
             'caption' => 'required|string|max:255',
-            'image_id' => 'nullable|integer|exists:images,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
             'meta_title' => 'required|string|max:255',
             'meta_desc' => 'required|string',
             'meta_keywords' => 'required|string|max:255',
             'category_blog_id' => 'required|integer|exists:category_blogs,id',
-            'tags' => 'nullable|array',
-            'tags.*' => 'string|max:255'
+            'tags' => 'nullable|string|max:255'
         ];
     }
 
