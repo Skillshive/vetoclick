@@ -84,6 +84,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Category Products routes
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::prefix('category-products')->group(function () {
+        Route::get('export', [CategoryProductController::class, 'export'])->name('category-products.export');
+        Route::post('import', [CategoryProductController::class, 'import'])->name('category-products.import');
+    });
     Route::resource('category-products', CategoryProductController::class)->names('category-products');
 });
 

@@ -58,55 +58,61 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
   const tableMeta = {
     deleteRow: (row: any) => {
       skipAutoResetPageIndex();
+      
+      // Optimistically remove the row from local state
+      setCategoryProducts(prevProducts => 
+        prevProducts.filter(product => product.uuid !== row.original.uuid)
+      );
+
       // Make API call to delete the row
       router.delete(route('category-products.destroy', row.original.uuid), {
+        preserveState: true, // Keep the optimistic update
+        preserveScroll: true,
         onSuccess: () => {
-          // Reload current page data from server (SPA behavior)
-          router.visit(window.location.href, {
-            preserveState: false, // Don't preserve state to get fresh data
-            preserveScroll: true  // Keep scroll position
-          });
+          // Force a fresh reload after a short delay to ensure server state is synced
+          setTimeout(() => {
+            router.reload({ preserveScroll: true });
+          }, 100);
         },
         onError: () => {
-          // If delete fails, revert the local state change
+          // If delete fails, revert the optimistic update
+          router.reload({ preserveScroll: true });
           console.error('Failed to delete category product');
         }
       });
     },
-    deleteRows: (rows: any[]) => {
+    deleteRows: async (rows: any[]) => {
       skipAutoResetPageIndex();
       const rowIds = rows.map((row) => row.original.uuid);
 
-      // For bulk delete, we need to make individual API calls or use a bulk delete endpoint
-      // For now, we'll make individual calls and refresh after all are done
-      let completed = 0;
-      const total = rows.length;
+      // Optimistically remove the rows from local state
+      setCategoryProducts(prevProducts => 
+        prevProducts.filter(product => !rowIds.includes(product.uuid))
+      );
 
-      rows.forEach((row) => {
-        router.delete(route('category-products.destroy', row.original.uuid), {
-          onSuccess: () => {
-            completed++;
-            if (completed === total) {
-              // All deletes completed, refresh the page data (SPA behavior)
-              router.visit(window.location.href, {
-                preserveState: false, // Get fresh data from server
-                preserveScroll: true
-              });
-            }
-          },
-          onError: () => {
-            console.error('Failed to delete category product:', row.original.uuid);
-            completed++;
-            if (completed === total) {
-              // Even if some fail, refresh to get current state (SPA behavior)
-              router.visit(window.location.href, {
-                preserveState: false, // Get fresh data from server
-                preserveScroll: true
-              });
-            }
-          }
-        });
-      });
+      try {
+        // Use Promise.all to handle all deletes in parallel but wait for all to complete
+        await Promise.all(rows.map(row => 
+          new Promise((resolve, reject) => {
+            router.delete(route('category-products.destroy', row.original.uuid), {
+              preserveState: true,
+              preserveScroll: true,
+              onSuccess: resolve,
+              onError: reject
+            });
+          })
+        ));
+
+        // After all deletes complete successfully, force a fresh reload
+        setTimeout(() => {
+          router.reload({ preserveScroll: true });
+        }, 100);
+
+      } catch (error) {
+        console.error('Some deletes failed:', error);
+        // If any delete fails, reload to get the accurate state
+        router.reload({ preserveScroll: true });
+      }
     },
     setTableSettings,
     setToolbarFilters,

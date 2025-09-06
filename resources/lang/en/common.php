@@ -92,12 +92,20 @@ return [
     'multiple_species_deleted_success' => 'Successfully deleted :count species.',
     'no_description' => 'No description',
     'view' => 'View',
+    'export_csv' => 'Export CSV',
+    'import_csv' => 'Import CSV',
+    'importing' => 'Importing categories...',
+    'import_success' => 'Categories imported successfully',
+    'import_error' => 'Error importing categories',
+    'export_error' => 'Error exporting categories',
+    'no_file_uploaded' => 'No file was uploaded',
     'updating' => 'Updating',
     'creating' => 'Creating',
     'products' => 'Products',
     'stock_management' => 'Stock Management',
     'categories' => 'Categories',
     'parentCategory' => 'Parent Category',
+    'filter_by_parent_category' => 'Filter by parent category',
     'no_category_product' => 'No Parent Category',
     'no_result' => 'No results found',
     'category_product_management' => 'Category Product Management',
@@ -182,6 +190,7 @@ return [
     'export_csv' => 'Export CSV',
     'export_pdf' => 'Export PDF',
     'print' => 'Print',
+    'download_template' => 'Download Template',
 
     // Confirm Modal translations
     'are_you_sure' => 'Are you sure?',
@@ -227,6 +236,16 @@ return [
     'editing_breed' => 'Editing breed: :name',
     'weight_unit' => 'kg',
     'years' => 'years',
+
+    // Import/Export validation messages
+    'import_validation' => [
+        'invalid_csv_format' => 'Invalid CSV format. Required headers: name, description. Optional: parent_category.',
+        'missing_required_fields' => 'Missing required fields in CSV. All rows must have name and description.',
+        'parent_category_not_found' => 'One or more parent categories do not exist in the system.',
+        'duplicate_category_name' => 'One or more category names already exist in the system.',
+        'file_size_limit' => 'File size must be less than :size',
+        'invalid_file_type' => 'Only CSV files are allowed',
+    ],
 
     // Category Products specific translations
     'category_products' => 'Category Products',
