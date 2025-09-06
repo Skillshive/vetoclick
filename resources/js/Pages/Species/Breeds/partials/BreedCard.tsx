@@ -14,7 +14,6 @@ interface Breed {
   breed_name: string;
   avg_weight_kg?: number;
   life_span_years?: number;
-  common_health_issues?: string;
   image?: string;
   created_at: string;
   updated_at: string;
@@ -28,14 +27,12 @@ export function BreedCard({
   onEdit: () => void;
   onDelete: () => void; }) {
   const { t } = useTranslation();
-
-  console.log('Rendering BreedCard for:', breed);
   
   return (
     <Card className="flex grow flex-col items-center p-4 text-center sm:p-5 hover:shadow-lg hover:scale-105 transition-all duration-300">
       <Avatar
         size={18}
-        src={breed.image ? getImageUrl(breed.image, "/assets/default/breed-placeholder.png") : "/assets/default/breed-placeholder.png"}
+        src={breed.image ? getImageUrl(breed.image, "/assets/default/species-placeholder.png") : "/assets/default/species-placeholder.png"}
         name={breed.breed_name}
         classNames={{ display: "text-xl" }}
         initialColor="auto"
@@ -58,18 +55,6 @@ export function BreedCard({
                 <span>{t('common.breed_life_span')}: {breed.life_span_years} {t('common.years')}</span>
               </div>
             )}
-            {/* {breed.common_health_issues && breed.common_health_issues.trim() !== '' && (
-              <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                  <strong>{t('common.breed_health_issues')}:</strong> {breed.common_health_issues}
-                </p>
-              </div>
-            )} */}
-            {/* {!breed.avg_weight_kg && !breed.life_span_years && (!breed.common_health_issues || breed.common_health_issues.trim() === '') && (
-              <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                {t('common.no_additional_info')}
-              </div>
-            )} */}
           </div>      </div>
       <div className="mt-3 flex justify-center space-x-1">
         <Button
