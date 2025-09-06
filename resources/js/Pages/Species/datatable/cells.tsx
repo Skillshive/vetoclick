@@ -21,6 +21,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { Species } from "./types";
 import { getImageUrl } from "@/utils/imageHelper";
+import { router } from "@inertiajs/react";
 
 interface CellProps {
   getValue: () => any;
@@ -140,12 +141,21 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
 
   const state = deleteError ? "error" : deleteSuccess ? "success" : "pending";
 
+  const handleEditClick = () => {
+  router.visit(route('species.edit', row.original.uuid), {
+    preserveState: true,
+    preserveScroll: true, 
+  });
+};
+
   return (
     <>
     <div className="flex justify-center items-center gap-2"> 
             <Button 
               component="a"
-              href={route('species.edit', row.original.uuid)}
+              onClick={()=>{
+                handleEditClick()
+              }}
               type="button"
               variant="flat"
               color="info"
