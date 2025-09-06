@@ -40,6 +40,15 @@ return [
     'timezone' => 'The :attribute must be a valid zone.',
     'json' => 'The :attribute must be a valid JSON string.',
     'uuid' => 'The :attribute must be a valid UUID.',
+
+    // Custom validation messages for category products
+    'category_name_unique' => 'This category name is already taken.',
+    'category_name_required' => 'Category name is required.',
+    'category_name_min' => 'Category name must be at least :min characters.',
+    'category_name_max' => 'Category name cannot be longer than :max characters.',
+    'category_description_max' => 'Description cannot be longer than :max characters.',
+    'category_parent_exists' => 'The selected parent category does not exist.',
+    'category_parent_not_self' => 'A category cannot be its own parent.',
     'password' => 'The password is incorrect.',
     'current_password' => 'The password is incorrect.',
     
@@ -145,6 +154,7 @@ return [
         "description_max_length" => "Description must be less than 500 characters",
         "parent_category_invalid" => "Parent category must be a valid positive integer",
 
+        
         // Search and pagination validation
         "search_max_length" => "Search query must be less than 255 characters",
         "per_page_invalid" => "Items per page must be a valid number",

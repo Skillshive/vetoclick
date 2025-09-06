@@ -39,7 +39,42 @@ return [
     'url' => 'Le format du :attribute est invalide.',
     'timezone' => 'Le :attribute doit être une zone valide.',
     'json' => 'Le :attribute doit être une chaîne JSON valide.',
-    'uuid' => 'Le :attribute doit être un UUID valide.',
+        'uuid' => 'Le champ :attribute doit être un UUID valide.',
+
+    // Messages de validation personnalisés pour les catégories de produits
+    'category_name_unique' => 'Ce nom de catégorie est déjà utilisé.',
+    'category_name_required' => 'Le nom de la catégorie est requis.',
+    'category_name_min' => 'Le nom de la catégorie doit comporter au moins :min caractères.',
+    'category_name_max' => 'Le nom de la catégorie ne peut pas dépasser :max caractères.',
+    'category_description_max' => 'La description ne peut pas dépasser :max caractères.',
+    'category_parent_exists' => 'La catégorie parente sélectionnée n\\\'existe pas.',
+    'category_parent_not_self' => 'Une catégorie ne peut pas être sa propre catégorie parente.',
+
+    // Messages de validation personnalisés pour les catégories de produits
+    'category_name_unique' => 'Ce nom de catégorie est déjà utilisé.',
+    'category_name_required' => 'Le nom de la catégorie est requis.',
+    'category_name_min' => 'Le nom de la catégorie doit comporter au moins :min caractères.',
+    'category_name_max' => 'Le nom de la catégorie ne peut pas dépasser :max caractères.',
+    'category_description_max' => 'La description ne peut pas dépasser :max caractères.',
+    'category_parent_exists' => 'La catégorie parente sélectionnée n\'existe pas.',
+    'category_parent_not_self' => 'Une catégorie ne peut pas être sa propre catégorie parente.',
+
+    // Messages de validation personnalisés pour les catégories de produits
+    'category_name_unique' => 'Ce nom de catégorie est déjà utilisé',
+    'category_name_required' => 'Le nom de la catégorie est requis',
+    'category_name_min' => 'Le nom de la catégorie doit comporter au moins :min caractères',
+    'category_name_max' => 'Le nom de la catégorie ne peut pas dépasser :max caractères',
+    'category_description_max' => 'La description ne peut pas dépasser :max caractères',
+    'category_parent_exists' => 'La catégorie parente sélectionnée n\'existe pas',
+    'category_parent_not_self' => 'Une catégorie ne peut pas être sa propre catégorie parente',
+
+    // Messages de validation personnalisés pour les catégories de produits
+    'category_name_unique' => 'Ce nom de catégorie est déjà utilisé.',
+    'category_name_required' => 'Le nom de la catégorie est requis.',
+    'category_name_min' => 'Le nom de la catégorie doit comporter au moins :min caractères.',
+    'category_name_max' => 'Le nom de la catégorie ne peut pas dépasser :max caractères.',
+    'category_description_max' => 'La description ne peut pas dépasser :max caractères.',
+    'category_parent_exists' => 'La catégorie parente sélectionnée n\'existe pas.',
     'password' => 'Le mot de passe est incorrect.',
     'current_password' => 'Le mot de passe est incorrect.',
     
