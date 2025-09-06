@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Button, Input, Textarea, Avatar, Upload } from '@/components/ui';
 import { Species, SpeciesFormData } from '@/types/Species';
 import { useToast } from '@/components/common/Toast/ToastContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { HiPencil } from 'react-icons/hi';
 import { PawPrintIcon } from 'lucide-react';
 import { PreviewImg } from "@/components/shared/PreviewImg";
+import { speciesSchema } from '@/schemas/speciesSchema';
 
 
 // Declare route helper
@@ -26,10 +27,16 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
     const { t } = useTranslation();
     const isEditing = !!species;
     
+    const [validationErrors, setValidationErrors] = useState<{
+        name?: string;
+        description?: string;
+        image?: string;
+    }>({});
+    
     const { data, setData, post, put, processing, reset } = useForm<SpeciesFormData>({
         name: species?.name || '',
         description: species?.description || '',
-        image: null,
+        image: species?.image || null,
     });
 
     React.useEffect(() => {
@@ -37,7 +44,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
             setData({
                 name: species.name,
                 description: species.description || '',
-                image: null,
+                image: species.image || null,
             });
         } else {
             reset();
@@ -46,7 +53,20 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+        console.log('species data',data)
+
+
+        const result = speciesSchema.safeParse(data);
+        if (!result.success) {
+            const errors = result.error.flatten().fieldErrors;
+            setValidationErrors({
+                name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                description: errors.description?.[0] ? t(errors.description[0]) : undefined,
+                image: errors.image?.[0] ? t(errors.image[0]) : undefined,
+            });
+            return;
+        }
+
         if (isEditing) {
             // Update existing species using UUID
             put(route('species.update', species.uuid), {
@@ -58,7 +78,12 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                     });
                     onClose();
                 },
-                onError: () => {
+                onError: (errors) => {
+                    setValidationErrors({
+                        name: errors.name ? t(errors.name) : undefined,
+                        description: errors.description ? t(errors.description) : undefined,
+                        image: errors.image ? t(errors.image) : undefined,
+                    });
                     showToast({
                         type: 'error',
                         message: t('common.error'),
@@ -69,6 +94,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
         } else {
             // Create new species
             post(route('species.store'), {
+
                 onSuccess: () => {
                     showToast({
                         type: 'success',
@@ -78,7 +104,12 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                     reset();
                     onClose();
                 },
-                onError: () => {
+                onError: (errors) => {
+                    setValidationErrors({
+                        name: errors.name ? t(errors.name) : undefined,
+                        description: errors.description ? t(errors.description) : undefined,
+                        image: errors.image ? t(errors.image) : undefined,
+                    });
                     showToast({
                         type: 'error',
                         message: t('common.error'),
@@ -168,10 +199,33 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                     ) : (
                       <Upload
                         name="avatar"
-                        onChange={(files) => {
-                                                            setData('image', files[0] || null);
-                        }}
+                        onChange={(files: FileList | null) => {
+  const file = files?.[0] || null;
+
+  // update form data
+  setData('image', file);
+
+  // validate with zod schema
+  const result = categoryProductFormSchema.safeParse({
+    ...data,
+    image: file,
+  });
+
+  if (!result.success) {
+    const errors = result.error.flatten().fieldErrors;
+    setValidationErrors(prev => ({
+      ...prev,
+      image: errors.image?.[0] ? t(errors.image[0]) : undefined,
+    }));
+  } else {
+    setValidationErrors(prev => ({
+      ...prev,
+      image: undefined,
+    }));
+  }
+}}
                         accept="image/*"
+                        className={errors?.image || validationErrors.image ? 'border-red-500' : ''}
                       >
                         {({ ...props }) => (
                           <Button isIcon className="size-6 rounded-full" {...props}>
@@ -180,6 +234,12 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                         )}
                       </Upload>
                     )}
+
+                      {
+                                        (errors?.image || validationErrors.image) && (
+                                            <p classimage="text-red-500 text-sm mt-1">{errors?.image || validationErrors.image}</p>
+                                        )
+                                        }
                   </div>
                 }
               />
@@ -192,15 +252,35 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                                             id="name"
                                             type="text"
                                             value={data.name}
-                                            onChange={(e) => setData('name', e.target.value)}
+                                            onChange={(e) => {
+                                                setData('name', e.target.value);
+                                                const result = speciesSchema.safeParse({
+                                                    ...data,
+                                                    name: e.target.value,
+                                                });
+                                                if (!result.success) {
+                                                    const errors = result.error.flatten().fieldErrors;
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                                                    }));
+                                                } else {
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        name: undefined,
+                                                    }));
+                                                }
+                                            }}
                                             placeholder={t('common.species_name')}
-                                            className={errors?.name ? 'border-red-500' : ''}
+                                            className={errors?.name || validationErrors.name ? 'border-red-500' : ''}
                                             required
                                             leftIcon={<PawPrintIcon className="size-5" />}
                                         />
-                                        {errors?.name && (
-                                            <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                                        )}
+                                          {
+                                        (errors?.name || validationErrors.name) && (
+                                            <p className="text-red-500 text-sm mt-1">{errors?.name || validationErrors.name}</p>
+                                        )
+                                        }
                                     </div>
 
                                     <div>
@@ -231,8 +311,9 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                                         </Button>
                                         <Button
                                             type="submit"
+                                            variant="filled"
                                             disabled={processing}
-                                            className="bg-blue-600 hover:bg-blue-700"
+                                            color="primary"
                                         >
                                             {processing 
                                                 ? (isEditing ? t('common.updating') + '...' : t('common.creating') + '...') 
