@@ -26,7 +26,6 @@ class CreateBreedRequest extends FormRequest
             'breed_name' => 'required|string|max:255',
             'avg_weight_kg' => 'nullable|numeric|min:0|max:999.99',
             'life_span_years' => 'nullable|integer|min:1|max:50',
-            'common_health_issues' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ];
     }
@@ -43,7 +42,6 @@ class CreateBreedRequest extends FormRequest
             'breed_name' => 'breed name',
             'avg_weight_kg' => 'average weight',
             'life_span_years' => 'life span',
-            'common_health_issues' => 'common health issues',
         ];
     }
 }

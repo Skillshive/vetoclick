@@ -7,7 +7,6 @@ use App\Models\Breed;
 use App\Interfaces\ServiceInterface;
 use App\Services\ImageService;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Http\UploadedFile;
 use Exception;
 
 class BreedService implements ServiceInterface
@@ -27,14 +26,6 @@ class BreedService implements ServiceInterface
     }
 
     /**
-     * Get breed by ID
-     */
-    public function getById(int $id): ?Breed
-    {
-        return Breed::with(['species', 'image'])->find($id);
-    }
-
-    /**
      * Get breed by UUID
      */
     public function getByUuid(string $uuid): ?Breed
@@ -45,52 +36,63 @@ class BreedService implements ServiceInterface
     /**
      * Create new breed from DTO
      */
-    public function create(BreedDTO $dto, ?UploadedFile $imageFile = null): Breed
+    public function create(BreedDTO $dto): Breed
     {
-        try {
-            $breed = Breed::create($dto->toCreateArray());
-
-            // Handle image upload if provided
-            if ($imageFile) {
-                $this->imageService->save($breed, $imageFile, 'image_id');
-                $breed->load('image'); // Reload with image relationship
+         try {
+            if($dto->image) {
+                $image = $this->imageService->saveImage($dto->image, 'breeds/');
+                $image_id = $image->id;
+            } else {
+                $image_id = null;
             }
 
-            return $breed->load('species');
-        } catch (Exception $e) {
-            throw new Exception("Failed to create breed: " . $e->getMessage());
+            $createData = Breed::create([
+                'breed_name' => $dto->breed_name,
+                'avg_weight_kg' => $dto->avg_weight_kg,
+                'life_span_years' => $dto->life_span_years,
+                'species_id' => $dto->species_id,
+                'image' => $dto->image,
+                'image_id' =>  $image_id,
+            ]);
+            
+            return $createData;
+        } 
+        catch (Exception $e) {
+            throw new Exception("Failed to create breed");
         }
     }
 
     /**
      * Update breed by UUID from DTO
      */
-    public function update(string $uuid, BreedDTO $dto, ?UploadedFile $imageFile = null): ?Breed
+    public function update(string $uuid, BreedDTO $dto): ?Breed
     {
-        try {
+         try {
             $breed = $this->getByUuid($uuid);
 
             if (!$breed) {
                 return null;
             }
 
-            $updateData = $dto->toUpdateArray();
-
-            // Handle image upload if provided
-            if ($imageFile) {
-                $this->imageService->update($breed, $imageFile);
-                // Reload with image relationship
-                $breed->load('image');
+            if($dto->image) {
+                $image = $this->imageService->saveImage($dto->image, 'breeds/');
+                $image_id = $image->id;
+            } else {
+                $image_id = null;
             }
 
-            if (empty($updateData)) {
-                return $breed;
-            }
+            $breed->update([
+                'breed_name' => $dto->breed_name,
+                'avg_weight_kg' => $dto->avg_weight_kg,
+                'life_span_years' => $dto->life_span_years,
+                'species_id' => $dto->species_id,
+                'image' => $dto->image,
+                'image_id' =>  $image_id,
+            ]);
 
-            $breed->update($updateData);
-            return $breed->fresh(['species', 'image']);
+            return $breed->refresh();
         } catch (Exception $e) {
-            throw new Exception("Failed to update breed: " . $e->getMessage());
+            throw new Exception("Failed to update breed");
         }
     }
 
@@ -108,7 +110,7 @@ class BreedService implements ServiceInterface
 
             return $breed->delete();
         } catch (Exception $e) {
-            throw new Exception("Failed to delete breed: " . $e->getMessage());
+            throw new Exception("Failed to delete breed");
         }
     }
 

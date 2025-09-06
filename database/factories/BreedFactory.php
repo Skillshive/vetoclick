@@ -27,7 +27,6 @@ class BreedFactory extends Factory
             'breed_name' => $this->faker->words(2, true),
             'avg_weight_kg' => $this->faker->randomFloat(2, 0.5, 800),
             'life_span_years' => $this->faker->numberBetween(5, 30),
-            'common_health_issues' => $this->faker->sentence(8),
         ];
     }
 }

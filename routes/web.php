@@ -61,10 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::name('breeds.')->prefix('breeds')
         ->controller(BreedController::class)
         ->group(function () {
-            Route::get('', 'index')->name('index');
-            Route::get('create', 'create')->name('create');
             Route::post('store', 'store')->name('store');
-            Route::get('{breed}/edit', 'edit')->name('edit');
             Route::post('{breed}/update', 'update')->name('update');
             Route::delete('{breed}/delete', 'destroy')->name('destroy');
             // Get breeds for a specific species
