@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm,router } from '@inertiajs/react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Button, Input, Textarea, Avatar, Upload } from '@/components/ui';
 import { Species, SpeciesFormData } from '@/types/Species';
@@ -25,7 +25,6 @@ interface SpeciesFormModalProps {
 export default function SpeciesFormModal({ isOpen, onClose, species, errors }: SpeciesFormModalProps) {
     const { showToast } = useToast();
     const { t } = useTranslation();
-    const isEditing = !!species;
     
     const [validationErrors, setValidationErrors] = useState<{
         name?: string;
@@ -33,7 +32,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
         image?: string;
     }>({});
     
-    const { data, setData, post, put, processing, reset } = useForm<SpeciesFormData>({
+    const { data, setData, post, processing, reset } = useForm<SpeciesFormData>({
         name: species?.name || '',
         description: species?.description || '',
         image: species?.image || null,
@@ -53,9 +52,6 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('species data',data)
-
-
         const result = speciesSchema.safeParse(data);
         if (!result.success) {
             const errors = result.error.flatten().fieldErrors;
@@ -66,33 +62,6 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
             });
             return;
         }
-
-        if (isEditing) {
-            // Update existing species using UUID
-            put(route('species.update', species.uuid), {
-                onSuccess: () => {
-                    showToast({
-                        type: 'success',
-                        message: t('common.species_updated'),
-                        duration: 3000,
-                    });
-                    onClose();
-                },
-                onError: (errors) => {
-                    setValidationErrors({
-                        name: errors.name ? t(errors.name) : undefined,
-                        description: errors.description ? t(errors.description) : undefined,
-                        image: errors.image ? t(errors.image) : undefined,
-                    });
-                    showToast({
-                        type: 'error',
-                        message: t('common.error'),
-                        duration: 3000,
-                    });
-                }
-            });
-        } else {
-            // Create new species
             post(route('species.store'), {
 
                 onSuccess: () => {
@@ -101,8 +70,13 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                         message: t('common.species_created'),
                         duration: 3000,
                     });
+                    setValidationErrors({});
                     reset();
                     onClose();
+                    router.visit(window.location.href, {
+                        preserveState: false, 
+                        preserveScroll: true
+                    });
                 },
                 onError: (errors) => {
                     setValidationErrors({
@@ -117,7 +91,6 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                     });
                 }
             });
-        }
     };
 
     const handleClose = () => {
@@ -152,7 +125,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                             <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
                                 <div className="flex items-center justify-between mb-4">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        {isEditing ? t('common.edit_species') : t('common.create_species')}
+                                        {t('common.create_species')}
                                     </DialogTitle>
                                     <button
                                         onClick={handleClose}
@@ -163,10 +136,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                                 </div>
 
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                                    {isEditing 
-                                        ? t('common.edit_species_info') + ` "${species.name}"`
-                                        : t('common.create_new_species')
-                                    }
+                                    {t('common.create_new_species')}
                                 </p>
 
                                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -237,7 +207,7 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
 
                       {
                                         (errors?.image || validationErrors.image) && (
-                                            <p classimage="text-red-500 text-sm mt-1">{errors?.image || validationErrors.image}</p>
+                                            <p classname="text-red-500 text-sm mt-1">{errors?.image || validationErrors.image}</p>
                                         )
                                         }
                   </div>
@@ -316,8 +286,8 @@ export default function SpeciesFormModal({ isOpen, onClose, species, errors }: S
                                             color="primary"
                                         >
                                             {processing 
-                                                ? (isEditing ? t('common.updating') + '...' : t('common.creating') + '...') 
-                                                : (isEditing ? t('common.update') : t('common.create'))
+                                                ? (t('common.creating') + '...') 
+                                                : (t('common.create'))
                                             }
                                         </Button>
                                     </div>
