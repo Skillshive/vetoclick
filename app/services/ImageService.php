@@ -36,48 +36,10 @@ class ImageService  implements ServiceInterface
         return $this->storage->getDisk();
     }
 
-    /***
-     * Get image stream response from path
-     * @param $path
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    public function streamImageFromStorage($path, $default = null)
-    {
-        return $this->stream($path, $default);
-    }
-
-    /***
-     * Get image stream response from model
-     * @param Image $image
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    public function streamImageFromModel(Image $image)
-    {
-        return $this->stream($image->path, self::DEFAULT_IMAGE_PLACEHOLDER);
-    }
+  
 
 
-    /***
-     * Get image stream response
-     * @param $path
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    protected function stream($path, $default)
-    {
-
-        if (!$this->storage->getDisk()->exists($path)) {
-            $path = match ((int)$default) {
-                self::DEFAULT_IMAGE => self::DEFAULT_IMAGE_PLACEHOLDER,
-                self::DEFAULT_PERSON => self::DEFAULT_PERSON_PLACEHOLDER,
-                default => self::DEFAULT_IMAGE_PLACEHOLDER,
-            };
-            return Storage::disk('public')->response($path);
-        } else
-            return $this->storage->getDisk()->response($path);
-    }
-
-
-    public function getFullPath(Image $image)
+  public function getFullPath(Image $image)
     {
         return $this->storage->getDisk()->path($image->getPath());
     }
@@ -142,7 +104,7 @@ class ImageService  implements ServiceInterface
      * @param string $column
      * @return void
      * @throws Exception
-     */
+  
     public function save(Model $model, UploadedFile $uploadedFile, $column = "image_id")
     {
         try {
@@ -164,7 +126,7 @@ class ImageService  implements ServiceInterface
             throw $e;
         }
     }
-
+   */
     /**
      * Save an image to storage and create a database record
      * @param UploadedFile $uploadedFile
@@ -206,54 +168,6 @@ class ImageService  implements ServiceInterface
      * @param UploadedFile $file
      * @return mixed
      */
-    public function update($model, UploadedFile $file)
-    {
-        try {
-            $modelId = $model->id;
-            $modelClass = get_class($model);
-
-            DB::beginTransaction();
-            
-            if ($model->image_id) {
-                $oldImage = Image::find($model->image_id);
-                if ($oldImage) {
-                    $this->deleteFile($oldImage);
-                }
-            }
-            
-            $newImage = $this->saveImage($file, strtolower(class_basename($model)) . 's/');
-            
-            DB::table($model->getTable())
-                ->where('id', $modelId)
-                ->update(['image_id' => $newImage->id]);
-                
-            if (isset($oldImage)) {
-                $oldImage->delete();
-            }
-            
-            DB::commit();
-            
-            $checkModel = $modelClass::find($modelId);
-            if (!$checkModel) {
-                $checkModel = $modelClass::find($modelId);
-            }
-            
-            return $checkModel;
-            
-        } catch (Exception $e) {
-            if (isset($newImage)) {
-                $this->deleteFile($newImage);
-            }
-            
-            DB::rollBack();
-            Log::error('Error updating image', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'model_id' => $model->id ?? null
-            ]);
-            throw $e;
-        }
-    }
 
     /**
      * Delete file from storage without deleting database record
@@ -261,43 +175,10 @@ class ImageService  implements ServiceInterface
      * @param Image $image
      * @return bool
      */
-    private function deleteFile(Image $image)
-    {
-        try {
-            if (Storage::exists($image->path)) {
-                Storage::delete($image->path);
-                return true;
-            }
-            return false;
-        } catch (Exception $e) {
-            Log::error('Error deleting image file', [
-                'error' => $e->getMessage(),
-                'image_id' => $image->id,
-                'path' => $image->path
-            ]);
-            return false;
-        }
-    }
+   
 
-    /***
-     * Delete image by id
-     * @param $id
-     * @return void
-     */
-    private
-    function deleteById($id)
-    {
-        $image = Image::query()->find($id);
-        if ($image instanceof Image) {
-            $this->delete($image);
-        }
-    }
+ 
 
-
-    /***
-     * Delete image from instance
-     * @return
-     */
     public
     function delete(Image $image)
     {
