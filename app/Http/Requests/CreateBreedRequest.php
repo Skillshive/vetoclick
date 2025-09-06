@@ -28,7 +28,6 @@ class CreateBreedRequest extends FormRequest
             'life_span_years' => 'nullable|integer|min:1|max:50',
             'common_health_issues' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-            'image_id' => 'nullable|exists:images,id',
         ];
     }
 
