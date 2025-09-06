@@ -31,10 +31,11 @@ class Image extends Model
     /***
      * Stram Image
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
+  
     public function getImageStream()
     {
         return $this->imageService()->streamImageFromModel($this);
     }
+    */
 
 }
