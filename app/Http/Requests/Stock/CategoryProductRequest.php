@@ -31,7 +31,7 @@ class CategoryProductRequest extends FormRequest
                     ->ignore($this->route('category_product')), 
             ],
             'description' => 'nullable|string|max:1000',
-            'category_product_id' => 'nullable|uuid|exists:category_products,id',
+            'category_product_id' => 'nullable|uuid|exists:category_products,uuid',
         ];
     }
 

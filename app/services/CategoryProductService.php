@@ -12,9 +12,14 @@ use Illuminate\Support\Str;
 
 class CategoryProductService implements ServiceInterface
 {
+    public function query()
+    {
+        return CategoryProduct::with('parent_category');
+    }
+
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return CategoryProduct::with('parent_category')->paginate($perPage);
+        return $this->query()->paginate($perPage);
     }
 
     public function getById(int $id): ?CategoryProduct
@@ -71,7 +76,8 @@ class CategoryProductService implements ServiceInterface
                 return false;
             }
 
-            return $categoryProduct->delete();
+            // Only delete the exact category product with matching UUID
+            return CategoryProduct::where('uuid', $uuid)->delete() > 0;
         } catch (Exception $e) {
             throw new Exception("Failed to delete category product");
         }

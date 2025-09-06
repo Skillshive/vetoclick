@@ -30,13 +30,23 @@ class CategoryProductController extends Controller
         $search = $request->get('search');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDirection = $request->get('sort_direction', 'desc');
+        $parentCategoryId = $request->get('parent_category');
 
         try {
+            $query = $this->categoryProductService->query();
+            
             if ($search) {
-                $categoryProducts = $this->categoryProductService->search($search, $perPage);
-            } else {
-                $categoryProducts = $this->categoryProductService->getAll($perPage);
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
             }
+            
+            if ($parentCategoryId) {
+                $query->where('category_product_id', $parentCategoryId);
+            }
+            
+            $categoryProducts = $query->paginate($perPage);
 
             // Get all categories for parent selection
             $parentCategories = $this->categoryProductService->getAllWithoutPagination();
@@ -122,7 +132,7 @@ class CategoryProductController extends Controller
         }
     }
 
-    /**
+        /**
      * Remove the specified category product by UUID
      */
     public function destroy(string $uuid): RedirectResponse
