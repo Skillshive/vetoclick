@@ -206,9 +206,9 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                             leftIcon={<TagIcon className="size-5" />}
                                         />
                                         {
-                                        // (errors?.name || validationErrors.name) && (
+                                        (errors?.name || validationErrors.name) && (
                                             <p className="text-red-500 text-sm mt-1">{errors?.name || validationErrors.name}</p>
-                                        // )
+                                        )
                                         }
                                     </div>
     <div>
