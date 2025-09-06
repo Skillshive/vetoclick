@@ -37,7 +37,7 @@ class CategoryProductService implements ServiceInterface
             $createData = CategoryProduct::create([
                    'name' => $dto->name,
             'description' => $dto->description,
-            'category_product_id' =>  $this->getByUuid($dto->category_product_id)?->id ?? null,
+            'category_product_id' =>  $dto->category_product_id?$this->getByUuid($dto->category_product_id)?->id : null,
             ]);
             
             return $createData;

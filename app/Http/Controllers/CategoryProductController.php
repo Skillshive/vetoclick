@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\DTOs\Stock\CategoryProductDto;
 use App\Services\CategoryProductService;
 use App\Http\Requests\Stock\CategoryProductRequest;
+use App\Http\Requests\Stock\ImportCategoryProductRequest;
 use App\Http\Resources\Stock\CategoryProductResource;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
+use App\Services\CsvService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\Factory;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CategoryProductController extends Controller
 {
@@ -149,7 +153,125 @@ class CategoryProductController extends Controller
                 ->with('success', __('common.category_product_deleted'));
         } catch (Exception $e) {
             return redirect()->back()
-                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error') ]);
+        }
+    }
+
+    /**
+     * Export category products to CSV
+     */
+    public function export(): StreamedResponse|RedirectResponse
+    {
+        try {
+            $categories = $this->categoryProductService->getAllWithoutPagination();
+            
+            $records = $categories->map(function ($category) {
+                return [
+                    'Name' => $category->name,
+                    'Description' => $category->description,
+                    'Parent Category' => $category->parent_category?->name ?? '',
+                ];
+            })->toArray();
+
+            $csvService = new CsvService();
+            return $csvService->export(
+                ['Name', 'Description', 'Parent Category'],
+                array_values($records), 
+                'category-products.csv'
+            );
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => __('common.export_error')]);
+        }
+    }
+
+    /**
+     * Import category products from CSV
+     */
+    public function import(ImportCategoryProductRequest $request): RedirectResponse
+    {
+        try {
+            $file = $request->file('file');
+            $csvService = new CsvService();
+
+            // Validate CSV headers
+            if (!$csvService->validateHeaders($file, ImportCategoryProductRequest::getRequiredHeaders())) {
+                $actualHeaders = $csvService->getHeaders($file);
+                $message = 'Invalid CSV headers. Required: ' . implode(', ', ImportCategoryProductRequest::getRequiredHeaders()) . 
+                          '. Found: ' . implode(', ', $actualHeaders);
+                throw new Exception($message);
+            }
+
+            // Import CSV data
+            $records = $csvService->import($file, ImportCategoryProductRequest::getHeaderMapping());
+
+            $parentCategories = $this->categoryProductService->getAllWithoutPagination()
+                ->pluck('uuid', 'name');
+                
+            $validator = app()->make(Factory::class);
+            $rowNumber = 1;
+            $successCount = 0;
+            $errors = [];
+
+            // dd($records)
+            foreach ($records as $record) {
+                $rowNumber++;
+                
+                // Prepare data for validation
+                $data = [
+                    'name' => $record['name'],
+                    'description' => $record['description'],
+                    'category_product_id' => null
+                ];
+
+                // If parent category is specified, find its UUID
+                if (!empty($record['parent_category']) && !is_null($record['parent_category'])) {
+                    $parentUuid = $parentCategories[$record['parent_category']] ?? null;
+                    if (!$parentUuid) {
+                        $errors[] = "Row {$rowNumber}: Parent category '{$record['parent_category']}' not found";
+                        continue;
+                    }
+                    $data['category_product_id'] = $parentUuid;
+                }
+
+                // Get validation rules from ImportCategoryProductRequest
+                $rules = ImportCategoryProductRequest::getRowValidationRules();
+
+                $validation = $validator->make($data, $rules);
+
+                if ($validation->fails()) {
+                    $rowErrors = $validation->errors()->all();
+                    $errors[] = "Row {$rowNumber}: " . implode(', ', $rowErrors);
+                    continue;
+                }
+
+                try {
+                    $dto = new CategoryProductDto();
+                    $dto->name = $data['name'];
+                    $dto->description = $data['description'];
+                    $dto->category_product_id = $data['category_product_id'];
+
+                    $this->categoryProductService->create($dto);
+                    $successCount++;
+                } catch (Exception $e) {
+                    $errors[] = "Row {$rowNumber}: Failed to create category - " . $e->getMessage();
+                }
+            }
+
+            // If there were any errors, throw an exception with details
+            if (!empty($errors)) {
+                $errorMessage = "Import completed with errors:\n" . implode("\n", $errors);
+                if ($successCount > 0) {
+                    $errorMessage .= "\n{$successCount} categories were imported successfully.";
+                }
+                throw new Exception($errorMessage);
+            }
+
+            return redirect()->back()
+                ->with('success', __('common.import_success'));
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => __('common.import_error') . ': ' . $e->getMessage()]);
         }
     }
 }
