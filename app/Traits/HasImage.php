@@ -33,11 +33,11 @@ trait HasImage
     /***
      * Stram Image
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
     public function getImageStream()
     {
         return resolve(ImageService::class)->streamImageFromModel($this->image);
     }
+     */
 
     /***
      * Associate Image to Model
