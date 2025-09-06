@@ -108,7 +108,6 @@ return [
     'filter_by_parent_category' => 'Filter by parent category',
     'no_category_product' => 'No Parent Category',
     'no_result' => 'No results found',
-    'category_product_management' => 'Category Product Management',
     'create_category_product' => 'Create Category Product',
     'category_product_name' => 'Category Name',
     'search_category_products' => 'Search category products...',
@@ -274,7 +273,7 @@ return [
     'no_category_products_found' => 'No category products found',
     'search_category_products' => 'Search category products...',
     'manage_category_products' => 'Manage Category Products',
-    'category_product_management' => 'Product Categories',
+    'category_product_management' => 'Categories',
     'edit_category_product' => 'Edit Category Product',
     'new_category_product' => 'New Category Product',
     'edit_category_product_info' => 'Modify the information for category ":name"',
@@ -291,10 +290,13 @@ return [
     'create' => 'Create',
 
     "menu" => [
-          "dashboard" => "Dashboard",
-    "animals_management" => "Animal Management",
-    "breed_administration" => "Breed Administration",
-    "suppliers_management" => "Supplier Management",
-    "suppliers_list" => "Supplier List"
+        "dashboard" => "Dashboard",
+        "animals_management" => "Animal Management",
+        "breed_administration" => "Breed Administration",
+        "suppliers_management" => "Supplier Management",
+        "suppliers_list" => "Suppliers",
+        "products_management" => "Products Management",
+        "products_list" => "Products",
+        "categories_list" => "Categories"
     ],
 ];

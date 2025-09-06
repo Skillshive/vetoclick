@@ -209,7 +209,7 @@ return [
     'no_category_products_found' => 'لم يتم العثور على فئات منتجات',
     'search_category_products' => 'البحث عن فئات المنتجات...',
     'manage_category_products' => 'إدارة فئات المنتجات',
-    'category_product_management' => 'إدارة فئات المنتجات',
+    'category_product_management' => 'فئات المنتجات',
     'edit_category_product' => 'تعديل فئة المنتج',
     'new_category_product' => 'فئة منتج جديدة',
     'edit_category_product_info' => 'قم بتعديل معلومات الفئة ":name"',
@@ -224,10 +224,13 @@ return [
     'create' => 'إنشاء',
 
     "menu" => [
-          "dashboard" => "لوحة التحكم",
-    "animals_management" => "إدارة الحيوانات",
-    "breed_administration" => "إدارة السلالات",
-    "suppliers_management" => "إدارة الموردين",
-    "suppliers_list" => "قائمة الموردين"
+        "dashboard" => "لوحة التحكم",
+        "animals_management" => "إدارة الحيوانات",
+        "breed_administration" => "إدارة السلالات",
+        "suppliers_management" => "إدارة الموردين",
+        "suppliers_list" => "قائمة الموردين",
+        "products_management" => "إدارة المنتجات",
+        "products_list" => "قائمة المنتجات",
+        "categories_list" => "قائمة الفئات"
     ],
 ];

@@ -107,7 +107,6 @@ return [
     'filter_by_parent_category' => 'Filtrer par catégorie parent',
     'no_category_product' => 'Pas de catégorie parent',
     'no_result' => 'Aucun résultat trouvé',
-    'category_product_management' => 'Gestion des catégories de produits',
     'create_category_product' => 'Créer une catégorie de produit',
     'category_product_name' => 'Nom de la catégorie',
     'search_category_products' => 'Rechercher des catégories de produits...',
@@ -231,7 +230,7 @@ return [
     'no_category_products_found' => 'Aucune catégorie de produit trouvée',
     'search_category_products' => 'Rechercher des catégories de produits...',
     'manage_category_products' => 'Gérer les catégories de produits',
-    'category_product_management' => 'Catégories de produits',
+    'category_product_management' => 'Catégories',
     'edit_category_product' => 'Modifier la catégorie de produit',
     'new_category_product' => 'Nouvelle catégorie de produit',
     'edit_category_product_info' => 'Modifiez les informations de la catégorie ":name"',
@@ -248,10 +247,13 @@ return [
     'create' => 'Créer',
 
     "menu" => [
-          "dashboard" => "Tableau de bord",
-    "animals_management" => "Gestion des animaux",
-    "breed_administration" => "Administration des races",
-    "suppliers_management" => "Gestion des fournisseurs",
-    "suppliers_list" => "Liste des fournisseurs"
+        "dashboard" => "Tableau de bord",
+        "animals_management" => "Gestion des animaux",
+        "breed_administration" => "Administration des races",
+        "suppliers_management" => "Gestion des fournisseurs",
+        "suppliers_list" => "Liste des fournisseurs",
+        "products_management" => "Gestion des produits",
+        "products_list" => "Liste des produits",
+        "categories_list" => "Liste des catégories"
     ],
 ];
