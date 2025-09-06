@@ -36,77 +36,23 @@ class AvaibilityDto extends DTO
         $this->deleted_at = $deleted_at;
     }
 
-    protected static function fromArray(array $data): self
+     public function toArray(): array
+    {
+        return [
+            'veterinarian_id'  => $this->veterinarian_id,
+            'day_of_week'      => $this->day_of_week,
+            'start_time'       => $this->start_time,
+            'end_time'         => $this->end_time
+        ];
+    }
+
+ public static function fromRequest(Request $request): self
     {
         return new self(
-            uuid: $data['uuid'] ?? null,
-            veterinarian_id: $data['veterinarian_id'] ?? 0,
-            day_of_week: $data['day_of_week'] ?? '',
-            start_time: $data['start_time'] ?? '',
-            end_time: $data['end_time'] ?? '',
-            created_at: $data['created_at'] ?? null,
-            updated_at: $data['updated_at'] ?? null,
-            deleted_at: $data['deleted_at'] ?? null
+            veterinarian_id: $request->input('veterinarian_id'),
+            day_of_week: $request->input('day_of_week'),
+            start_time: $request->input('start_time'),
+            end_time: $request->input('end_time'),
         );
-    }
-
-    public function toCreateArray(): array
-    {
-        return [
-            'veterinarian_id' => $this->veterinarian_id,
-            'day_of_week' => $this->day_of_week,
-            'start_time' => $this->start_time,
-            'end_time' => $this->end_time,
-        ];
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'uuid' => $this->uuid,
-            'veterinarian_id' => $this->veterinarian_id,
-            'day_of_week' => $this->day_of_week,
-            'start_time' => $this->start_time,
-            'end_time' => $this->end_time,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-            'deleted_at' => $this->deleted_at,
-        ];
-    }
-
-    public function toFrontendArray(): array
-    {
-        return [
-            'uuid' => $this->uuid,
-            'veterinarian_id' => $this->veterinarian_id,
-            'day_of_week' => $this->day_of_week,
-            'start_time' => $this->start_time,
-            'end_time' => $this->end_time,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-        ];
-    }
-
-    public function toUpdateArray(): array
-    {
-        $data = [];
-        
-        if ($this->veterinarian_id > 0) {
-            $data['veterinarian_id'] = $this->veterinarian_id;
-        }
-        
-        if (!empty($this->day_of_week)) {
-            $data['day_of_week'] = $this->day_of_week;
-        }
-        
-        if (!empty($this->start_time)) {
-            $data['start_time'] = $this->start_time;
-        }
-        
-        if (!empty($this->end_time)) {
-            $data['end_time'] = $this->end_time;
-        }
-        
-        return $data;
     }
 }

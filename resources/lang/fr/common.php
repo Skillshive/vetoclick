@@ -203,6 +203,26 @@ return [
     'max' => 'Max',
     'select_value' => 'Sélectionner une valeur',
 
+    // Availability Calendar translations
+    'days' => [
+        'monday' => 'Lundi',
+        'tuesday' => 'Mardi',
+        'wednesday' => 'Mercredi',
+        'thursday' => 'Jeudi',
+        'friday' => 'Vendredi',
+        'saturday' => 'Samedi',
+        'sunday' => 'Dimanche'
+    ],
+    'available' => 'Disponible',
+    'unavailable' => 'Indisponible',
+    'start_time' => 'Heure de début',
+    'end_time' => 'Heure de fin',
+    'save_schedule' => 'Enregistrer l\'horaire',
+    'schedule_saved_success' => 'Horaire enregistré avec succès',
+    'error_saving_schedule' => 'Erreur lors de l\'enregistrement de l\'horaire',
+    'error_loading_schedule' => 'Erreur lors du chargement de l\'horaire',
+    'saving' => 'Enregistrement...',
+
     // Category Products specific translations
     'category_products' => 'Catégories de produits',
     'category_product' => 'Catégorie de produit',

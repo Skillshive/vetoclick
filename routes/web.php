@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Controllers\AvailabilityController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CategoryProductController;
 use App\Http\Controllers\LanguageController;
-use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
@@ -31,16 +31,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Availability routes
-Route::middleware(['auth', 'verified'])->prefix('availability')->controller(\App\Http\Controllers\AvailabilityController::class)->group(function () {
-    Route::get('/', 'index')->name('availability.index');
+Route::middleware(['auth', 'verified'])->prefix('availability')->controller(AvailabilityController::class)->group(function () {
     Route::post('/', 'store')->name('availability.store');
-    Route::get('/{uuid}', 'show')->middleware('validate.uuid:uuid')->name('availability.show');
-    Route::put('/{uuid}', 'update')->middleware('validate.uuid:uuid')->name('availability.update');
-    Route::delete('/{uuid}', 'destroy')->middleware('validate.uuid:uuid')->name('availability.destroy');
-    Route::post('/weekly', 'storeWeekly')->name('availability.store-weekly');
-    Route::get('/current-week', 'getCurrentWeek')->name('availability.current-week');
+    Route::get('/current-week', 'getCurrentWeek')->name('availability.getCurrentWeek');
+    Route::delete('/{uuid}', 'destroy')->name('availability.destroy');
     Route::post('/check', 'checkAvailability')->name('availability.check');
-    Route::patch('/{uuid}/toggle', 'toggleAvailability')->middleware('validate.uuid:uuid')->name('availability.toggle');
 });
 
 // Species routes

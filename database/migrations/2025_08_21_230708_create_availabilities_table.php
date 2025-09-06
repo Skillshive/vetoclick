@@ -16,7 +16,7 @@ return new class extends Migration
     $table->id();
     $table->uuid('uuid')->unique();
     $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
-    $table->tinyInteger('day_of_week');
+    $table->string('day_of_week');
     $table->time('start_time');
     $table->time('end_time');
     $table->timestamps();

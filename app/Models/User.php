@@ -79,4 +79,12 @@ class User extends Authenticatable
         }
         return $value;
     }
+
+    /**
+     * Get the veterinary record associated with the user.
+     */
+    public function veterinary()
+    {
+        return $this->hasOne(Veterinary::class,'user_id');
+    }
 }

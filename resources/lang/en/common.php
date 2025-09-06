@@ -246,6 +246,30 @@ return [
         'invalid_file_type' => 'Only CSV files are allowed',
     ],
 
+    // Availability Management translations
+    'availability_management' => 'Availability Management',
+    'set_weekly_availability' => 'Set Weekly Availability',
+
+    // Availability Calendar translations
+    'days' => [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday'
+    ],
+    'available' => 'Available',
+    'unavailable' => 'Unavailable',
+    'start_time' => 'Start Time',
+    'end_time' => 'End Time',
+    'save_schedule' => 'Save Schedule',
+    'schedule_saved_success' => 'Schedule saved successfully',
+    'error_saving_schedule' => 'Error saving schedule',
+    'error_loading_schedule' => 'Error loading schedule',
+    'saving' => 'Saving...',
+
     // Category Products specific translations
     'category_products' => 'Category Products',
     'category_product' => 'Category Product',
@@ -288,6 +312,16 @@ return [
     'creating' => 'Creating...',
     'update' => 'Update',
     'create' => 'Create',
+
+    // Availability translations
+    'availability' => 'Availability',
+    'manage_availability' => 'Manage your availability',
+    'error_loading_availability' => 'Error loading availability',
+    'error_saving_availability' => 'Error saving availability',
+    'error_deleting_availability' => 'Error deleting availability',
+    'availability_saved' => 'Availability saved successfully',
+    'availability_deleted' => 'Availability deleted successfully',
+    'confirm_delete_availability' => 'Are you sure you want to delete this availability slot?',
 
     "menu" => [
         "dashboard" => "Dashboard",

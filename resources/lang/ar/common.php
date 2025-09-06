@@ -182,6 +182,26 @@ return [
     'max' => 'الحد الأقصى',
     'select_value' => 'اختر قيمة',
 
+    // Availability Calendar translations
+    'days' => [
+        'monday' => 'الاثنين',
+        'tuesday' => 'الثلاثاء',
+        'wednesday' => 'الأربعاء',
+        'thursday' => 'الخميس',
+        'friday' => 'الجمعة',
+        'saturday' => 'السبت',
+        'sunday' => 'الأحد'
+    ],
+    'available' => 'متاح',
+    'unavailable' => 'غير متاح',
+    'start_time' => 'وقت البدء',
+    'end_time' => 'وقت الانتهاء',
+    'save_schedule' => 'حفظ الجدول',
+    'schedule_saved_success' => 'تم حفظ الجدول بنجاح',
+    'error_saving_schedule' => 'خطأ في حفظ الجدول',
+    'error_loading_schedule' => 'خطأ في تحميل الجدول',
+    'saving' => 'جاري الحفظ...',
+
     // Category Products specific translations
     'category_products' => 'فئات المنتجات',
     'category_product' => 'فئة المنتج',
