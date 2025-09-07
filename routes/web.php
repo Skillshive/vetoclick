@@ -10,6 +10,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BreedController;
+use App\Http\Controllers\CategoryBlogController;
+
 require_once 'common.php';
 
 // Language routes
@@ -93,7 +95,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Category Blog routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('category-blogs', \App\Http\Controllers\CategoryBlogController::class)->names('category-blogs');
+    //  Route::resource('category-blogs', \App\Http\Controllers\CategoryBlogController::class)->names('category-blogs');
+Route::name('category-blogs.')->prefix('category-blogs')
+        ->controller(CategoryBlogController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::post('store', 'store')->name('store');
+            Route::get('{categoryBlog}/edit', 'edit')->name('edit');
+            Route::post('{categoryBlog}/update', 'update')->name('update');
+            Route::delete('{categoryBlog}/delete', 'destroy')->name('destroy');
+            // Get category-blogs for a specific species
+            //  Route::get('category-blogs/{speciesUuid}', 'getBySpecies')->name('by-species');
+        });
 });
 
 // Product routes
