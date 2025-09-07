@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\common\BreedDTO;
+use App\DTOs\BreedDTO;
 use App\Models\Breed;
 use App\Interfaces\ServiceInterface;
+use App\Models\Species;
 use App\Services\ImageService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
@@ -50,8 +51,7 @@ class BreedService implements ServiceInterface
                 'breed_name' => $dto->breed_name,
                 'avg_weight_kg' => $dto->avg_weight_kg,
                 'life_span_years' => $dto->life_span_years,
-                'species_id' => $dto->species_id,
-                'image' => $dto->image,
+                'species_id' => $dto->species_id?$this->getSpeciesByUuid($dto->species_id)->id:null,
                 'image_id' =>  $image_id,
             ]);
             
@@ -85,8 +85,7 @@ class BreedService implements ServiceInterface
                 'breed_name' => $dto->breed_name,
                 'avg_weight_kg' => $dto->avg_weight_kg,
                 'life_span_years' => $dto->life_span_years,
-                'species_id' => $dto->species_id,
-                'image' => $dto->image,
+                'species_id' => $dto->species_id?$this->getSpeciesByUuid($dto->species_id)->id:null,
                 'image_id' =>  $image_id,
             ]);
 
@@ -132,5 +131,13 @@ class BreedService implements ServiceInterface
         return Breed::with(['species', 'image'])
             ->where('species_id', $speciesId)
             ->paginate($perPage);
+    }
+
+    /**
+     * Get Species by UUID
+     */
+    private function getSpeciesByUuid(string $uuid): ?Species
+    {
+        return Species::where('uuid', $uuid)->first();
     }
 }

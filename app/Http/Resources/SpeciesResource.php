@@ -18,7 +18,6 @@ class SpeciesResource extends JsonResource
         $currentPage = $request->get('breeds_page', 1);
 
         return [
-            'id' => $this->id,
             'uuid' => $this->uuid,
             'name' => $this->name,
             'description' => $this->description,
@@ -28,7 +27,7 @@ class SpeciesResource extends JsonResource
             'breeds' => $this->when($this->relationLoaded('breeds'), function () use ($perPage, $currentPage) {
                 $breeds = $this->breeds()->paginate($perPage, ['*'], 'page', $currentPage);
                 return [
-                    'data' => \App\Http\Resources\BreedResource::collection($breeds->items()),
+                    'data' => BreedResource::collection($breeds->items()),
                     'meta' => [
                         'current_page' => $breeds->currentPage(),
                         'from' => $breeds->firstItem(),

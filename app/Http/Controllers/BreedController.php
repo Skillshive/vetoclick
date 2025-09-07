@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateBreedRequest;
-use App\Http\Requests\UpdateBreedRequest;
+use App\DTOs\BreedDTO;
 use App\Services\BreedService;
-use App\common\BreedDTO;
+use App\Http\Requests\BreedRequest;
 use Illuminate\Http\RedirectResponse;
 use Exception;
 
@@ -21,7 +20,7 @@ class BreedController extends Controller
     /**
      * Store a newly created breed
      */
-    public function store(CreateBreedRequest $request): RedirectResponse
+    public function store(BreedRequest $request): RedirectResponse
     {
         try {
             $dto = BreedDTO::fromRequest($request);
@@ -40,7 +39,7 @@ class BreedController extends Controller
     /**
      * Update the specified breed by UUID
      */
-    public function update(UpdateBreedRequest $request, string $uuid): RedirectResponse
+    public function update(BreedRequest $request, string $uuid): RedirectResponse
     {
         try {
             $dto = BreedDTO::fromRequest($request);

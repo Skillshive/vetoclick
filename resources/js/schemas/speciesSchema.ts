@@ -15,6 +15,29 @@ export const speciesSchema = z.object({
     .nullable(),
 });
 
+export const breedsSchema = z.object({
+  breed_name: z.string()
+    .min(1, 'validation.breed_name_required')
+    .min(2, 'validation.breed_name_min_length')
+    .max(100, 'validation.breed_name_max_length')
+    .regex(/^[a-zA-ZÀ-ÿ\s\-']+$/, 'validation.breed_name_invalid_chars'),
+  avg_weight_kg: z
+    .number('validation.avg_weight_must_be_number')
+    .max(100, 'validation.avg_weight_max') 
+    .optional()
+    .nullable(),
+    life_span_years: z
+    .number('validation.life_span_must_be_number')
+    .int('validation.life_span_must_be_integer')
+    .min(0, 'validation.life_span_positive') 
+    .max(50, 'validation.life_span_max') 
+    .optional()
+    .nullable(),
+  image: z.instanceof(File)
+    .optional()
+    .nullable(),
+});
+
 export const speciesSchemaSearchSchema = z.object({
   search: z.string()
     .max(255, 'validation.search_max_length')
