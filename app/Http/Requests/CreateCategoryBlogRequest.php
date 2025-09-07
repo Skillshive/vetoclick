@@ -22,7 +22,7 @@ class CreateCategoryBlogRequest extends FormRequest
         return [
             'name' => 'required|string|max:255|unique:category_blogs,name',
             'desp' => 'nullable|string',
-            'parent_category_id' => 'nullable|exists:category_blogs,id',
+            'parent_category_id' => 'nullable|exists:category_blogs,uuid',
         ];
     }
 
