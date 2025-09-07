@@ -11,6 +11,7 @@ class CategoryBlog extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'category_blogs';
     protected static function boot()
     {
         parent::boot();
