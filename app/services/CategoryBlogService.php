@@ -48,8 +48,11 @@ class CategoryBlogService implements ServiceInterface
     public function create(CategoryBlogDto $dto): CategoryBlog
     {
         try {
-            $this->validateCategoryBlogData($dto->toCreateArray());
-            $categoryBlog = CategoryBlog::create($dto->toCreateArray());
+          $categoryBlog=  CategoryBlog::create([
+                "name" => $dto->name,
+                "desp" => $dto->desp,
+                "parent_category_id" => ,
+            ])
             return $categoryBlog->load(['parentCategory', 'childCategories']);
         } catch (Exception $e) {
             throw new Exception("Failed to create category blog: " . $e->getMessage());
