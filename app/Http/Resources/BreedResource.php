@@ -19,7 +19,6 @@ class BreedResource extends JsonResource
             'breed_name' => $this->breed_name,
             'avg_weight_kg' => $this->avg_weight_kg,
             'life_span_years' => $this->life_span_years,
-            'common_health_issues' => $this->common_health_issues,
             'image' => $this->getImagePath(),
             'species' => $this->whenLoaded('species'),
             'created_at' => $this->created_at,

@@ -7,10 +7,8 @@ use App\Services\AvailabilityService;
 use App\common\AvaibilityDto;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Redirect;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +28,13 @@ class AvailabilityController extends Controller
     {
         try {
             $user = Auth::user();
-            $availabilities = $this->availabilityService->getWeeklySchedule($user->id);
+            if (!$user->veterinary) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Veterinary profile not found'
+                ], 404);
+            }
+            $availabilities = $this->availabilityService->getWeeklySchedule($user->veterinary->id);
             
             return response()->json([
                 'success' => true,
@@ -124,22 +128,15 @@ class AvailabilityController extends Controller
             }
 
             $user = Auth::user();
-            
-            // Check for overlapping availability
-            if ($this->availabilityService->checkForOverlaps(
-                $user->id,
-                $request->day_of_week,
-                $request->start_time,
-                $request->end_time
-            )) {
+            if (!$user->veterinary) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Overlapping availability detected for this time slot'
-                ], 409);
+                    'message' => 'Veterinary profile not found'
+                ], 404);
             }
 
             $dto = new AvaibilityDto(
-                veterinarian_id: $user->id,
+                veterinarian_id: $user->veterinary->id,
                 day_of_week: strtolower($request->day_of_week),
                 start_time: $request->start_time,
                 end_time: $request->end_time
@@ -166,107 +163,9 @@ class AvailabilityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create availability',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
-
-    /**
-     * Update availability by UUID
-     */
-    public function update(Request $request, string $uuid): JsonResponse
-    {
-        try {
-            $availability = $this->availabilityService->getByUuid($uuid);
-            
-            if (!$availability) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Availability not found'
-                ], 404);
-            }
-
-            // Check if user owns this availability
-            if ($availability->veterinarian_id !== Auth::id()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized access to availability'
-                ], 403);
-            }
-
-            $validator = Validator::make($request->all(), [
-                'day_of_week' => 'sometimes|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-                'start_time' => 'sometimes|date_format:H:i:s',
-                'end_time' => 'sometimes|date_format:H:i:s',
-                'is_available' => 'sometimes|boolean',
-                'notes' => 'nullable|string|max:500'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            // Validate time logic if both times are provided
-            $startTime = $request->start_time ?? $availability->start_time;
-            $endTime = $request->end_time ?? $availability->end_time;
-            
-            if ($startTime >= $endTime) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Start time must be before end time'
-                ], 422);
-            }
-
-            // Check for overlapping availability (excluding current record)
-            $dayOfWeek = $request->day_of_week ?? $availability->day_of_week;
-            if ($this->availabilityService->checkForOverlaps(
-                Auth::id(),
-                $dayOfWeek,
-                $startTime,
-                $endTime,
-                $availability->id
-            )) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Overlapping availability detected for this time slot'
-                ], 409);
-            }
-
-            $updateData = $request->only([
-                'day_of_week', 'start_time', 'end_time', 'is_available', 'notes'
-            ]);
-
-            $availability->update($updateData);
-            $availability->refresh();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Availability updated successfully',
-                'data' => [
-                    'uuid' => $availability->uuid,
-                    'veterinary_id' => $availability->veterinary_id,
-                    'day_of_week' => $availability->day_of_week,
-                    'start_time' => $availability->start_time,
-                    'end_time' => $availability->end_time,
-                    'is_available' => $availability->is_available ?? true,
-                    'created_at' => $availability->created_at,
-                    'updated_at' => $availability->updated_at,
-                ]
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update availability',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     /**
      * Delete availability by UUID
      */
@@ -301,85 +200,10 @@ class AvailabilityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete availability',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Store weekly availability - batch operation
-     */
-    public function storeWeekly(Request $request): JsonResponse
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'weekly_data' => 'required|array|min:1',
-                'weekly_data.*.day_of_week' => 'required|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-                'weekly_data.*.start_time' => 'required|date_format:H:i:s',
-                'weekly_data.*.end_time' => 'required|date_format:H:i:s|after:weekly_data.*.start_time',
-                'weekly_data.*.is_available' => 'boolean',
-                'weekly_data.*.notes' => 'nullable|string|max:500'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $user = Auth::user();
-            $weeklyData = $request->input('weekly_data', []);
-
-            // Start database transaction
-            DB::beginTransaction();
-
-            // Delete existing availability for current week
-            if ($this->availabilityService->hasCurrentWeekAvailability($user->id)) {
-                $this->availabilityService->deleteCurrentWeekAvailability($user->id);
-            }
-
-            // Insert new weekly data
-            $createdAvailabilities = [];
-            foreach ($weeklyData as $dayData) {
-                $dto = new AvaibilityDto(
-                    veterinarian_id: $user->id,
-                    day_of_week: strtolower($dayData['day_of_week']),
-                    start_time: $dayData['start_time'],
-                    end_time: $dayData['end_time']
-                );
-                
-                $availability = $this->availabilityService->create($dto);
-                $createdAvailabilities[] = [
-                    'uuid' => $availability->uuid,
-                    'veterinary_id' => $availability->veterinary_id,
-                    'day_of_week' => $availability->day_of_week,
-                    'start_time' => $availability->start_time,
-                    'end_time' => $availability->end_time,
-                    'is_available' => $availability->is_available ?? true,
-                    'created_at' => $availability->created_at,
-                    'updated_at' => $availability->updated_at,
-                ];
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Weekly availability updated successfully',
-                'data' => $createdAvailabilities
-            ], 201);
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to store weekly availability',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
 
     /**
      * Get current week availability for authenticated user
@@ -387,8 +211,15 @@ class AvailabilityController extends Controller
     public function getCurrentWeek(): JsonResponse
     {
         try {
+            // dd("hello");
             $user = Auth::user();
-            $availability = $this->availabilityService->getCurrentWeekAvailability($user->id);
+            if (!$user->veterinary) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Veterinary profile not found'
+                ], 404);
+            }
+            $availability = $this->availabilityService->getCurrentWeekAvailability($user->veterinary->id);
             
             return response()->json([
                 'success' => true,
@@ -409,7 +240,6 @@ class AvailabilityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve current week availability',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -430,7 +260,6 @@ class AvailabilityController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
                 ], 422);
             }
 
@@ -457,56 +286,6 @@ class AvailabilityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to check availability',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Toggle availability status by UUID
-     */
-    public function toggleAvailability(string $uuid): JsonResponse
-    {
-        try {
-            $availability = $this->availabilityService->getByUuid($uuid);
-            
-            if (!$availability) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Availability not found'
-                ], 404);
-            }
-
-            // Check if user owns this availability
-            if ($availability->veterinarian_id !== Auth::id()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized access to availability'
-                ], 403);
-            }
-
-            $updatedAvailability = $this->availabilityService->toggleAvailability($uuid);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Availability status toggled successfully',
-                'data' => [
-                    'uuid' => $updatedAvailability->uuid,
-                    'veterinary_id' => $updatedAvailability->veterinary_id,
-                    'day_of_week' => $updatedAvailability->day_of_week,
-                    'start_time' => $updatedAvailability->start_time,
-                    'end_time' => $updatedAvailability->end_time,
-                    'is_available' => $updatedAvailability->is_available ?? true,
-                    'created_at' => $updatedAvailability->created_at,
-                    'updated_at' => $updatedAvailability->updated_at,
-                ]
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to toggle availability',
-                'error' => $e->getMessage()
             ], 500);
         }
     }

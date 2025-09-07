@@ -108,7 +108,6 @@ return [
     'filter_by_parent_category' => 'Filter by parent category',
     'no_category_product' => 'No Parent Category',
     'no_result' => 'No results found',
-    'category_product_management' => 'Category Product Management',
     'create_category_product' => 'Create Category Product',
     'category_product_name' => 'Category Name',
     'search_category_products' => 'Search category products...',
@@ -213,8 +212,9 @@ return [
     'breed' => 'Breed',
     'breed_name' => 'Breed Name',
     'avg_weight_kg' => 'Average Weight (kg)',
+    'weight' => 'Weight (kg)',
     'life_span_years' => 'Life Span (years)',
-    'common_health_issues' => 'Common Health Issues',
+    'life_span' => 'Life Span',
     'breed_image' => 'Breed Image',
     'create_breed' => 'Create Breed',
     'edit_breed' => 'Edit Breed',
@@ -247,6 +247,30 @@ return [
         'invalid_file_type' => 'Only CSV files are allowed',
     ],
 
+    // Availability Management translations
+    'availability_management' => 'Availability Management',
+    'set_weekly_availability' => 'Set Weekly Availability',
+
+    // Availability Calendar translations
+    'days' => [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday'
+    ],
+    'available' => 'Available',
+    'unavailable' => 'Unavailable',
+    'start_time' => 'Start Time',
+    'end_time' => 'End Time',
+    'save_schedule' => 'Save Schedule',
+    'schedule_saved_success' => 'Schedule saved successfully',
+    'error_saving_schedule' => 'Error saving schedule',
+    'error_loading_schedule' => 'Error loading schedule',
+    'saving' => 'Saving...',
+
     // Category Products specific translations
     'category_products' => 'Category Products',
     'category_product' => 'Category Product',
@@ -274,7 +298,7 @@ return [
     'no_category_products_found' => 'No category products found',
     'search_category_products' => 'Search category products...',
     'manage_category_products' => 'Manage Category Products',
-    'category_product_management' => 'Product Categories',
+    'category_product_management' => 'Categories',
     'edit_category_product' => 'Edit Category Product',
     'new_category_product' => 'New Category Product',
     'edit_category_product_info' => 'Modify the information for category ":name"',
@@ -290,11 +314,24 @@ return [
     'update' => 'Update',
     'create' => 'Create',
 
+    // Availability translations
+    'availability' => 'Availability',
+    'manage_availability' => 'Manage your availability',
+    'error_loading_availability' => 'Error loading availability',
+    'error_saving_availability' => 'Error saving availability',
+    'error_deleting_availability' => 'Error deleting availability',
+    'availability_saved' => 'Availability saved successfully',
+    'availability_deleted' => 'Availability deleted successfully',
+    'confirm_delete_availability' => 'Are you sure you want to delete this availability slot?',
+
     "menu" => [
-          "dashboard" => "Dashboard",
-    "animals_management" => "Animal Management",
-    "breed_administration" => "Breed Administration",
-    "suppliers_management" => "Supplier Management",
-    "suppliers_list" => "Supplier List"
+        "dashboard" => "Dashboard",
+        "animals_management" => "Animal Management",
+        "breed_administration" => "Breed Administration",
+        "suppliers_management" => "Supplier Management",
+        "suppliers_list" => "Suppliers",
+        "products_management" => "Products Management",
+        "products_list" => "Products",
+        "categories_list" => "Categories"
     ],
 ];

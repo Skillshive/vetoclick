@@ -9,9 +9,10 @@ class Veterinary extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'license_number', 'first_name', 'last_name', 'email', 'password', 
-        'phone', 'specialization', 'years_experience', 'profile_img',
+protected $table = "veterinarians";
+
+protected $fillable = [
+        'license_number','specialization', 'years_experience', 'profile_img',
         'subscription_plan_id', 'subscription_status', 'subscription_start_date',
         'subscription_end_date'
     ];

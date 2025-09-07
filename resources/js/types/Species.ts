@@ -45,7 +45,7 @@ export interface SpeciesManagementPageProps {
 export interface SpeciesFormData {
     name: string;
     description?: string;
-    image?: File | null;
+    image?: string | null;
 }
 
 export interface SpeciesShowPageProps {

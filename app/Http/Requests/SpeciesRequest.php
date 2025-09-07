@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateSpeciesRequest extends FormRequest
+class SpeciesRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,15 +20,12 @@ class UpdateSpeciesRequest extends FormRequest
      */
     public function rules(): array
     {
-        // Get the species ID from the route parameter (could be 'species' or 'id')
-        $speciesId = $this->route('species') ?? $this->route('id');
-
         return [
             'name' => [
                 'required',
                 'string',
-                'max:255',
-                Rule::unique('species', 'name')->ignore($speciesId)
+                'max:20',
+            Rule::unique('species', 'name')->ignore($this->route('species'), 'uuid'),
             ],
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',

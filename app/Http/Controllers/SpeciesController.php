@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateSpeciesRequest;
-use App\Http\Requests\UpdateSpeciesRequest;
+use App\DTOs\SpeciesDto;
 use App\Http\Resources\SpeciesResource;
 use App\Services\SpeciesService;
-use App\common\SpeciesDto;
+use App\Http\Requests\SpeciesRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,9 +31,6 @@ class SpeciesController extends Controller
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDirection = $request->get('sort_direction', 'desc');
 
-        // If per_page is not provided, set to null for unlimited
-        // If per_page is 0 or '0', set to null for unlimited
-        // If per_page is a number > 0, use pagination
         if ($perPage === null || $perPage === '0' || $perPage === 0) {
             $perPage = null;
         }
@@ -46,10 +42,7 @@ class SpeciesController extends Controller
                 $species = $this->speciesService->getAll($perPage);
             }
 
-            // dd($species);
-            // Handle both paginated and non-paginated responses
             if ($perPage === null) {
-                // Non-paginated response - species is a Collection
                 return Inertia::render('Species/Index', [
                     'species' => [
                         'data' => SpeciesResource::collection($species),
@@ -120,18 +113,19 @@ class SpeciesController extends Controller
     /**
      * Store a newly created species
      */
-    public function store(CreateSpeciesRequest $request): RedirectResponse
+    public function store(SpeciesRequest $request): RedirectResponse
     {
         try {
+            // dd($request->all());
             $dto = SpeciesDto::fromRequest($request);
-            $this->speciesService->create($dto, $request);
+            $this->speciesService->create($dto);
 
             return redirect()->route('species.index')
                 ->with('success', __('common.species_created'));
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error')]);
         }
     }
     
@@ -164,7 +158,7 @@ class SpeciesController extends Controller
     /**
      * Update the specified species by UUID
      */
-    public function update(UpdateSpeciesRequest $request, string $uuid): RedirectResponse
+    public function update(SpeciesRequest $request, string $uuid): RedirectResponse
     {
         try {
             $dto = SpeciesDto::fromRequest($request);

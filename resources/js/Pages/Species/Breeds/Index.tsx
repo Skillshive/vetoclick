@@ -11,7 +11,6 @@ interface Breed {
   breed_name: string;
   avg_weight_kg?: number;
   life_span_years?: number;
-  common_health_issues?: string;
   created_at: string;
   updated_at: string;
 }
@@ -64,7 +63,7 @@ export default function Breeds({
   }
 
   const { data: breeds, meta } = breedsData;
-console.log("meta",meta)
+
   return (
     <div className="transition-content w-full px-(--margin-x) pb-8">
       {/* Header with Create Button */}
@@ -79,7 +78,9 @@ console.log("meta",meta)
         </div>
         <Button
           onClick={onCreateBreed}
-          className="flex items-center space-x-2"
+          variant="filled"
+          color="primary"
+          className="h-8 gap-2 rounded-md px-3"
         >
           <HiPlus className="w-4 h-4" />
           <span>{t('common.create_breed')}</span>

@@ -2,34 +2,32 @@
 
 namespace App\services;
 
+use App\DTOs\SpeciesDto;
 use App\Models\Species;
-use App\common\SpeciesDto;
 use App\Interfaces\ServiceInterface;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Services\ImageService;
 use Exception;
 
 class SpeciesService implements ServiceInterface
 {
+    protected ImageService $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+    
     /**
      * Get all species with optional pagination
      */
     public function getAll(?int $perPage = 15)
     {
         if ($perPage === null || $perPage === 0) {
-            // Return all records without pagination
             return Species::with('image')->get();
         }
         return Species::with('image')->paginate($perPage);
     }
-
-    /**
-     * Get species by ID
-     */
-    public function getById(int $id): ?Species
-    {
-        return Species::find($id);
-    }
-
+    
     /**
      * Get species by UUID
      */
@@ -41,22 +39,25 @@ class SpeciesService implements ServiceInterface
     /**
      * Create new species from DTO
      */
-    public function create(SpeciesDto $dto, $request = null): Species
+    public function create(SpeciesDto $dto): Species
     {
         try {
-            $createData = $dto->toCreateArray();
-
-            // Handle image upload if present
-            if ($request && $request->hasFile('image')) {
-                $imageService = app(ImageService::class);
-                $image = $imageService->saveImage($request->file('image'), 'species/');
-                $createData['image_id'] = $image->id;
+            if($dto->image) {
+                $image = $this->imageService->saveImage($dto->image, 'species/');
+                $image_id = $image->id;
+            } else {
+                $image_id = null;
             }
 
-            $species = Species::create($createData);
-            return $species;
+            $createData = Species::create([
+                'name' => $dto->name,
+                'description' => $dto->description,
+                'image_id' =>  $image_id,
+            ]);
+            
+            return $createData;
         } catch (Exception $e) {
-            throw new Exception("Failed to create species: " . $e->getMessage());
+            throw new Exception("Failed to create species");
         }
     }
 
@@ -72,24 +73,22 @@ class SpeciesService implements ServiceInterface
                 return null;
             }
 
-            $updateData = $dto->toUpdateArray();
-
-            // Handle image upload if present
-            if ($request && $request->hasFile('image')) {
-                $imageService = app(ImageService::class);
-                $species = $imageService->update($species, $request->file('image'));
-                // Remove image_id from updateData since it's already handled
-                unset($updateData['image_id']);
+            if($dto->image) {
+                $image = $this->imageService->saveImage($dto->image, 'species/');
+                $image_id = $image->id;
+            } else {
+                $image_id = null;
             }
 
-            if (empty($updateData)) {
-                return $species;
-            }
+            $species->update([
+                'name' => $dto->name,
+                'description' => $dto->description,
+                'image_id' =>  $image_id,
+            ]);
 
-            $species->update($updateData);
-            return $species->fresh();
+            return $species->refresh();
         } catch (Exception $e) {
-            throw new Exception("Failed to update species: " . $e->getMessage());
+            throw new Exception("Failed to update species");
         }
     }
 
@@ -107,7 +106,7 @@ class SpeciesService implements ServiceInterface
 
             return $species->delete();
         } catch (Exception $e) {
-            throw new Exception("Failed to delete species: " . $e->getMessage());
+            throw new Exception("Failed to delete species");
         }
     }
 

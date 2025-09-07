@@ -182,6 +182,26 @@ return [
     'max' => 'الحد الأقصى',
     'select_value' => 'اختر قيمة',
 
+    // Availability Calendar translations
+    'days' => [
+        'monday' => 'الاثنين',
+        'tuesday' => 'الثلاثاء',
+        'wednesday' => 'الأربعاء',
+        'thursday' => 'الخميس',
+        'friday' => 'الجمعة',
+        'saturday' => 'السبت',
+        'sunday' => 'الأحد'
+    ],
+    'available' => 'متاح',
+    'unavailable' => 'غير متاح',
+    'start_time' => 'وقت البدء',
+    'end_time' => 'وقت الانتهاء',
+    'save_schedule' => 'حفظ الجدول',
+    'schedule_saved_success' => 'تم حفظ الجدول بنجاح',
+    'error_saving_schedule' => 'خطأ في حفظ الجدول',
+    'error_loading_schedule' => 'خطأ في تحميل الجدول',
+    'saving' => 'جاري الحفظ...',
+
     // Category Products specific translations
     'category_products' => 'فئات المنتجات',
     'category_product' => 'فئة المنتج',
@@ -209,7 +229,7 @@ return [
     'no_category_products_found' => 'لم يتم العثور على فئات منتجات',
     'search_category_products' => 'البحث عن فئات المنتجات...',
     'manage_category_products' => 'إدارة فئات المنتجات',
-    'category_product_management' => 'إدارة فئات المنتجات',
+    'category_product_management' => 'فئات المنتجات',
     'edit_category_product' => 'تعديل فئة المنتج',
     'new_category_product' => 'فئة منتج جديدة',
     'edit_category_product_info' => 'قم بتعديل معلومات الفئة ":name"',
@@ -224,10 +244,13 @@ return [
     'create' => 'إنشاء',
 
     "menu" => [
-          "dashboard" => "لوحة التحكم",
-    "animals_management" => "إدارة الحيوانات",
-    "breed_administration" => "إدارة السلالات",
-    "suppliers_management" => "إدارة الموردين",
-    "suppliers_list" => "قائمة الموردين"
+        "dashboard" => "لوحة التحكم",
+        "animals_management" => "إدارة الحيوانات",
+        "breed_administration" => "إدارة السلالات",
+        "suppliers_management" => "إدارة الموردين",
+        "suppliers_list" => "قائمة الموردين",
+        "products_management" => "إدارة المنتجات",
+        "products_list" => "قائمة المنتجات",
+        "categories_list" => "قائمة الفئات"
     ],
 ];

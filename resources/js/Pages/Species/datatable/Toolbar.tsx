@@ -57,7 +57,6 @@ export function Toolbar({
             onChange={(e) => {
               const value = e.target.value;
               setGlobalFilter(value);
-              // Debounced search - you can add router.get here for server-side search
               table.setGlobalFilter(value);
             }}
             prefix={<MagnifyingGlassIcon className="size-4" />}
@@ -71,13 +70,12 @@ export function Toolbar({
 
         <div className="flex gap-2 items-center">
         <Button
-            variant="filled"
+           variant="filled"
+            color="primary"
             className="h-8 gap-2 rounded-md px-3 text-xs"
             onClick={() => {
-              console.log('Add Species button clicked');
               setSelectedSpecies(null);
               setIsModalOpen(true);
-              console.log('Modal should be open now');
             }}
           >
             <PlusIcon className="size-4" />

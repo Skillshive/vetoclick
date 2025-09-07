@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class BreedRequest extends FormRequest
 {
@@ -22,16 +23,31 @@ class BreedRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'species_id' => 'required|exists:species,id',
-            'size' => 'nullable|string|max:50',
-            'average_lifespan' => 'nullable|string|max:50',
-            'temperament' => 'nullable|string|max:255',
-            'exercise_needs' => 'nullable|string|max:255',
-            'grooming_needs' => 'nullable|string|max:255',
-            'origin' => 'nullable|string|max:100',
-            'image_url' => 'nullable|url|max:255',
+            'species_id' => 'required|exists:species,uuid',
+            'breed_name' => [
+                'required',
+                'string',
+                'max:20',
+            Rule::unique('breeds', 'breed_name')->ignore($this->route('breed'), 'uuid'),
+            ],
+            'avg_weight_kg' => 'nullable|numeric|min:0|max:999.99',
+            'life_span_years' => 'nullable|integer|min:1|max:50',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+        ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'species_id' => 'species',
+            'breed_name' => 'breed name',
+            'avg_weight_kg' => 'average weight',
+            'life_span_years' => 'life span',
         ];
     }
 }

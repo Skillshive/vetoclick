@@ -24,7 +24,6 @@ class Breed extends Model
         'breed_name',
         'avg_weight_kg',
         'life_span_years',
-        'common_health_issues',
         'image_id'
     ];
 
@@ -36,10 +35,5 @@ class Breed extends Model
     public function species()
     {
         return $this->belongsTo(Species::class);
-    }
-
-    public function getImagePath()
-    {
-        return $this->image ? $this->image->path : null;
     }
 }

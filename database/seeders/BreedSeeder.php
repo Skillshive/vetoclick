@@ -53,7 +53,6 @@ class BreedSeeder extends Seeder
                         'breed_name' => $breedData['breed_name'],
                         'avg_weight_kg' => $breedData['avg_weight_kg'],
                         'life_span_years' => $breedData['life_span_years'],
-                        'common_health_issues' => $breedData['common_health_issues'],
                     ]
                 );
             }

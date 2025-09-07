@@ -21,6 +21,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { Species } from "./types";
 import { getImageUrl } from "@/utils/imageHelper";
+import { router } from "@inertiajs/react";
 
 interface CellProps {
   getValue: () => any;
@@ -140,78 +141,44 @@ export function ActionsCell({ row, table, setSelectedSpecies, setIsModalOpen }: 
 
   const state = deleteError ? "error" : deleteSuccess ? "success" : "pending";
 
+  const handleEditClick = () => {
+  router.visit(route('species.edit', row.original.uuid), {
+    preserveState: true,
+    preserveScroll: true, 
+  });
+};
+
   return (
     <>
-      <div className="flex justify-center">
-        <Menu as="div" className="relative inline-block text-left">
-          <MenuButton
-            as={Button}
-            variant="flat"
-            isIcon
-            className="size-7 rounded-full"
-          >
-            <EllipsisHorizontalIcon className="size-4.5" />
-          </MenuButton>
-          <Transition
-            as={MenuItems}
-            enter="transition ease-out"
-            enterFrom="opacity-0 translate-y-2"
-            enterTo="opacity-100 translate-y-0"
-            leave="transition ease-in"
-            leaveFrom="opacity-100 translate-y-0"
-            leaveTo="opacity-0 translate-y-2"
-            className="dark:border-dark-500 dark:bg-dark-750 absolute z-100 mt-1.5 min-w-[10rem] rounded-lg border border-gray-300 bg-white py-1 shadow-lg shadow-gray-200/50 outline-hidden focus-visible:outline-hidden ltr:right-0 rtl:left-0 dark:shadow-none"
-          >
-            <MenuItem>
-              {({ focus }) => (
-                <button
-                  onClick={() => {
-                    setSelectedSpecies(row.original);
-                    setIsModalOpen(true);
-                  }}
-                  className={clsx(
-                    "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
-                    focus &&
-                      "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
-                  )}
-                >
-                  <EyeIcon className="size-4.5 stroke-1" />
-                  <span>{t('common.view')}</span>
-                </button>
-              )}
-            </MenuItem>
-            <MenuItem>
-              {({ focus }) => (
-                <a
-                  href={route('species.edit', row.original.uuid)}
-                  className={clsx(
-                    "flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
-                    focus &&
-                      "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
-                  )}
-                >
-                  <PencilIcon className="size-4.5 stroke-1" />
-                  <span>{t('common.edit')}</span>
-                </a>
-              )}
-            </MenuItem>
-            <MenuItem>
-              {({ focus }) => (
-                <button
-                  onClick={openModal}
-                  className={clsx(
-                    "this:error text-this dark:text-this-light flex h-9 w-full items-center space-x-3 rtl:space-x-reverse px-3 tracking-wide outline-hidden transition-colors",
-                    focus && "bg-this/10 dark:bg-this-light/10",
-                  )}
-                >
-                  <TrashIcon className="size-4.5 stroke-1" />
-                  <span>{t('common.delete')}</span>
-                </button>
-              )}
-            </MenuItem>
-          </Transition>
-        </Menu>
-      </div>
+    <div className="flex justify-center items-center gap-2"> 
+            <Button 
+              component="a"
+              onClick={()=>{
+                handleEditClick()
+              }}
+              type="button"
+              variant="flat"
+              color="info"
+              isIcon
+              className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
+              title={t('common.edit')}
+            >
+              <PencilIcon className="size-4 stroke-1.5" />
+            </Button>
+    
+            <Button
+              type="button"
+              variant="flat"
+              color="error"
+              isIcon
+              className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md hover:bg-red-50 dark:hover:bg-red-900/20"
+              title={t('common.delete')}
+              onClick={openModal}
+            >
+              <TrashIcon className="size-4 stroke-1.5" />
+            </Button>
+          </div>
+
 
       <ConfirmModal
         show={deleteModalOpen}

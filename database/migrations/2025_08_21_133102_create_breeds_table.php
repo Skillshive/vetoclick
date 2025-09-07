@@ -16,7 +16,6 @@ return new class () extends Migration {
     $table->string('breed_name');
     $table->decimal('avg_weight_kg', 5, 2)->nullable();
     $table->integer('life_span_years')->nullable();
-    $table->text('common_health_issues')->nullable();
     $table->timestamps();
     $table->softDeletes(); 
 });

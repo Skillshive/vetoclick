@@ -61,22 +61,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    /**
-     * Get the image for the user.
-     */
-    public function image()
-    {
-        return $this->belongsTo(Image::class);
-    }
 
     /**
-     * Get the image path attribute.
+     * Get the veterinary record associated with the user.
      */
-    public function getImageAttribute($value)
+    public function veterinary()
     {
-        if ($this->image_id) {
-            return $this->image->path ?? $value;
-        }
-        return $value;
+        return $this->hasOne(Veterinary::class,'user_id');
     }
 }
