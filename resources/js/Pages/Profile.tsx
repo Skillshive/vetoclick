@@ -649,6 +649,14 @@ export default function Profile({ user }: ProfilePageProps) {
     return selectInfo.start >= new Date(); 
   }}
    hiddenDays={[0]} 
+    initialDate={(function () {
+    const today = new Date();
+    // if today is Sunday (0), jump to next Monday
+    if (today.getDay() === 0) {
+      today.setDate(today.getDate() + 1); // move to Monday
+    }
+    return today;
+  })()}
     />
 </Card>
 </div>

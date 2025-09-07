@@ -10,8 +10,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { Fragment, useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { Fragment, useState, useRef, useEffect } from "react";
+import { TrashIcon, InboxIcon } from "@heroicons/react/24/outline";
 import { Transition } from "@headlessui/react";
 
 // Local Imports
@@ -42,6 +42,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
   const { cardSkin } = useThemeContext();
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Use custom hook for all table state management
   const {
@@ -112,6 +113,19 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
   useDidUpdate(() => table.resetRowSelection(), [categoryProducts]);
   useLockScrollbar(tableSettings.enableFullScreen);
 
+  useEffect(() => {
+    if (cardRef.current) {
+      const children = cardRef.current.childNodes;
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (child.nodeType === Node.TEXT_NODE && child.textContent?.trim() === '0') {
+          cardRef.current.removeChild(child);
+          i--; // adjust index
+        }
+      }
+    }
+  }, [table.getCoreRowModel().rows.length]);
+
   // Bulk delete handlers
   const closeBulkModal = () => {
     setBulkDeleteModalOpen(false);
@@ -178,6 +192,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
             )}
           >
             <Card
+              ref={cardRef}
               className={clsx(
                 "relative flex grow flex-col",
                 tableSettings.enableFullScreen && "overflow-hidden",
@@ -239,67 +254,81 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
                     ))}
                   </THead>
                   <TBody>
-                    {table.getRowModel().rows.map((row) => {
-                      return (
-                        <Tr
-                          key={row.id}
-                          className={clsx(
-                            "dark:border-b-dark-500 relative border-y border-transparent border-b-gray-200",
-                            row.getIsSelected() &&
-                              !isSafari &&
-                              "row-selected after:bg-primary-500/10 ltr:after:border-l-primary-500 rtl:after:border-r-primary-500 after:pointer-events-none after:absolute after:inset-0 after:z-2 after:h-full after:w-full after:border-3 after:border-transparent",
-                          )}
-                        >
-                          {row
-                            .getVisibleCells()
-                            .filter(
-                              (cell) => !cell.column.columnDef.isHiddenColumn,
-                            )
-                            .map((cell) => {
-                              return (
-                                <Td
-                                  key={cell.id}
-                                  className={clsx(
-                                    "relative",
-                                    cardSkin === "shadow"
-                                      ? "dark:bg-dark-700"
-                                      : "dark:bg-dark-900",
+                    {table.getCoreRowModel().rows.length > 0 ? (
+                      table.getRowModel().rows.map((row) => {
+                        return (
+                          <Tr
+                            key={row.id}
+                            className={clsx(
+                              "dark:border-b-dark-500 relative border-y border-transparent border-b-gray-200",
+                              row.getIsSelected() &&
+                                !isSafari &&
+                                "row-selected after:bg-primary-500/10 ltr:after:border-l-primary-500 rtl:after:border-r-primary-500 after:pointer-events-none after:absolute after:inset-0 after:z-2 after:h-full after:w-full after:border-3 after:border-transparent",
+                            )}
+                          >
+                            {row
+                              .getVisibleCells()
+                              .filter(
+                                (cell) => !cell.column.columnDef.isHiddenColumn,
+                              )
+                              .map((cell) => {
+                                return (
+                                  <Td
+                                    key={cell.id}
+                                    className={clsx(
+                                      "relative",
+                                      cardSkin === "shadow"
+                                        ? "dark:bg-dark-700"
+                                        : "dark:bg-dark-900",
 
-                                    cell.column.getCanPin() && [
-                                      cell.column.getIsPinned() === "left" &&
-                                        "sticky z-2 ltr:left-0 rtl:right-0",
-                                      cell.column.getIsPinned() === "right" &&
-                                        "sticky z-2 ltr:right-0 rtl:left-0",
-                                    ],
-                                  )}
-                                >
-                                  {cell.column.getIsPinned() && (
-                                    <div
-                                      className={clsx(
-                                        "dark:border-dark-500 pointer-events-none absolute inset-0 border-gray-200",
-                                        cell.column.getIsPinned() === "left"
-                                          ? "ltr:border-r rtl:border-l"
-                                          : "ltr:border-l rtl:border-r",
-                                      )}
-                                    ></div>
-                                  )}
-                                  {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext(),
-                                  )}
-                                </Td>
-                              );
-                            })}
-                        </Tr>
-                      );
-                    })}
+                                      cell.column.getCanPin() && [
+                                        cell.column.getIsPinned() === "left" &&
+                                          "sticky z-2 ltr:left-0 rtl:right-0",
+                                        cell.column.getIsPinned() === "right" &&
+                                          "sticky z-2 ltr:right-0 rtl:left-0",
+                                      ],
+                                    )}
+                                  >
+                                    {cell.column.getIsPinned() && (
+                                      <div
+                                        className={clsx(
+                                          "dark:border-dark-500 pointer-events-none absolute inset-0 border-gray-200",
+                                          cell.column.getIsPinned() === "left"
+                                            ? "ltr:border-r rtl:border-l"
+                                            : "ltr:border-l rtl:border-r",
+                                        )}
+                                      ></div>
+                                    )}
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext(),
+                                    )}
+                                  </Td>
+                                );
+                              })}
+                          </Tr>
+                        );
+                      })
+                    ) : (
+                      <Tr>
+                        <Td
+                          colSpan={table.getVisibleLeafColumns().length}
+                          className="text-center py-8"
+                        >
+                          <InboxIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-dark-400" />
+                          <p className="mt-2 text-sm text-gray-500 dark:text-dark-300">
+                            {t('common.no_data')}
+                          </p>
+                        </Td>
+                      </Tr>
+                    )}
                   </TBody>
                 </Table>
               </div>
               {/* Floating Selected Rows Actions */}
               <Transition
                 as={Fragment}
-                show={table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()}
+                show={(table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()) && table.getCoreRowModel().rows.length > 0}
                 enter="transition-all duration-200"
                 enterFrom="opacity-0 translate-y-4"
                 enterTo="opacity-100 translate-y-0"

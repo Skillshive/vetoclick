@@ -26,30 +26,32 @@ class CategoryBlogController extends Controller
     /**
      * Display a listing of category blogs
      */
-    public function index(Request $request): Response
+       public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 15);
         $search = $request->get('search');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDirection = $request->get('sort_direction', 'desc');
+        $parentCategoryId = $request->get('parent_category');
 
         try {
+            $query = $this->categoryBlogService->query();
+            
             if ($search) {
-                $categoryBlogs = $this->categoryBlogService->searchByName($search);
-                // Convert collection to paginator for consistency
-                $categoryBlogs = new \Illuminate\Pagination\LengthAwarePaginator(
-                    $categoryBlogs->forPage(1, $perPage),
-                    $categoryBlogs->count(),
-                    $perPage,
-                    1,
-                    ['path' => request()->url()]
-                );
-            } else {
-                $categoryBlogs = $this->categoryBlogService->getAll($perPage);
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
             }
+            
+            if ($parentCategoryId) {
+                $query->where('category_product_id', $parentCategoryId);
+            }
+            
+            $categoryBlogs = $query->paginate($perPage);
 
             // Get all categories for parent selection
-            $parentCategories = $this->categoryBlogService->getAllAsCollection();
+            $parentCategories = $this->categoryBlogService->getAllWithoutPagination();
 
             return Inertia::render('CategoryBlogs/Index', [
                 'categoryBlogs' => [
@@ -78,16 +80,15 @@ class CategoryBlogController extends Controller
                 ]
             ]);
         } catch (Exception $e) {
-            return Inertia::render('CategoryBlogs/Index', [
-                'categoryBlogs' => ['data' => [], 'meta' => null, 'links' => null],
-                'parentCategories' => [],
+            return Inertia::render('Category_products/Index', [
+                'categoryProducts' => ['data' => [], 'meta' => null, 'links' => null],
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
                     'sort_by' => $sortBy,
                     'sort_direction' => $sortDirection,
                 ],
-                'error' => __('common.error')
+                'error' => __('common.error') 
             ]);
         }
     }
@@ -208,71 +209,7 @@ class CategoryBlogController extends Controller
                 'message' => 'Failed to retrieve category blog',
                 'error' => $e->getMessage()
             ], 500);
-        }
-    }
-
-    /**
-     * Get root categories (categories without parent)
-     */
-    public function getRootCategories(): JsonResponse
-    {
-        try {
-            $rootCategories = $this->categoryBlogService->getRootCategories();
-            
-            return response()->json([
-                'success' => true,
-                'data' => CategoryBlogResource::collection($rootCategories)
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve root categories',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get child categories by parent UUID
-     */
-    public function getChildCategories(string $parentUuid): JsonResponse
-    {
-        try {
-            $childCategories = $this->categoryBlogService->getChildCategories($parentUuid);
-            
-            return response()->json([
-                'success' => true,
-                'data' => CategoryBlogResource::collection($childCategories)
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve child categories',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get category hierarchy (tree structure)
-     */
-    public function getCategoryHierarchy(): JsonResponse
-    {
-        try {
-            $hierarchy = $this->categoryBlogService->getCategoryHierarchy();
-            
-            return response()->json([
-                'success' => true,
-                'data' => $hierarchy
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve category hierarchy',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+        }}
 
     /**
      * Search categories by name

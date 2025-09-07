@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Medications",
+    "description": "All types of veterinary medications and drug therapies.",
+    "children": [
+      {
+        "name": "Antibiotics",
+        "description": "Medications to treat bacterial infections in animals."
+      },
+      {
+        "name": "Pain Relief",
+        "description": "Pain relief medications for post-surgery and chronic conditions."
+      },
+      {
+        "name": "Vaccines",
+        "description": "Preventive vaccines for pets and livestock."
+      },
+      {
+        "name": "Deworming",
+        "description": "Medications to treat and prevent internal parasites."
+      }
+    ]
+  },
+  {
+    "name": "Equipment",
+    "description": "Veterinary equipment and supplies for clinics and fieldwork.",
+    "children": [
+      {
+        "name": "Surgical Instruments",
+        "description": "Tools and instruments used during surgeries."
+      },
+      {
+        "name": "Diagnostic Tools",
+        "description": "Equipment for lab tests, imaging, and diagnostics."
+      },
+      {
+        "name": "Protective Gear",
+        "description": "Gloves, masks, gowns, and other protective items."
+      }
+    ]
+  },
+  {
+    "name": "Animal Care",
+    "description": "General animal care, hygiene, and nutrition.",
+    "children": [
+      {
+        "name": "Nutrition",
+        "description": "Diet, feeding, and supplements for pets and livestock."
+      },
+      {
+        "name": "Hygiene",
+        "description": "Animal grooming, bathing, and sanitation."
+      },
+      {
+        "name": "Housing",
+        "description": "Guides for shelters, cages, barns, and kennels."
+      }
+    ]
+  },
+  {
+    "name": "Diseases",
+    "description": "Common and rare animal diseases, their prevention and treatment.",
+    "children": [
+      {
+        "name": "Infectious Diseases",
+        "description": "Diseases caused by bacteria, viruses, or fungi."
+      },
+      {
+        "name": "Parasitic Diseases",
+        "description": "Diseases caused by internal and external parasites."
+      },
+      {
+        "name": "Zoonotic Diseases",
+        "description": "Animal diseases transmissible to humans."
+      }
+    ]
+  },
+  {
+    "name": "Training & Behavior",
+    "description": "Animal training methods and behavior management.",
+    "children": [
+      {
+        "name": "Pet Training",
+        "description": "Techniques for obedience and skill training in pets."
+      },
+      {
+        "name": "Behavioral Issues",
+        "description": "Managing aggression, anxiety, and other behavioral problems."
+      }
+    ]
+  }
+]
