@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\ValidationException;
 
 class UpdateCategoryBlogRequest extends FormRequest
 {
@@ -21,7 +23,7 @@ class UpdateCategoryBlogRequest extends FormRequest
     public function rules(): array
     {
         $categoryBlogId = $this->route('categoryBlog') ? $this->route('categoryBlog') : null;
-        
+
         return [
             'name' => [
                 'sometimes',
@@ -31,7 +33,7 @@ class UpdateCategoryBlogRequest extends FormRequest
                 Rule::unique('category_blogs', 'name')->ignore($categoryBlogId, 'uuid')
             ],
             'desp' => 'nullable|string',
-            'parent_category_id' => 'nullable|exists:category_blogs,id',
+            'parent_category_id' => 'nullable|exists:category_blogs,uuid',
         ];
     }
 
@@ -46,4 +48,17 @@ class UpdateCategoryBlogRequest extends FormRequest
             'parent_category_id.exists' => 'The selected parent category does not exist.',
         ];
     }
+
+    /**
+     * Handle a failed validation attempt.
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        response()->json([
+            'message' => 'Validation failed',
+            'errors' => $validator->errors()
+        ], 422)->header('X-Inertia', false)->send();
+        exit;
+    }
+
 }

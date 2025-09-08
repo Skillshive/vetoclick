@@ -7,11 +7,15 @@ use App\DTOs\CategoryBlogDto;
 use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Exception;
 
 class CategoryBlogService implements ServiceInterface
 {
+
+        public function query()
+    {
+        return CategoryBlog::with('parentCategory');
+    }
     /**
      * Get category blog by UUID
      */
@@ -25,11 +29,9 @@ class CategoryBlogService implements ServiceInterface
     /**
      * Get all category blogs with pagination
      */
-    public function getAll(int $perPage = 15): LengthAwarePaginator
+        public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return CategoryBlog::with(['parentCategory', 'childCategories'])
-            ->orderBy('name', 'asc')
-            ->paginate($perPage);
+        return $this->query()->paginate($perPage);
     }
 
     /**
@@ -51,14 +53,16 @@ class CategoryBlogService implements ServiceInterface
           $categoryBlog=  CategoryBlog::create([
                 "name" => $dto->name,
                 "desp" => $dto->desp,
-                "parent_category_id" => ,
-            ])
-            return $categoryBlog->load(['parentCategory', 'childCategories']);
+                "parent_category_id" => $dto->parent_category_id ? $this->getByUuid($dto->parent_category_id)->id : null,
+          ]);
+
+          return $categoryBlog->load(['parentCategory', 'childCategories']);
         } catch (Exception $e) {
-            throw new Exception("Failed to create category blog: " . $e->getMessage());
+            throw new Exception("Failed to create category blog");
         }
     }
 
+   
     /**
      * Update category blog by UUID
      */
@@ -71,13 +75,16 @@ class CategoryBlogService implements ServiceInterface
                 return null;
             }
 
-            $updateData = $dto->toUpdateArray();
-            $this->validateCategoryBlogData($updateData, $categoryBlog->id);
+            $categoryBlog->update([
+                "name" => $dto->name,
+                "desp" => $dto->desp,
+                "parent_category_id" => $dto->parent_category_id ? $this->getByUuid($dto->parent_category_id)->id : null,
+            ]);
             
-            $categoryBlog->update($updateData);
+            $categoryBlog->refresh();
             return $categoryBlog->fresh(['parentCategory', 'childCategories']);
         } catch (Exception $e) {
-            throw new Exception("Failed to update category blog: " . $e->getMessage());
+            throw new Exception("Failed to update category blog");
         }
     }
 
@@ -93,79 +100,11 @@ class CategoryBlogService implements ServiceInterface
                 return false;
             }
 
-            // Check if category has child categories
-            if ($categoryBlog->childCategories()->count() > 0) {
-                throw new Exception("Cannot delete category blog with child categories.");
-            }
-
             return $categoryBlog->delete();
         } catch (Exception $e) {
-            throw new Exception("Failed to delete category blog: " . $e->getMessage());
+            throw new Exception("Failed to delete category blog");
         }
     }
-
-    /**
-     * Get root categories (categories without parent)
-     */
-    public function getRootCategories(): Collection
-    {
-        return CategoryBlog::with(['childCategories'])
-            ->whereNull('parent_category_id')
-            ->orderBy('name', 'asc')
-            ->get();
-    }
-
-    /**
-     * Get child categories by parent UUID
-     */
-    public function getChildCategories(string $parentUuid): Collection
-    {
-        $parentCategory = $this->getByUuid($parentUuid);
-        
-        if (!$parentCategory) {
-            return collect();
-        }
-
-        return CategoryBlog::with(['childCategories'])
-            ->where('parent_category_id', $parentCategory->id)
-            ->orderBy('name', 'asc')
-            ->get();
-    }
-
-    /**
-     * Get category hierarchy (tree structure)
-     */
-    public function getCategoryHierarchy(): Collection
-    {
-        $rootCategories = $this->getRootCategories();
-        
-        return $rootCategories->map(function ($category) {
-            return $this->buildCategoryTree($category);
-        });
-    }
-
-    /**
-     * Build category tree recursively
-     */
-    private function buildCategoryTree(CategoryBlog $category): array
-    {
-        $categoryData = [
-            'uuid' => $category->uuid,
-            'name' => $category->name,
-            'desp' => $category->desp,
-            'parent_category_id' => $category->parent_category_id,
-            'created_at' => $category->created_at,
-            'updated_at' => $category->updated_at,
-            'children' => []
-        ];
-
-        foreach ($category->childCategories as $child) {
-            $categoryData['children'][] = $this->buildCategoryTree($child);
-        }
-
-        return $categoryData;
-    }
-
     /**
      * Search categories by name
      */
@@ -173,26 +112,12 @@ class CategoryBlogService implements ServiceInterface
     {
         return CategoryBlog::with(['parentCategory', 'childCategories'])
             ->where('name', 'LIKE', '%' . $searchTerm . '%')
-            ->orderBy('name', 'asc')
+             ->orWhere('dsep', 'LIKE', '%' . $searchTerm . '%')
+            ->orWhereHas('parentCategory', function ($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', '%' . $searchTerm . '%')
+                ->orWhere('dsep', 'LIKE', '%' . $searchTerm . '%');
+            })
             ->get();
-    }
-
-    /**
-     * Check if category can be parent of another category (prevent circular reference)
-     */
-    public function canBeParent(int $categoryId, int $potentialParentId): bool
-    {
-        if ($categoryId === $potentialParentId) {
-            return false;
-        }
-
-        $category = CategoryBlog::find($categoryId);
-        if (!$category) {
-            return false;
-        }
-
-        // Check if potential parent is a descendant of the category
-        return !$this->isDescendant($categoryId, $potentialParentId);
     }
 
     /**
@@ -212,44 +137,8 @@ class CategoryBlogService implements ServiceInterface
         return false;
     }
 
-    /**
-     * Validate category blog data
-     */
-    protected function validateCategoryBlogData(array $data, ?int $excludeId = null): void
+    public function getAllWithoutPagination(): Collection
     {
-        // Validate parent category relationship
-        if (isset($data['parent_category_id']) && $data['parent_category_id']) {
-            $parentCategory = CategoryBlog::find($data['parent_category_id']);
-            if (!$parentCategory) {
-                throw new Exception('Parent category does not exist.');
-            }
-
-            // Prevent circular reference if updating existing category
-            if ($excludeId && !$this->canBeParent($excludeId, $data['parent_category_id'])) {
-                throw new Exception('Cannot set parent category: circular reference detected.');
-            }
-        }
-
-        // Validate name uniqueness
-        if (isset($data['name'])) {
-            $query = CategoryBlog::where('name', $data['name']);
-            if ($excludeId) {
-                $query->where('id', '!=', $excludeId);
-            }
-            
-            if ($query->exists()) {
-                throw new Exception('Category blog name must be unique.');
-            }
-        }
-    }
-
-    /**
-     * Get categories with their blog count (if you have a blogs relationship)
-     */
-    public function getCategoriesWithBlogCount(): Collection
-    {
-        return CategoryBlog::with(['parentCategory'])
-            ->orderBy('name', 'asc')
-            ->get();
+        return CategoryBlog::whereNull('parent_category_id')->get();
     }
 }

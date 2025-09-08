@@ -15,10 +15,11 @@ import { CategoryBlog } from "./types";
 interface ColumnsProps {
   setSelectedCategoryBlog: (categoryBlog: CategoryBlog | null) => void;
   setIsModalOpen: (open: boolean) => void;
+  onDeleteRow?: (row: any) => void;
   t: (key: string) => string;
 }
 
-export const createColumns = ({ setSelectedCategoryBlog, setIsModalOpen, t }: ColumnsProps): ColumnDef<CategoryBlog>[] => [
+export const createColumns = ({ setSelectedCategoryBlog, setIsModalOpen, onDeleteRow, t }: ColumnsProps): ColumnDef<CategoryBlog>[] => [
   {
     id: "select",
     header: SelectHeader,
@@ -58,11 +59,12 @@ export const createColumns = ({ setSelectedCategoryBlog, setIsModalOpen, t }: Co
     id: "actions",
     header: "",
     cell: ({ row, table }) => (
-      <ActionsCell 
-        row={row} 
-        table={table} 
+      <ActionsCell
+        row={row}
+        table={table}
         setSelectedCategoryBlog={setSelectedCategoryBlog}
         setIsModalOpen={setIsModalOpen}
+        onDeleteRow={onDeleteRow}
       />
     ),
   },

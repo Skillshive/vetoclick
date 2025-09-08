@@ -1,32 +1,28 @@
 import clsx from "clsx";
 import {
-  MagnifyingGlassIcon,
-  PlusIcon,
-  ViewColumnsIcon,
-  ArrowDownTrayIcon,
   ArrowUpTrayIcon,
   QuestionMarkCircleIcon,
   DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
-import { Button, Input } from "@/components/ui";
-import { TableSettings } from "@/components/shared/table/TableSettings";
-import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
+import { Button } from "@/components/ui";
+import { SearchInput, ExportButton, CreateButton, TableSettingsButton } from "@/components/shared/table";
 import { useBreakpointsContext } from "@/contexts/breakpoint/context";
-import { CategoryBlog } from "./types";
+import { CategoryBlog } from "@/Pages/CategoryBlogs/datatable/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { ParentCategoryFilter } from "./ParentCategoryFilter";
 import { router, usePage } from "@inertiajs/react";
 import { useToast } from "@/Components/common/Toast/ToastContext";
+import { ParentCategoryFilter } from "./ParentCategoryFilter";
 
 interface ToolbarProps {
   table: any;
   globalFilter: string;
   setGlobalFilter: (value: string) => void;
+  onSearch?: (value: string) => void;
   setSelectedCategoryBlog: (categoryBlog: CategoryBlog | null) => void;
   setIsModalOpen: (open: boolean) => void;
-  parentCategories: {
-    data: CategoryBlog[];
+  parentCategories?: {
+    data: CategoryBlog;
   };
 }
 
@@ -34,6 +30,7 @@ const Toolbar = ({
   table,
   globalFilter,
   setGlobalFilter,
+  onSearch,
   setSelectedCategoryBlog,
   setIsModalOpen,
   parentCategories
@@ -45,7 +42,7 @@ const Toolbar = ({
   const { showToast } = useToast();
   
   const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('common.stock_management'), path: "/" },
+    { title: t('common.blog_management'), path: "/" },
     { title: t('common.category_blog_management')},
   ];
 
@@ -54,7 +51,7 @@ const Toolbar = ({
       <div
         className={clsx(
           "transition-content flex items-center justify-between gap-4",
-          isFullScreenEnabled ? "px-4 sm:px-5" : "px-(--margin-x) pt-4",
+          isFullScreenEnabled ? "px-4 sm:px-5" : "pt-4",
         )}
       >
         <div>
@@ -66,47 +63,35 @@ const Toolbar = ({
       <div
         className={clsx(
           "flex justify-between gap-4 pt-4 pb-1",
-          isFullScreenEnabled ? "px-4 sm:px-5" : "px-(--margin-x)",
+          isFullScreenEnabled ? "px-4 sm:px-5" : "",
         )}
       >
         <div className="flex shrink-0 gap-2">
-          <Input
+          <SearchInput
             value={globalFilter}
-            onChange={(e) => {
-              const value = e.target.value;
-              setGlobalFilter(value);
-              table.setGlobalFilter(value);
-            }}
-            prefix={<MagnifyingGlassIcon className="size-4" />}
+            onChange={setGlobalFilter}
+            onSearch={onSearch}
+            table={table}
             placeholder={t('common.search_category_blogs')}
-            classNames={{
-              root: "shrink-0",
-              input: "ring-primary-500/50 h-8 text-xs focus:ring-3",
-            }}
           />
-          {/* {table.getColumn("parentCategory") && (
+          {table.getColumn("parentCategory") && (
             <ParentCategoryFilter
               column={table.getColumn("parentCategory")!}
               options={parentCategories.data}
             />
-          )} */}
+          )}
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="outlined"
-            color="primary"
-            className="h-8 gap-2 rounded-md px-3 text-xs"
-            onClick={() => {
+          <ExportButton
+            onExport={() => {
               const link = document.createElement('a');
               link.href = route('category-blogs.export');
               link.download = 'category-blogs.csv';
               link.click();
             }}
-          >
-            <ArrowDownTrayIcon className="size-4" />
-            <span>{t('common.export_csv')}</span>
-          </Button>
+            label={t('common.export_csv')}
+          />
 
           <div className="relative inline-block group">
             <Button
@@ -124,9 +109,8 @@ const Toolbar = ({
             <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
               <div>
                 <Button
-                  variant="outline"
+                  variant="outlined"
                   color="primary"
-                  size="sm"
                   className="text-white hover:text-primary-200"
                   onClick={() => {
                     const csvContent = 'Name,Description,Parent Category\nVaccines,Veterinary vaccines,Medications\nDiagnostic Tools,Medical diagnostic equipment,Equipment';
@@ -183,23 +167,21 @@ const Toolbar = ({
                     formData.append('file', file);
                     console.log('FormData created with file');
                     
-                    let toastId: string | undefined;
-                    
                     // Show the importing toast
-                    toastId = showToast({
+                    showToast({
                       type: 'info',
                       message: t('common.importing'),
                       duration: 0, // 0 means it won't auto-dismiss
-                    })?.id;
+                    });
 
                     console.log('Sending request to:', route('category-blogs.import'));
-                    
+
                     // Make sure the file input is cleared right after we get the file
                     e.target.value = '';
-                    
+
                     // Create form data for the request
                     await router.post(route('category-blogs.import'), formData);
-                    
+
                     // Customize the visit options
                     router.visit(route('category-blogs.import'), {
                       method: 'post',
@@ -208,15 +190,6 @@ const Toolbar = ({
                       preserveScroll: true,
                       onError: (errors: Record<string, string>) => {
                         console.error('Import error:', errors);
-                        // Clear the info toast
-                        if (toastId) {
-                          showToast({
-                            id: toastId,
-                            type: 'error',
-                            message: 'Import failed',
-                            duration: 0,
-                          });
-                        }
 
                         let errorMessage = t('common.import_error');
                         if (errors.error === 'validation.csv_headers_invalid') {
@@ -240,7 +213,7 @@ const Toolbar = ({
                         } else if (errors.error) {
                           errorMessage += `: ${errors.error}`;
                         }
-                        
+
                         showToast({
                           type: 'error',
                           message: errorMessage,
@@ -249,15 +222,11 @@ const Toolbar = ({
                       },
                       onSuccess: () => {
                         console.log('Import successful');
-                        // Clear the info toast
-                        if (toastId) {
-                          showToast({
-                            id: toastId,
-                            type: 'success',
-                            message: t('common.import_success'),
-                            duration: 3000,
-                          });
-                        }
+                        showToast({
+                          type: 'success',
+                          message: t('common.import_success'),
+                          duration: 3000,
+                        });
                         router.visit(route('category-blogs.index'), {
                           preserveScroll: true,
                           preserveState: false
@@ -282,47 +251,15 @@ const Toolbar = ({
             />
           </div>
 
-          <Button
-            variant="filled"
-            color="primary"
-            className="h-8 gap-2 rounded-md px-3 text-xs"
+          <CreateButton
             onClick={() => {
               setSelectedCategoryBlog(null);
               setIsModalOpen(true);
             }}
-          >
-            <PlusIcon className="size-4" />
-            <span>{t('common.create_category_blog')}</span>
-          </Button>
+            label={t('common.create_category_blog')}
+          />
 
-          <ResponsiveFilter
-            anchor={{ to: "bottom end", gap: 12 }}
-            buttonContent={
-              <>
-                <ViewColumnsIcon className="size-4" />
-                <span>{t('common.view')}</span>
-              </>
-            }
-            classNames={{
-              button: "border-solid! h-8 gap-2 rounded-md px-3 text-xs",
-            }}
-          >
-            {smAndDown ? (
-              <div className="dark:border-dark-500 mx-auto flex h-12 w-full shrink-0 items-center justify-between border-b border-gray-200 px-3">
-                <p className="dark:text-dark-50 truncate text-start text-base font-medium text-gray-800">
-                  {t('common.table_view')}
-                </p>
-              </div>
-            ) : (
-              <h3 className="text-sm-plus dark:text-dark-100 px-3 pt-2.5 font-medium tracking-wide text-gray-800">
-                {t('common.table_view')}
-              </h3>
-            )}
-
-            <div className="flex flex-col max-sm:overflow-hidden sm:w-64">
-              <TableSettings table={table} />
-            </div>
-          </ResponsiveFilter>
+          <TableSettingsButton table={table} />
         </div>
       </div>
     </div>

@@ -1,15 +1,9 @@
-import { useState } from "react";
 import {
   PencilIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui";
-import {
-  ConfirmModal,
-  type ConfirmMessages,
-} from "@/components/shared/ConfirmModal";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useToast } from "@/components/common/Toast/ToastContext";
 import { CategoryBlog } from "./types";
 
 interface CellProps {
@@ -21,6 +15,7 @@ interface ActionsCellProps {
   table: any;
   setSelectedCategoryBlog: (categoryBlog: CategoryBlog | null) => void;
   setIsModalOpen: (open: boolean) => void;
+  onDeleteRow?: (row: any) => void;
 }
 
 export function NameCell({ getValue }: CellProps) {
@@ -94,48 +89,8 @@ export function CreatedAtCell({ getValue }: CellProps) {
   );
 }
 
-export function ActionsCell({ row, table, setSelectedCategoryBlog, setIsModalOpen }: ActionsCellProps) {
+export function ActionsCell({ row, table, setSelectedCategoryBlog, setIsModalOpen, onDeleteRow }: ActionsCellProps) {
   const { t } = useTranslation();
-  const { showToast } = useToast();
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
-  const [deleteSuccess, setDeleteSuccess] = useState(false);
-  const [deleteError, setDeleteError] = useState(false);
-
-  const confirmMessages: ConfirmMessages = {
-    pending: {
-      description: t('common.confirm_delete_category_blog'),
-    },
-    success: {
-      title: t('common.category_blog_deleted'),
-      description: t('common.category_blog_deleted_success'),
-    },
-  };
-
-  const closeModal = () => {
-    setDeleteModalOpen(false);
-  };
-
-  const openModal = () => {
-    setDeleteModalOpen(true);
-    setDeleteError(false);
-    setDeleteSuccess(false);
-  };
-
-  const handleDeleteRow = () => {
-    setConfirmDeleteLoading(true);
-    setTimeout(() => {
-      table.options.meta?.deleteRow?.(row);
-      setDeleteSuccess(true);
-      setConfirmDeleteLoading(false);
-      showToast({
-        type: 'success',
-        message: t('common.category_blog_deleted_success'),
-      });
-    }, 1000);
-  };
-
-  const state = deleteError ? "error" : deleteSuccess ? "success" : "pending";
 
   return (
     <>
@@ -162,20 +117,11 @@ export function ActionsCell({ row, table, setSelectedCategoryBlog, setIsModalOpe
           isIcon
           className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md hover:bg-red-50 dark:hover:bg-red-900/20"
           title={t('common.delete')}
-          onClick={openModal}
+          onClick={() => onDeleteRow?.(row)}
         >
           <TrashIcon className="size-4 stroke-1.5" />
         </Button>
       </div>
-
-      <ConfirmModal
-        show={deleteModalOpen}
-        onClose={closeModal}
-        messages={confirmMessages}
-        onOk={handleDeleteRow}
-        confirmLoading={confirmDeleteLoading}
-        state={state}
-      />
     </>
   );
 }

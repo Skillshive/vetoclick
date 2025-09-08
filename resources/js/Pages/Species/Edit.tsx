@@ -11,6 +11,7 @@ import { useForm, router } from "@inertiajs/react";
 import { useTranslation } from "@/hooks/useTranslation";
 import MainLayout from "@/layouts/MainLayout";
 import { useToast } from "@/components/common/Toast/ToastContext";
+import { useConfirm } from "@/components/common/Confirm/ConfirmContext";
 import { getImageUrl } from "@/utils/imageHelper";
 import Breeds from "./Breeds/Index";
 import { BackwardIcon } from "@heroicons/react/24/outline";
@@ -62,6 +63,7 @@ interface SpeciesEditPageProps {
 export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [avatar, setAvatar] = useState<File | null>(null);
 console.log('species',species)
   const [validationErrors, setValidationErrors] = useState<{
@@ -670,15 +672,25 @@ console.log('specieX',specie)
             handleResetBreedForm();
           }}
           onEditBreed={handleEditBreed}
-          onDeleteBreed={(breed) => {
-            if (confirm(t('common.confirm_delete_breed'))) {
+          onDeleteBreed={async (breed) => {
+            const confirmed = await confirm({
+              title: t('common.confirm_delete'),
+              message: t('common.confirm_delete_breed', { name: breed.breed_name }),
+              confirmLabel: t('common.delete'),
+            });
+
+            if (confirmed) {
               // Handle breed deletion
-              router.delete(route('breeds.destroy', {uuid: breed.uuid}), {
+              router.delete(route('breeds.destroy', breed.uuid), {
                 onSuccess: () => {
                   showToast({
                     type: 'success',
                     message: t('common.breed_deleted'),
                   });
+                    router.visit(window.location.href, {
+                                preserveState: false, 
+                                preserveScroll: true
+                              });
                 },
                 onError: () => {
                   showToast({

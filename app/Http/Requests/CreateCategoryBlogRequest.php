@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\ValidationException;
 
 class CreateCategoryBlogRequest extends FormRequest
 {
@@ -37,4 +39,17 @@ class CreateCategoryBlogRequest extends FormRequest
             'parent_category_id.exists' => 'The selected parent category does not exist.',
         ];
     }
+
+    /**
+     * Handle a failed validation attempt.
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        response()->json([
+            'message' => 'Validation failed',
+            'errors' => $validator->errors()
+        ], 422)->header('X-Inertia', false)->send();
+        exit;
+    }
+
 }
