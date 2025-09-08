@@ -3,17 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\CategoryBlogDto;
+use App\Http\Requests\Blog\ImportCategoryBlogRequest;
 use App\Services\CategoryBlogService;
 use App\Http\Requests\CreateCategoryBlogRequest;
 use App\Http\Requests\UpdateCategoryBlogRequest;
 use App\Http\Resources\CategoryBlogResource;
+use App\Models\CategoryBlog;
+use App\Services\CsvService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Validation\Factory;
 
 class CategoryBlogController extends Controller
 {
@@ -29,13 +33,19 @@ class CategoryBlogController extends Controller
      */
     public function index(Request $request): Response
     {
-        // dd($request->all());
         $perPage = $request->get('per_page', 10);
         $search = $request->get('search');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDirection = $request->get('sort_direction', 'desc');
-        $parentCategoryId = $request->get('parent_category');
+        $parentCategoryIds = $request->get('parent_category'); // Can be string or array
         $page = $request->get('page', 1);
+
+        // Convert to array if it's a string
+        if (is_string($parentCategoryIds)) {
+            $parentCategoryIds = $parentCategoryIds ? [$parentCategoryIds] : [];
+        } elseif (!is_array($parentCategoryIds)) {
+            $parentCategoryIds = [];
+        }
 
         try {
             $query = $this->categoryBlogService->query();
@@ -47,8 +57,17 @@ class CategoryBlogController extends Controller
                 });
             }
 
-            if ($parentCategoryId) {
-                $query->where('category_product_id', $parentCategoryId);
+            if (!empty($parentCategoryIds)) {
+                $categoryIds = [];
+                foreach ($parentCategoryIds as $parentCategoryId) {
+                    $cat = $this->categoryBlogService->getByUuid($parentCategoryId);
+                    if ($cat) {
+                        $categoryIds[] = $cat->id;
+                    }
+                }
+                if (!empty($categoryIds)) {
+                    $query->whereIn('parent_category_id', $categoryIds);
+                }
             }
 
             $categoryBlogs = $query->paginate($perPage, ['*'], 'page', $page);
@@ -85,12 +104,16 @@ class CategoryBlogController extends Controller
                 'errors' => $request->session()->get('errors')
             ]);
         } catch (Exception $e) {
+            // Get parent categories even in error case
+            $parentCategories = $this->categoryBlogService->getAllWithoutPagination();
+
             return Inertia::render('CategoryBlogs/Index', [
                 'categoryBlogs' => [
                     'data' => ['data' => []],
                     'meta' => null,
                     'links' => null
                 ],
+                'parentCategories' => CategoryBlogResource::collection($parentCategories),
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
@@ -265,6 +288,126 @@ class CategoryBlogController extends Controller
                 'message' => 'Failed to retrieve categories',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    
+
+    /**
+     * Export category products to CSV
+     */
+    public function export(): StreamedResponse|RedirectResponse
+    {
+        try {
+            $categories = $this->categoryBlogService->getAllForExport();
+            
+            // dd($categories);
+            $records = $categories->map(function ($category) {
+                return [
+                    'Name' => $category->name,
+                    'Description' => $category->desp,
+                    'Parent Category' => $category->parentCategory?->name ?? '',
+                ];
+            })->toArray();
+
+            $csvService = new CsvService();
+            return $csvService->export(
+                ['Name', 'Description', 'Parent Category'],
+                array_values($records), 
+                'category-blogs.csv'
+            );
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => __('common.export_error')]);
+        }
+    }
+
+    /**
+     * Import category products from CSV
+     */
+    public function import(ImportCategoryBlogRequest $request): RedirectResponse
+    {
+        try {
+            $file = $request->file('file');
+            $csvService = new CsvService();
+
+            // Validate CSV headers
+            if (!$csvService->validateHeaders($file, ImportCategoryBlogRequest::getRequiredHeaders())) {
+                $actualHeaders = $csvService->getHeaders($file);
+                $message = 'Invalid CSV headers. Required: ' . implode(', ', ImportCategoryBlogRequest::getRequiredHeaders()) . 
+                          '. Found: ' . implode(', ', $actualHeaders);
+                throw new Exception($message);
+            }
+
+            // Import CSV data
+            $records = $csvService->import($file, ImportCategoryBlogRequest::getHeaderMapping());
+
+            $parentCategories = $this->categoryBlogService->getAllForExport()
+                ->pluck('uuid', 'name');
+                
+            $validator = app()->make(Factory::class);
+            $rowNumber = 1;
+            $successCount = 0;
+            $errors = [];
+// dd($records);
+            foreach ($records as $record) {
+                $rowNumber++;
+                
+                // Prepare data for validation
+                $data = [
+                    'name' => $record['name'],
+                    'description' => $record['description'],
+                    'parent_category_id' => null
+                ];
+
+                // If parent category is specified, find its UUID
+                if (!empty($record['parent_category']) && !is_null($record['parent_category'])) {
+                    $parentUuid = $parentCategories[$record['parent_category']] ?? null;
+                    if (!$parentUuid) {
+                        $errors[] = "Row {$rowNumber}: Parent category '{$record['parent_category']}' not found";
+                        continue;
+                    }
+                    $data['parent_category_id'] = $parentUuid;
+                }
+
+                // Get validation rules from ImportCategoryProductRequest
+                $rules = ImportCategoryBlogRequest::getRowValidationRules();
+
+                $validation = $validator->make($data, $rules);
+
+                if ($validation->fails()) {
+                    $rowErrors = $validation->errors()->all();
+                    $errors[] = "Row {$rowNumber}: " . implode(', ', $rowErrors);
+                    continue;
+                }
+
+                try {
+                    $dto = new CategoryBlogDto();
+                    $dto->name = $data['name'];
+                    $dto->desp = $data['description'];
+                    $dto->parent_category_id = $data['parent_category_id'];
+
+                    $this->categoryBlogService->create($dto);
+                    $successCount++;
+                } catch (Exception $e) {
+                    $errors[] = "Row {$rowNumber}: Failed to create category - " . $e->getMessage();
+                }
+            }
+
+            // If there were any errors, throw an exception with details
+            if (!empty($errors)) {
+                $errorMessage = "Import completed with errors:\n" . implode("\n", $errors);
+                if ($successCount > 0) {
+                    $errorMessage .= "\n{$successCount} categories were imported successfully.";
+                }
+                throw new Exception($errorMessage);
+            }
+
+            return redirect()->back()
+                ->with('success', __('common.import_success'));
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => __('common.import_error') . ': ' . $e->getMessage()]);
         }
     }
 }

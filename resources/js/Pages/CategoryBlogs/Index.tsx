@@ -283,14 +283,13 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
                     slots={{
                         toolbar: (table) => (
                             <Toolbar
-                                table={table}
-                                globalFilter={globalFilter}
-                                setGlobalFilter={setGlobalFilter}
-                                onSearch={handleSearch}
-                                setSelectedCategoryBlog={setSelectedCategoryBlog}
-                                setIsModalOpen={setIsModalOpen}
-                                parentCategories={normalizedParentCategories}
-                            />
+                                    table={table}
+                                    globalFilter={globalFilter}
+                                    setGlobalFilter={setGlobalFilter}
+                                    setSelectedCategoryBlog={setSelectedCategoryBlog}
+                                    setIsModalOpen={setIsModalOpen}
+                                    parentCategories={normalizedParentCategories}
+                                />
                         )
                     }}
                     meta={tableMeta}

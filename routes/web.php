@@ -87,8 +87,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Category Blog routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    //  Route::resource('category-blogs', \App\Http\Controllers\CategoryBlogController::class)->names('category-blogs');
-Route::name('category-blogs.')->prefix('category-blogs')
+    Route::prefix('category-blogs')->group(function () {
+        Route::get('export', [CategoryBlogController::class, 'export'])->name('category-blogs.export');
+        Route::post('import', [CategoryBlogController::class, 'import'])->name('category-blogs.import');
+    });
+
+    Route::name('category-blogs.')->prefix('category-blogs')
         ->controller(CategoryBlogController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');

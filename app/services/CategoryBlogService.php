@@ -141,4 +141,9 @@ class CategoryBlogService implements ServiceInterface
     {
         return CategoryBlog::whereNull('parent_category_id')->get();
     }
+    
+    public function getAllForExport(): Collection
+    {
+        return CategoryBlog::get();
+    }
 }
