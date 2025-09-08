@@ -40,7 +40,9 @@ export interface TableSettings {
 
 export interface CategoryBlogManagementPageProps {
   categoryBlogs: {
-    data: CategoryBlog[];
+    data: {
+      data: CategoryBlog[];
+    };
     meta: {
       current_page: number;
       from: number;
@@ -49,6 +51,7 @@ export interface CategoryBlogManagementPageProps {
       to: number;
       total: number;
     };
+    links: any;
   };
   parentCategories?: CategoryBlog[];
   filters: {

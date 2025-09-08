@@ -12,12 +12,15 @@ interface UseCategoryProductTableProps {
   initialData: CategoryProduct[];
   initialFilters: {
     search?: string;
+    per_page?: number;
+    sort_by?: string;
+    sort_direction?: string;
   };
 }
 
 export function useCategoryProductTable({ initialData, initialFilters }: UseCategoryProductTableProps) {
   // Data state
-  const [categoryProducts, setCategoryProducts] = useState<CategoryProduct[]>(initialData || []);
+  const [categoryProducts, setCategoryProducts] = useState<{ data: CategoryProduct[] }>({ data: initialData || [] });
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,9 +63,10 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
       skipAutoResetPageIndex();
       
       // Optimistically remove the row from local state
-      setCategoryProducts(prevProducts => 
-        prevProducts.data.filter(product => product.uuid !== row.original.uuid)
-      );
+      setCategoryProducts(prevProducts => ({
+        ...prevProducts,
+        data: prevProducts.data.filter(product => product.uuid !== row.original.uuid)
+      }));
 
       // Make API call to delete the row
       router.delete(route('category-products.destroy', row.original.uuid), {
@@ -86,9 +90,10 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
       const rowIds = rows.map((row) => row.original.uuid);
 
       // Optimistically remove the rows from local state
-      setCategoryProducts(prevProducts => 
-        prevProducts.filter(product => !rowIds.includes(product.uuid))
-      );
+      setCategoryProducts(prevProducts => ({
+        ...prevProducts,
+        data: prevProducts.data.filter(product => !rowIds.includes(product.uuid))
+      }));
 
       try {
         // Use Promise.all to handle all deletes in parallel but wait for all to complete

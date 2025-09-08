@@ -18,6 +18,7 @@ export function ParentCategoryFilter({
 
   const {t} = useTranslation();
   const handleFilterChange = (selectedValues: string[]) => {
+    console.log("selectedValues", selectedValues);
     column.setFilterValue(selectedValues);
 
     router.get(route('category-blogs.index'), {

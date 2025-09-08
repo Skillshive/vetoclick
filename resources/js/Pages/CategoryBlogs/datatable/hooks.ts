@@ -9,7 +9,9 @@ declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 interface UseCategoryBlogDatatableProps {
   initialData: {
-    data: CategoryBlog[];
+    data: {
+      data: CategoryBlog[];
+    };
     meta: {
       current_page: number;
       from: number;
@@ -18,6 +20,7 @@ interface UseCategoryBlogDatatableProps {
       to: number;
       total: number;
     };
+    links: any;
   };
   initialFilters: {
     search?: string;
@@ -30,7 +33,9 @@ interface UseCategoryBlogDatatableProps {
 export function useCategoryBlogTable({ initialData, initialFilters }: UseCategoryBlogDatatableProps) {
   // Data state
   const [categoryBlogs, setCategoryBlogs] = useState<{
-    data: CategoryBlog[];
+    data: {
+      data: CategoryBlog[];
+    };
     meta: {
       current_page: number;
       from: number;
@@ -39,7 +44,12 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
       to: number;
       total: number;
     };
-  }>(initialData || { data: [], meta: { current_page: 1, from: 0, last_page: 1, per_page: 10, to: 0, total: 0 } });
+    links: any;
+  }>(initialData || {
+    data: { data: [] },
+    meta: { current_page: 1, from: 0, last_page: 1, per_page: 10, to: 0, total: 0 },
+    links: {}
+  });
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,6 +60,13 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
   const [confirmBulkDeleteLoading, setConfirmBulkDeleteLoading] = useState(false);
   const [bulkDeleteSuccess, setBulkDeleteSuccess] = useState(false);
   const [bulkDeleteError, setBulkDeleteError] = useState(false);
+
+  // Single delete modal state
+  const [singleDeleteModalOpen, setSingleDeleteModalOpen] = useState(false);
+  const [confirmSingleDeleteLoading, setConfirmSingleDeleteLoading] = useState(false);
+  const [singleDeleteSuccess, setSingleDeleteSuccess] = useState(false);
+  const [singleDeleteError, setSingleDeleteError] = useState(false);
+  const [selectedRowForDelete, setSelectedRowForDelete] = useState<any>(null);
 
   // Table settings
   const [tableSettings, setTableSettings] = useState<TableSettings>({
@@ -76,15 +93,44 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
   // Table utilities
   const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper();
 
+  // Single delete handlers
+  const openSingleDeleteModal = (row: any) => {
+    setSelectedRowForDelete(row);
+    setSingleDeleteModalOpen(true);
+    setSingleDeleteError(false);
+    setSingleDeleteSuccess(false);
+  };
+
+  const closeSingleDeleteModal = () => {
+    setSingleDeleteModalOpen(false);
+    setSelectedRowForDelete(null);
+  };
+
+  const handleSingleDeleteRow = () => {
+    if (!selectedRowForDelete) return;
+
+    setConfirmSingleDeleteLoading(true);
+    console.log('Deleting single row:', selectedRowForDelete);
+
+    setTimeout(() => {
+      tableMeta.deleteRow?.(selectedRowForDelete);
+      setSingleDeleteSuccess(true);
+      setConfirmSingleDeleteLoading(false);
+    }, 1000);
+  };
+
   // Table meta functions
   const tableMeta = {
     deleteRow: (row: any) => {
       skipAutoResetPageIndex();
-      
+      console.log('Deleting row:', row);
       // Optimistically remove the row from local state
       setCategoryBlogs(prevCats => ({
         ...prevCats,
-        data: prevCats.data.filter(product => product.uuid !== row.original.uuid)
+        data: {
+          ...prevCats.data,
+          data: prevCats.data.data.filter((product: CategoryBlog) => product.uuid !== row.original.uuid)
+        }
       }));
 
       // Make API call to delete the row
@@ -106,17 +152,22 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
     },
     deleteRows: async (rows: any[]) => {
       skipAutoResetPageIndex();
+      console.log('Bulk deleting rows:', rows);
       const rowIds = rows.map((row) => row.original.uuid);
+      console.log('Row IDs to delete:', rowIds);
 
       // Optimistically remove the rows from local state
       setCategoryBlogs(prevCats => ({
         ...prevCats,
-        data: prevCats.data.filter(product => !rowIds.includes(product.uuid))
+        data: {
+          ...prevCats.data,
+          data: prevCats.data.data.filter((product: CategoryBlog) => !rowIds.includes(product.uuid))
+        }
       }));
 
       try {
         // Use Promise.all to handle all deletes in parallel but wait for all to complete
-        await Promise.all(rows.map(row => 
+        await Promise.all(rows.map(row =>
           new Promise((resolve, reject) => {
             router.delete(route('category-blogs.destroy', row.original.uuid), {
               preserveState: true,
@@ -162,7 +213,18 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
     setBulkDeleteSuccess,
     bulkDeleteError,
     setBulkDeleteError,
-    
+
+    // Single delete modal
+    singleDeleteModalOpen,
+    setSingleDeleteModalOpen,
+    confirmSingleDeleteLoading,
+    setConfirmSingleDeleteLoading,
+    singleDeleteSuccess,
+    setSingleDeleteSuccess,
+    singleDeleteError,
+    setSingleDeleteError,
+    selectedRowForDelete,
+
     // Table state
     tableSettings,
     setTableSettings,
@@ -183,5 +245,10 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
     autoResetPageIndex,
     skipAutoResetPageIndex,
     tableMeta,
+
+    // Single delete handlers
+    openSingleDeleteModal,
+    closeSingleDeleteModal,
+    handleSingleDeleteRow,
   };
 }
