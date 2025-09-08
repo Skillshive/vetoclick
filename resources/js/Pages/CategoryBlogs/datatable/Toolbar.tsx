@@ -25,9 +25,9 @@ interface ToolbarProps {
   setGlobalFilter: (value: string) => void;
   setSelectedCategoryBlog: (categoryBlog: CategoryBlog | null) => void;
   setIsModalOpen: (open: boolean) => void;
-  parentCategories: {
-    data: CategoryBlog[];
-  };
+  // parentCategories?: {
+  //   data: CategoryBlog[];
+  // };
 }
 
 const Toolbar = ({
@@ -36,7 +36,7 @@ const Toolbar = ({
   setGlobalFilter,
   setSelectedCategoryBlog,
   setIsModalOpen,
-  parentCategories
+  // parentCategories
 }: ToolbarProps) => {
   const { smAndDown, isXs } = useBreakpointsContext();
   const { t } = useTranslation();

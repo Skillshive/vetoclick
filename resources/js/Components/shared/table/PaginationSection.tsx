@@ -13,7 +13,12 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
-export function PaginationSection({ table }: { table: Table<any> }) {
+interface PaginationSectionProps {
+  table: Table<any>;
+  totalRows?: number;
+}
+
+export function PaginationSection({ table, totalRows }: PaginationSectionProps) {
   const paginationState = table.getState().pagination;
   const { isXl, is2xl } = useBreakpointsContext();
   const { t } = useTranslation();
@@ -52,9 +57,9 @@ export function PaginationSection({ table }: { table: Table<any> }) {
         {t('common.showing')} {paginationState.pageIndex * paginationState.pageSize + 1} -{" "}
         {Math.min(
           (paginationState.pageIndex + 1) * paginationState.pageSize,
-          table.getCoreRowModel().rows.length
+          totalRows || 0
         )}{" "}
-        {t('common.of')} {table.getCoreRowModel().rows.length} {t('common.entries')}
+        {t('common.of')} {totalRows || 0} {t('common.entries')}
       </div>
     </div>
   );

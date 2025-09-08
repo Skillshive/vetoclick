@@ -95,7 +95,7 @@ Route::name('category-blogs.')->prefix('category-blogs')
             Route::get('create', 'create')->name('create');
             Route::post('store', 'store')->name('store');
             Route::get('{categoryBlog}/edit', 'edit')->name('edit');
-            Route::post('{categoryBlog}/update', 'update')->name('update');
+            Route::put('{categoryBlog}/update', 'update')->name('update');
             Route::delete('{categoryBlog}/delete', 'destroy')->name('destroy');
             // Get category-blogs for a specific species
             //  Route::get('category-blogs/{speciesUuid}', 'getBySpecies')->name('by-species');

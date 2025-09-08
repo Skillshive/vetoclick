@@ -4,14 +4,13 @@ import { CategoryBlogManagementPageProps } from "./datatable/types";
 import { Page } from '@/components/shared/Page';
 import { useTranslation } from '@/hooks/useTranslation';
 
-export default function Index({categoryBlogs, parentCategories, filters}: CategoryBlogManagementPageProps) {
+export default function Index({categoryBlogs, parentCategories, filters, old, errors}: CategoryBlogManagementPageProps) {
     const { t } = useTranslation();
-console.log("categoryBlogs",categoryBlogs);
 
     return <MainLayout>
           <Page title={t('common.category_blogs')}>
             <CategoryBlogDatatable
-              categoryBlogs={categoryBlogs.data}
+              categoryBlogs={categoryBlogs}
               parentCategories={parentCategories}
               filters={{
                 ...filters,
@@ -19,6 +18,8 @@ console.log("categoryBlogs",categoryBlogs);
                 sort_by: filters.sort_by || 'name',
                 sort_direction: filters.sort_direction || 'asc'
               }}
+              old={old}
+              errors={errors}
             />
           </Page>
         </MainLayout>

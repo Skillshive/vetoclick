@@ -35,10 +35,11 @@ import { createColumns } from "./columns";
 import { Toolbar } from "./Toolbar";
 import { useCategoryBlogTable } from "./hooks";
 import { TrashIcon, InboxIcon } from "@heroicons/react/24/outline";
+import { router } from "@inertiajs/react";
 
 const isSafari = getUserAgentBrowser() === "Safari";
 
-export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData, parentCategories, filters }: CategoryBlogDatatableProps) {
+export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData = { data: { data: [] }, meta: null }, parentCategories,filters, old, errors }: CategoryBlogDatatableProps) {
   const { cardSkin } = useThemeContext();
   const { t } = useTranslation();
   const { showToast } = useToast();
@@ -74,13 +75,11 @@ export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData
     initialData: categoryBlogsData.data,
     initialFilters: filters,
   });
-  console.log('categoryBlogs',categoryBlogs)
-
   // Create columns with modal handlers
   const columns = createColumns({ setSelectedCategoryBlog, setIsModalOpen, t });
 
   const table = useReactTable({
-    data: categoryBlogs,
+    data: categoryBlogsData.data.data,
     columns: columns,
     state: {
       globalFilter,
@@ -89,6 +88,10 @@ export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData
       columnPinning,
       tableSettings,
       toolbarFilters,
+      pagination: {
+        pageIndex: (categoryBlogsData.meta?.current_page || 1) - 1,
+        pageSize: filters.per_page || 10
+      }
     },
     meta: tableMeta,
     filterFns: {
@@ -98,20 +101,76 @@ export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData
     enableColumnFilters: tableSettings.enableColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    globalFilterFn: fuzzyFilter,
+    // Removed client-side filtering for manual pagination
+    // getFilteredRowModel: getFilteredRowModel(),
+    // getFacetedUniqueValues: getFacetedUniqueValues(),
+    // getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    // globalFilterFn: fuzzyFilter,
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onColumnPinningChange: setColumnPinning,
     autoResetPageIndex,
+    manualPagination: true,
+    pageCount: categoryBlogsData.meta ? Math.ceil(categoryBlogsData.meta.total / (filters.per_page || 10)) : 0,
+    onPaginationChange: (updater) => {
+      if (typeof updater === 'function') {
+        const newPagination = updater(table.getState().pagination);
+        router.visit(route('category-blogs.index', {
+          page: newPagination.pageIndex + 1,
+          per_page: newPagination.pageSize,
+          search: globalFilter,
+          sort_by: sorting[0]?.id || 'created_at',
+          sort_direction: sorting[0]?.desc ? 'desc' : 'asc',
+        }), {
+          preserveScroll: false,
+          preserveState: false,
+          replace: true
+        });
+      }
+    },
   });
+
+  const lastSearchRef = useRef<string>(filters.search || "");
+
+  // Effect to handle search changes
+  useEffect(() => {
+    if (globalFilter !== lastSearchRef.current) {
+      const timeoutId = setTimeout(() => {
+        lastSearchRef.current = globalFilter;
+        router.visit(route('category-blogs.index', {
+          page: 1,
+          per_page: filters.per_page || 10,
+          search: globalFilter,
+          sort_by: sorting[0]?.id || 'created_at',
+          sort_direction: sorting[0]?.desc ? 'desc' : 'asc',
+        }), {
+          preserveScroll: false,
+          preserveState: false,
+          replace: true
+        });
+      }, 300); // Debounce 300ms
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [globalFilter, sorting, filters.per_page, filters.search]);
 
   useDidUpdate(() => table.resetRowSelection(), [categoryBlogs]);
   useLockScrollbar(tableSettings.enableFullScreen);
+
+  useEffect(() => {
+    if (old?.action === 'create') {
+      setIsModalOpen(true);
+    }
+    if (old?.action === 'edit') {
+      const category = categoryBlogsData.data.find(cat => cat.uuid === old.uuid);
+      if (category) {
+        setSelectedCategoryBlog(category);
+        setIsModalOpen(true);
+      }
+    }
+  }, [old, categoryBlogsData.data]);
 
   // Bulk delete handlers
   const closeBulkModal = () => {
@@ -181,7 +240,7 @@ export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData
               setGlobalFilter={setGlobalFilter}
               setSelectedCategoryBlog={setSelectedCategoryBlog}
               setIsModalOpen={setIsModalOpen}
-              parentCategories={parentCategories}
+              // parentCategories={parentCategories}
             />
             <div
               className={clsx(
@@ -374,7 +433,7 @@ export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData
                       ) && "pt-4",
                     )}
                   >
-                    <PaginationSection table={table} />
+                    <PaginationSection table={table} totalRows={categoryBlogsData.meta?.total || 0} />
                   </div>
                 )}
               </Card>
@@ -391,6 +450,7 @@ export default function CategoryBlogDatatable({ categoryBlogs: categoryBlogsData
         }}
         categoryBlog={selectedCategoryBlog}
         parentCategories={parentCategories}
+        errors={errors}
       />
 
       <ConfirmModal

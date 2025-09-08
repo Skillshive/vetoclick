@@ -8,15 +8,38 @@ import { router } from "@inertiajs/react";
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 interface UseCategoryBlogDatatableProps {
-  initialData: CategoryBlog[];
+  initialData: {
+    data: CategoryBlog[];
+    meta: {
+      current_page: number;
+      from: number;
+      last_page: number;
+      per_page: number;
+      to: number;
+      total: number;
+    };
+  };
   initialFilters: {
     search?: string;
+    per_page?: number;
+    sort_by?: string;
+    sort_direction?: string;
   };
 }
 
 export function useCategoryBlogTable({ initialData, initialFilters }: UseCategoryBlogDatatableProps) {
   // Data state
-  const [categoryBlogs, setCategoryBlogs] = useState<CategoryBlog[]>(initialData || []);
+  const [categoryBlogs, setCategoryBlogs] = useState<{
+    data: CategoryBlog[];
+    meta: {
+      current_page: number;
+      from: number;
+      last_page: number;
+      per_page: number;
+      to: number;
+      total: number;
+    };
+  }>(initialData || { data: [], meta: { current_page: 1, from: 0, last_page: 1, per_page: 10, to: 0, total: 0 } });
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,9 +82,10 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
       skipAutoResetPageIndex();
       
       // Optimistically remove the row from local state
-      setCategoryBlogs(prevCats => 
-        prevCats.filter(product => product.uuid !== row.original.uuid)
-      );
+      setCategoryBlogs(prevCats => ({
+        ...prevCats,
+        data: prevCats.data.filter(product => product.uuid !== row.original.uuid)
+      }));
 
       // Make API call to delete the row
       router.delete(route('category-blogs.destroy', row.original.uuid), {
@@ -85,9 +109,10 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
       const rowIds = rows.map((row) => row.original.uuid);
 
       // Optimistically remove the rows from local state
-      setCategoryBlogs(prevCats => 
-        prevCats.filter(product => !rowIds.includes(product.uuid))
-      );
+      setCategoryBlogs(prevCats => ({
+        ...prevCats,
+        data: prevCats.data.filter(product => !rowIds.includes(product.uuid))
+      }));
 
       try {
         // Use Promise.all to handle all deletes in parallel but wait for all to complete

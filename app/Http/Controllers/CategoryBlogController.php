@@ -10,6 +10,7 @@ use App\Http\Resources\CategoryBlogResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
@@ -26,29 +27,31 @@ class CategoryBlogController extends Controller
     /**
      * Display a listing of category blogs
      */
-       public function index(Request $request): Response
+    public function index(Request $request): Response
     {
-        $perPage = $request->get('per_page', 15);
+        // dd($request->all());
+        $perPage = $request->get('per_page', 10);
         $search = $request->get('search');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDirection = $request->get('sort_direction', 'desc');
         $parentCategoryId = $request->get('parent_category');
+        $page = $request->get('page', 1);
 
         try {
             $query = $this->categoryBlogService->query();
-            
+
             if ($search) {
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                      ->orWhere('desp', 'like', "%{$search}%");
                 });
             }
-            
+
             if ($parentCategoryId) {
                 $query->where('category_product_id', $parentCategoryId);
             }
-            
-            $categoryBlogs = $query->paginate($perPage);
+
+            $categoryBlogs = $query->paginate($perPage, ['*'], 'page', $page);
 
             // Get all categories for parent selection
             $parentCategories = $this->categoryBlogService->getAllWithoutPagination();
@@ -77,18 +80,24 @@ class CategoryBlogController extends Controller
                     'per_page' => $perPage,
                     'sort_by' => $sortBy,
                     'sort_direction' => $sortDirection,
-                ]
+                ],
+                'old' => $request->old(),
+                'errors' => $request->session()->get('errors')
             ]);
         } catch (Exception $e) {
-            return Inertia::render('Category_products/Index', [
-                'categoryProducts' => ['data' => [], 'meta' => null, 'links' => null],
+            return Inertia::render('CategoryBlogs/Index', [
+                'categoryBlogs' => [
+                    'data' => ['data' => []],
+                    'meta' => null,
+                    'links' => null
+                ],
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
                     'sort_by' => $sortBy,
                     'sort_direction' => $sortDirection,
                 ],
-                'error' => __('common.error') 
+                'error' => __('common.error')
             ]);
         }
     }
@@ -96,25 +105,22 @@ class CategoryBlogController extends Controller
     /**
      * Store a newly created category blog
      */
-    public function store(CreateCategoryBlogRequest $request): RedirectResponse
+    public function store(CreateCategoryBlogRequest $request): mixed
     {
         try {
             $dto = CategoryBlogDto::fromRequest($request);
             $this->categoryBlogService->create($dto);
 
-            return redirect()->route('category-blogs.index')
-                ->with('success', __('common.category_blog_created'));
+            return response()->json(['success' => true, 'message' => __('common.category_blog_created')]);
         } catch (Exception $e) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
+            return response()->json(['error' => __('common.error') . ': ' . $e->getMessage()], 500);
         }
     }
 
     /**
      * Update the specified category blog by UUID
      */
-    public function update(UpdateCategoryBlogRequest $request, string $uuid): RedirectResponse
+    public function update(UpdateCategoryBlogRequest $request, string $uuid): mixed
     {
         try {
             $dto = CategoryBlogDto::fromRequest($request);
@@ -164,7 +170,7 @@ class CategoryBlogController extends Controller
         try {
             $perPage = $request->input('per_page', 15);
             $categoryBlogs = $this->categoryBlogService->getAll($perPage);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => CategoryBlogResource::collection($categoryBlogs->items()),
@@ -191,14 +197,14 @@ class CategoryBlogController extends Controller
     {
         try {
             $categoryBlog = $this->categoryBlogService->getByUuid($uuid);
-            
+
             if (!$categoryBlog) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Category blog not found'
                 ], 404);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'data' => new CategoryBlogResource($categoryBlog)
@@ -209,7 +215,8 @@ class CategoryBlogController extends Controller
                 'message' => 'Failed to retrieve category blog',
                 'error' => $e->getMessage()
             ], 500);
-        }}
+        }
+    }
 
     /**
      * Search categories by name
@@ -226,7 +233,7 @@ class CategoryBlogController extends Controller
             }
 
             $categories = $this->categoryBlogService->searchByName($searchTerm);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => CategoryBlogResource::collection($categories)
@@ -247,7 +254,7 @@ class CategoryBlogController extends Controller
     {
         try {
             $categories = $this->categoryBlogService->getAllAsCollection();
-            
+
             return response()->json([
                 'success' => true,
                 'data' => CategoryBlogResource::collection($categories)

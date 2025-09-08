@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, router } from '@inertiajs/react';
+import axios from 'axios';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { Button, Input, Textarea } from '@/components/ui';
 import ReactSelect from '@/components/ui/ReactSelect';
@@ -36,11 +37,13 @@ export default function CategoryBlogFormModal({ isOpen, onClose, categoryBlog, p
         parent_category_id?: string;
     }>({});
 
-    const { data, setData, post, put, processing, reset } = useForm<CategoryBlogFormData>({
+    const { data, setData, reset } = useForm<CategoryBlogFormData>({
         name: categoryBlog?.name || '',
         desp: categoryBlog?.desp || '',
         parent_category_id: categoryBlog?.parent_category_id || null,
     });
+
+    const [processing, setProcessing] = useState(false);
 
     React.useEffect(() => {
         if (categoryBlog) {
@@ -68,9 +71,11 @@ export default function CategoryBlogFormModal({ isOpen, onClose, categoryBlog, p
             return;
         }
 
+        setProcessing(true);
+
         if (isEditing) {
-            put(route('category-blogs.update', categoryBlog.uuid), {
-                onSuccess: () => {
+            axios.put(route('category-blogs.update', categoryBlog.uuid), data)
+                .then(() => {
                     showToast({
                         type: 'success',
                         message: t('common.category_blog_updated_success'),
@@ -82,23 +87,33 @@ export default function CategoryBlogFormModal({ isOpen, onClose, categoryBlog, p
                       preserveState: false,
                       preserveScroll: true
                     });
-                },
-                onError: (errors) => {
-                    setValidationErrors({
-                        name: errors.name ? t(errors.name) : undefined,
-                        desp: errors.desp ? t(errors.desp) : undefined,
-                        parent_category_id: errors.parent_category_id ? t(errors.parent_category_id) : undefined,
-                    });
-                    showToast({
-                        type: 'error',
-                        message: t('common.category_blog_update_error'),
-                        duration: 3000,
-                    });
-                }
-            });
+                })
+                .catch((error) => {
+                    if (error.response && error.response.status === 422) {
+                        setValidationErrors({
+                            name: error.response.data.errors.name ? error.response.data.errors.name[0] : undefined,
+                            desp: error.response.data.errors.desp ? error.response.data.errors.desp[0] : undefined,
+                            parent_category_id: error.response.data.errors.parent_category_id ? error.response.data.errors.parent_category_id[0] : undefined,
+                        });
+                        showToast({
+                            type: 'error',
+                            message: t('common.category_blog_update_error'),
+                            duration: 3000,
+                        });
+                    } else {
+                        showToast({
+                            type: 'error',
+                            message: 'An error occurred',
+                            duration: 3000,
+                        });
+                    }
+                })
+                .finally(() => {
+                    setProcessing(false);
+                });
         } else {
-            post(route('category-blogs.store'), {
-                onSuccess: () => {
+            axios.post(route('category-blogs.store'), data)
+                .then(() => {
                     showToast({
                         type: 'success',
                         message: t('common.category_blog_created_success'),
@@ -111,20 +126,30 @@ export default function CategoryBlogFormModal({ isOpen, onClose, categoryBlog, p
                       preserveState: false,
                       preserveScroll: true
                     });
-                },
-                onError: (errors) => {
-                    setValidationErrors({
-                        name: errors.name ? t(errors.name) : undefined,
-                        desp: errors.desp ? t(errors.desp) : undefined,
-                        parent_category_id: errors.parent_category_id ? t(errors.parent_category_id) : undefined,
-                    });
-                    showToast({
-                        type: 'error',
-                        message: t('common.category_blog_create_error'),
-                        duration: 3000,
-                    });
-                }
-            });
+                })
+                .catch((error) => {
+                    if (error.response && error.response.status === 422) {
+                        setValidationErrors({
+                            name: error.response.data.errors.name ? error.response.data.errors.name[0] : undefined,
+                            desp: error.response.data.errors.desp ? error.response.data.errors.desp[0] : undefined,
+                            parent_category_id: error.response.data.errors.parent_category_id ? error.response.data.errors.parent_category_id[0] : undefined,
+                        });
+                        showToast({
+                            type: 'error',
+                            message: t('common.category_blog_create_error'),
+                            duration: 3000,
+                        });
+                    } else {
+                        showToast({
+                            type: 'error',
+                            message: 'An error occurred',
+                            duration: 3000,
+                        });
+                    }
+                })
+                .finally(() => {
+                    setProcessing(false);
+                });
         }
     };
 

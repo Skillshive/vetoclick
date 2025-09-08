@@ -9,9 +9,9 @@ export function ParentCategoryFilter({
   options,
 }: {
   column: Column<CategoryBlog>;
-  options: CategoryBlog[];
+  options?: CategoryBlog[];
 }) {
-    const filterOptions = options.map((cat) => ({
+    const filterOptions = (options || []).map((cat) => ({
     label: cat.name,
     value: cat.uuid,
   }));
