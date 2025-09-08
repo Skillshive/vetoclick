@@ -6,13 +6,20 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui";
 import { SearchInput, ExportButton, CreateButton, TableSettingsButton } from "@/components/shared/table";
-import { useBreakpointsContext } from "@/contexts/breakpoint/context";
 import { CategoryBlog } from "@/Pages/CategoryBlogs/datatable/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { router, usePage } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { ParentCategoryFilter } from "./ParentCategoryFilter";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Fragment } from "react";
+import {
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  Transition,
+} from "@headlessui/react";
 
 interface ToolbarProps {
   table: any;
@@ -21,10 +28,28 @@ interface ToolbarProps {
   onSearch?: (value: string) => void;
   setSelectedCategoryBlog: (categoryBlog: CategoryBlog | null) => void;
   setIsModalOpen: (open: boolean) => void;
-  parentCategories?: {
-    data: CategoryBlog;
-  };
+  parentCategories?: CategoryBlog[] | { data: CategoryBlog[] };
 }
+
+
+
+const solutions = [
+  {
+    name: "Insights",
+    description: "Measure actions your users take",
+    href: "##",
+  },
+  {
+    name: "Automations",
+    description: "Create your own targeted content",
+    href: "##",
+  },
+  {
+    name: "Reports",
+    description: "Keep track of your growth",
+    href: "##",
+  },
+];
 
 const Toolbar = ({
   table,
@@ -35,11 +60,36 @@ const Toolbar = ({
   setIsModalOpen,
   parentCategories
 }: ToolbarProps) => {
-  const { smAndDown, isXs } = useBreakpointsContext();
   const { t } = useTranslation();
-  const { props } = usePage();
   const isFullScreenEnabled = table.getState().tableSettings?.enableFullScreen;
   const { showToast } = useToast();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasUrlFilters = urlParams.has('search') ||
+    urlParams.has('parent_category') ||
+    urlParams.has('per_page') && urlParams.get('per_page') !== '10' ||
+    urlParams.has('sort_by') && urlParams.get('sort_by') !== 'created_at' ||
+    urlParams.has('sort_direction') && urlParams.get('sort_direction') !== 'desc';
+
+  const hasActiveFilters = table.getState().columnFilters.length > 0 ||
+    (globalFilter && globalFilter.trim() !== '') ||
+    hasUrlFilters;
+
+  // Clear all filters function
+  const handleClearAllFilters = () => {
+    // Clear table column filters
+    table.resetColumnFilters();
+
+    // Clear global search filter
+    setGlobalFilter('');
+
+    // Navigate to clear URL parameters
+    router.visit(route('category-blogs.index'), {
+      preserveScroll: false,
+      preserveState: false,
+      replace: true
+    });
+  };
   
   const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.blog_management'), path: "/" },
@@ -77,12 +127,25 @@ const Toolbar = ({
           {table.getColumn("parentCategory") && (
             <ParentCategoryFilter
               column={table.getColumn("parentCategory")!}
-              options={parentCategories.data}
+              options={Array.isArray(parentCategories) ? parentCategories : parentCategories?.data || []}
             />
           )}
         </div>
 
         <div className="flex gap-2">
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="outlined"
+              color="error"
+              onClick={handleClearAllFilters}
+              className="h-8 gap-2 rounded-md px-3 text-xs"
+            >
+              <XMarkIcon className="size-4" />
+              {/* <span>{t('common.clear_filters')}</span> */}
+            </Button>
+          )}
+
           <ExportButton
             onExport={() => {
               const link = document.createElement('a');
@@ -90,7 +153,7 @@ const Toolbar = ({
               link.download = 'category-blogs.csv';
               link.click();
             }}
-            label={t('common.export_csv')}
+            // label={t('common.export_csv')}
           />
 
           <div className="relative inline-block group">
@@ -101,17 +164,19 @@ const Toolbar = ({
               className="h-8 gap-2 rounded-md px-3 text-xs pointer-events-none"
             >
               <ArrowUpTrayIcon className="size-4" />
-              <span>{t('common.import_csv')}</span>
+              {/* <span>{t('common.import_csv')}</span> */}
               <QuestionMarkCircleIcon className="size-4 ml-1 text-gray-400" />
             </Button>
             
+
+
             {/* Tooltip */}
-            <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
+            <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 text-white text-xs rounded-lg p-3 shadow-lg z-50">
               <div>
                 <Button
                   variant="outlined"
                   color="primary"
-                  className="text-white hover:text-primary-200"
+                  className="text-black hover:text-primary-200"
                   onClick={() => {
                     const csvContent = 'Name,Description,Parent Category\nVaccines,Veterinary vaccines,Medications\nDiagnostic Tools,Medical diagnostic equipment,Equipment';
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

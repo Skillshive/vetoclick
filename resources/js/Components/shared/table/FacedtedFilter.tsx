@@ -65,22 +65,9 @@ export function FacedtedFilter({
           {selectedItems?.length > 0 && (
             <>
               <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
-              <Badge className="lg:hidden">{selectedItems.length}</Badge>
-
-              {selectedItems.length > 2 ? (
-                <Badge className="max-lg:hidden">
-                  {selectedItems.length} selected
-                </Badge>
-              ) : (
-                <div className="hidden gap-1 lg:flex">
-                  {selectedItems.map((val: FilterOption) => (
-                    <Badge key={val[valueField as string]} className="gap-1">
-                      {val.icon && <val.icon className="size-4 stroke-1" />}
-                      <span>{val[labelField as string]}</span>
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              <Badge>
+                {selectedItems.length} selected
+              </Badge>
             </>
           )}
         </>
@@ -95,6 +82,7 @@ export function FacedtedFilter({
           valueField,
           renderPrefix,
           showCheckbox,
+          onFilterChange,
         }}
       />
     </ResponsiveFilter>
@@ -135,6 +123,7 @@ function ComboboxFilter({
 
   return (
     <Combobox
+      key={selectedValues.join(',')} // Force re-render when selectedValues change
       value={options?.filter((o: FilterOption) => selectedValues.includes(o[valueField as string]))}
       onChange={(list: FilterOption[]) => {
         const selectedValues = list.map((item: FilterOption) => item[valueField as string]);

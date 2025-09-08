@@ -9,6 +9,7 @@ import {
   SortingState,
   RowSelectionState,
   Updater,
+  TableMeta,
 } from "@tanstack/react-table";
 import clsx from "clsx";
 import { Fragment, useRef, forwardRef, useImperativeHandle } from "react";
@@ -30,6 +31,14 @@ export interface TableSettings {
   enableRowDense: boolean;
   enableSorting?: boolean;
   enableColumnFilters?: boolean;
+}
+
+export interface TableMetaType extends TableMeta<any> {
+  tableSettings?: TableSettings;
+  setTableSettings?: (updater: any) => void;
+  deleteRow?: (row: any) => void;
+  deleteRows?: (rows: any[]) => void;
+  setToolbarFilters?: (filters: string[]) => void;
 }
 
 export interface DataTableSlots<TData> {
@@ -66,6 +75,7 @@ export interface DataTableProps<TData> {
   slots?: DataTableSlots<TData>;
   // Legacy support
   renderToolbar?: (table: TanstackTable<TData>) => React.ReactNode;
+  meta?: TableMetaType;
 }
 
 export interface DataTableRef<TData> {
@@ -90,6 +100,7 @@ function DataTableInner<TData>(
     className,
     slots,
     renderToolbar,
+    meta,
   }: DataTableProps<TData>,
   ref: React.Ref<DataTableRef<TData>>
 ) {
@@ -129,6 +140,10 @@ function DataTableInner<TData>(
         pagination.onChange(newPagination);
       }
     },
+    meta: {
+      ...meta,
+      tableSettings,
+    } as TableMetaType,
   });
 
   useImperativeHandle(ref, () => ({ table }), [table]);

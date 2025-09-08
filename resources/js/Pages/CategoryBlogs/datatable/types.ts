@@ -53,7 +53,7 @@ export interface CategoryBlogManagementPageProps {
     };
     links: any;
   };
-  parentCategories?: CategoryBlog[];
+  parentCategories?: CategoryBlog[] | { data: CategoryBlog[] };
   filters: {
     search?: string;
     per_page: number;

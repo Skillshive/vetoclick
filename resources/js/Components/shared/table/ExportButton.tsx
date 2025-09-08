@@ -23,7 +23,7 @@ export const ExportButton = ({
       onClick={onExport}
     >
       <ArrowDownTrayIcon className="size-4" />
-      <span>{label || t('common.export_csv')}</span>
+      {/* <span>{label || t('common.export_csv')}</span> */}
     </Button>
   );
 };

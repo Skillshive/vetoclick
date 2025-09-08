@@ -7,6 +7,16 @@ import invariant from "tiny-invariant";
 import { Button, Checkbox, Switch } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
+interface TableMetaType {
+  tableSettings?: {
+    enableFullScreen?: boolean;
+    enableRowDense?: boolean;
+    enableColumnFilters?: boolean;
+    enableSorting?: boolean;
+  };
+  setTableSettings?: (updater: any) => void;
+}
+
 // ----------------------------------------------------------------------
 
 export interface TableSettings {
@@ -17,7 +27,7 @@ export interface TableSettings {
 }
 
 export function TableSettings({ table }: { table: Table<any> }) {
-  const tableSettings = table.getState().tableSettings;
+  const tableSettings = (table.options.meta as TableMetaType)?.tableSettings;
   const setTableSettings = table.options.meta?.setTableSettings;
   const { t } = useTranslation();
 

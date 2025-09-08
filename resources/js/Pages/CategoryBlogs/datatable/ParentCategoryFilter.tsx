@@ -21,12 +21,16 @@ export function ParentCategoryFilter({
     console.log("selectedValues", selectedValues);
     column.setFilterValue(selectedValues);
 
-    router.get(route('category-blogs.index'), {
+    router.visit(route('category-blogs.index', {
       search: new URLSearchParams(window.location.search).get('search') || '',
       per_page: new URLSearchParams(window.location.search).get('per_page') || '15',
       sort_by: new URLSearchParams(window.location.search).get('sort_by') || 'created_at',
       sort_direction: new URLSearchParams(window.location.search).get('sort_direction') || 'desc',
-      parent_category: selectedValues.length ? selectedValues[0] : null,
+      parent_category: selectedValues.length ? selectedValues : null,
+    }), {
+      preserveScroll: false,
+      preserveState: false,
+      replace: true
     });
   };
 
@@ -38,7 +42,7 @@ export function ParentCategoryFilter({
       options={filterOptions}
       labelField="label"
       valueField="value"
-      showCheckbox={false}
+      showCheckbox={true}
       onFilterChange={handleFilterChange}
     />
   );
