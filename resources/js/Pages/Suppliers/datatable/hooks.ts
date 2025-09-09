@@ -77,7 +77,10 @@ export function useSupplierTable({ initialData, initialFilters }: UseSupplierDat
   // Filters and search
   const [toolbarFilters, setToolbarFilters] = useState<string[] | undefined>(["name", "desp"]);
   const [globalFilter, setGlobalFilter] = useState(initialFilters.search || "");
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>(
+    (initialFilters.sort_by && (initialFilters.sort_by !== 'created_at' || initialFilters.sort_direction !== 'desc')) ?
+      [{ id: initialFilters.sort_by, desc: initialFilters.sort_direction === 'desc' }] : []
+  );
 
   // Persistent state
   const [columnVisibility, setColumnVisibility] = useLocalStorage(

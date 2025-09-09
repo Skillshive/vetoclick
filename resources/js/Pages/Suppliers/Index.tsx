@@ -168,6 +168,32 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
         };
     }, [currentUrl]);
 
+    // Trigger sort changes
+    useEffect(() => {
+        if (sorting.length > 0) {
+            const currentParams = new URLSearchParams(window.location.search);
+            const newSortBy = sorting[0].id;
+            const newSortDirection = sorting[0].desc ? 'desc' : 'asc';
+
+            if (
+                currentParams.get('sort_by') !== newSortBy ||
+                currentParams.get('sort_direction') !== newSortDirection
+            ) {
+                router.visit(route('suppliers.index', {
+                    page: 1,
+                    per_page: filters.per_page || 10,
+                    search: globalFilter,
+                    sort_by: newSortBy,
+                    sort_direction: newSortDirection,
+                }), {
+                    preserveScroll: false,
+                    preserveState: false,
+                    replace: true
+                });
+            }
+        }
+    }, [sorting]);
+
 
     const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
 
@@ -197,6 +223,7 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
                                     table={table}
                                     globalFilter={globalFilter}
                                     setGlobalFilter={setGlobalFilter}
+                                    sorting={sorting}
                                     setSelectedSupplier={setSelectedSupplier}
                                     setIsModalOpen={setIsModalOpen}
                                 />

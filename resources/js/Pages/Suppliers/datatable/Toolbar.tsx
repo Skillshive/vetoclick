@@ -23,6 +23,7 @@ interface ToolbarProps {
   table: any;
   globalFilter: string;
   setGlobalFilter: (value: string) => void;
+  sorting: any;
   setSelectedSupplier: (supplier: Supplier | null) => void;
   setIsModalOpen: (open: boolean) => void;
 }
@@ -31,6 +32,7 @@ const Toolbar = ({
   table,
   globalFilter,
   setGlobalFilter,
+  sorting,
   setSelectedSupplier,
   setIsModalOpen,
 }: ToolbarProps) => {
@@ -96,7 +98,32 @@ const Toolbar = ({
             onChange={(e) => {
               const value = e.target.value;
               setGlobalFilter(value);
-              table.setGlobalFilter(value);
+              const sortBy = sorting.length > 0 ? sorting[0].id : 'created_at';
+              const sortDirection = sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : 'desc';
+              if (value.trim() !== '') {
+                router.visit(route('suppliers.index', {
+                  page: 1,
+                  per_page: 10,
+                  search: value,
+                  sort_by: sortBy,
+                  sort_direction: sortDirection,
+                }), {
+                  preserveScroll: false,
+                  preserveState: false,
+                  replace: true
+                });
+              } else {
+                router.visit(route('suppliers.index', {
+                  page: 1,
+                  per_page: 10,
+                  sort_by: sortBy,
+                  sort_direction: sortDirection,
+                }), {
+                  preserveScroll: false,
+                  preserveState: false,
+                  replace: true
+                });
+              }
             }}
             prefix={<MagnifyingGlassIcon className="size-4" />}
             placeholder={t('common.search_suppliers')}
