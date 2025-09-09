@@ -18,9 +18,7 @@ export const profileFormSchema = z.object({
     .optional()
     .refine((val) => !val || /^(\+212|0)[0-9]{9}$/.test(val), {
       message: 'validation.phone_invalid',
-    }),
-  clinic_name: z.string()
-    .optional(),
+    })
 });
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>;
