@@ -10,7 +10,9 @@ export interface Supplier {
 
 export interface SuppliersDatatableProps {
   suppliers: {
-    data: Supplier[];
+    data: {
+      data: Supplier[];
+    };
     meta: {
       current_page: number;
       from: number;
@@ -32,6 +34,8 @@ export interface SuppliersDatatableProps {
     sort_by: string;
     sort_direction: string;
   };
+    old?: any;
+  errors?: any;
 }
 
 export interface TableSettings {
