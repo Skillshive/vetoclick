@@ -1,13 +1,12 @@
-import React from 'react';
-import { useForm as useInertiaForm } from '@inertiajs/react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect, useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { Button, Input, Textarea } from '@/components/ui';
-import { Supplier, SupplierFormData } from '@/types/Suppliers';
+import { Button, Input } from '@/components/ui';
+import { Supplier } from '@/types/Suppliers';
 import { useToast } from '@/components/common/Toast/ToastContext';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, MapIcon, PhoneArrowDownLeftIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { supplierSchema, SupplierFormValues } from '@/schemas/supplierSchema';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Declare route helper
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
@@ -22,77 +21,107 @@ interface SupplierFormModalProps {
 export default function SupplierFormModal({ isOpen, onClose, supplier, errors }: SupplierFormModalProps) {
     const { showToast } = useToast();
     const isEditing = !!supplier;
-    
-    // Inertia form for server submission
-    const { post, put, processing } = useInertiaForm();
-    
-    // React Hook Form with Zod validation
-    const {
-        control,
-        handleSubmit,
-        reset,
-        setValue,
-        formState: { errors: validationErrors, isValid }
-    } = useForm<SupplierFormValues>({
-        resolver: zodResolver(supplierSchema),
-        defaultValues: {
-            name: supplier?.name || '',
-            email: supplier?.email || '',
-            phone: supplier?.phone || '',
-            address: supplier?.address || '',
-        },
-        mode: 'onChange' // Real-time validation
+    const { t } = useTranslation();
+    const [validationErrors, setValidationErrors] = useState<{
+        name?: string;
+        address?: string;
+        email?: string;
+        phone?: string;
+    }>({});
+    let [isValid,setIsValid] = useState(false);
+
+    const { data, setData, post, put, processing, reset } = useForm<SupplierFormValues>({
+        name: supplier?.name || '',
+        address: supplier?.address || '',
+        email: supplier?.email || '',
+        phone: supplier?.phone || '',
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (supplier) {
-            setValue('name', supplier.name);
-            setValue('email', supplier.email || '');
-            setValue('phone', supplier.phone || '');
-            setValue('address', supplier.address || '');
+            setData({
+                name: supplier.name,
+                address: supplier.address,
+                email: supplier.email,
+                phone: supplier.phone,
+            });
         } else {
             reset();
         }
-    }, [supplier, setValue, reset]);
+        setIsValid(true);
+    }, [supplier]);
 
-    const onSubmit = (data: SupplierFormValues) => {
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const result = supplierSchema.safeParse(data);
+        if (!result.success) {
+            const errors = result.error.flatten().fieldErrors;
+            setValidationErrors({
+                name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                address: errors.address?.[0] ? t(errors.address[0]) : undefined,
+                email: errors.email?.[0] ? t(errors.email[0]) : undefined,
+                phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
+            });
+            return;
+        }
+
         if (isEditing) {
-            // Update existing supplier using UUID
             put(route('suppliers.update', supplier.uuid), {
-                data,
                 onSuccess: () => {
                     showToast({
                         type: 'success',
-                        message: 'Fournisseur mis à jour avec succès',
+                        message: t('common.supplier_updated_success'),
                         duration: 3000,
                     });
+                    setValidationErrors({});
                     onClose();
+                    router.visit(window.location.href, {
+                        preserveState: false,
+                        preserveScroll: true
+                    });
                 },
-                onError: () => {
+                onError: (errors) => {
+                    setValidationErrors({
+                        name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                        address: errors.address?.[0] ? t(errors.address[0]) : undefined,
+                        email: errors.email?.[0] ? t(errors.email[0]) : undefined,
+                        phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
+                    });
                     showToast({
                         type: 'error',
-                        message: 'Erreur lors de la mise à jour du fournisseur',
+                        message: t('common.supplier_update_error'),
                         duration: 3000,
                     });
                 }
             });
         } else {
-            // Create new supplier
             post(route('suppliers.store'), {
-                data,
                 onSuccess: () => {
                     showToast({
                         type: 'success',
-                        message: 'Fournisseur créé avec succès',
+                        message: t('common.supplier_created_success'),
                         duration: 3000,
                     });
                     reset();
+                    setValidationErrors({});
                     onClose();
+                    router.visit(window.location.href, {
+                        preserveState: false,
+                        preserveScroll: true
+                    });
                 },
-                onError: () => {
+                onError: (errors) => {
+                    setValidationErrors({
+                        name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                        address: errors.address?.[0] ? t(errors.address[0]) : undefined,
+                        email: errors.email?.[0] ? t(errors.email[0]) : undefined,
+                        phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
+                    });
                     showToast({
                         type: 'error',
-                        message: 'Erreur lors de la création du fournisseur',
+                        message: t('common.category_product_create_error'),
                         duration: 3000,
                     });
                 }
@@ -143,105 +172,175 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
                                 </div>
 
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                                    {isEditing 
+                                    {isEditing
                                         ? `Modifiez les informations du fournisseur "${supplier.name}"`
                                         : 'Créez un nouveau fournisseur dans le système'
                                     }
                                 </p>
 
-                                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                                <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
-                                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Nom du fournisseur *
-                                        </label>
-                                        <Controller
-                                            name="name"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Input
-                                                    id="name"
-                                                    type="text"
-                                                    {...field}
-                                                    placeholder="Ex: Vetoquinol, Royal Canin..."
-                                                    className={validationErrors.name ? 'border-red-500' : ''}
-                                                />
-                                            )}
+
+
+                                        <Input
+                                            type="name"
+                                            placeholder={t('common.supplier_name')}
+                                            label={t('common.supplier_name')}
+                                            className="rounded-xl"
+                                            required
+                                            prefix={<UserIcon className="size-4.5" />}
+                                            value={data.name}
+                                            onChange={(e) => {
+                                                setData('name', e.target.value);
+                                                const result = supplierSchema.safeParse({
+                                                    ...data,
+                                                    name: e.target.value,
+                                                });
+                                                if (!result.success) {
+                                                    const errors = result.error.flatten().fieldErrors;
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                                                    }));
+                                                    setIsValid(false);
+                                                } else {
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        name: undefined,
+                                                    }));
+                                                    setIsValid(true);
+                                                }
+                                            }}
                                         />
-                                        {validationErrors.name && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.name.message}</p>
-                                        )}
+                                        {
+                                            (errors?.name || validationErrors.name) && (
+                                                <p className="text-red-500 text-sm mt-1">{errors?.name || validationErrors.name}</p>
+                                            )
+                                        }
                                     </div>
 
                                     <div>
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Email
-                                        </label>
-                                        <Controller
-                                            name="email"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Input
-                                                    id="email"
-                                                    type="email"
-                                                    {...field}
-                                                    placeholder="contact@fournisseur.com"
-                                                    className={validationErrors.email ? 'border-red-500' : ''}
-                                                />
-                                            )}
-                                        />
-                                        {validationErrors.email && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.email.message}</p>
-                                        )}
-                                    </div>
 
+
+                                        <Input
+                                            type="email"
+                                            placeholder={t('common.supplier_email')}
+                                            label={t('common.supplier_email')}
+                                            className="rounded-xl"
+                                            prefix={<EnvelopeIcon className="size-4.5" />}
+                                            value={data.email}
+                                            required
+                                            onChange={(e) => {
+                                                setData('email', e.target.value);
+                                                const result = supplierSchema.safeParse({
+                                                    ...data,
+                                                    email: e.target.value,
+                                                });
+
+                                                console.log('result',result);
+                                                 console.log('isValid',isValid);
+                                                 console.log('data',data);
+                                                
+                                                if (!result.success) {
+                                                    const errors = result.error.flatten().fieldErrors;
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        email: errors.email?.[0] ? t(errors.email[0]) : undefined,
+                                                    }));
+                                                    setIsValid(false);
+                                                } else {
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        email: undefined,
+                                                    }));
+                                                    setIsValid(true);
+                                                }
+                                            }}
+                                        />
+                                        {
+                                            (errors?.email || validationErrors.email) && (
+                                                <p className="text-red-500 text-sm mt-1">{errors?.email || validationErrors.email}</p>
+                                            )
+                                        }
+                                    </div>
                                     <div>
-                                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Téléphone
-                                        </label>
-                                        <Controller
-                                            name="phone"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Input
-                                                    id="phone"
-                                                    type="tel"
-                                                    {...field}
-                                                    placeholder="+33 1 23 45 67 89"
-                                                    className={validationErrors.phone ? 'border-red-500' : ''}
-                                                />
-                                            )}
-                                        />
-                                        {validationErrors.phone && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.phone.message}</p>
-                                        )}
-                                    </div>
 
+
+                                        <Input
+                                            type="phone"
+                                            placeholder={t('common.supplier_phone')}
+                                            label={t('common.supplier_phone')}
+                                            className="rounded-xl"
+                                            prefix={<PhoneArrowDownLeftIcon className="size-4.5" />}
+                                            value={data.phone}
+                                            onChange={(e) => {
+                                                setData('phone', e.target.value);
+                                                const result = supplierSchema.safeParse({
+                                                    ...data,
+                                                    phone: e.target.value,
+                                                });
+                                                if (!result.success) {
+                                                    const errors = result.error.flatten().fieldErrors;
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
+                                                    }));
+                                                    setIsValid(false);
+                                                } else {
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        phone: undefined,
+                                                    }));
+                                                    setIsValid(true);
+                                                }
+                                            }}
+                                        />
+                                        {
+                                            (errors?.phone || validationErrors.phone) && (
+                                                <p className="text-red-500 text-sm mt-1">{errors?.phone || validationErrors.phone}</p>
+                                            )
+                                        }
+                                    </div>
                                     <div>
-                                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Adresse
-                                        </label>
-                                        <Controller
-                                            name="address"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Textarea
-                                                    id="address"
-                                                    {...field}
-                                                    placeholder="Adresse complète du fournisseur"
-                                                    rows={3}
-                                                    className={validationErrors.address ? 'border-red-500' : ''}
-                                                />
-                                            )}
-                                        />
-                                        {validationErrors.address && (
-                                            <p className="text-red-500 text-sm mt-1">{validationErrors.address.message}</p>
-                                        )}
-                                    </div>
 
+
+                                        <Input
+                                            type="address"
+                                            placeholder={t('common.supplier_address')}
+                                            label={t('common.supplier_address')}
+                                            className="rounded-xl"
+                                            prefix={<MapIcon className="size-4.5" />}
+                                            value={data.address}
+                                            onChange={(e) => {
+                                                setData('address', e.target.value);
+                                                const result = supplierSchema.safeParse({
+                                                    ...data,
+                                                    address: e.target.value,
+                                                });
+                                                if (!result.success) {
+                                                    const errors = result.error.flatten().fieldErrors;
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        address: errors.address?.[0] ? t(errors.address[0]) : undefined,
+                                                    }));
+                                                } else {
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        address: undefined,
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                        {
+                                            (errors?.address || validationErrors.address) && (
+                                                <p className="text-red-500 text-sm mt-1">{errors?.address || validationErrors.address}</p>
+                                            )
+                                        }
+                                    </div>
                                     <div className="flex items-center justify-end space-x-3 pt-4">
                                         <Button
                                             type="button"
-                                            variant="outline"
+                                            variant="outlined"
                                             onClick={handleClose}
                                             disabled={processing}
                                         >
@@ -249,12 +348,13 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
                                         </Button>
                                         <Button
                                             type="submit"
-                                            disabled={processing || !isValid}
-                                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                                            variant="filled"
+                                            disabled={processing}
+                                            color="primary"
                                         >
-                                            {processing 
-                                                ? (isEditing ? 'Mise à jour...' : 'Création...') 
-                                                : (isEditing ? 'Mettre à jour' : 'Créer')
+                                            {processing
+                                                ? (isEditing ? t('common.updating') : t('common.creating'))
+                                                : (isEditing ? t('common.update') : t('common.create'))
                                             }
                                         </Button>
                                     </div>
