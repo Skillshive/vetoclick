@@ -10,6 +10,11 @@ use Exception;
 
 class SupplierService implements ServiceInterface
 {
+    public function query()
+    {
+        return Supplier::query();
+    }
+
     /**
      * Get all suppliers with optional pagination
      */
@@ -43,7 +48,7 @@ class SupplierService implements ServiceInterface
             $supplier = Supplier::create($dto->toCreateArray());
             return $supplier;
         } catch (Exception $e) {
-            throw new Exception("Failed to create supplier: " . $e->getMessage());
+            throw new Exception("Failed to create supplier");
         }
     }
 
@@ -54,13 +59,13 @@ class SupplierService implements ServiceInterface
     {
         try {
             $supplier = $this->getById($id);
-            
+
             if (!$supplier) {
                 return null;
             }
 
             $updateData = $dto->toUpdateArray();
-            
+
             if (empty($updateData)) {
                 return $supplier;
             }
@@ -68,7 +73,7 @@ class SupplierService implements ServiceInterface
             $supplier->update($updateData);
             return $supplier->fresh();
         } catch (Exception $e) {
-            throw new Exception("Failed to update supplier: " . $e->getMessage());
+            throw new Exception("Failed to update supplier ");
         }
     }
 
@@ -79,13 +84,13 @@ class SupplierService implements ServiceInterface
     {
         try {
             $supplier = $this->getByUuid($uuid);
-            
+
             if (!$supplier) {
                 return null;
             }
 
             $updateData = $dto->toUpdateArray();
-            
+
             if (empty($updateData)) {
                 return $supplier;
             }
@@ -93,25 +98,25 @@ class SupplierService implements ServiceInterface
             $supplier->update($updateData);
             return $supplier->fresh();
         } catch (Exception $e) {
-            throw new Exception("Failed to update supplier: " . $e->getMessage());
+            throw new Exception("Failed to update supplier");
         }
     }
 
     /**
      * Delete supplier by ID
      */
-    public function delete(int $id): bool
+    public function delete(string $id): bool
     {
         try {
-            $supplier = $this->getById($id);
-            
+            $supplier = $this->getByUuid($id);
+
             if (!$supplier) {
                 return false;
             }
 
             return $supplier->delete();
         } catch (Exception $e) {
-            throw new Exception("Failed to delete supplier: " . $e->getMessage());
+            throw new Exception("Failed to delete supplier");
         }
     }
 

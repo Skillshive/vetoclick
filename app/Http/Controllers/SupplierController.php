@@ -6,6 +6,7 @@ use App\Http\Requests\CreateSupplierRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use App\Services\SupplierService;
 use App\common\SupplierDto;
+use App\Http\Resources\Stock\SupplierResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,19 +27,29 @@ class SupplierController extends Controller
      */
     public function index(Request $request): Response
     {
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->get('per_page', 10);
         $search = $request->get('search');
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDirection = $request->get('sort_direction', 'desc');
+        $page = $request->get('page', 1);
 
         try {
+            $query = $this->supplierService->query();
+
             if ($search) {
-                $suppliers = $this->supplierService->searchByName($search, $perPage);
-            } else {
-                $suppliers = $this->supplierService->getAll($perPage);
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('address', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
             }
+
+            $suppliers = $query->paginate($perPage, ['*'], 'page', $page);
 
             return Inertia::render('Suppliers/Index', [
                 'suppliers' => [
-                    'data' => $suppliers->items(),
+                    'data' => SupplierResource::collection($suppliers->items()),
                     'meta' => [
                         'current_page' => $suppliers->currentPage(),
                         'from' => $suppliers->firstItem(),
@@ -57,20 +68,30 @@ class SupplierController extends Controller
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
-                ]
+                    'sort_by' => $sortBy,
+                    'sort_direction' => $sortDirection,
+                ],
+                'old' => $request->old(),
+                'errors' => $request->session()->get('errors')
             ]);
         } catch (Exception $e) {
+
             return Inertia::render('Suppliers/Index', [
-                'suppliers' => ['data' => [], 'meta' => null, 'links' => null],
+                'categoryBlogs' => [
+                    'data' => ['data' => []],
+                    'meta' => null,
+                    'links' => null
+                ],
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
+                    'sort_by' => $sortBy,
+                    'sort_direction' => $sortDirection,
                 ],
-                'error' => 'Failed to retrieve suppliers: ' . $e->getMessage()
+                'error' => __('common.error')
             ]);
         }
     }
-    
     /**
      * Store a newly created supplier
      */
@@ -85,10 +106,10 @@ class SupplierController extends Controller
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to create supplier: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to create supplier: ' ]);
         }
     }
-    
+
     /**
      * Update the specified supplier by UUID
      */
@@ -108,14 +129,14 @@ class SupplierController extends Controller
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to update supplier: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to update supplier']);
         }
     }
 
     /**
      * Remove the specified supplier by ID
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(string $id): RedirectResponse
     {
         try {
             $deleted = $this->supplierService->delete($id);
@@ -129,7 +150,7 @@ class SupplierController extends Controller
                 ->with('success', 'Supplier deleted successfully');
         } catch (Exception $e) {
             return redirect()->back()
-                ->withErrors(['error' => 'Failed to delete supplier: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to delete supplier']);
         }
     }
 
@@ -167,7 +188,7 @@ class SupplierController extends Controller
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to retrieve suppliers: ' . $e->getMessage()
+                'error' => 'Failed to retrieve suppliers'
             ], 500);
         }
     }
@@ -181,7 +202,7 @@ class SupplierController extends Controller
 
         try {
             $suppliers = $this->supplierService->searchByName($name, $perPage);
-            
+
             return response()->json([
                 'data' => $suppliers->items(),
                 'meta' => [
@@ -195,7 +216,7 @@ class SupplierController extends Controller
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to search suppliers: ' . $e->getMessage()
+                'error' => 'Failed to search suppliers'
             ], 500);
         }
     }
