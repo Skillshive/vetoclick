@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CategoryProductController;
@@ -104,8 +105,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Get category-blogs for a specific species
             //  Route::get('category-blogs/{speciesUuid}', 'getBySpecies')->name('by-species');
         });
+
 });
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('blogs.')->prefix('blogs')
+    ->controller(BlogController::class)
+    ->group(function () {
+        Route::get('create', 'create')->name('create');
+    });
+
+});
 // Product routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);

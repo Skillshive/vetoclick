@@ -41,6 +41,12 @@ class BlogController extends Controller
         }
     }
 
+    public function create(): Response
+    {
+        return Inertia::render('Blogs/blog/Create');
+    }
+
+
     /**
      * Get blog by UUID
      */

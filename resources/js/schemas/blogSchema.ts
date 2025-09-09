@@ -16,4 +16,35 @@ export const categoryBlogFormSchema = z.object({
     .nullable(),
 });
 
+export const blogFormSchema = z.object({
+  title: z.string()
+    .min(1, 'validation.blog_title_required')
+    .min(2, 'validation.blog_title_min_length')
+    .max(255, 'validation.blog_title_max_length'),
+
+  body: z.string()
+    .min(1, 'validation.blog_body_required'),
+
+  caption: z.string()
+    .min(1, 'validation.blog_caption_required')
+    .max(255, 'validation.blog_caption_max_length'),
+
+  meta_title: z.string()
+    .min(1, 'validation.meta_title_required')
+    .max(255, 'validation.meta_title_max_length'),
+
+  meta_desc: z.string()
+    .min(1, 'validation.meta_desc_required')
+    .max(1000, 'validation.meta_desc_max_length'),
+
+  meta_keywords: z.string()
+    .min(1, 'validation.meta_keywords_required')
+    .max(500, 'validation.meta_keywords_max_length'),
+
+  tags: z.string()
+    .min(1, 'validation.tags_required')
+    .max(1000, 'validation.tags_max_length'),
+});
+
+export type BlogFormData = z.infer<typeof blogFormSchema>;
 export type CategoryBlogFormData = z.infer<typeof categoryBlogFormSchema>;
