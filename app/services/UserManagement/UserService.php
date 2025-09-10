@@ -21,8 +21,7 @@ class UserService implements ServiceInterface
 
     public function query()
     {
-        return User::where('id', '!=', Auth::id())
-    ->query();
+        return User::query();
     }
     /**
      * Get all users with optional pagination

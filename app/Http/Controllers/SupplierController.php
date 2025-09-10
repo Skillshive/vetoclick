@@ -6,12 +6,18 @@ use App\Http\Requests\CreateSupplierRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use App\Services\SupplierService;
 use App\common\SupplierDto;
+use App\Http\Requests\Stock\ImportSuppliersRequest;
 use App\Http\Resources\Stock\SupplierResource;
+use App\Models\CategoryBlog;
+use App\Models\Supplier;
+use App\Services\CsvService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
+use Illuminate\Validation\Factory;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupplierController extends Controller
 {
@@ -218,6 +224,119 @@ class SupplierController extends Controller
             return response()->json([
                 'error' => 'Failed to search suppliers'
             ], 500);
+        }
+    }
+
+      /**
+     * Export category products to CSV
+     */
+    public function export(): StreamedResponse|RedirectResponse
+    {
+        try {
+            $suppliers = Supplier::get();
+            
+            $records = $suppliers->map(function ($supplier) {
+                return [
+                    'Name' => $supplier->name,
+                    'Address' => $supplier->address,
+                    'Email' => $supplier->email,
+                    'Phone' => $supplier->phone,
+                ];
+            })->toArray();
+
+            dd($records);
+            $csvService = new CsvService();
+            return $csvService->export(
+                [
+                    'Name', 
+            'Address', 
+            'Email', 
+            'Phone', 
+                
+                ],
+                array_values($records), 
+                'suppliers.csv'
+            );
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => __('common.export_error')]);
+        }
+    }
+
+    /**
+     * Import category products from CSV
+     */
+    public function import(ImportSuppliersRequest $request): RedirectResponse
+    {
+        try {
+            $file = $request->file('file');
+            $csvService = new CsvService();
+
+            // Validate CSV headers
+            if (!$csvService->validateHeaders($file, ImportSuppliersRequest::getRequiredHeaders())) {
+                $actualHeaders = $csvService->getHeaders($file);
+                $message = 'Invalid CSV headers. Required: ' . implode(', ', ImportSuppliersRequest::getRequiredHeaders()) . 
+                          '. Found: ' . implode(', ', $actualHeaders);
+                throw new Exception($message);
+            }
+
+            // Import CSV data
+            $records = $csvService->import($file, ImportSuppliersRequest::getHeaderMapping());
+                // dd($records);
+            $validator = app()->make(Factory::class);
+            $rowNumber = 1;
+            $successCount = 0;
+            $errors = [];
+
+            foreach ($records as $record) {
+                $rowNumber++;
+                
+                // Prepare data for validation
+                $data = [
+                    'name' => $record['Name'],
+                    'address' => $record['Address'],
+                    'email' => $record['Email'],
+                    'phone' => $record['Phone'],
+                ];
+
+                // Get validation rules from ImportSuppliersRequest
+                $rules = ImportSuppliersRequest::getRowValidationRules();
+
+                $validation = $validator->make($data, $rules);
+
+                if ($validation->fails()) {
+                    $rowErrors = $validation->errors()->all();
+                    $errors[] = "Row {$rowNumber}: " . implode(', ', $rowErrors);
+                    continue;
+                }
+
+                try {
+                    $dto = new SupplierDto();
+                    $dto->name = $data['name'];
+                    $dto->address = $data['address'];
+                    $dto->email = $data['email'];
+                    $dto->phone = $data['phone'];
+                    $this->supplierService->create($dto);
+                    $successCount++;
+                } catch (Exception $e) {
+                    $errors[] = "Row {$rowNumber}: Failed to create category - " . $e->getMessage();
+                }
+            }
+
+            // If there were any errors, throw an exception with details
+            if (!empty($errors)) {
+                $errorMessage = "Import completed with errors:\n" . implode("\n", $errors);
+                if ($successCount > 0) {
+                    $errorMessage .= "\n{$successCount} categories were imported successfully.";
+                }
+                throw new Exception($errorMessage);
+            }
+
+            return redirect()->back()
+                ->with('success', __('common.import_success'));
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => __('common.import_error') . ': ' . $e->getMessage()]);
         }
     }
 }

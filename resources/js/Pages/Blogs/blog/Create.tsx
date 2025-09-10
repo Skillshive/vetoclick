@@ -18,8 +18,21 @@ import { CoverImageUpload } from "@/components/shared/form/CoverImageUpload";
 import MainLayout from "@/layouts/MainLayout";
 import { ContextualHelp } from "@/components/shared/ContextualHelp";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useState } from "react";
 
 // ----------------------------------------------------------------------
+
+
+interface BlogFormData {
+    title: string;
+    body: string;
+    caption: string;
+    image_id: string;
+    meta_title: string;
+    meta_desc: string;
+    meta_keywords: string;
+    category_blog_id?: string | null;
+}
 
 const initialState = {
   title: "manar",
@@ -74,27 +87,131 @@ const categories = [
   },
 ];
 
-const NewPostFrom = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    control,
-    reset,
-  } = useForm<SchemaType>({
-    resolver: yupResolver(schema) as Resolver<SchemaType>,
-    defaultValues: initialState as unknown as SchemaType,
-  });
+const Create = () => {
+  const {t}=useTranslation();
+ 
+
+    const [validationErrors, setValidationErrors] = useState<{
+      title?: string;
+      body?: string;
+      caption?: string;
+      image_id?: string;
+      meta_title?: string;
+      meta_desc?: string;
+      meta_keywords?: string;
+      category_blog_id?: string;
+    }>({});
+    
+    const { data, setData, reset } = useForm<BlogFormData>({
+        title: '',
+        body: '',
+        caption: '',
+        image_id: '',
+        meta_title: '',
+        meta_desc: '',
+        meta_keywords: '',
+        category_blog_id: null,
+    });
+
+    const [processing, setProcessing] = useState(false);
+
+
+    
+        const handleSubmit = (e: React.FormEvent) => {
+            e.preventDefault();
+    
+    
+            const result = categoryBlogFormSchema.safeParse(data);
+            if (!result.success) {
+                const errors = result.error.flatten().fieldErrors;
+                setValidationErrors({
+                    name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                    desp: errors.desp?.[0] ? t(errors.desp[0]) : undefined,
+                    parent_category_id: errors.parent_category_id?.[0] ? t(errors.parent_category_id[0]) : undefined,
+                });
+                return;
+            }
+    
+    
+            setProcessing(true);
+    
+            if (isEditing) {
+                axios.put(route('category-blogs.update', categoryBlog.uuid), data)
+                    .then(() => {
+                        showToast({
+                            type: 'success',
+                            message: t('common.category_blog_updated_success'),
+                            duration: 3000,
+                        });
+                        setValidationErrors({});
+                        onClose();
+                        router.visit(window.location.href, {
+                          preserveState: false,
+                          preserveScroll: true
+                        });
+                    })
+                   .catch((error) => {
+        if (error.response && error.response.status === 422) {
+            const errors = error.response.data.errors;
+    console.log('errors',errors)
+            setValidationErrors({
+                name: errors?.name ? errors.name[0] : undefined,
+                desp: errors?.desp ? errors.desp[0] : undefined,
+                parent_category_id: errors?.parent_category_id ? errors.parent_category_id[0] : undefined,
+            });
+    
+            showToast({
+                type: 'error',
+                message: errors?.name ? errors.name[0] : t('common.category_blog_update_error'),
+                duration: 3000,
+            });
+        }
+    })
+                    .finally(() => {
+                        setProcessing(false);
+                    });
+            } else {
+                axios.post(route('category-blogs.store'), data)
+                    .then(() => {
+                        showToast({
+                            type: 'success',
+                            message: t('common.category_blog_created_success'),
+                            duration: 3000,
+                        });
+                        reset();
+                        setValidationErrors({});
+                        onClose();
+                        router.visit(window.location.href, {
+                          preserveState: false,
+                          preserveScroll: true
+                        });
+                    })
+                     .catch((error) => {
+        if (error.response && error.response.status === 422) {
+            const errors = error.response.data.errors;
+    console.log('errors',errors)
+            setValidationErrors({
+                name: errors?.name ? errors.name[0] : undefined,
+                desp: errors?.desp ? errors.desp[0] : undefined,
+                parent_category_id: errors?.parent_category_id ? errors.parent_category_id[0] : undefined,
+            });
+    
+            showToast({
+                type: 'error',
+                message: errors?.name ? errors.name[0] : t('common.category_blog_create_error'),
+                duration: 3000,
+            });
+        }
+    })
+                    .finally(() => {
+                        setProcessing(false);
+                    });
+            }
+        };
+    
 
   
-  const {t}=useTranslation();
-  const onSubmit = (data: any) => {
-    console.log(data);
-    toast("New Post Published. Now you can add new one", {
-      invert: true,
-    });
-    reset();
-  };
+
 
   return (
             <MainLayout>
@@ -287,4 +404,4 @@ const NewPostFrom = () => {
   );
 };
 
-export default NewPostFrom;
+export default Create;

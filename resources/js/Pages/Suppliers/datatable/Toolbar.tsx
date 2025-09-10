@@ -159,7 +159,6 @@ const Toolbar = ({
             }}
           >
             <ArrowDownTrayIcon className="size-4" />
-            <span>{t('common.export_csv')}</span>
           </Button>
 
           <div className="relative inline-block group">
@@ -183,7 +182,7 @@ const Toolbar = ({
                   color="primary"
                   className="text-white hover:text-primary-200"
                   onClick={() => {
-                    const csvContent = 'Name,Description,Parent Category';
+                    const csvContent = 'Name,Address,Email,Phone';
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);

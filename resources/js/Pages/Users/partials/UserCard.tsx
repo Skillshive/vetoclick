@@ -50,14 +50,14 @@ export function UserCard({
             {user.phone !== null && user.phone !== undefined && (
               <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
                 <PhoneArrowDownLeftIcon className="w-4 h-4 text-blue-500" />
-                <span>{t('common.phone')}: {user.phone}</span>
+                <span> {user.phone}</span>
               </div>
             )}
          
             {user.email !== null && user.email !== undefined && (
               <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
                 <EnvelopeIcon className="w-4 h-4 text-blue-500" />
-                <span>{t('common.email')}: {user.email}</span>
+                <span>{user.email}</span>
               </div>
             )}
          

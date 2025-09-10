@@ -27,7 +27,7 @@ class UserController extends Controller
      */
     public function index(Request $request): Response
     {
-        $perPage = $request->get('per_page', 10);
+        $perPage = $request->get('per_page', 8);
         $search = $request->get('search');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDirection = $request->get('sort_direction', 'desc');
