@@ -276,4 +276,49 @@ return [
         "products_list" => "Liste des produits",
         "categories_list" => "Liste des catégories"
     ],
+
+    // User management translations
+    'users' => 'Utilisateurs',
+    'user' => 'Utilisateur',
+    'manage_users' => 'Gérer les utilisateurs de votre système',
+    'create_users' => 'Créer un utilisateur',
+    'edit_user' => 'Modifier l\'utilisateur',
+    'delete_user' => 'Supprimer l\'utilisateur',
+    'new_user' => 'Nouvel utilisateur',
+    'edit_user_info' => 'Modifier les informations de l\'utilisateur ":name"',
+    'create_user_info' => 'Créer un nouvel utilisateur dans le système',
+    'no_users_found' => 'Aucun utilisateur trouvé',
+    'create_first_user' => 'Créez votre premier utilisateur',
+    'user_created_success' => 'Utilisateur créé avec succès',
+    'user_updated_success' => 'Utilisateur mis à jour avec succès',
+    'user_deleted_success' => 'Utilisateur supprimé avec succès',
+    'user_create_error' => 'Échec de la création de l\'utilisateur',
+    'user_update_error' => 'Échec de la mise à jour de l\'utilisateur',
+    'user_delete_error' => 'Échec de la suppression de l\'utilisateur',
+    'user_not_found' => 'Utilisateur non trouvé',
+    'confirm_delete_user' => 'Êtes-vous sûr de vouloir supprimer l\'utilisateur ":name" ? Une fois supprimé, il ne peut pas être restauré.',
+
+    // User modal specific translations
+    'edit_user_modal' => 'Modifier l\'utilisateur',
+    'new_user_modal' => 'Nouvel utilisateur',
+
+    
+        // Field labels
+        "firstname_label" => "Prénom",
+        "lastname_label" => "Nom de famille",
+        "email_label" => "Adresse email",
+        "phone_label" => "Téléphone",
+        "current_password_label" => "Mot de passe actuel",
+        "new_password_label" => "Nouveau mot de passe",
+        "confirm_password_label" => "Confirmer le mot de passe",
+
+        // Placeholder texts
+        "firstname_placeholder" => "Entrez le prénom",
+        "lastname_placeholder" => "Entrez le nom de famille",
+        "email_placeholder" => "Entrez votre adresse email",
+        "phone_placeholder" => "Entrez le numéro de téléphone",
+        "current_password_placeholder" => "Entrez le mot de passe actuel",
+        "new_password_placeholder" => "Entrez le nouveau mot de passe",
+        "confirm_password_placeholder" => "Confirmez le nouveau mot de passe",
+
 ];

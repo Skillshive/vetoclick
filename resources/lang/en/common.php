@@ -381,4 +381,48 @@ return [
         'description_max' => 'Description must not exceed 1000 characters',
         'parent_category_not_exists' => 'Selected parent category does not exist',
     ],
+
+    // User management translations
+    'users' => 'Users',
+    'user' => 'User',
+    'manage_users' => 'Manage users in your system',
+    'create_users' => 'Create User',
+    'edit_user' => 'Edit User',
+    'delete_user' => 'Delete User',
+    'new_user' => 'New User',
+    'edit_user_info' => 'Modify the information for user ":name"',
+    'create_user_info' => 'Create a new user in the system',
+    'no_users_found' => 'No users found',
+    'create_first_user' => 'Create your first user',
+    'user_created_success' => 'User created successfully',
+    'user_updated_success' => 'User updated successfully',
+    'user_deleted_success' => 'User deleted successfully',
+    'user_create_error' => 'Failed to create user',
+    'user_update_error' => 'Failed to update user',
+    'user_delete_error' => 'Failed to delete user',
+    'user_not_found' => 'User not found',
+    'confirm_delete_user' => 'Are you sure you want to delete user ":name"? Once deleted, it cannot be restored.',
+
+    // User modal specific translations
+    'edit_user_modal' => 'Edit User',
+    'new_user_modal' => 'New User',
+
+    // Field labels
+        "firstname_label" => "First Name",
+        "lastname_label" => "Last Name",
+        "email_label" => "Email Address",
+        "phone_label" => "Phone",
+        "current_password_label" => "Current Password",
+        "new_password_label" => "New Password",
+        "confirm_password_label" => "Confirm Password",
+
+        // Placeholder texts
+        "firstname_placeholder" => "Enter first name",
+        "lastname_placeholder" => "Enter last name",
+        "email_placeholder" => "Enter your email address",
+        "phone_placeholder" => "Enter phone number",
+        "current_password_placeholder" => "Enter current password",
+        "new_password_placeholder" => "Enter new password",
+        "confirm_password_placeholder" => "Confirm new password",
+
 ];

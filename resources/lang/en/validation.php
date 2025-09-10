@@ -128,23 +128,6 @@ return [
         // Password confirmation messages
         "password_confirmation_mismatch" => "Passwords do not match",
 
-        // Field labels
-        "firstname_label" => "First Name",
-        "lastname_label" => "Last Name",
-        "email_label" => "Email Address",
-        "phone_label" => "Phone",
-        "current_password_label" => "Current Password",
-        "new_password_label" => "New Password",
-        "confirm_password_label" => "Confirm Password",
-
-        // Placeholder texts
-        "firstname_placeholder" => "Enter first name",
-        "lastname_placeholder" => "Enter last name",
-        "email_placeholder" => "Enter your email address",
-        "phone_placeholder" => "Enter phone number",
-        "current_password_placeholder" => "Enter current password",
-        "new_password_placeholder" => "Enter new password",
-        "confirm_password_placeholder" => "Confirm new password",
 
         // Category Product validation messages
         "category_name_required" => "Category name is required",
@@ -164,5 +147,14 @@ return [
         // Bulk operations validation
         "no_items_selected" => "No items selected for deletion",
         "too_many_items_selected" => "Cannot delete more than 50 items at once",
-        "invalid_uuid" => "Invalid UUID format"
+        "invalid_uuid" => "Invalid UUID format",
+
+        // User validation messages
+        "user_not_found" => "User not found",
+        "user_email_unique" => "This email address is already taken",
+        "user_phone_unique" => "This phone number is already taken",
+        "user_image_required" => "User image is required",
+        "user_image_invalid" => "Please upload a valid image file",
+        "user_image_size" => "Image size must be less than 2MB",
+        "user_image_type" => "Only JPG, JPEG, PNG, GIF, and WebP images are allowed"
 ];

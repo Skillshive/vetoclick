@@ -210,7 +210,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                             <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
                                 <div className="flex items-center justify-between mb-4">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        {isEditing ? t('common.edit_category_blog') : t('common.new_category_blog')}
+                                        {isEditing ? t('common.edit_user_modal') : t('common.new_user_modal')}
                                     </DialogTitle>
                                     <button
                                         onClick={handleClose}

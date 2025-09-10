@@ -119,25 +119,7 @@ return [
         // Password confirmation messages
         "password_confirmation_mismatch" => "كلمات المرور غير متطابقة",
 
-        // Field labels
-        "firstname_label" => "الاسم الأول",
-        "lastname_label" => "اسم العائلة",
-        "email_label" => "البريد الإلكتروني",
-        "phone_label" => "الهاتف",
-        "current_password_label" => "كلمة المرور الحالية",
-        "new_password_label" => "كلمة المرور الجديدة",
-        "confirm_password_label" => "تأكيد كلمة المرور",
-
-        // Placeholder texts
-        "firstname_placeholder" => "أدخل الاسم الأول",
-        "lastname_placeholder" => "أدخل اسم العائلة",
-        "email_placeholder" => "أدخل عنوان بريدك الإلكتروني",
-        "phone_placeholder" => "أدخل رقم الهاتف",
-        "current_password_placeholder" => "أدخل كلمة المرور الحالية",
-        "new_password_placeholder" => "أدخل كلمة المرور الجديدة",
-        "confirm_password_placeholder" => "أكد كلمة المرور الجديدة",
-
-        // Category Product validation messages
+         // Category Product validation messages
         "category_name_required" => "اسم الفئة مطلوب",
         "category_name_min_length" => "يجب أن يحتوي اسم الفئة على حرفين على الأقل",
         "category_name_max_length" => "يجب أن يحتوي اسم الفئة على أقل من 100 حرف",
@@ -154,6 +136,15 @@ return [
         // Bulk operations validation
         "no_items_selected" => "لم يتم تحديد أي عناصر للحذف",
         "too_many_items_selected" => "لا يمكن حذف أكثر من 50 عنصراً في المرة الواحدة",
-        "invalid_uuid" => "تنسيق UUID غير صحيح"
+        "invalid_uuid" => "تنسيق UUID غير صحيح",
+
+        // User validation messages
+        "user_not_found" => "لم يتم العثور على المستخدم",
+        "user_email_unique" => "عنوان البريد الإلكتروني هذا مُستخدم بالفعل",
+        "user_phone_unique" => "رقم الهاتف هذا مُستخدم بالفعل",
+        "user_image_required" => "صورة المستخدم مطلوبة",
+        "user_image_invalid" => "يرجى تحميل ملف صورة صحيح",
+        "user_image_size" => "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
+        "user_image_type" => "يُسمح بصور JPG وJPEG وPNG وGIF وWebP فقط"
 
 ];

@@ -154,24 +154,6 @@ return [
         // Password confirmation messages
         "password_confirmation_mismatch" => "Les mots de passe ne correspondent pas",
 
-        // Field labels
-        "firstname_label" => "Prénom",
-        "lastname_label" => "Nom de famille",
-        "email_label" => "Adresse email",
-        "phone_label" => "Téléphone",
-        "current_password_label" => "Mot de passe actuel",
-        "new_password_label" => "Nouveau mot de passe",
-        "confirm_password_label" => "Confirmer le mot de passe",
-
-        // Placeholder texts
-        "firstname_placeholder" => "Entrez le prénom",
-        "lastname_placeholder" => "Entrez le nom de famille",
-        "email_placeholder" => "Entrez votre adresse email",
-        "phone_placeholder" => "Entrez le numéro de téléphone",
-        "current_password_placeholder" => "Entrez le mot de passe actuel",
-        "new_password_placeholder" => "Entrez le nouveau mot de passe",
-        "confirm_password_placeholder" => "Confirmez le nouveau mot de passe",
-
         // Category Product validation messages
         "category_name_required" => "Le nom de la catégorie est requis",
         "category_name_min_length" => "Le nom de la catégorie doit contenir au moins 2 caractères",
@@ -189,6 +171,15 @@ return [
         // Bulk operations validation
         "no_items_selected" => "Aucun élément sélectionné pour la suppression",
         "too_many_items_selected" => "Impossible de supprimer plus de 50 éléments à la fois",
-        "invalid_uuid" => "Format UUID invalide"
+        "invalid_uuid" => "Format UUID invalide",
+
+        // User validation messages
+        "user_not_found" => "Utilisateur non trouvé",
+        "user_email_unique" => "Cette adresse email est déjà utilisée",
+        "user_phone_unique" => "Ce numéro de téléphone est déjà utilisé",
+        "user_image_required" => "L'image de l'utilisateur est requise",
+        "user_image_invalid" => "Veuillez télécharger un fichier image valide",
+        "user_image_size" => "La taille de l'image doit être inférieure à 2 Mo",
+        "user_image_type" => "Seules les images JPG, JPEG, PNG, GIF et WebP sont autorisées"
 
 ];

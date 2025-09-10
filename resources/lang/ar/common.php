@@ -253,4 +253,49 @@ return [
         "products_list" => "قائمة المنتجات",
         "categories_list" => "قائمة الفئات"
     ],
+
+    // User management translations
+    'users' => 'المستخدمون',
+    'user' => 'المستخدم',
+    'manage_users' => 'إدارة مستخدمي النظام',
+    'create_users' => 'إنشاء مستخدم',
+    'edit_user' => 'تعديل المستخدم',
+    'delete_user' => 'حذف المستخدم',
+    'new_user' => 'مستخدم جديد',
+    'edit_user_info' => 'تعديل معلومات المستخدم ":name"',
+    'create_user_info' => 'إنشاء مستخدم جديد في النظام',
+    'no_users_found' => 'لم يتم العثور على مستخدمين',
+    'create_first_user' => 'أنشئ مستخدمك الأول',
+    'user_created_success' => 'تم إنشاء المستخدم بنجاح',
+    'user_updated_success' => 'تم تحديث المستخدم بنجاح',
+    'user_deleted_success' => 'تم حذف المستخدم بنجاح',
+    'user_create_error' => 'فشل في إنشاء المستخدم',
+    'user_update_error' => 'فشل في تحديث المستخدم',
+    'user_delete_error' => 'فشل في حذف المستخدم',
+    'user_not_found' => 'لم يتم العثور على المستخدم',
+    'confirm_delete_user' => 'هل أنت متأكد من حذف المستخدم ":name"؟ بمجرد الحذف، لا يمكن استعادته.',
+
+    // User modal specific translations
+    'edit_user_modal' => 'تعديل المستخدم',
+    'new_user_modal' => 'مستخدم جديد',
+
+    // Field labels
+        "firstname_label" => "الاسم الأول",
+        "lastname_label" => "اسم العائلة",
+        "email_label" => "البريد الإلكتروني",
+        "phone_label" => "الهاتف",
+        "current_password_label" => "كلمة المرور الحالية",
+        "new_password_label" => "كلمة المرور الجديدة",
+        "confirm_password_label" => "تأكيد كلمة المرور",
+
+        // Placeholder texts
+        "firstname_placeholder" => "أدخل الاسم الأول",
+        "lastname_placeholder" => "أدخل اسم العائلة",
+        "email_placeholder" => "أدخل عنوان بريدك الإلكتروني",
+        "phone_placeholder" => "أدخل رقم الهاتف",
+        "current_password_placeholder" => "أدخل كلمة المرور الحالية",
+        "new_password_placeholder" => "أدخل كلمة المرور الجديدة",
+        "confirm_password_placeholder" => "أكد كلمة المرور الجديدة",
+
+       
 ];
