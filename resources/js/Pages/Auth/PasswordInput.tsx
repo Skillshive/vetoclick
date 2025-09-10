@@ -20,6 +20,7 @@ const PasswordInput = ({
   onChange,
   error,
   placeholder = "Entrez votre mot de passe",
+  disabled = false,
 }: PasswordInputProps) => {
   const [show, { toggle }] = useDisclosure();
 
@@ -48,6 +49,7 @@ const PasswordInput = ({
           )}
         </Button>
       }
+      disabled={disabled}
     />
   );
 };
