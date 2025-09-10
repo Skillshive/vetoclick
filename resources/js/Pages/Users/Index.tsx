@@ -81,13 +81,6 @@ onClick= {() => {
       {usersList.length === 0 ? (
         <Card className="p-6 text-center">
           <p className="text-gray-500">{t('common.no_users_found')}</p>
-          <Button
-            // onClick={onCreateUser}
-            className="mt-4"
-            color="primary"
-          >
-            {t('common.create_first_user')}
-          </Button>
         </Card>
       ) : (
         <>

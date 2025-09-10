@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\ImageService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class UserService implements ServiceInterface
 {
@@ -20,14 +21,17 @@ class UserService implements ServiceInterface
 
     public function query()
     {
-        return User::query();
+        return User::where('id', '!=', Auth::id())
+    ->query();
     }
     /**
      * Get all users with optional pagination
      */
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return User::with(['image'])->paginate($perPage);
+return User::where('id', '!=', Auth::id())
+    ->with('image')
+    ->paginate($perPage);
     }
 
     /**

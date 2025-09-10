@@ -92,7 +92,6 @@ class UserController extends Controller
      */
     public function store(UserRequest $request): mixed
     {
-        // dd($request->all());
         try {
             $dto = UserDto::fromRequest($request);
             $this->userService->create($dto);
