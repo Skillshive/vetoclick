@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Youssef",
+    "lastname": "El Amrani",
+    "phone": "+212612345678",
+    "image_id": null,
+    "email": "youssef.elamrani@example.com"
+  },
+  {
+    "id": 2,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Fatima",
+    "lastname": "Zahra",
+    "phone": "+212623456789",
+    "image_id": null,
+    "email": "fatima.zahra@example.com"
+  },
+  {
+    "id": 3,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Omar",
+    "lastname": "Bennani",
+    "phone": "+212634567890",
+    "image_id": null,
+    "email": "omar.bennani@example.com"
+  },
+  {
+    "id": 4,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Sara",
+    "lastname": "Haddad",
+    "phone": "+212645678901",
+    "image_id": null,
+    "email": "sara.haddad@example.com"
+  },
+  {
+    "id": 5,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Khalid",
+    "lastname": "Ouazzani",
+    "phone": "+212655432198",
+    "image_id": null,
+    "email": "khalid.ouazzani@example.com"
+  },
+  {
+    "id": 6,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Samira",
+    "lastname": "Bouhouch",
+    "phone": "+212666789012",
+    "image_id": null,
+    "email": "samira.bouhouch@example.com"
+  },
+  {
+    "id": 7,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Hicham",
+    "lastname": "Toumi",
+    "phone": "+212677890123",
+    "image_id": null,
+    "email": "hicham.toumi@example.com"
+  },
+  {
+    "id": 8,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Nadia",
+    "lastname": "Lahlou",
+    "phone": "+212688901234",
+    "image_id": null,
+    "email": "nadia.lahlou@example.com"
+  },
+  {
+    "id": 9,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Reda",
+    "lastname": "Chakiri",
+    "phone": "+212699012345",
+    "image_id": null,
+    "email": "reda.chakiri@example.com"
+  },
+  {
+    "id": 10,
+    "password": "$2y$10$uGz6tW5fS9m1Oa0Bx4hA7uO64f8N6kXQhV9W6Lj5gAgZqZItQfE7O",
+    "firstname": "Imane",
+    "lastname": "Berrada",
+    "phone": "+212611223344",
+    "image_id": null,
+    "email": "imane.berrada@example.com"
+  }
+]

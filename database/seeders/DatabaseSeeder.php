@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         ]);
         // Seed species and breeds from JSON files
         $this->call([
+            UserSeeder::class,
             SpeciesSeeder::class,
             BreedSeeder::class,
             SupplierSeeder::class,
