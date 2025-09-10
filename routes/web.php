@@ -12,6 +12,7 @@ use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BreedController;
 use App\Http\Controllers\CategoryBlogController;
+use App\Http\Controllers\UserManagment\UserController;
 
 require_once 'common.php';
 
@@ -48,7 +49,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->group(function () {
             Route::get('', 'index')
                 ->name('index');
-            Route::get('data', 'data')->name('data');
             Route::get('create', 'create')->name('create');
             Route::post('store', 'store')->name('store');
             Route::get('{species}/edit', 'edit')->name('edit');
@@ -56,6 +56,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('{species}/delete', 'destroy')->name('destroy');
             Route::get('{species}/show', 'show')->name('show');
             Route::post('{species}/update', 'update')->name('update');
+        });
+});
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('users.')->prefix('users')
+        ->controller(UserController::class)
+        ->group(function () {
+            Route::get('', 'index')
+                ->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::post('store', 'store')->name('store');
+            Route::get('{user}/edit', 'edit')->name('edit');
+            Route::post('delete', 'destroyGroup')->name('destroyGroup');
+            Route::delete('{user}/delete', 'destroy')->name('destroy');
+            Route::get('{user}/show', 'show')->name('show');
+            Route::post('{user}/update', 'update')->name('update');
         });
 });
 
@@ -75,6 +90,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Supplier routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('suppliers', SupplierController::class);
+    Route::prefix('suppliers')->group(function () {
+        Route::get('export', [SupplierController::class, 'export'])->name('suppliers.export');
+        Route::post('import', [SupplierController::class, 'import'])->name('suppliers.import');
+    });
 });
 
 // Category Products routes
