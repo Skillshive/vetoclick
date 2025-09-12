@@ -18,7 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // Register subscription middleware
+        $middleware->alias([
+            'subscription.feature' => \App\Http\Middleware\CheckSubscriptionFeature::class,
+            'subscription.permission' => \App\Http\Middleware\CheckSubscriptionPermission::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
