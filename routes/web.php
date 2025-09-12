@@ -13,6 +13,8 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BreedController;
 use App\Http\Controllers\CategoryBlogController;
 use App\Http\Controllers\UserManagment\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RoleManagementController;
 
 require_once 'common.php';
 
@@ -121,8 +123,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('{categoryBlog}/edit', 'edit')->name('edit');
             Route::put('{categoryBlog}/update', 'update')->name('update');
             Route::delete('{categoryBlog}/delete', 'destroy')->name('destroy');
-            // Get category-blogs for a specific species
-            //  Route::get('category-blogs/{speciesUuid}', 'getBySpecies')->name('by-species');
         });
 
 });
@@ -138,6 +138,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Product routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
+});
+
+// Role routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('roles.')->prefix('roles')
+        ->controller(RoleController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::post('store', 'store')->name('store');
+            Route::post('{role}/update', 'update')->name('update');
+            Route::delete('{role}/delete', 'destroy')->name('destroy');
+            Route::post('{role}/assign-permissions', 'assignPermissions')->name('assign-permissions');
+        });
 });
 
 require __DIR__.'/auth.php';

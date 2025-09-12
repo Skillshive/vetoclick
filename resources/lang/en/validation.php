@@ -156,5 +156,13 @@ return [
         "user_image_required" => "User image is required",
         "user_image_invalid" => "Please upload a valid image file",
         "user_image_size" => "Image size must be less than 2MB",
-        "user_image_type" => "Only JPG, JPEG, PNG, GIF, and WebP images are allowed"
+        "user_image_type" => "Only JPG, JPEG, PNG, GIF, and WebP images are allowed",
+
+        // Role validation messages
+        "role_name_required" => "The role name is required.",
+        "role_name_unique" => "The role name has already been taken.",
+        "role_name_max" => "The role name may not be greater than :max characters.",
+        "role_description_max" => "The role description may not be greater than :max characters.",
+        "permissions_array" => "Permissions must be an array.",
+        "permissions_exists" => "One or more selected permissions do not exist.",
 ];

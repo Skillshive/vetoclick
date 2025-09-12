@@ -180,6 +180,13 @@ return [
         "user_image_required" => "L'image de l'utilisateur est requise",
         "user_image_invalid" => "Veuillez télécharger un fichier image valide",
         "user_image_size" => "La taille de l'image doit être inférieure à 2 Mo",
-        "user_image_type" => "Seules les images JPG, JPEG, PNG, GIF et WebP sont autorisées"
+        "user_image_type" => "Seules les images JPG, JPEG, PNG, GIF et WebP sont autorisées",
 
+        // Role validation messages
+        "role_name_required" => "Le nom du rôle est requis.",
+        "role_name_unique" => "Le nom du rôle est déjà pris.",
+        "role_name_max" => "Le nom du rôle ne peut pas dépasser :max caractères.",
+        "role_description_max" => "La description du rôle ne peut pas dépasser :max caractères.",
+        "permissions_array" => "Les permissions doivent être un tableau.",
+        "permissions_exists" => "Une ou plusieurs permissions sélectionnées n'existent pas.",
 ];

@@ -147,4 +147,11 @@ return [
         "user_image_size" => "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
         "user_image_type" => "يُسمح بصور JPG وJPEG وPNG وGIF وWebP فقط"
 
+    // Role validation messages
+    "role_name_required" => "اسم الدور مطلوب.",
+    "role_name_unique" => "اسم الدور مستخدم بالفعل.",
+    "role_name_max" => "اسم الدور لا يمكن أن يكون أكثر من :max حرف.",
+    "role_description_max" => "وصف الدور لا يمكن أن يكون أكثر من :max حرف.",
+    "permissions_array" => "الصلاحيات يجب أن تكون مصفوفة.",
+    "permissions_exists" => "واحدة أو أكثر من الصلاحيات المحددة غير موجودة.",
 ];
