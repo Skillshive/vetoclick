@@ -12,6 +12,6 @@ class Permission extends SpatiePermission
     protected $fillable = ['name', 'guard_name', 'uuid',"grp_id"];
     
     public function group(){
-        return $this->belongsTo(PermissionGroup::class);
+        return $this->belongsTo(PermissionGroup::class, 'grp_id');
     }
 }
