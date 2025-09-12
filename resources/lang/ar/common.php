@@ -263,6 +263,7 @@ return [
     'delete_user' => 'حذف المستخدم',
     'new_user' => 'مستخدم جديد',
     'edit_user_info' => 'تعديل معلومات المستخدم ":name"',
+    'select_at_least_one_role' => 'يرجى اختيار دور واحد على الأقل',
     'create_user_info' => 'إنشاء مستخدم جديد في النظام',
     'no_users_found' => 'لم يتم العثور على مستخدمين',
     'create_first_user' => 'أنشئ مستخدمك الأول',

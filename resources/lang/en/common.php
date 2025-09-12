@@ -391,7 +391,8 @@ return [
     'delete_user' => 'Delete User',
     'new_user' => 'New User',
     'edit_user_info' => 'Modify the information for user ":name"',
-    'create_user_info' => 'Create a new user in the system',
+    'select_at_least_one_role' => 'Please select at least one role',
+    'create_user_info' => 'Create a new user in the system the password will be lastname + "@" + current year',
     'no_users_found' => 'No users found',
     'create_first_user' => 'Create your first user',
     'user_created_success' => 'User created successfully',
@@ -427,6 +428,7 @@ return [
 
     // Role Management
     'roles' => 'Roles',
+    'role' => 'Role',
     'permissions' => 'Permissions',
     'role_permission_management' => 'Role & Permission Management',
     'manage_roles' => 'Manage user roles and their permissions',
@@ -644,4 +646,7 @@ return [
     
     "permissions" => "Permissions",
     "roles_management" => "Roles Management",
+    "search_users" => "Search users...",
+    "search_roles" => "Search roles...",
+    "users_management" => "Users Management",
 ];

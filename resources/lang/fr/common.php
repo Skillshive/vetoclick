@@ -286,6 +286,7 @@ return [
     'delete_user' => 'Supprimer l\'utilisateur',
     'new_user' => 'Nouvel utilisateur',
     'edit_user_info' => 'Modifier les informations de l\'utilisateur ":name"',
+    'select_at_least_one_role' => 'Veuillez sélectionner au moins un rôle',
     'create_user_info' => 'Créer un nouvel utilisateur dans le système',
     'no_users_found' => 'Aucun utilisateur trouvé',
     'create_first_user' => 'Créez votre premier utilisateur',
