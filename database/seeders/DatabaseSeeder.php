@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Veterinary;
+use Spatie\Permission\Models\Role;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -24,6 +25,11 @@ class DatabaseSeeder extends Seeder
         ]
         );
 
+        // First, seed roles and permissions
+        $this->call([
+            RolePermissionSeeder::class, // Add our comprehensive role and permission seeder
+        ]);
+
         Veterinary::create([
             'license_number' => 'VET123456',
             'specialization' => 'General Veterinary',
@@ -31,7 +37,11 @@ class DatabaseSeeder extends Seeder
             'profile_img' => null,
             'user_id' => $user->id,
         ]);
-        // Seed species and breeds from JSON files
+
+        // Assign veterinarian role to the user
+        $user->assignRole('veterinarian');
+        
+        // Seed other data
         $this->call([
             UserSeeder::class,
             SpeciesSeeder::class,
