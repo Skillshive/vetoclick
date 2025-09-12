@@ -15,12 +15,14 @@ export const userFormSchema = z.object({
     .min(1, 'validation.email_required')
     .email('validation.email_invalid'),
   phone: z.string()
-    .optional()
+    .min(1, 'validation.phone_required')
     .refine((val) => !val || /^(\+212|0)[0-9]{9}$/.test(val), {
       message: 'validation.phone_invalid',
     }),
       image: z.instanceof(File)
         .optional()
         .nullable(),
+    role: z.string()
+        .min(1, 'validation.role_required'),
 });
 export type CategoryBlogFormData = z.infer<typeof userFormSchema>;

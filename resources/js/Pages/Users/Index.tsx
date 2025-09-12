@@ -1,26 +1,32 @@
 // Local Imports
-import { Button, Card } from "@/components/ui";
+import { Button, Card, Input, Pagination, PaginationItems, PaginationFirst, PaginationLast, PaginationNext, PaginationPrevious } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
-import { HiPlus } from "react-icons/hi";
+import { HiPlus, HiMagnifyingGlass } from "react-icons/hi2";
 import { router } from "@inertiajs/react";
 import { UserCard } from "./partials/UserCard";
 import MainLayout from "@/layouts/MainLayout";
 import { Page } from "@/components/shared/Page";
 import { User, UsersProps } from "./types";
 import UserFormModal from "@/components/modals/UserFormModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/Components/common/Toast/ToastContext";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 
 export default function Index({
-   users
+   users,
+   roles = [],
+   filters = {}
 }: UsersProps) {
        const [isModalOpen, setIsModalOpen] = useState(false);
          const [selectedUser, setSelectedUser] = useState<User | null>(null);
+       const [searchQuery, setSearchQuery] = useState(filters.search || '');
+       const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
        const { showToast } = useToast();
 
    const { t } = useTranslation();
-
+console.log("users",users);
    const handleDeleteUser = async (user: User) => {
      // @ts-ignore
      router.delete(route('users.destroy', user.uuid), {
@@ -50,31 +56,65 @@ console.log("users",users);
   const usersList = users?.data.data || [];
   const meta = users?.meta || null;
 
+  
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: t('common.users'), path: "/" },
+    { title: t('common.users_management')},
+  ];
+
   return (
     <MainLayout>
             <Page title={t('common.users')}>
           <div className="transition-content px-(--margin-x) pb-6 my-5">
-      {/* Header with Create Button */}
-      <div className="flex items-center justify-between mb-6">
+      {/* Header with Search and Create Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {t('common.users')}
-          </h3>
+          <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {t('common.manage_users')}
           </p>
         </div>
-        <Button
-onClick= {() => {
-            setSelectedUser(null);
-            setIsModalOpen(true);
-          }}          variant="filled"
-          color="primary"
-          className="h-8 gap-2 rounded-md px-3"
-        >
-          <HiPlus className="w-4 h-4" />
-          <span>{t('common.create_users')}</span>
-        </Button>
+        
+        <div className="flex items-center gap-3">
+        <Input
+              classNames={{
+                input: "text-xs-plus h-9 rounded-full",
+                root: "max-sm:hidden",
+              }}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                // Clear existing timeout
+                if (searchTimeout) {
+                  clearTimeout(searchTimeout);
+                }
+                // Set new timeout for debounced search
+                const timeout = setTimeout(() => {
+                  router.visit(route('users.index') as any, {
+                    data: { search: e.target.value, page: 1 },
+                    preserveState: true,
+                    preserveScroll: true,
+                  });
+                }, 500);
+                setSearchTimeout(timeout);
+              }}              placeholder={t('common.search_users')}
+              className=""
+              prefix={<MagnifyingGlassIcon className="size-4.5" />}
+            />
+          
+          <Button
+            onClick={() => {
+              setSelectedUser(null);
+              setIsModalOpen(true);
+            }}
+            variant="filled"
+            color="primary"
+            className="h-8 gap-2 rounded-md px-3"
+          >
+            <HiPlus className="w-4 h-4" />
+            <span>{t('common.create_users')}</span>
+          </Button>
+        </div>
       </div>
 
       {/* users Grid */}
@@ -84,7 +124,7 @@ onClick= {() => {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {usersList.map((user) => (
               <UserCard
                 key={user.uuid}
@@ -100,48 +140,27 @@ onClick= {() => {
 
           {/* Pagination */}
           {meta && meta.last_page > 1 && (
-            <div className="mt-6 flex justify-center space-x-2">
-              <Button
-                onClick={() => {
-                  const newPage = Math.max(1, meta.current_page - 1);
+            <div className="mt-6 flex justify-center">
+              <Pagination
+                total={meta.last_page}
+                value={meta.current_page}
+                onChange={(page) => {
                   router.visit(route('users.index') as any, {
-                    data: { users_page: newPage, users_per_page: meta.per_page },
+                    data: { 
+                      page: page, 
+                      per_page: meta.per_page,
+                      search: searchQuery 
+                    },
                     preserveState: true,
                     preserveScroll: true,
                   });
                 }}
-                disabled={meta.current_page === 1}
+                className="flex items-center gap-1"
               >
-                Previous
-              </Button>
-              {Array.from({ length: meta.last_page }, (_, i) => i + 1).map(page => (
-                <Button
-                  key={page}
-                  onClick={() => {
-                  router.visit(route('users.index') as any, {
-                      data: { users_page: page, users_per_page: meta.per_page },
-                      preserveState: true,
-                      preserveScroll: true,
-                    });
-                  }}
-                  color={page === meta.current_page ? 'primary' : 'neutral'}
-                >
-                  {page}
-                </Button>
-              ))}
-              <Button
-                onClick={() => {
-                  const newPage = Math.min(meta.last_page, meta.current_page + 1);
-                  router.visit(route('users.index') as any, {
-                    data: { users_page: newPage, users_per_page: meta.per_page },
-                    preserveState: true,
-                    preserveScroll: true,
-                  });
-                }}
-                disabled={meta.current_page === meta.last_page}
-              >
-                Next
-              </Button>
+                <PaginationPrevious />
+                <PaginationItems />
+                <PaginationNext />
+              </Pagination>
             </div>
           )}
         </>
@@ -156,6 +175,7 @@ onClick= {() => {
                     setSelectedUser(null);
                 }}
                 user={selectedUser}
+                roles={roles}
             />
     </MainLayout>
   );

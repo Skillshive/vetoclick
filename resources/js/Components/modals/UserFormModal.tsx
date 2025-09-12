@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useForm, router } from '@inertiajs/react';
 import axios from 'axios';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { Avatar, Button, Input, Upload } from '@/components/ui';
-import { useToast } from '@/components/common/Toast/ToastContext';
+import { Avatar, Button, Input, Upload, Select } from '@/components/ui';
+import { useToast } from '@/Components/common/Toast/ToastContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { TagIcon } from 'lucide-react';
-import { User, UserFormData } from '@/pages/Users/types';
+import { User, UserFormData, Role } from '@/pages/Users/types';
 import { userFormSchema } from '@/schemas/userSchema';
 import { PreviewImg } from "@/components/shared/PreviewImg";
 import { HiPencil } from 'react-icons/hi';
-import PasswordInput from '@/pages/Auth/PasswordInput';
+import ReactSelect from '../ui/ReactSelect';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
@@ -20,11 +20,12 @@ interface UserFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     user?: User | null;
+    roles?: Role[];
     errors?: Record<string, string>;
 }
 
 
-export default function UserFormModal({ isOpen, onClose, user, errors }: UserFormModalProps) {
+export default function UserFormModal({ isOpen, onClose, user, roles = [], errors }: UserFormModalProps) {
     const { showToast } = useToast();
     const { t } = useTranslation();
     const isEditing = !!user;
@@ -34,6 +35,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
         phone?: string;
         email?: string;
         image?: string;
+        role?: string;
     }>({});
 
     const { data, setData, reset } = useForm<UserFormData>({
@@ -42,31 +44,26 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
         phone: user?.phone || '',
         email: user?.email || '',
         image: null,
+        role: user?.roles?.[0]?.uuid || '',
         created_at: user?.created_at || '',
     });
 
     const [processing, setProcessing] = useState(false);
-    const [password, setPassword] = useState("");
 
     useEffect(() => {
         if (user) {
             console.log('user', user);
-            setData({
-                firstname: user.firstname,
-                lastname: user.lastname,
-                phone: user.phone,
-                email: user.email,
-                image: null, // Don't set to user.image string, keep as null for editing
-                created_at: user.created_at,
-            });
+            setData('firstname', user.firstname);
+            setData('lastname', user.lastname);
+            setData('phone', user.phone);
+            setData('email', user.email);
+            setData('image', null);
+            setData('role', user.roles?.[0]?.uuid || '');
+            setData('created_at', user.created_at);
         } else {
             reset();
         }
-    }, [user]);
-
- const generatePassword = (lastname: string) => {
-  setPassword(lastname.toLowerCase() + "@" + new Date().getFullYear());
-};
+    }, [user, setData, reset]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,6 +77,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                 phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
                 email: errors.email?.[0] ? t(errors.email[0]) : undefined,
                 image: errors.image?.[0] ? t(errors.image[0]) : undefined,
+                role: errors.role?.[0] ? t(errors.role[0]) : undefined,
             });
             return;
         }
@@ -92,6 +90,10 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
         formData.append('lastname', data.lastname);
         formData.append('phone', data.phone);
         formData.append('email', data.email);
+        if (data.role) {
+            formData.append('role', data.role);
+        }
+
         if (data.image instanceof File) {
             formData.append('image', data.image);
         }
@@ -126,6 +128,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                             lastname: errors.lastname?.[0] ? t(errors.lastname[0]) : undefined, phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
                             email: errors.email?.[0] ? t(errors.email[0]) : undefined,
                             image: errors.image?.[0] ? t(errors.image[0]) : undefined,
+                            role: errors.role?.[0] ? t(errors.role[0]) : undefined,
                         });
                         showToast({
                             type: 'error',
@@ -163,6 +166,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                             lastname: errors.lastname?.[0] ? t(errors.lastname[0]) : undefined, phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
                             email: errors.email?.[0] ? t(errors.email[0]) : undefined,
                             image: errors.image?.[0] ? t(errors.image[0]) : undefined,
+                            role: errors.role?.[0] ? t(errors.role[0]) : undefined,
                         });
 
                         showToast({
@@ -198,7 +202,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                 </TransitionChild>
 
                 <div className="fixed inset-0 overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-4">
+                    <div className="flex min-h-full items-center justify-center p-4 overflow-visible">
                         <TransitionChild
                             enter="ease-out duration-300"
                             enterFrom="opacity-0 scale-95"
@@ -207,7 +211,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+                            <DialogPanel className="transform overflow-visible rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
                                 <div className="flex items-center justify-between mb-4">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                         {isEditing ? t('common.edit_user_modal') : t('common.new_user_modal')}
@@ -227,7 +231,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                                     }
                                 </p>
 
-                                <form onSubmit={handleSubmit} className="space-y-4">
+                                <form onSubmit={handleSubmit} className="space-y-6">
 
                                     <div className="mt-4 flex flex-col space-y-1.5">
                                         <span className="dark:text-dark-100 text-base font-medium text-gray-800">
@@ -302,6 +306,8 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                                             }
                                         />
                                     </div>
+                                    {/* Form Fields in 2 columns */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <Input
                                             id="firstname"
@@ -338,6 +344,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                                             )
                                         }
                                     </div>
+
                                     <div>
                                         <Input
                                             id="lastname"
@@ -363,8 +370,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                                                         lastname: undefined,
                                                     }));
                                                 }
-
-    generatePassword(e.target.value);                                            }}
+                                                }}
                                             placeholder={t('common.lastname_placeholder')}
                                             className={errors?.lastname || validationErrors.lastname ? 'border-red-500' : ''}
                                             leftIcon={<TagIcon className="size-5" />}
@@ -375,6 +381,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                                             )
                                         }
                                     </div>
+
                                     <div>
                                         <Input
                                             id="email"
@@ -411,6 +418,7 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                                             )
                                         }
                                     </div>
+
                                     <div>
                                         <Input
                                             id="phone"
@@ -447,16 +455,56 @@ export default function UserFormModal({ isOpen, onClose, user, errors }: UserFor
                                             )
                                         }
                                     </div>
-{
-    !isEditing && ( <PasswordInput
-                  label={t('common.password')}
-                  placeholder={t('common.password')}
-                  name="password"
-                  value={password}
-                  disabled={true}
-                />)
-}
 
+                                        {/* Role Selection */}
+                                        <div className="md:col-span-2 z-50">
+                                        <ReactSelect
+                                            id="role"
+                                            value={
+                                                data.role
+                                                    ? {
+                                                        value: data.role,
+                                                        label: roles?.find(item => item.uuid === data.role)?.name || ''
+                                                    }
+                                                    : null
+                                            }
+                                            onChange={(option) => {
+                                                setData('role', option ? option.value : null);
+
+                                                const result = userFormSchema.safeParse({
+                                                    ...data,
+                                                    role: option.value,
+                                                });
+                                                if (!result.success) {
+                                                    const errors = result.error.flatten().fieldErrors;
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        role: errors.role?.[0] ? t(errors.role[0]) : undefined,
+                                                    }));
+                                                } else {
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        role: undefined,
+                                                    }));
+                                                }
+                                            }}
+                                            options={roles.map(role => ({
+                                                    label: role.display_name || role.name.charAt(0).toUpperCase() + role.name.slice(1),
+                                                    value: role.uuid
+                                               })) || []
+                                            }
+                                            placeholder={t('common.roles')}
+                                            className={errors?.role ? 'border-red-500' : ''}
+                                            error={!!errors?.role}
+                                        />
+                                         
+                                         {
+                                            (errors?.role || validationErrors.role) && (
+                                                <p className="text-red-500 text-sm mt-1">{errors?.role || validationErrors?.role}</p>
+                                            )
+                                        }
+                                        </div>
+                                    </div>
 
 
                                     <div className="flex items-center justify-end space-x-3 pt-4">

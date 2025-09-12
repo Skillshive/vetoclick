@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserManagment\UserRequest;
 use App\Http\Resources\UserManagment\UserResource;
 use App\Services\UserManagement\UserService;
+use App\Services\RoleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,10 +17,12 @@ use Exception;
 class UserController extends Controller
 {
     protected UserService $userService;
+    protected RoleService $roleService;
 
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService, RoleService $roleService)
     {
         $this->userService = $userService;
+        $this->roleService = $roleService;
     }
 
     /**
@@ -34,13 +37,18 @@ class UserController extends Controller
         $page = $request->get('page', 1);
 
         try {
-            $query = $this->userService->query();
+            $query = $this->userService->query()
+                ->where('id', '!=', auth()->id())
+                ->with(['roles']);
 
             if ($search) {
                 $query->search($search);
             }
 
             $users = $query->paginate($perPage, ['*'], 'page', $page);
+
+            // Get all roles for the form
+            $allRoles = $this->roleService->query()->get();
 
             return Inertia::render('Users/Index', [
                 'users' => [
@@ -60,6 +68,15 @@ class UserController extends Controller
                         'next' => $users->nextPageUrl(),
                     ]
                 ],
+                'roles' => $allRoles->map(function ($role) {
+                    return [
+                        'uuid' => $role->uuid,
+                        'name' => $role->name,
+                        'display_name' => $role->localized_name,
+                        'guard_name' => $role->guard_name,
+                        'created_at' => $role->created_at,
+                    ];
+                }),
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
@@ -76,6 +93,7 @@ class UserController extends Controller
                     'meta' => null,
                     'links' => null
                 ],
+                'roles' => [],
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,

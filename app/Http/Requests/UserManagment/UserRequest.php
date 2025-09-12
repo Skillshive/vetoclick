@@ -28,14 +28,14 @@ class UserRequest extends FormRequest
                 'string',
                 'max:20',
                 Rule::unique('users', 'firstname')
-                    ->ignore($this->route('user')),
+                    ->ignore($this->route('user'), 'uuid'),
             ],
             'lastname' => [
                 'required',
                 'string',
                 'max:20',
                 Rule::unique('users', 'lastname')
-                    ->ignore($this->route('user')),
+                    ->ignore($this->route('user'), 'uuid'),
             ],
             'email' => [
                 'required',
@@ -44,17 +44,18 @@ class UserRequest extends FormRequest
                 'email',
                 'max:50',
                 Rule::unique('users', 'email')
-                    ->ignore($this->route('user')),
+                    ->ignore($this->route('user'), 'uuid'),
             ],
             'phone' => [
                 'required',
                 'string',
                 'max:20',
                 Rule::unique('users', 'phone')
-                    ->ignore($this->route('user')),
+                    ->ignore($this->route('user'), 'uuid'),
                 'regex:/^(\+212|0)[0-9]{9}$/'
             ],
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'role' => 'nullable|exists:roles,uuid',
         ];
     }
 
@@ -91,6 +92,8 @@ class UserRequest extends FormRequest
         'password.string'    => __('validation.password_string'),
         'password.min'       => __('validation.password_min'),
         'password.confirmed' => __('validation.password_confirmed'),
+
+        'role.exists' => __('validation.role_exists'),
         ];
     }
 }

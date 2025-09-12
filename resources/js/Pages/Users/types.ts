@@ -1,4 +1,12 @@
 // Types
+export interface Role {
+  uuid: string;
+  name: string;
+  display_name?: string;
+  guard_name: string;
+  created_at: string;
+}
+
 export interface User {
   uuid: string;
   name: string;
@@ -7,6 +15,7 @@ export interface User {
   phone: string;
   email: string;
   image?: string;
+  roles?: Role[];
   created_at: string;
 }
 export interface UserFormData {
@@ -15,6 +24,7 @@ export interface UserFormData {
   phone: string;
   email: string;
   image?: File | null;
+  role?: string; // Single role UUID
   created_at: string;
 }
 
@@ -38,4 +48,5 @@ export interface UserData {
 
 export interface UsersProps {
   users?: UserData;
+  roles?: Role[];
 }

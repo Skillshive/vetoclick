@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
         }
 
             foreach ($users as $user) {
-                User::create(
+                $createdUser = User::create(
                     [
                         'password' => $user["password"],
                         'firstname' => $user["firstname"],
@@ -38,6 +38,11 @@ class UserSeeder extends Seeder
                         'email' => $user["email"]
                     ]
                 );
+
+                // Assign a random role to each user (excluding admin)
+                $roles = ['veterinarian', 'receptionist'];
+                $randomRole = $roles[array_rand($roles)];
+                $createdUser->assignRole($randomRole);
             }
 
         $this->command->info("users seeded successfully!");

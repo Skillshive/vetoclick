@@ -63,20 +63,32 @@ return User::where('id', '!=', Auth::id())
             } else {
                 $image_id = null;
             }
+
+            // Generate password if not provided
+            $password = $dto->password ?: $dto->firstname . "@" . date("Y");
+            
             $user = User::create(
                 [
                     'firstname' => $dto->firstname,
                     'lastname' => $dto->lastname,
                     'phone' => $dto->phone,
-                    'password' => $dto->firstname."@".date("Y") ,
+                    'password' => bcrypt($password), // Hash the password
                     'email' => $dto->email,
                     'image_id' => $image_id,
                 ]
             );
 
-            return $user->load(['image']);
+            // Assign role if provided
+            if ($dto->role) {
+                $role = \Spatie\Permission\Models\Role::where('uuid', $dto->role)->first();
+                if ($role) {
+                    $user->assignRole($role);
+                }
+            }
+
+            return $user->load(['image', 'roles']);
         } catch (Exception $e) {
-            throw new Exception("Failed to create user");
+            throw new Exception("Failed to create user: " . $e->getMessage());
         }
     }
 
@@ -107,7 +119,19 @@ return User::where('id', '!=', Auth::id())
                     'image_id' => $image_id,
                 ]
             );
-            return $user->refresh();
+
+            // Sync role if provided
+            if ($dto->role) {
+                $role = \Spatie\Permission\Models\Role::where('uuid', $dto->role)->first();
+                if ($role) {
+                    $user->syncRoles([$role]);
+                }
+            } else {
+                // Remove all roles if no role is provided
+                $user->syncRoles([]);
+            }
+
+            return $user->refresh()->load(['image', 'roles']);
         } catch (Exception $e) {
             throw new Exception("Failed to update blog");
         }
