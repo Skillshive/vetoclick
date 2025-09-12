@@ -53,9 +53,6 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
                             {translateRoleName(role.name)}
                         </h3>
-                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {role.guard_name}
-                        </p>
                     </div>
                 </div>
             </div>

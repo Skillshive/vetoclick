@@ -88,6 +88,7 @@ export default function RoleFormModal({
 
         const formData = {
             name: data.name,
+            guard_name: data.guard_name,
             description: data.description,
             permissions: data.permissions,
         };
