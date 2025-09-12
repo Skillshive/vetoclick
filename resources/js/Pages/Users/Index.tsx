@@ -112,7 +112,7 @@ console.log("users",users);
             className="h-8 gap-2 rounded-md px-3"
           >
             <HiPlus className="w-4 h-4" />
-            <span>{t('common.create_users')}</span>
+            {/* <span>{t('common.create_users')}</span> */}
           </Button>
         </div>
       </div>

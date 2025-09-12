@@ -128,7 +128,7 @@ export default function Index({
                                 className="h-8 gap-2 rounded-md px-3"
                             >
                                 <HiPlus className="w-4 h-4" />
-                                <span>{t('common.create_role')}</span>
+                                {/* <span>{t('common.create_role')}</span> */}
                             </Button>
                         </div>
                     </div>
