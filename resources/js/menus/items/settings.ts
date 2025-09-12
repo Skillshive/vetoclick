@@ -1,6 +1,6 @@
 import { MenuItem } from '../index';
 import { BoxIcon, PawPrint,  PenLine } from "lucide-react";
-import { TruckIcon, UserIcon } from "@heroicons/react/24/outline";
+import { TruckIcon, UserIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { HomeIcon } from "@heroicons/react/24/outline";
 
 const AnimalsMenu: MenuItem[] = [
@@ -89,6 +89,20 @@ const AnimalsMenu: MenuItem[] = [
         id: 'allUsers',
         title: 'common.menu.users_list',
         path: route('users.index'),
+        type: 'item' as const,
+      }
+    ],
+  },
+  {
+    id: 'RoleManagement',
+    title: 'common.menu.role_management',
+    icon: ShieldCheckIcon,
+    type: 'group' as const,
+    submenu: [
+      {
+        id: 'roleManagement',
+        title: 'common.menu.roles_permissions',
+        path: route('roles.index'),
         type: 'item' as const,
       }
     ],
