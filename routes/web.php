@@ -15,6 +15,7 @@ use App\Http\Controllers\CategoryBlogController;
 use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoleManagementController;
+use App\Http\Controllers\SubscriptionPlanController;
 
 require_once 'common.php';
 
@@ -150,6 +151,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('{role}/update', 'update')->name('update');
             Route::delete('{role}/delete', 'destroy')->name('destroy');
             Route::post('{role}/assign-permissions', 'assignPermissions')->name('assign-permissions');
+        });
+});
+
+// Subscription Plans routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('subscription-plans.')->prefix('subscription-plans')
+        ->controller(SubscriptionPlanController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{subscription_plan}', 'show')->name('show');
+            Route::get('/{subscription_plan}/edit', 'edit')->name('edit');
+            Route::put('/{subscription_plan}', 'update')->name('update');
+            Route::patch('/{subscription_plan}/toggle', 'toggle')->name('toggle');
+            Route::delete('/{subscription_plan}', 'destroy')->name('destroy');
         });
 });
 
