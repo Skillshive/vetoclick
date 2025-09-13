@@ -182,4 +182,19 @@ return [
         "phone_required"=>"The phone number is required.",
         "phone_invalid"=>"The phone number is invalid.",
         "role_required"=>"The role is required.",
+        
+        // Subscription Plan validation messages
+        "subscription_plan_name_en_required" => "English name is required.",
+        "subscription_plan_name_ar_required" => "Arabic name is required.",
+        "subscription_plan_name_fr_required" => "French name is required.",
+        "subscription_plan_description_en_required" => "English description is required.",
+        "subscription_plan_description_ar_required" => "Arabic description is required.",
+        "subscription_plan_description_fr_required" => "French description is required.",
+        "subscription_plan_price_required" => "Price is required.",
+        "subscription_plan_price_min" => "Price must be greater than 0.",
+        "subscription_plan_sort_order_min" => "Sort order must be non-negative.",
+        "subscription_plan_yearly_price_required" => "Yearly price is required.",
+        "subscription_plan_max_clients_required" => "Max clients is required.",
+        "subscription_plan_max_pets_required" => "Max pets is required.",
+        "subscription_plan_max_appointments_required" => "Max appointments is required.",
 ];

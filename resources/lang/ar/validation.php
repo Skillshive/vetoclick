@@ -154,4 +154,19 @@ return [
     "role_description_max" => "وصف الدور لا يمكن أن يكون أكثر من :max حرف.",
     "permissions_array" => "الصلاحيات يجب أن تكون مصفوفة.",
     "permissions_exists" => "واحدة أو أكثر من الصلاحيات المحددة غير موجودة.",
+    
+    // Subscription Plan validation messages
+    "subscription_plan_name_en_required" => "الاسم بالإنجليزية مطلوب.",
+    "subscription_plan_name_ar_required" => "الاسم بالعربية مطلوب.",
+    "subscription_plan_name_fr_required" => "الاسم بالفرنسية مطلوب.",
+    "subscription_plan_description_en_required" => "الوصف بالإنجليزية مطلوب.",
+    "subscription_plan_description_ar_required" => "الوصف بالعربية مطلوب.",
+    "subscription_plan_description_fr_required" => "الوصف بالفرنسية مطلوب.",
+    "subscription_plan_price_required" => "السعر مطلوب.",
+        "subscription_plan_price_min" => "السعر يجب أن يكون أكبر من 0.",
+        "subscription_plan_sort_order_min" => "ترتيب الفرز يجب أن يكون غير سالب.",
+        "subscription_plan_yearly_price_required" => "السعر السنوي مطلوب.",
+        "subscription_plan_max_clients_required" => "الحد الأقصى للعملاء مطلوب.",
+        "subscription_plan_max_pets_required" => "الحد الأقصى للحيوانات الأليفة مطلوب.",
+        "subscription_plan_max_appointments_required" => "الحد الأقصى للمواعيد مطلوب.",
 ];

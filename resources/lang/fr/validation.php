@@ -189,4 +189,19 @@ return [
         "role_description_max" => "La description du rôle ne peut pas dépasser :max caractères.",
         "permissions_array" => "Les permissions doivent être un tableau.",
         "permissions_exists" => "Une ou plusieurs permissions sélectionnées n'existent pas.",
+        
+        // Subscription Plan validation messages
+        "subscription_plan_name_en_required" => "Le nom en anglais est requis.",
+        "subscription_plan_name_ar_required" => "Le nom en arabe est requis.",
+        "subscription_plan_name_fr_required" => "Le nom en français est requis.",
+        "subscription_plan_description_en_required" => "La description en anglais est requise.",
+        "subscription_plan_description_ar_required" => "La description en arabe est requise.",
+        "subscription_plan_description_fr_required" => "La description en français est requise.",
+        "subscription_plan_price_required" => "Le prix est requis.",
+        "subscription_plan_price_min" => "Le prix doit être supérieur à 0.",
+        "subscription_plan_sort_order_min" => "L'ordre de tri doit être non négatif.",
+        "subscription_plan_yearly_price_required" => "Le prix annuel est requis.",
+        "subscription_plan_max_clients_required" => "Le nombre maximum de clients est requis.",
+        "subscription_plan_max_pets_required" => "Le nombre maximum d'animaux est requis.",
+        "subscription_plan_max_appointments_required" => "Le nombre maximum de rendez-vous est requis.",
 ];
