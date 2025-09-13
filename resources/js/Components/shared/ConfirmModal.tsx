@@ -61,6 +61,7 @@ export function ConfirmModal({
   const focusRef = useRef<HTMLButtonElement>(null);
   const { t } = useTranslation();
 
+
   // Fallback translations for when translation system is not available
   const fallbackTranslations = {
     'common.are_you_sure': 'Are you sure?',
