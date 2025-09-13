@@ -1,0 +1,272 @@
+[
+  {
+    "slug": "client-management",
+    "name": {
+      "en": "Client Management",
+      "ar": "إدارة العملاء",
+      "fr": "Gestion des clients"
+    },
+    "description": {
+      "en": "Tools for managing client relationships and communications",
+      "ar": "أدوات إدارة علاقات العملاء والتواصل",
+      "fr": "Outils pour gérer les relations clients et les communications"
+    },
+    "icon": "users",
+    "color": "blue",
+    "sort_order": 1,
+    "features": [
+      {
+        "slug": "client-import-export",
+        "name": {
+          "en": "Import/Export Clients",
+          "ar": "استيراد/تصدير العملاء",
+          "fr": "Import/Export des clients"
+        },
+        "description": {
+          "en": "Import and export client data in various formats",
+          "ar": "استيراد وتصدير بيانات العملاء بصيغ مختلفة",
+          "fr": "Importer et exporter les données clients dans différents formats"
+        },
+        "icon": "download",
+        "color": "green"
+      },
+      {
+        "slug": "video-calls",
+        "name": {
+          "en": "Video Calls",
+          "ar": "المكالمات المرئية",
+          "fr": "Appels vidéo"
+        },
+        "description": {
+          "en": "Conduct video calls with clients",
+          "ar": "إجراء مكالمات مرئية مع العملاء",
+          "fr": "Effectuer des appels vidéo avec les clients"
+        },
+        "icon": "video",
+        "color": "purple"
+      }
+    ]
+  },
+  {
+    "slug": "appointment-management",
+    "name": {
+      "en": "Appointment Management",
+      "ar": "إدارة المواعيد",
+      "fr": "Gestion des rendez-vous"
+    },
+    "description": {
+      "en": "Schedule and manage appointments efficiently",
+      "ar": "جدولة وإدارة المواعيد بكفاءة",
+      "fr": "Planifier et gérer les rendez-vous efficacement"
+    },
+    "icon": "calendar",
+    "color": "green",
+    "sort_order": 2,
+    "features": [
+      {
+        "slug": "calendar-sync",
+        "name": {
+          "en": "Calendar Sync",
+          "ar": "مزامنة التقويم",
+          "fr": "Synchronisation calendrier"
+        },
+        "description": {
+          "en": "Sync with external calendar applications",
+          "ar": "المزامنة مع تطبيقات التقويم الخارجية",
+          "fr": "Synchroniser avec les applications de calendrier externes"
+        },
+        "icon": "sync",
+        "color": "blue"
+      },
+      {
+        "slug": "appointment-reminders",
+        "name": {
+          "en": "Appointment Reminders",
+          "ar": "تذكيرات المواعيد",
+          "fr": "Rappels de rendez-vous"
+        },
+        "description": {
+          "en": "Automated reminders for upcoming appointments",
+          "ar": "تذكيرات تلقائية للمواعيد القادمة",
+          "fr": "Rappels automatiques pour les rendez-vous à venir"
+        },
+        "icon": "bell",
+        "color": "orange"
+      },
+      {
+        "slug": "recurring-appointments",
+        "name": {
+          "en": "Recurring Appointments",
+          "ar": "المواعيد المتكررة",
+          "fr": "Rendez-vous récurrents"
+        },
+        "description": {
+          "en": "Set up recurring appointment schedules",
+          "ar": "إعداد جداول المواعيد المتكررة",
+          "fr": "Configurer des horaires de rendez-vous récurrents"
+        },
+        "icon": "repeat",
+        "color": "purple"
+      }
+    ]
+  },
+  {
+    "slug": "medical-records",
+    "name": {
+      "en": "Medical Records",
+      "ar": "السجلات الطبية",
+      "fr": "Dossiers médicaux"
+    },
+    "description": {
+      "en": "Comprehensive medical record management",
+      "ar": "إدارة شاملة للسجلات الطبية",
+      "fr": "Gestion complète des dossiers médicaux"
+    },
+    "icon": "file-medical",
+    "color": "red",
+    "sort_order": 3,
+    "features": [
+      {
+        "slug": "digital-prescriptions",
+        "name": {
+          "en": "Digital Prescriptions",
+          "ar": "الوصفات الرقمية",
+          "fr": "Ordonnances numériques"
+        },
+        "description": {
+          "en": "Create and manage digital prescriptions",
+          "ar": "إنشاء وإدارة الوصفات الرقمية",
+          "fr": "Créer et gérer des ordonnances numériques"
+        },
+        "icon": "prescription",
+        "color": "green"
+      }
+    ]
+  },
+  {
+    "slug": "billing-finance",
+    "name": {
+      "en": "Billing & Finance",
+      "ar": "الفواتير والمالية",
+      "fr": "Facturation et finance"
+    },
+    "description": {
+      "en": "Financial management and billing tools",
+      "ar": "أدوات الإدارة المالية والفواتير",
+      "fr": "Outils de gestion financière et de facturation"
+    },
+    "icon": "credit-card",
+    "color": "green",
+    "sort_order": 4,
+    "features": [
+      {
+        "slug": "invoicing",
+        "name": {
+          "en": "Invoicing",
+          "ar": "الفواتير",
+          "fr": "Facturation"
+        },
+        "description": {
+          "en": "Create and manage invoices",
+          "ar": "إنشاء وإدارة الفواتير",
+          "fr": "Créer et gérer les factures"
+        },
+        "icon": "receipt",
+        "color": "blue"
+      },
+      {
+        "slug": "payment-tracking",
+        "name": {
+          "en": "Payment Tracking",
+          "ar": "تتبع المدفوعات",
+          "fr": "Suivi des paiements"
+        },
+        "description": {
+          "en": "Track payment status and history",
+          "ar": "تتبع حالة وتاريخ المدفوعات",
+          "fr": "Suivre le statut et l'historique des paiements"
+        },
+        "icon": "money-bill",
+        "color": "green"
+      },
+      {
+        "slug": "financial-reports",
+        "name": {
+          "en": "Financial Reports",
+          "ar": "التقارير المالية",
+          "fr": "Rapports financiers"
+        },
+        "description": {
+          "en": "Generate comprehensive financial reports",
+          "ar": "إنتاج تقارير مالية شاملة",
+          "fr": "Générer des rapports financiers complets"
+        },
+        "icon": "chart-line",
+        "color": "purple"
+      }
+    ]
+  },
+  {
+    "slug": "communication",
+    "name": {
+      "en": "Communication",
+      "ar": "التواصل",
+      "fr": "Communication"
+    },
+    "description": {
+      "en": "Communication tools and notifications",
+      "ar": "أدوات التواصل والإشعارات",
+      "fr": "Outils de communication et notifications"
+    },
+    "icon": "comments",
+    "color": "purple",
+    "sort_order": 5,
+    "features": [
+      {
+        "slug": "sms-notifications",
+        "name": {
+          "en": "SMS Notifications",
+          "ar": "إشعارات الرسائل النصية",
+          "fr": "Notifications SMS"
+        },
+        "description": {
+          "en": "Send SMS notifications to clients",
+          "ar": "إرسال إشعارات الرسائل النصية للعملاء",
+          "fr": "Envoyer des notifications SMS aux clients"
+        },
+        "icon": "sms",
+        "color": "blue"
+      },
+      {
+        "slug": "email-marketing",
+        "name": {
+          "en": "Email Marketing",
+          "ar": "التسويق عبر البريد الإلكتروني",
+          "fr": "Marketing par email"
+        },
+        "description": {
+          "en": "Send marketing emails to clients",
+          "ar": "إرسال رسائل تسويقية للعملاء",
+          "fr": "Envoyer des emails marketing aux clients"
+        },
+        "icon": "envelope",
+        "color": "orange"
+      },
+      {
+        "slug": "push-notifications",
+        "name": {
+          "en": "Push Notifications",
+          "ar": "الإشعارات الفورية",
+          "fr": "Notifications push"
+        },
+        "description": {
+          "en": "Send push notifications",
+          "ar": "إرسال إشعارات فورية",
+          "fr": "Envoyer des notifications push"
+        },
+        "icon": "notification",
+        "color": "green"
+      }
+    ]
+  }
+]

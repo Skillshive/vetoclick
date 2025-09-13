@@ -50,6 +50,8 @@ class DatabaseSeeder extends Seeder
             ProductCategorySeeder::class,
             ProductSeeder::class,
             CategoryBlogSeeder::class,
+            FeatureGroupSeeder::class,
+            SubscriptionPlanSeeder::class,
         ]);
     }
 }

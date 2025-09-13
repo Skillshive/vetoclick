@@ -5,8 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\SubscriptionPlan;
+use App\Models\PermissionGroup;
+use App\Models\Feature;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
 
 class SubscriptionPlanSeeder extends Seeder
 {
@@ -28,44 +31,53 @@ class SubscriptionPlanSeeder extends Seeder
 
     private function createPermissions()
     {
+        // Create or get subscription management group
+        $subscriptionGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Subscription Management'],
+            ['uuid' => Str::uuid()]
+        );
+
+        // Create subscription-specific permissions
         $permissions = [
-            'subscription.view',
-            'subscription.manage',
-            'subscription.upgrade',
-            'features.basic',
-            'features.advanced',
-            'features.premium',
-            'limits.users',
-            'limits.pets',
-            'limits.appointments',
-            'limits.unlimited',
-            'data.export',
-            'data.import',
-            'data.backup',
-            'api.access',
-            'api.unlimited',
-            'branding.custom',
-            'branding.white_label',
-            'support.basic',
-            'support.priority',
-            'support.dedicated',
+            ['name' => 'subscription.view', 'group' => $subscriptionGroup],
+            ['name' => 'subscription.manage', 'group' => $subscriptionGroup],
+            ['name' => 'subscription.upgrade', 'group' => $subscriptionGroup],
+            ['name' => 'features.basic', 'group' => $subscriptionGroup],
+            ['name' => 'features.advanced', 'group' => $subscriptionGroup],
+            ['name' => 'features.premium', 'group' => $subscriptionGroup],
+            ['name' => 'limits.users', 'group' => $subscriptionGroup],
+            ['name' => 'limits.pets', 'group' => $subscriptionGroup],
+            ['name' => 'limits.appointments', 'group' => $subscriptionGroup],
+            ['name' => 'limits.unlimited', 'group' => $subscriptionGroup],
+            ['name' => 'data.export', 'group' => $subscriptionGroup],
+            ['name' => 'data.import', 'group' => $subscriptionGroup],
+            ['name' => 'data.backup', 'group' => $subscriptionGroup],
+            ['name' => 'api.access', 'group' => $subscriptionGroup],
+            ['name' => 'api.unlimited', 'group' => $subscriptionGroup],
+            ['name' => 'branding.custom', 'group' => $subscriptionGroup],
+            ['name' => 'branding.white_label', 'group' => $subscriptionGroup],
+            ['name' => 'support.basic', 'group' => $subscriptionGroup],
+            ['name' => 'support.priority', 'group' => $subscriptionGroup],
+            ['name' => 'support.dedicated', 'group' => $subscriptionGroup],
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
-                'name' => $permission,
-                'guard_name' => 'web'
+                'name' => $permission['name'],
+                'guard_name' => 'web',
+            ], [
+                'uuid' => Str::uuid(),
+                'grp_id' => $permission['group']->id,
             ]);
         }
 
-        $this->command->info('Created ' . count($permissions) . ' permissions');
+        $this->command->info('Created ' . count($permissions) . ' subscription permissions');
     }
 
     private function createSubscriptionPlans()
     {
         $plans = [
             [
-                'slug' => 'free',
                 'name' => [
                     'en' => 'Free Plan',
                     'ar' => 'الخطة المجانية',
@@ -76,33 +88,9 @@ class SubscriptionPlanSeeder extends Seeder
                     'ar' => 'مثالي للبدء في إدارة الطب البيطري الأساسية',
                     'fr' => 'Parfait pour commencer avec la gestion vétérinaire de base'
                 ],
-                'features' => [
-                    'en' => [
-                        'Up to 5 users',
-                        'Up to 50 pets',
-                        'Basic appointments',
-                        'Email support',
-                        'Basic reporting'
-                    ],
-                    'ar' => [
-                        'حتى 5 مستخدمين',
-                        'حتى 50 حيوان أليف',
-                        'المواعيد الأساسية',
-                        'دعم البريد الإلكتروني',
-                        'التقارير الأساسية'
-                    ],
-                    'fr' => [
-                        'Jusqu\'à 5 utilisateurs',
-                        'Jusqu\'à 50 animaux',
-                        'Rendez-vous de base',
-                        'Support par email',
-                        'Rapports de base'
-                    ]
-                ],
                 'price' => 0,
-                'currency' => 'USD',
-                'billing_period' => 'monthly',
-                'max_users' => 5,
+                    'yearly_price' => 0,
+                'max_clients' => 5,
                 'max_pets' => 50,
                 'max_appointments' => 100,
                 'is_active' => true,
@@ -115,10 +103,12 @@ class SubscriptionPlanSeeder extends Seeder
                     'limits.pets',
                     'limits.appointments',
                     'support.basic'
+                ],
+                'selected_features' => [
+                    'appointment-reminders'
                 ]
             ],
             [
-                'slug' => 'basic',
                 'name' => [
                     'en' => 'Basic Plan',
                     'ar' => 'الخطة الأساسية',
@@ -129,39 +119,9 @@ class SubscriptionPlanSeeder extends Seeder
                     'ar' => 'رائع للعيادات الصغيرة ذات الاحتياجات المتزايدة',
                     'fr' => 'Parfait pour les petites cliniques avec des besoins croissants'
                 ],
-                'features' => [
-                    'en' => [
-                        'Up to 25 users',
-                        'Up to 500 pets',
-                        'Advanced appointments',
-                        'Priority support',
-                        'Data export',
-                        'Advanced reporting',
-                        'Email notifications'
-                    ],
-                    'ar' => [
-                        'حتى 25 مستخدم',
-                        'حتى 500 حيوان أليف',
-                        'مواعيد متقدمة',
-                        'دعم أولوي',
-                        'تصدير البيانات',
-                        'تقارير متقدمة',
-                        'إشعارات البريد الإلكتروني'
-                    ],
-                    'fr' => [
-                        'Jusqu\'à 25 utilisateurs',
-                        'Jusqu\'à 500 animaux',
-                        'Rendez-vous avancés',
-                        'Support prioritaire',
-                        'Export de données',
-                        'Rapports avancés',
-                        'Notifications par email'
-                    ]
-                ],
                 'price' => 29.99,
-                'currency' => 'USD',
-                'billing_period' => 'monthly',
-                'max_users' => 25,
+                'yearly_price' => 299.99,
+                'max_clients' => 25,
                 'max_pets' => 500,
                 'max_appointments' => 1000,
                 'is_active' => true,
@@ -177,10 +137,20 @@ class SubscriptionPlanSeeder extends Seeder
                     'limits.appointments',
                     'data.export',
                     'support.priority'
+                ],
+                'selected_features' => [
+                    'client-import-export',
+                    'calendar-sync',
+                    'appointment-reminders',
+                    'recurring-appointments',
+                    'digital-prescriptions',
+                    'invoicing',
+                    'payment-tracking',
+                    'sms-notifications',
+                    'email-marketing'
                 ]
             ],
             [
-                'slug' => 'premium',
                 'name' => [
                     'en' => 'Premium Plan',
                     'ar' => 'الخطة المميزة',
@@ -191,45 +161,9 @@ class SubscriptionPlanSeeder extends Seeder
                     'ar' => 'مثالي للعيادات النامية ذات الاحتياجات المتقدمة',
                     'fr' => 'Parfait pour les cliniques en croissance avec des besoins avancés'
                 ],
-                'features' => [
-                    'en' => [
-                        'Unlimited users',
-                        'Unlimited pets',
-                        'Unlimited appointments',
-                        'API access',
-                        'Custom branding',
-                        'Dedicated support',
-                        'Advanced analytics',
-                        'Data backup',
-                        'White label options'
-                    ],
-                    'ar' => [
-                        'مستخدمون غير محدودون',
-                        'حيوانات أليفة غير محدودة',
-                        'مواعيد غير محدودة',
-                        'وصول API',
-                        'علامة تجارية مخصصة',
-                        'دعم مخصص',
-                        'تحليلات متقدمة',
-                        'نسخ احتياطي للبيانات',
-                        'خيارات العلامة البيضاء'
-                    ],
-                    'fr' => [
-                        'Utilisateurs illimités',
-                        'Animaux illimités',
-                        'Rendez-vous illimités',
-                        'Accès API',
-                        'Marque personnalisée',
-                        'Support dédié',
-                        'Analyses avancées',
-                        'Sauvegarde de données',
-                        'Options de marque blanche'
-                    ]
-                ],
                 'price' => 99.99,
-                'currency' => 'USD',
-                'billing_period' => 'monthly',
-                'max_users' => null, // Unlimited
+                'yearly_price' => 999.99,
+                'max_clients' => null, // Unlimited
                 'max_pets' => null, // Unlimited
                 'max_appointments' => null, // Unlimited
                 'is_active' => true,
@@ -252,24 +186,47 @@ class SubscriptionPlanSeeder extends Seeder
                     'branding.white_label',
                     'support.priority',
                     'support.dedicated'
+                ],
+                'selected_features' => [
+                    'client-import-export',
+                    'video-calls',
+                    'calendar-sync',
+                    'appointment-reminders',
+                    'recurring-appointments',
+                    'digital-prescriptions',
+                    'invoicing',
+                    'payment-tracking',
+                    'financial-reports',
+                    'sms-notifications',
+                    'email-marketing',
+                    'push-notifications'
                 ]
             ]
         ];
 
         foreach ($plans as $planData) {
             $permissions = $planData['permissions'];
+            $selectedFeatures = $planData['selected_features'] ?? [];
             unset($planData['permissions']);
+            unset($planData['selected_features']);
 
-            $plan = SubscriptionPlan::updateOrCreate(
-                ['slug' => $planData['slug']],
-                $planData
-            );
+            // Add UUID to plan data
+            $planData['uuid'] = Str::uuid();
+
+            $plan = SubscriptionPlan::create($planData);
+
+            // Sync selected features to the plan
+            if (!empty($selectedFeatures)) {
+                $featureObjects = Feature::whereIn('slug', $selectedFeatures)->get();
+                $plan->planFeatures()->sync($featureObjects->pluck('id'));
+            }
 
             // Create role for this subscription plan
-            $roleName = "subscription_{$plan->slug}";
+            $roleName = "subscription_plan_{$plan->id}";
             $role = Role::firstOrCreate([
                 'name' => $roleName,
-                'guard_name' => 'web'
+                'guard_name' => 'web',
+                'uuid' => Str::uuid()
             ]);
 
             // Get permission objects
@@ -278,7 +235,7 @@ class SubscriptionPlanSeeder extends Seeder
             // Sync permissions to role
             $role->syncPermissions($permissionObjects);
 
-            $this->command->info("Created plan '{$plan->slug}' with role '{$roleName}' and " . count($permissions) . " permissions");
+            $this->command->info("Created plan '{$plan->name['en']}' with role '{$roleName}' and " . count($permissions) . " permissions and " . count($selectedFeatures) . " features");
         }
     }
 }
