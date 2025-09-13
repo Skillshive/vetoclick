@@ -5,22 +5,45 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class SubscriptionPlan extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $primaryKey = 'id';
+    protected $keyType = 'int';
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($plan) {
+            $plan->uuid = Str::uuid();
+        });
+    }
+    /**
+     * Get the columns that should receive a unique identifier.
+     */
+    public function uniqueIds()
+    {
+        return ['uuid'];
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
+
     protected $fillable = [
         'uuid',
-        'slug',
         'name',
         'description',
-        'features',
         'price',
-        'currency',
-        'billing_period',
-        'trial_days',
-        'max_users',
+        'yearly_price',
+        'max_clients',
         'max_pets',
         'max_appointments',
         'is_active',
@@ -31,12 +54,11 @@ class SubscriptionPlan extends Model
     protected $casts = [
         'name' => 'array',
         'description' => 'array',
-        'features' => 'array',
         'price' => 'decimal:2',
+        'yearly_price' => 'decimal:2',
         'is_active' => 'boolean',
         'is_popular' => 'boolean',
-        'trial_days' => 'integer',
-        'max_users' => 'integer',
+        'max_clients' => 'integer',
         'max_pets' => 'integer',
         'max_appointments' => 'integer',
         'sort_order' => 'integer',
@@ -60,23 +82,6 @@ class SubscriptionPlan extends Model
         return $this->description[$locale] ?? $this->description['en'] ?? '';
     }
 
-    /**
-     * Get the localized features for the current locale
-     */
-    public function getLocalizedFeaturesAttribute(): array
-    {
-        $locale = app()->getLocale();
-        return $this->features[$locale] ?? $this->features['en'] ?? [];
-    }
-
-    /**
-     * Check if plan has a specific feature
-     */
-    public function hasFeature(string $feature): bool
-    {
-        $features = $this->getLocalizedFeaturesAttribute();
-        return in_array($feature, $features);
-    }
 
     /**
      * Check if plan allows unlimited for a specific resource
@@ -117,5 +122,41 @@ class SubscriptionPlan extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('price');
+    }
+
+    /**
+     * Get the features for this subscription plan
+     */
+    public function planFeatures()
+    {
+        return $this->belongsToMany(Feature::class, 'subscription_plan_features', 'subscription_plan_id', 'feature_id');
+    }
+
+    /**
+     * Get the effective price based on billing period
+     */
+    public function getEffectivePriceAttribute(): float
+    {
+        return $this->billing_period === 'yearly' && $this->yearly_price 
+            ? $this->yearly_price 
+            : $this->price;
+    }
+
+    /**
+     * Get the yearly savings percentage
+     */
+    public function getYearlySavingsAttribute(): ?float
+    {
+        if (!$this->yearly_price) {
+            return null;
+        }
+        
+        $yearlyEquivalent = $this->price * 12;
+        return round((($yearlyEquivalent - $this->yearly_price) / $yearlyEquivalent) * 100, 1);
+    }
+
+    public function features()
+    {
+        return $this->belongsToMany(Feature::class, 'subscription_plan_features', 'subscription_plan_id', 'feature_id');
     }
 }

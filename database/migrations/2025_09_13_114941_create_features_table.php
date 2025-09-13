@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('features', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('slug')->unique();
+            $table->json('name'); // Multi-language: {"en": "User Management", "ar": "إدارة المستخدمين", "fr": "Gestion des utilisateurs"}
+            $table->json('description')->nullable(); // Multi-language description
+            $table->foreignId('group_id')->constrained('feature_groups')->onDelete('cascade');
+            $table->string('icon')->nullable(); // Icon class or name
+            $table->string('color')->default('primary'); // Color theme
+            $table->integer('sort_order')->default(0);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('features');
+    }
+};
