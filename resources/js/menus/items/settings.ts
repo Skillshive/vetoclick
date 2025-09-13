@@ -1,6 +1,6 @@
 import { MenuItem } from '../index';
 import { BoxIcon, PawPrint,  PenLine } from "lucide-react";
-import { TruckIcon, UserIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { TruckIcon, UserIcon, ShieldCheckIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { HomeIcon } from "@heroicons/react/24/outline";
 
 const AnimalsMenu: MenuItem[] = [
@@ -81,7 +81,7 @@ const AnimalsMenu: MenuItem[] = [
   },
   {
     id: 'Users',
-    title: 'common.menu.users_management',
+    title: 'common.menu.access_management',
     icon: UserIcon,
     type: 'group' as const,
     submenu: [
@@ -90,19 +90,31 @@ const AnimalsMenu: MenuItem[] = [
         title: 'common.menu.users_list',
         path: route('users.index'),
         type: 'item' as const,
-      }
-    ],
-  },
-  {
-    id: 'RoleManagement',
-    title: 'common.menu.role_management',
-    icon: ShieldCheckIcon,
-    type: 'group' as const,
-    submenu: [
+      },
       {
         id: 'roleManagement',
         title: 'common.menu.roles_permissions',
         path: route('roles.index'),
+        type: 'item' as const,
+      }
+    ],
+  },
+  {
+    id: 'SubscriptionPlans',
+    title: 'common.menu.subscription_plans',
+    icon: CreditCardIcon,
+    type: 'group' as const,
+    submenu: [
+      {
+        id: 'allSubscriptionPlans',
+        title: 'common.menu.subscription_plans_list',
+        path: route('subscription-plans.index'),
+        type: 'item' as const,
+      },
+      {
+        id: 'featureGroups',
+        title: 'common.feature_groups',
+        path: route('feature-groups.index'),
         type: 'item' as const,
       }
     ],
