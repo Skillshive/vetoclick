@@ -19,6 +19,10 @@ import MainLayout from "@/layouts/MainLayout";
 import { ContextualHelp } from "@/components/shared/ContextualHelp";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
+import { blogFormSchema } from "@/schemas/blogSchema";
+import axios from "axios";
+import { useToast } from "@/Components/common/Toast/ToastContext";
+import { router } from "@inertiajs/react";
 
 // ----------------------------------------------------------------------
 
@@ -89,6 +93,7 @@ const categories = [
 
 const Create = () => {
   const {t}=useTranslation();
+  const {showToast}=useToast();
  
 
     const [validationErrors, setValidationErrors] = useState<{
@@ -121,13 +126,18 @@ const Create = () => {
             e.preventDefault();
     
     
-            const result = categoryBlogFormSchema.safeParse(data);
+            const result = blogFormSchema.safeParse(data);
             if (!result.success) {
                 const errors = result.error.flatten().fieldErrors;
                 setValidationErrors({
-                    name: errors.name?.[0] ? t(errors.name[0]) : undefined,
-                    desp: errors.desp?.[0] ? t(errors.desp[0]) : undefined,
-                    parent_category_id: errors.parent_category_id?.[0] ? t(errors.parent_category_id[0]) : undefined,
+                    title: errors.title?.[0] ? t(errors.title[0]) : undefined,
+                    body: errors.body?.[0] ? t(errors.body[0]) : undefined,
+                    caption: errors.caption?.[0] ? t(errors.caption[0]) : undefined,
+                    image_id: errors.image_id?.[0] ? t(errors.image_id[0]) : undefined,
+                    meta_title: errors.meta_title?.[0] ? t(errors.meta_title[0]) : undefined,
+                    meta_desc: errors.meta_desc?.[0] ? t(errors.meta_desc[0]) : undefined,
+                    meta_keywords: errors.meta_keywords?.[0] ? t(errors.meta_keywords[0]) : undefined,
+                    category_blog_id: errors.category_blog_id?.[0] ? t(errors.category_blog_id[0]) : undefined,
                 });
                 return;
             }
@@ -135,53 +145,17 @@ const Create = () => {
     
             setProcessing(true);
     
-            if (isEditing) {
-                axios.put(route('category-blogs.update', categoryBlog.uuid), data)
+  
+                axios.post(route('blogs.store'), data)
                     .then(() => {
                         showToast({
                             type: 'success',
-                            message: t('common.category_blog_updated_success'),
-                            duration: 3000,
-                        });
-                        setValidationErrors({});
-                        onClose();
-                        router.visit(window.location.href, {
-                          preserveState: false,
-                          preserveScroll: true
-                        });
-                    })
-                   .catch((error) => {
-        if (error.response && error.response.status === 422) {
-            const errors = error.response.data.errors;
-    console.log('errors',errors)
-            setValidationErrors({
-                name: errors?.name ? errors.name[0] : undefined,
-                desp: errors?.desp ? errors.desp[0] : undefined,
-                parent_category_id: errors?.parent_category_id ? errors.parent_category_id[0] : undefined,
-            });
-    
-            showToast({
-                type: 'error',
-                message: errors?.name ? errors.name[0] : t('common.category_blog_update_error'),
-                duration: 3000,
-            });
-        }
-    })
-                    .finally(() => {
-                        setProcessing(false);
-                    });
-            } else {
-                axios.post(route('category-blogs.store'), data)
-                    .then(() => {
-                        showToast({
-                            type: 'success',
-                            message: t('common.category_blog_created_success'),
+                            message: t('common.blog_created_success'),
                             duration: 3000,
                         });
                         reset();
                         setValidationErrors({});
-                        onClose();
-                        router.visit(window.location.href, {
+                        router.visit(route('blogs.index'), {
                           preserveState: false,
                           preserveScroll: true
                         });
@@ -191,14 +165,19 @@ const Create = () => {
             const errors = error.response.data.errors;
     console.log('errors',errors)
             setValidationErrors({
-                name: errors?.name ? errors.name[0] : undefined,
-                desp: errors?.desp ? errors.desp[0] : undefined,
-                parent_category_id: errors?.parent_category_id ? errors.parent_category_id[0] : undefined,
+             title: errors.title?.[0] ? t(errors.title[0]) : undefined,
+                    body: errors.body?.[0] ? t(errors.body[0]) : undefined,
+                    caption: errors.caption?.[0] ? t(errors.caption[0]) : undefined,
+                    image_id: errors.image_id?.[0] ? t(errors.image_id[0]) : undefined,
+                    meta_title: errors.meta_title?.[0] ? t(errors.meta_title[0]) : undefined,
+                    meta_desc: errors.meta_desc?.[0] ? t(errors.meta_desc[0]) : undefined,
+                    meta_keywords: errors.meta_keywords?.[0] ? t(errors.meta_keywords[0]) : undefined,
+                    category_blog_id: errors.category_blog_id?.[0] ? t(errors.category_blog_id[0]) : undefined,
             });
     
             showToast({
                 type: 'error',
-                message: errors?.name ? errors.name[0] : t('common.category_blog_create_error'),
+                message: errors?.name ? errors.name[0] : t('common.blog_create_error'),
                 duration: 3000,
             });
         }
@@ -206,7 +185,6 @@ const Create = () => {
                     .finally(() => {
                         setProcessing(false);
                     });
-            }
         };
     
 
@@ -250,6 +228,43 @@ const Create = () => {
                                 {t('common.general_information')}
                 </h3>
                 <div className="mt-5 space-y-5">
+
+                <div>
+                                        <Input
+                                            id="title"
+                                            label={t('common.title')}
+                                            type="text"
+                                            value={data.title}
+                                             onChange={(e) => {
+                                                setData('name', e.target.value);
+                                                const result = categoryBlogFormSchema.safeParse({
+                                                    ...data,
+                                                    name: e.target.value,
+                                                });
+                                                if (!result.success) {
+                                                    const errors = result.error.flatten().fieldErrors;
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                                                    }));
+                                                } else {
+                                                    setValidationErrors(prev => ({
+                                                        ...prev,
+                                                        name: undefined,
+                                                    }));
+                                                }
+                                            }}
+                                            placeholder={t('common.category_name_placeholder')}
+                                            className={errors?.name || validationErrors.name ? 'border-red-500' : ''}
+                                            required
+                                            leftIcon={<TagIcon className="size-5" />}
+                                        />
+                                       {
+                                        (errors?.name || validationErrors.name) && (
+                                            <p className="text-red-500 text-sm mt-1">{errors?.name ||validationErrors?.name}</p>
+                                        )
+                                        }
+                                    </div>
                   <Input
                     label={t('common.title')}
                     placeholder={t('common.enter_post_title')}
