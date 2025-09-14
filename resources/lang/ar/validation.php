@@ -145,7 +145,7 @@ return [
         "user_image_required" => "صورة المستخدم مطلوبة",
         "user_image_invalid" => "يرجى تحميل ملف صورة صحيح",
         "user_image_size" => "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
-        "user_image_type" => "يُسمح بصور JPG وJPEG وPNG وGIF وWebP فقط"
+        "user_image_type" => "يُسمح بصور JPG وJPEG وPNG وGIF وWebP فقط",
 
     // Role validation messages
     "role_name_required" => "اسم الدور مطلوب.",
