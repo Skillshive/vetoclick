@@ -7,8 +7,6 @@ import { log } from "console";
  * @returns The full image URL
  */
 export function getImageUrl(path: string | null, fallback: string = "/assets/default/person-placeholder.jpg"): string {
-console.log('cc ',path);
-
     if (!path) {
     return fallback;
   }
@@ -26,6 +24,5 @@ console.log('cc ',path);
  * @returns The avatar URL
  */
 export function getUserAvatarUrl(user) {
-    console.log('path',user);
   return getImageUrl(user?.image?.path || null);
 }
