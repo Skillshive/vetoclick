@@ -24,9 +24,20 @@ class SubscriptionPlanRequest extends FormRequest
     {
         $planId = $this->route('subscription_plan')?->id;
         $isToggleRequest = $this->has('is_active') && count($this->all()) === 1;
+        $isCreateRequest = !$planId; // This is a create request if no plan ID
 
         return [
-            'name_en' => $isToggleRequest ? 'nullable|string|max:255' : 'required|string|max:255',
+            'name_en' => [
+                $isToggleRequest ? 'nullable|string|max:255' : 'required|string|max:255',
+                function ($attribute, $value, $fail) use ($isCreateRequest) {
+                    if ($isCreateRequest) {
+                        $activeCount = \App\Models\SubscriptionPlan::where('is_active', true)->count();
+                        if ($activeCount >= 3) {
+                            $fail('Cannot create new subscription plan. Maximum of 3 active subscription plans allowed.');
+                        }
+                    }
+                },
+            ],
             'name_ar' => $isToggleRequest ? 'nullable|string|max:255' : 'required|string|max:255',
             'name_fr' => $isToggleRequest ? 'nullable|string|max:255' : 'required|string|max:255',
             
@@ -34,25 +45,18 @@ class SubscriptionPlanRequest extends FormRequest
             'description_ar' => $isToggleRequest ? 'nullable|string|max:1000' : 'required|string|max:1000',
             'description_fr' => $isToggleRequest ? 'nullable|string|max:1000' : 'required|string|max:1000',
             
-            'features_en' => 'array',
-            'features_ar' => 'array',
-            'features_fr' => 'array',
-            'features_en.*' => 'string|max:255',
-            'features_ar.*' => 'string|max:255',
-            'features_fr.*' => 'string|max:255',
-            
             'selected_features' => 'array',
             'selected_features.*' => 'string|exists:features,uuid',
             
             'price' => 'required|numeric|min:0.01',
-            'yearly_price' => 'required|numeric|min:1|gt:price',
-            'max_clients' => 'required|integer|min:1',
-            'max_pets' => 'required|integer|min:1',
-            'max_appointments' => 'required|integer|min:1',
+            'yearly_price' => 'nullable|numeric|min:0|gt:price',
+            'max_clients' => 'nullable|integer|min:1',
+            'max_pets' => 'nullable|integer|min:1',
+            'max_appointments' => 'nullable|integer|min:1',
             
             'is_active' => [
                 'boolean',
-                function ($attribute, $value, $fail) use ($planId) {
+                function ($attribute, $value, $fail) use ($planId, $isCreateRequest) {
                     if ($value) {
                         $activeCount = \App\Models\SubscriptionPlan::where('is_active', true)
                             ->when($planId, function ($query) use ($planId) {
@@ -91,12 +95,6 @@ class SubscriptionPlanRequest extends FormRequest
             'description_ar.max' => 'Arabic description may not be greater than :max characters.',
             'description_fr.max' => 'French description may not be greater than :max characters.',
             
-            'features_en.*.string' => 'Each English feature must be a string.',
-            'features_ar.*.string' => 'Each Arabic feature must be a string.',
-            'features_fr.*.string' => 'Each French feature must be a string.',
-            'features_en.*.max' => 'Each English feature may not be greater than :max characters.',
-            'features_ar.*.max' => 'Each Arabic feature may not be greater than :max characters.',
-            'features_fr.*.max' => 'Each French feature may not be greater than :max characters.',
             
             'selected_features.*.exists' => 'One or more selected features do not exist.',
             
@@ -104,20 +102,16 @@ class SubscriptionPlanRequest extends FormRequest
             'price.numeric' => 'Price must be a number.',
             'price.min' => 'Price must be at least :min.',
             
-            'yearly_price.required' => 'Yearly price is required.',
             'yearly_price.numeric' => 'Yearly price must be a number.',
             'yearly_price.min' => 'Yearly price must be at least :min.',
             'yearly_price.gt' => 'Yearly price must be greater than the monthly price.',
             
-            'max_clients.required' => 'Max clients is required.',
             'max_clients.integer' => 'Max clients must be an integer.',
             'max_clients.min' => 'Max clients must be at least :min.',
             
-            'max_pets.required' => 'Max pets is required.',
             'max_pets.integer' => 'Max pets must be an integer.',
             'max_pets.min' => 'Max pets must be at least :min.',
             
-            'max_appointments.required' => 'Max appointments is required.',
             'max_appointments.integer' => 'Max appointments must be an integer.',
             'max_appointments.min' => 'Max appointments must be at least :min.',
             

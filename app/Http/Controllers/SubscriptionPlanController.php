@@ -26,7 +26,7 @@ class SubscriptionPlanController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
-        $perPage = $request->get('per_page', 12);
+        $perPage = $request->get('per_page', 6);
         $page = $request->get('page', 1);
 
         $query = $this->subscriptionPlanService->query();
@@ -83,7 +83,15 @@ class SubscriptionPlanController extends Controller
      */
     public function create()
     {
-        return Inertia::render('SubscriptionPlans/Create');
+        // Get feature groups and features for the form
+        $featureGroups = FeatureGroup::with('features')->ordered()->get();
+        $allFeatures = Feature::with('group')->ordered()->get();
+        
+        return Inertia::render('SubscriptionPlans/Create', [
+            'plan' => null,
+            'featureGroups' => $featureGroups,
+            'allFeatures' => $allFeatures,
+        ]);
     }
 
     /**
@@ -128,7 +136,7 @@ class SubscriptionPlanController extends Controller
         $allFeatures = Feature::with('group')->ordered()->get();
         
         return Inertia::render('SubscriptionPlans/Edit', [
-            'subscriptionPlan' => new SubscriptionPlanResource($subscriptionPlan),
+            'plan' => new SubscriptionPlanResource($subscriptionPlan),
             'featureGroups' => $featureGroups,
             'allFeatures' => $allFeatures,
         ]);
@@ -190,5 +198,17 @@ class SubscriptionPlanController extends Controller
             return redirect()->back()
                 ->withErrors(['error' => 'Failed to delete subscription plan.']);
         }
+    }
+
+    /**
+     * Get count of active subscription plans
+     */
+    public function countActive()
+    {
+        $activeCount = SubscriptionPlan::where('is_active', true)->count();
+        
+        return response()->json([
+            'count' => $activeCount
+        ]);
     }
 }
