@@ -7,12 +7,13 @@ import { SubscriptionPlanCard } from "./partials/SubscriptionPlanCard";
 import MainLayout from "@/layouts/MainLayout";
 import { Page } from "@/components/shared/Page";
 import { SubscriptionPlan, SubscriptionPlansProps } from "./types";
-import SubscriptionPlanFormModal from "@/components/modals/SubscriptionPlanFormModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
+
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 export default function Index({
   subscriptionPlans,
@@ -20,15 +21,35 @@ export default function Index({
   allFeatures = [],
   filters = {}
 }: SubscriptionPlansProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [togglingPlanId, setTogglingPlanId] = useState<string | null>(null);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
+  const [totalActivePlansCount, setTotalActivePlansCount] = useState<number>(0);
   const { showToast } = useToast();
   const confirmContext = useConfirm();
   const { t } = useTranslation();
+console.log('subscriptionPlans',subscriptionPlans);
+  // Get plans list first
+  const plansList: SubscriptionPlan[] = subscriptionPlans?.data.data || [];
+
+  // Fetch total active plans count
+  useEffect(() => {
+    const fetchActivePlansCount = async () => {
+      try {
+        const response = await fetch(route('subscription-plans.count-active'));
+        const data = await response.json();
+        setTotalActivePlansCount(data.count || 0);
+      } catch (error) {
+        console.error('Error fetching active plans count:', error);
+        // Fallback to counting current page plans
+        const currentPageActiveCount = plansList.filter((plan: SubscriptionPlan) => plan.is_active).length;
+        setTotalActivePlansCount(currentPageActiveCount);
+      }
+    };
+
+    fetchActivePlansCount();
+  }, [plansList]);
 
   const handleDeletePlan = async (plan: SubscriptionPlan) => {
     if (deletingPlanId === plan.uuid) {
@@ -43,7 +64,8 @@ export default function Index({
     });
 
     if (confirmed) {
-      router.delete(route('subscription-plans.destroy', plan.uuid) as any, {
+      // @ts-ignore
+      router.delete(route('subscription-plans.destroy', plan.uuid), {
         onSuccess: () => {
           setDeletingPlanId(null);
           showToast({
@@ -51,7 +73,9 @@ export default function Index({
             message: t('common.plan_deleted_success'),
             duration: 3000,
           });
-          router.reload({
+          // Refresh the active count
+          setTotalActivePlansCount(prev => Math.max(0, prev - 1));
+          router.visit(route('subscription-plans.index'), {
             preserveScroll: true
           });
         },
@@ -71,8 +95,10 @@ export default function Index({
 
   const handleTogglePlan = async (plan: SubscriptionPlan) => {
     setTogglingPlanId(plan.uuid);
+    const wasActive = plan.is_active;
     
-    router.patch(route('subscription-plans.toggle', plan.uuid) as any, {
+    // @ts-ignore
+    router.patch(route('subscription-plans.toggle', plan.uuid), {
       onSuccess: (page: any) => {
         showToast({
           type: 'success',
@@ -80,6 +106,8 @@ export default function Index({
           duration: 3000,
         });
         setTogglingPlanId(null);
+        // Update the active count based on the toggle
+        setTotalActivePlansCount(prev => wasActive ? Math.max(0, prev - 1) : prev + 1);
       },
       onError: (errors: any) => {
         showToast({
@@ -89,7 +117,7 @@ export default function Index({
         });
         setTogglingPlanId(null);
         // Revert the optimistic update on error
-        router.reload({
+        router.visit(route('subscription-plans.index'), {
           preserveScroll: true
         });
       }
@@ -102,10 +130,11 @@ export default function Index({
       clearTimeout(searchTimeout);
     }
     const timeout = setTimeout(() => {
-      router.visit(route('subscription-plans.index') as any, {
+      router.visit(route('subscription-plans.index'), {
         data: { 
           search: value, 
-          page: 1 
+          page: 1,
+          per_page: 6
         },
         preserveState: true,
         preserveScroll: true,
@@ -114,10 +143,9 @@ export default function Index({
     setSearchTimeout(timeout);
   };
 
-  const plansList = subscriptionPlans?.data.data || [];
   const meta = subscriptionPlans?.meta || null;
-  const activePlansCount = plansList.filter((plan: SubscriptionPlan) => plan.is_active).length;
-  const canCreateNewPlan = activePlansCount < 3;
+  const currentPageActiveCount = plansList.filter((plan: SubscriptionPlan) => plan.is_active).length;
+  const canCreateNewPlan = totalActivePlansCount < 3;
 
   const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.dashboard'), path: "/" },
@@ -153,8 +181,7 @@ export default function Index({
               {canCreateNewPlan ? (
                 <Button
                   onClick={() => {
-                    setSelectedPlan(null);
-                    setIsModalOpen(true);
+                    router.visit(route('subscription-plans.create'));
                   }}
                   variant="filled"
                   color="primary"
@@ -163,8 +190,11 @@ export default function Index({
                   <HiPlus className="w-4 h-4" />
                 </Button>
               ) : (
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('common.max_active_plans_reached')}
+                <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                  <span className="text-sm text-amber-700 dark:text-amber-300 font-medium">
+                    {t('common.max_active_plans_reached')}
+                  </span>
                 </div>
               )}
             </div>
@@ -172,19 +202,40 @@ export default function Index({
 
           {/* Plans Grid */}
           {plansList.length === 0 ? (
-            <Card className="p-6 text-center">
-              <p className="text-gray-500">{t('common.no_plans_found')}</p>
+            <Card className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                <HiPlus className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                {t('common.no_plans_found')}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                {t('common.create_first_plan')}
+              </p>
+              {canCreateNewPlan && (
+                <Button
+                  onClick={() => {
+                    router.visit(route('subscription-plans.create'));
+                  }}
+                  variant="filled"
+                  color="primary"
+                  className="gap-2"
+                >
+                  <HiPlus className="w-4 h-4" />
+                  {t('common.create_plan')}
+                </Button>
+              )}
             </Card>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {plansList.map((plan: SubscriptionPlan) => (
                   <SubscriptionPlanCard
                     key={plan.uuid}
                     plan={plan}
                     onEdit={() => {
-                      setSelectedPlan(plan);
-                      setIsModalOpen(true);
+                      // @ts-ignore
+                      router.visit(route('subscription-plans.edit', plan.uuid));
                     }}
                     onDelete={() => handleDeletePlan(plan)}
                     onToggle={handleTogglePlan}
@@ -194,17 +245,17 @@ export default function Index({
                 ))}
               </div>
 
-              {/* Pagination */}
+              {/* Pagination - Show when there are multiple pages */}
               {meta && meta.last_page > 1 && (
                 <div className="mt-6 flex justify-center">
                   <Pagination
                     total={meta.last_page}
                     value={meta.current_page}
                     onChange={(page) => {
-                      router.visit(route('subscription-plans.index') as any, {
+                      router.visit(route('subscription-plans.index'), {
                         data: { 
                           page: page, 
-                          per_page: meta.per_page,
+                          per_page: 6,
                           search: searchQuery
                         },
                         preserveState: true,
@@ -223,17 +274,6 @@ export default function Index({
           )}
         </div>
       </Page>
-
-      <SubscriptionPlanFormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedPlan(null);
-        }}
-        plan={selectedPlan}
-        featureGroups={featureGroups}
-        allFeatures={allFeatures}
-      />
     </MainLayout>
   );
 }
