@@ -80,7 +80,9 @@ export interface SubscriptionPlanFormData {
 
 export interface SubscriptionPlansProps {
   subscriptionPlans: {
-    data: SubscriptionPlan[];
+    data: {
+      data: SubscriptionPlan[];
+    };
     meta: {
       current_page: number;
       last_page: number;
