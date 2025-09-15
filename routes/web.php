@@ -160,6 +160,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->controller(SubscriptionPlanController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/count-active', 'countActive')->name('count-active');
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
             Route::get('/{subscription_plan}', 'show')->name('show');

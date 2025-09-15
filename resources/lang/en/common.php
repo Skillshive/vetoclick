@@ -340,6 +340,12 @@ return [
         "blogs_management"=>"Blogs Management",
         "blogs_list"=>"Blogs",
         "access_management"=>"Access Management",
+        "settings_management"=>"Settings Management",
+        "settings"=>"Settings",
+        "users_list"=>"Users",
+        "roles_permissions_list"=>"Roles & Permissions",
+        'subscription_plans' => 'Subscription Plans',
+        'subscription_plans_list' => 'Plans List',
     ],
 
     // Category Blogs specific translations
@@ -697,12 +703,6 @@ return [
     'feature_fr' => 'Feature (French)',
     'add' => 'Add',
     
-    // Menu items
-    'menu' => [
-        'subscription_plans' => 'Subscription Plans',
-        'subscription_plans_list' => 'Plans List',
-    ],
-    
     // Pricing page
     'pricing' => 'Pricing',
     'are_you_new_here' => 'Are you new here?',
@@ -759,4 +759,41 @@ return [
     'updating' => 'Updating...',
     "max_clients" => "Max Clients",
     "max_active_plans_reached" => "Maximum of 3 active subscription plans allowed.",
+    
+    // Subscription Plan Form translations
+    'plan_name_en_label' => 'Plan Name (English)',
+    'plan_name_ar_label' => 'Plan Name (Arabic)',
+    'plan_name_fr_label' => 'Plan Name (French)',
+    'plan_sort_order_label' => 'Sort Order',
+    'popular_plan' => 'Popular Plan',
+    'active_plan' => 'Active Plan',
+    'available_features' => 'Available Features',
+    'features_available' => 'features available',
+    'plan_price_label' => 'Monthly Price',
+    'plan_yearly_price_label' => 'Yearly Price',
+    'limits' => 'Limits',
+    'max_clients' => 'Max Clients',
+    'max_pets' => 'Max Pets',
+    'max_appointments' => 'Max Appointments',
+    'unlimited' => 'Unlimited',
+    'trial_days' => 'Trial Days',
+    'more_features' => 'more features',
+    'plan_created_success' => 'Subscription plan created successfully!',
+    'plan_updated_success' => 'Subscription plan updated successfully!',
+    'plan_create_error' => 'Failed to create subscription plan',
+    'plan_update_error' => 'Failed to update subscription plan',
+    'plan_deleted_success' => 'Subscription plan deleted successfully!',
+    'plan_delete_error' => 'Failed to delete subscription plan',
+    'confirm_delete_plan' => 'Delete Subscription Plan',
+    'confirm_delete_plan_message' => 'Are you sure you want to delete the subscription plan ":name"? This action cannot be undone.',
+    'recommended' => 'Recommended',
+    'popular_choice' => 'The popular choice',
+    'starter_choice' => 'The starter choice',
+    'growth_choice' => 'The growth choice',
+    'professional_choice' => 'The professional choice',
+    'enterprise_choice' => 'The enterprise choice',
+    'premium_choice' => 'The premium choice',
+    'ultimate_choice' => 'The ultimate choice',
+    'create_first_plan' => 'Create your first subscription plan to get started',
+    'create_plan' => 'Create Plan',
 ];
