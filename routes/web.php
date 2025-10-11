@@ -128,13 +128,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 });
 
+// Blog routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::name('blogs.')->prefix('blogs')
-    ->controller(BlogController::class)
-    ->group(function () {
-        Route::get('create', 'create')->name('create');
-    });
-
+        ->controller(BlogController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::post('', 'store')->name('store');
+            Route::get('{blog}', 'show')->name('show');
+            Route::get('{blog}/edit', 'edit')->name('edit');
+            Route::put('{blog}', 'update')->name('update');
+            Route::delete('{blog}', 'destroy')->name('destroy');
+            Route::get('search', 'search')->name('search');
+        });
 });
 // Product routes
 Route::middleware(['auth', 'verified'])->group(function () {
