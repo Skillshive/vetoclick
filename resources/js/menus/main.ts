@@ -1,6 +1,5 @@
 import { MenuItem } from './index';
 import { AnimalsMenu } from './items/settings';
-import { useTranslation } from '@/hooks/useTranslation';
 
 function translateMenuItem(item: MenuItem, t: (key: string) => string): MenuItem {
   const translatedItem = {
@@ -12,12 +11,20 @@ function translateMenuItem(item: MenuItem, t: (key: string) => string): MenuItem
     translatedItem.submenu = item.submenu.map(subItem => translateMenuItem(subItem, t));
   }
 
+  if (item.childs) {
+    translatedItem.childs = item.childs.map(child => translateMenuItem(child, t));
+  }
+
   return translatedItem;
 }
 
 export const composeMenuForRole = (role?: string): MenuItem[] => {
-  const { t } = useTranslation();
-  return AnimalsMenu.map(item => translateMenuItem(item, t));
+  // Return untranslated menu items - translation will be applied in components
+  return AnimalsMenu;
+};
+
+export const translateMenuItems = (menuItems: MenuItem[], t: (key: string) => string): MenuItem[] => {
+  return menuItems.map(item => translateMenuItem(item, t));
 };
 
 export default composeMenuForRole;

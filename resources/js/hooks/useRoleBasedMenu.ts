@@ -15,13 +15,15 @@
  */
 import { useAuthContext } from '@/contexts/auth/context';
 import { useInertiaAuth } from './useInertiaAuth';
-import { getMenuByRole, MenuItem } from '@/menus';
+import { getMenuByRole, MenuItem, translateMenuItems } from '@/menus';
 import { Role } from '@/@types/user';
 import { usePage } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const useRoleBasedMenu = () => {
     const { user: authUser } = useAuthContext();
     const { user: inertiaUser, isAuthenticated } = useInertiaAuth();
+    const { t } = useTranslation();
 
     const user = inertiaUser || authUser;
 
@@ -77,8 +79,9 @@ export const useRoleBasedMenu = () => {
         const menuItems = getMenuByRole(role);
         // Filter menu items based on user permissions
         const filteredMenuItems = filterMenuByPermissions([...menuItems]); // Create a copy to avoid mutating original
-
-        return filteredMenuItems;
+        
+        // Apply translations to the filtered menu items
+        return translateMenuItems(filteredMenuItems, t);
     };
 
     const getTypesGroup = (): MenuItem | undefined => {
