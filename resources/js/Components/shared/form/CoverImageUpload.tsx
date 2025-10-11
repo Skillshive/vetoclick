@@ -15,6 +15,7 @@ import { useId } from "@/hooks";
 interface CoverImageUploadProps {
   label?: React.ReactNode;
   value?: File | null;
+  existingImage?: string | null;
   onChange: (file: File | null) => void;
   error?: boolean | React.ReactNode;
   classNames?: {
@@ -25,7 +26,7 @@ interface CoverImageUploadProps {
 }
 
 const CoverImageUpload = forwardRef<HTMLButtonElement, CoverImageUploadProps>(
-  ({ label, value, onChange, error, classNames }, ref) => {
+  ({ label, value, existingImage, onChange, error, classNames }, ref) => {
     const id = useId();
 
     const { getRootProps, getInputProps, isDragReject, isDragAccept } =
@@ -35,8 +36,7 @@ const CoverImageUpload = forwardRef<HTMLButtonElement, CoverImageUploadProps>(
           if (file) {
             onChange(file);
           }
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, []),
+        }, [onChange]),
         accept: {
           "image/png": [".png"],
           "image/jpeg": [".jpeg"],
@@ -71,17 +71,25 @@ const CoverImageUpload = forwardRef<HTMLButtonElement, CoverImageUploadProps>(
             classNames?.box,
           )}
         >
-          {value && typeof value !== 'string' ? (
+          {(value && typeof value !== 'string') || existingImage ? (
             <div
-              title={value.name}
+              title={value?.name || 'Existing image'}
               className="group ring-primary-600 dark:ring-primary-500 dark:ring-offset-dark-700 relative h-full w-full rounded-lg ring-offset-4 ring-offset-white transition-all hover:ring-3"
             >
               <div className="h-full w-full overflow-hidden p-2">
-                <PreviewImg
-                  className="m-auto h-full object-contain"
-                  file={value}
-                  alt={value.name}
-                />
+                {value && typeof value !== 'string' ? (
+                  <PreviewImg
+                    className="m-auto h-full object-contain"
+                    file={value}
+                    alt={value.name}
+                  />
+                ) : existingImage ? (
+                  <img
+                    className="m-auto h-full object-contain"
+                    src={existingImage}
+                    alt="Existing image"
+                  />
+                ) : null}
               </div>
 
               <div className="dark:bg-dark-700 absolute -top-4 -right-3 flex items-center justify-center rounded-full bg-white opacity-0 transition-opacity group-hover:opacity-100">
