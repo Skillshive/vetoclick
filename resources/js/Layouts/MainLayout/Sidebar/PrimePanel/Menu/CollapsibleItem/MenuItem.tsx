@@ -12,12 +12,12 @@ import { useSidebarContext } from "@/contexts/sidebar/context";
 // ----------------------------------------------------------------------
 
 export function MenuItem({ data }: { data: NavigationTree }) {
-  const { transKey, path, id } = data;
+  const { path, id } = data;
   const { lgAndDown } = useBreakpointsContext();
   const { close } = useSidebarContext();
-  const { t } = useTranslation();
-
-  const title = transKey ? t(transKey) : data.title;
+  
+  // Title is already translated by useRoleBasedMenu hook
+  const title = data.title;
   const info = data.info;
 
   const handleMenuItemClick = () => {

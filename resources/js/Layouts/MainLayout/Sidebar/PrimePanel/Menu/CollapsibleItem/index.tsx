@@ -12,9 +12,9 @@ import {
 import { MenuItem } from "./MenuItem";
 import { NavigationTree } from "@/@types/navigation";
 export function CollapsibleItem({ data }: { data: NavigationTree }) {
-  const { id, path, childs, transKey } = data;
-  const { t } = useTranslation();
-  const title = transKey ? t(transKey) : data.title;
+  const { id, path, childs } = data;
+  // Title is already translated by useRoleBasedMenu hook
+  const title = data.title;
 
   const Icon =  ChevronRightIcon;
 
