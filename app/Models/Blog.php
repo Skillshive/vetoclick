@@ -36,7 +36,7 @@ class Blog extends Model
 
     public function categoryBlog()
     {
-        return $this->belongsTo(CategoryBlog::class);
+        return $this->belongsTo(CategoryBlog::class, 'category_blog_id')->withTrashed();
     }
 
   

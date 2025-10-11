@@ -16,10 +16,13 @@ class BlogDto extends DTO implements DTOInterface
         public string $body = '',
         public string $caption = '',
         public ?UploadedFile $image_file = null,
+        public ?string $image_url = null,
+        public bool $remove_existing_image = false,
         public string $meta_title = '',
         public string $meta_desc = '',
         public string $meta_keywords = '',
-        public int $category_blog_id = 0,
+        public ?string $category_blog_uuid = null,
+        public ?int $category_blog_id = null,
         public string $tags = '',
         public ?string $created_at = null,
         public ?string $updated_at = null,
@@ -28,15 +31,26 @@ class BlogDto extends DTO implements DTOInterface
 
     public static function fromRequest(Request $request): self
     {
+        // Get category blog ID from UUID
+        $categoryBlogUuid = $request->input('category_blog_id');
+        $categoryBlogId = null;
+        
+        if ($categoryBlogUuid) {
+            $categoryBlog = \App\Models\CategoryBlog::where('uuid', $categoryBlogUuid)->first();
+            $categoryBlogId = $categoryBlog ? $categoryBlog->id : null;
+        }
+
         return new self(
             title: $request->input('title', ''),
             body: $request->input('body', ''),
             caption: $request->input('caption', ''),
-            image_file: $request->input('image_file'),
+            image_file: $request->file('image_file'),
+            remove_existing_image: $request->boolean('remove_existing_image'),
             meta_title: $request->input('meta_title', ''),
             meta_desc: $request->input('meta_desc', ''),
             meta_keywords: $request->input('meta_keywords', ''),
-            category_blog_id: $request->input('category_blog_id', 0),
+            category_blog_uuid: $categoryBlogUuid,
+            category_blog_id: $categoryBlogId,
             tags: $request->input('tags', '')
         );
     }
@@ -50,10 +64,12 @@ class BlogDto extends DTO implements DTOInterface
             body: $data['body'] ?? '',
             caption: $data['caption'] ?? '',
             image_file: $data['image_file'] ?? null,
+            image_url: $data['image_url'] ?? $data['image'] ?? null,
             meta_title: $data['meta_title'] ?? '',
             meta_desc: $data['meta_desc'] ?? '',
             meta_keywords: $data['meta_keywords'] ?? '',
-            category_blog_id: $data['category_blog_id'] ?? 0,
+            category_blog_uuid: $data['category_blog_uuid'] ?? null,
+            category_blog_id: $data['category_blog_id'] ?? null,
             tags: $data['tags'] ?? '',
             created_at: $data['created_at'] ?? null,
             updated_at: $data['updated_at'] ?? null,
@@ -68,6 +84,7 @@ class BlogDto extends DTO implements DTOInterface
             'body' => $this->body,
             'caption' => $this->caption,
             'image_file' => $this->image_file,
+            'image' => $this->image_url,
             'meta_title' => $this->meta_title,
             'meta_desc' => $this->meta_desc,
             'meta_keywords' => $this->meta_keywords,
@@ -85,9 +102,11 @@ class BlogDto extends DTO implements DTOInterface
             'body' => $this->body,
             'caption' => $this->caption,
             'image_file' => $this->image_file,
+            'image' => $this->image_url,
             'meta_title' => $this->meta_title,
             'meta_desc' => $this->meta_desc,
             'meta_keywords' => $this->meta_keywords,
+            'category_blog_uuid' => $this->category_blog_uuid,
             'category_blog_id' => $this->category_blog_id,
             'tags' => $this->tags,
             'created_at' => $this->created_at,
@@ -103,10 +122,11 @@ class BlogDto extends DTO implements DTOInterface
             'title' => $this->title,
             'body' => $this->body,
             'caption' => $this->caption,
-            'image_file' => $this->image_file,
+            'image' => $this->image_url,
             'meta_title' => $this->meta_title,
             'meta_desc' => $this->meta_desc,
             'meta_keywords' => $this->meta_keywords,
+            'category_blog_uuid' => $this->category_blog_uuid,
             'category_blog_id' => $this->category_blog_id,
             'tags' => $this->tags,
             'created_at' => $this->created_at,
@@ -134,6 +154,10 @@ class BlogDto extends DTO implements DTOInterface
             $data['image_file'] = $this->image_file;
         }
 
+        if ($this->image_url !== null) {
+            $data['image'] = $this->image_url;
+        }
+
         if (!empty($this->meta_title)) {
             $data['meta_title'] = $this->meta_title;
         }
@@ -146,7 +170,7 @@ class BlogDto extends DTO implements DTOInterface
             $data['meta_keywords'] = $this->meta_keywords;
         }
 
-        if ($this->category_blog_id > 0) {
+        if ($this->category_blog_id !== null) {
             $data['category_blog_id'] = $this->category_blog_id;
         }
 
