@@ -29,6 +29,7 @@ export const blogFormSchema = z.object({
     .min(1, 'validation.blog_caption_required')
     .max(255, 'validation.blog_caption_max_length'),
 
+
   meta_title: z.string()
     .min(1, 'validation.meta_title_required')
     .max(255, 'validation.meta_title_max_length'),
@@ -38,12 +39,15 @@ export const blogFormSchema = z.object({
     .max(1000, 'validation.meta_desc_max_length'),
 
   meta_keywords: z.string()
-    .min(1, 'validation.meta_keywords_required')
-    .max(500, 'validation.meta_keywords_max_length'),
+    .optional()
+    .or(z.literal('')),
+
+  category_blog_id: z.string()
+    .min(1, 'validation.category_required'),
 
   tags: z.string()
-    .min(1, 'validation.tags_required')
-    .max(1000, 'validation.tags_max_length'),
+    .optional()
+    .or(z.literal('')),
 });
 
 export type BlogFormData = z.infer<typeof blogFormSchema>;

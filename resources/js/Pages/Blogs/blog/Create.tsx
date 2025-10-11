@@ -1,225 +1,179 @@
-// Import Dependencies
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, Resolver, useForm } from "react-hook-form";
-import { DocumentPlusIcon } from "@heroicons/react/24/outline";
-import { toast } from "sonner";
-import type { Delta as DeltaType } from "quill";
-
-// Local Imports
-import { schema, type SchemaType } from "./schema";
+import React, { useState, useEffect } from "react";
+import { router } from "@inertiajs/react";
 import { Page } from "@/components/shared/Page";
 import { Button, Card, Input, Textarea } from "@/components/ui";
-import { Delta, TextEditor } from "@/components/shared/form/TextEditor";
-import { DatePicker } from "@/components/shared/form/Datepicker";
-import { Listbox } from "@/components/shared/form/StyledListbox";
-import { Combobox } from "@/components/shared/form/StyledCombobox";
-import { Tags } from "@/components/shared/form/Tags";
 import { CoverImageUpload } from "@/components/shared/form/CoverImageUpload";
+import { Tags } from "@/components/shared/form/Tags";
 import MainLayout from "@/layouts/MainLayout";
-import { ContextualHelp } from "@/components/shared/ContextualHelp";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useState } from "react";
 import { blogFormSchema } from "@/schemas/blogSchema";
-import axios from "axios";
 import { useToast } from "@/Components/common/Toast/ToastContext";
-import { router } from "@inertiajs/react";
+import { BlogFormData, CategoryBlog } from "./types";
+import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
-// ----------------------------------------------------------------------
-
-
-interface BlogFormData {
-    title: string;
-    body: string;
-    caption: string;
-    image_id: string;
-    meta_title: string;
-    meta_desc: string;
-    meta_keywords: string;
-    category_blog_id?: string | null;
+interface TagItem {
+  id: string;
+  value: string;
 }
 
-const initialState = {
-  title: "manar",
-  caption: "",
-  content: new Delta(),
-  cover: "",
-  category_id: "",
-  author_id: "",
-  tags: [],
-  publish_date: null,
-  meta: {
-    title: "",
-    description: "",
-    keywords: [],
-  },
-};
+interface CreateProps {
+  category_blogs?: CategoryBlog[];
+}
 
-const editorModules = {
-  toolbar: [
-    ["bold", "italic", "underline", "strike"], // toggled buttons
-    ["blockquote", "code-block"],
-    [{ header: 1 }, { header: 2 }], // custom button values
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ script: "sub" }, { script: "super" }], // superscript/subscript
-    [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
-    [{ direction: "rtl" }], // text direction
-    [{ size: ["small", false, "large", "huge"] }], // custom dropdown
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-    [{ font: [] }],
-    [{ align: [] }, "image"],
-    ["clean"], // remove formatting button
-  ],
-};
+const Create = ({ category_blogs = [] }: CreateProps) => {
+  const { t } = useTranslation();
+  const { showToast } = useToast();
 
-const categories = [
-  {
-    id: "1",
-    label: "Accessories",
-  },
-  {
-    id: "2",
-    label: "Digital",
-  },
-  {
-    id: "3",
-    label: "Home",
-  },
-  {
-    id: "4",
-    label: "Technology",
-  },
-];
-
-const Create = () => {
-  const {t}=useTranslation();
-  const {showToast}=useToast();
- 
-
-    const [validationErrors, setValidationErrors] = useState<{
-      title?: string;
-      body?: string;
-      caption?: string;
-      image_id?: string;
-      meta_title?: string;
-      meta_desc?: string;
-      meta_keywords?: string;
-      category_blog_id?: string;
-    }>({});
+  const [validationErrors, setValidationErrors] = useState<{
+    title?: string;
+    body?: string;
+    caption?: string;
+    meta_title?: string;
+    meta_desc?: string;
+    meta_keywords?: string;
+    category_blog_id?: string;
+    tags?: string;
+    image_file?: string;
+  }>({});
     
-    const { data, setData, reset } = useForm<BlogFormData>({
-        title: '',
-        body: '',
-        caption: '',
-        image_id: '',
-        meta_title: '',
-        meta_desc: '',
-        meta_keywords: '',
-        category_blog_id: null,
+  const [data, setData] = useState<BlogFormData>({
+    title: '',
+    body: '',
+    caption: '',
+    meta_title: '',
+    meta_desc: '',
+    meta_keywords: '',
+    category_blog_id: '',
+    tags: '',
+  });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [tags, setTags] = useState<TagItem[]>([]);
+  const [metaKeywords, setMetaKeywords] = useState<TagItem[]>([]);
+  const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+    
+    if (success) {
+      showToast({
+        type: 'success',
+        message: success,
+        duration: 3000,
+      });
+    }
+    
+    if (error) {
+      showToast({
+        type: 'error',
+        message: error,
+        duration: 3000,
+      });
+    }
+  }, [showToast]);
+    
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const result = blogFormSchema.safeParse(data);
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+      setValidationErrors({
+        title: errors.title?.[0] ? t(errors.title[0]) : undefined,
+        body: errors.body?.[0] ? t(errors.body[0]) : undefined,
+        caption: errors.caption?.[0] ? t(errors.caption[0]) : undefined,
+        image_file: (errors as any).image_file?.[0] ? t((errors as any).image_file[0]) : undefined,
+        meta_title: errors.meta_title?.[0] ? t(errors.meta_title[0]) : undefined,
+        meta_desc: errors.meta_desc?.[0] ? t(errors.meta_desc[0]) : undefined,
+        meta_keywords: errors.meta_keywords?.[0] ? t(errors.meta_keywords[0]) : undefined,
+        category_blog_id: errors.category_blog_id?.[0] ? t(errors.category_blog_id[0]) : undefined,
+        tags: errors.tags?.[0] ? t(errors.tags[0]) : undefined,
+      });
+      return;
+    }
+
+    setProcessing(true);
+
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      formData.append(key, data[key as keyof BlogFormData]);
     });
+    
+    const tagsString = tags.map(tag => tag.value).join(',');
+    formData.append('tags', tagsString);
+    
+    const metaKeywordsString = metaKeywords.map(keyword => keyword.value).join(',');
+    formData.append('meta_keywords', metaKeywordsString);
+    
+    if (imageFile) {
+      formData.append('image_file', imageFile);
+    }
 
-    const [processing, setProcessing] = useState(false);
+    router.post(route('blogs.store'), formData as any, {
+      onSuccess: () => {
+        setProcessing(false);
+        showToast({
+          type: 'success',
+          message: t('common.blog_created_success'),
+          duration: 3000,
+        });
+        router.visit(route('blogs.index'));
+      },
+      onError: (errors: any) => {
+        setProcessing(false);
+        showToast({
+          type: 'error',
+          message: t('common.blog_create_error'),
+          duration: 3000,
+        });
+      }
+    });
+  };
 
-
-    
-        const handleSubmit = (e: React.FormEvent) => {
-            e.preventDefault();
-    
-    
-            const result = blogFormSchema.safeParse(data);
-            if (!result.success) {
-                const errors = result.error.flatten().fieldErrors;
-                setValidationErrors({
-                    title: errors.title?.[0] ? t(errors.title[0]) : undefined,
-                    body: errors.body?.[0] ? t(errors.body[0]) : undefined,
-                    caption: errors.caption?.[0] ? t(errors.caption[0]) : undefined,
-                    image_id: errors.image_id?.[0] ? t(errors.image_id[0]) : undefined,
-                    meta_title: errors.meta_title?.[0] ? t(errors.meta_title[0]) : undefined,
-                    meta_desc: errors.meta_desc?.[0] ? t(errors.meta_desc[0]) : undefined,
-                    meta_keywords: errors.meta_keywords?.[0] ? t(errors.meta_keywords[0]) : undefined,
-                    category_blog_id: errors.category_blog_id?.[0] ? t(errors.category_blog_id[0]) : undefined,
-                });
-                return;
-            }
-    
-    
-            setProcessing(true);
-    
-  
-                axios.post(route('blogs.store'), data)
-                    .then(() => {
-                        showToast({
-                            type: 'success',
-                            message: t('common.blog_created_success'),
-                            duration: 3000,
-                        });
-                        reset();
-                        setValidationErrors({});
-                        router.visit(route('blogs.index'), {
-                          preserveState: false,
-                          preserveScroll: true
-                        });
-                    })
-                     .catch((error) => {
-        if (error.response && error.response.status === 422) {
-            const errors = error.response.data.errors;
-    console.log('errors',errors)
-            setValidationErrors({
-             title: errors.title?.[0] ? t(errors.title[0]) : undefined,
-                    body: errors.body?.[0] ? t(errors.body[0]) : undefined,
-                    caption: errors.caption?.[0] ? t(errors.caption[0]) : undefined,
-                    image_id: errors.image_id?.[0] ? t(errors.image_id[0]) : undefined,
-                    meta_title: errors.meta_title?.[0] ? t(errors.meta_title[0]) : undefined,
-                    meta_desc: errors.meta_desc?.[0] ? t(errors.meta_desc[0]) : undefined,
-                    meta_keywords: errors.meta_keywords?.[0] ? t(errors.meta_keywords[0]) : undefined,
-                    category_blog_id: errors.category_blog_id?.[0] ? t(errors.category_blog_id[0]) : undefined,
-            });
-    
-            showToast({
-                type: 'error',
-                message: errors?.name ? errors.name[0] : t('common.blog_create_error'),
-                duration: 3000,
-            });
-        }
-    })
-                    .finally(() => {
-                        setProcessing(false);
-                    });
-        };
-    
-
-  
-
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: t('common.blogs'), path: route('blogs.index') },
+    { title: t('common.new_blog')},
+  ];
 
   return (
-            <MainLayout>
-    <Page title={t("common.new_post_form")}>
-      <div className="transition-content px-(--margin-x) pb-6">
-        <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
-          <div className="flex items-center gap-1">
-            <DocumentPlusIcon className="size-6" />
-            <h2 className="dark:text-dark-50 line-clamp-1 text-xl font-medium text-gray-700">
-             {t('common.new_post')}
-            </h2>
+    <MainLayout>
+      <Page title={t("common.new_blog")}>
+        <div className="transition-content px-(--margin-x) pb-6">
+          <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
+            <div className="flex items-center gap-1">
+              <div>
+                <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {t('common.new_blog_description')}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                className="min-w-[7rem]" 
+                variant="outlined"
+                onClick={() => router.visit(route('blogs.index'))}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                className="min-w-[7rem]"
+                color="primary"
+                type="submit"
+                form="new-blog-form"
+                disabled={processing}
+              >
+                {processing ? t('common.saving') : t('common.save')}
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button className="min-w-[7rem]" variant="outlined">
-              {t('common.preview')}
-            </Button>
-            <Button
-              className="min-w-[7rem]"
-              color="primary"
-              type="submit"
-              form="new-post-form"
-            >
-                            {t('common.save')}
-            </Button>
-          </div>
-        </div>
+          
         <form
           autoComplete="off"
-          onSubmit={handleSubmit(onSubmit)}
-          id="new-post-form"
+            onSubmit={handleSubmit}
+            id="new-blog-form"
         >
           <div className="grid grid-cols-12 place-content-start gap-4 sm:gap-5 lg:gap-6">
             <div className="col-span-12 lg:col-span-8">
@@ -228,194 +182,120 @@ const Create = () => {
                                 {t('common.general_information')}
                 </h3>
                 <div className="mt-5 space-y-5">
-
-                <div>
                                         <Input
-                                            id="title"
                                             label={t('common.title')}
-                                            type="text"
+                      placeholder={t('common.enter_blog_title')}
                                             value={data.title}
-                                             onChange={(e) => {
-                                                setData('name', e.target.value);
-                                                const result = categoryBlogFormSchema.safeParse({
-                                                    ...data,
-                                                    name: e.target.value,
-                                                });
-                                                if (!result.success) {
-                                                    const errors = result.error.flatten().fieldErrors;
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        name: errors.name?.[0] ? t(errors.name[0]) : undefined,
-                                                    }));
-                                                } else {
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        name: undefined,
-                                                    }));
-                                                }
-                                            }}
-                                            placeholder={t('common.category_name_placeholder')}
-                                            className={errors?.name || validationErrors.name ? 'border-red-500' : ''}
+                      onChange={(e) => setData({ ...data, title: e.target.value })}
+                      error={validationErrors.title}
                                             required
-                                            leftIcon={<TagIcon className="size-5" />}
-                                        />
-                                       {
-                                        (errors?.name || validationErrors.name) && (
-                                            <p className="text-red-500 text-sm mt-1">{errors?.name ||validationErrors?.name}</p>
-                                        )
-                                        }
-                                    </div>
-                  <Input
-                    label={t('common.title')}
-                    placeholder={t('common.enter_post_title')}
-                    {...register("title")}
-                    error={errors?.title?.message}
                   />
 
                   <Input
                     label={t('common.caption')}
-                    placeholder={t('common.enter_post_caption')}
-                    {...register("caption")}
-                    error={errors?.caption?.message}
-                  />
-
-                  <div className="flex flex-col">
-                    <span>{t('common.description')}</span>
-                    <Controller
-                      control={control}
-                      name="content"
-                      render={({ field: { value, onChange, ...rest } }) => (
-                        <TextEditor
-                          value={value as DeltaType}
-                          onChange={(val) => onChange(val)}
-                          placeholder={t('common.enter_post_description')}
-                          className="mt-1.5 [&_.ql-editor]:max-h-80 [&_.ql-editor]:min-h-[12rem]"
-                          modules={editorModules}
-                          error={errors?.content?.message}
-                          {...rest}
-                        />
-                      )}
+                      placeholder={t('common.enter_blog_caption')}
+                      value={data.caption}
+                      onChange={(e) => setData({ ...data, caption: e.target.value })}
+                      error={validationErrors.caption}
+                      required
                     />
-                  </div>
 
-                  <Controller
-                    render={({ field: { onChange, value, ...rest } }) => (
-                      <CoverImageUpload
-                        classNames={{
-                          box: "mt-1.5",
-                        }}
-                        label={t('common.cover_image')}
-                        error={errors?.cover?.message}
-                        value={value as File}
-                        onChange={onChange}
-                        {...rest}
-                      />
-                    )}
-                    name="cover"
-                    control={control}
-                  />
+                    <Textarea
+                      label={t('common.body')}
+                      placeholder={t('common.enter_blog_body')}
+                      value={data.body}
+                      onChange={(e) => setData({ ...data, body: e.target.value })}
+                      error={validationErrors.body}
+                      rows={6}
+                      required
+                    />
+
+                    <CoverImageUpload
+                      label={t('common.cover_image')}
+                      value={imageFile}
+                      existingImage={null}
+                      onChange={setImageFile}
+                      error={validationErrors.image_file}
+                      classNames={{
+                        box: "mt-1.5",
+                      }}
+                    />
                 </div>
               </Card>
             </div>
+              
             <div className="col-span-12 space-y-4 sm:space-y-5 lg:col-span-4 lg:space-y-6">
               <Card className="space-y-5 p-4 sm:px-5">
-                <Controller
-                  render={({ field }) => (
-                    <Listbox
-                      data={categories}
-                      value={
-                        categories.find((cat) => cat.id === field.value) || null
-                      }
-                      onChange={(val) => field.onChange(val.id)}
-                      name={field.name}
-                      label={t('common.category')}
-                      placeholder={t('common.choose_category')}
-                      displayField="label"
-                      error={errors?.category_id?.message}
-                    />
+                  <h6 className="dark:text-dark-100 text-base font-medium text-gray-800">
+                    {t('common.category')}
+                  </h6>
+                  
+                  <select
+                    value={data.category_blog_id}
+                    onChange={(e) => setData({ ...data, category_blog_id: e.target.value })}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-this focus:outline-none focus:ring-1 focus:ring-this"
+                    required
+                  >
+                    <option value="">{t('common.choose_category')}</option>
+                    {category_blogs.map((category) => (
+                      <option key={category.uuid} value={category.uuid}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {validationErrors.category_blog_id && (
+                    <p className="text-red-500 text-sm">{validationErrors.category_blog_id}</p>
                   )}
-                  control={control}
-                  name="category_id"
-                />
 
-                <Controller
-                  render={({ field: { value, onChange, ...rest } }) => (
-                    <Tags
-                      value={
-                        value?.map((val, i) => {
-                          return { id: String(i), value: String(val) };
-                        }) || []
-                      }
-                      placeholder="Enter Tags"
-                      onChange={(val) => onChange(val.map((i) => i.value))}
-                      error={errors?.tags?.message}
-                      label="Tags"
-                      {...rest}
-                    />
-                  )}
-                  control={control}
-                  name="tags"
-                />
+                  <Tags
+                    label={t('common.tags')}
+                    placeholder={t('common.enter_tags')}
+                    value={tags}
+                    onChange={setTags}
+                    error={validationErrors.tags}
+                  />
               </Card>
 
               <Card className="p-4 sm:px-5">
-                <h6 className="dark:text-dark-100 flex space-x-1.5 text-base font-medium text-gray-800">
-                  <span>SEO Meta Data</span>
-                  <ContextualHelp
-                    title="SEO Meta Data"
-                    anchor={{ to: "bottom", gap: 8 }}
-                    content={
-                      <p>
-                        SEO data is relevant information that your company needs
-                        to be aware of so that your business can take full
-                        advantage of all the opportunities presented with this
-                        type of strategy.
-                      </p>
-                    }
-                  />
+                  <h6 className="dark:text-dark-100 text-base font-medium text-gray-800">
+                    {t('common.seo_meta_data')}
                 </h6>
 
                 <div className="mt-3 space-y-5">
                   <Input
-                    {...register("meta.title")}
-                    label="Meta title"
-                    error={errors?.meta?.title?.message}
-                    placeholder="Enter Meta Title"
-                  />
+                      label={t('common.meta_title')}
+                      placeholder={t('common.enter_meta_title')}
+                      value={data.meta_title}
+                      onChange={(e) => setData({ ...data, meta_title: e.target.value })}
+                      error={validationErrors.meta_title}
+                      required
+                    />
+                    
                   <Textarea
-                    rows={4}
-                    {...register("meta.description")}
-                    label="Meta Description"
-                    error={errors?.meta?.description?.message}
-                    placeholder="Enter Meta Description"
-                  />
-                  <Controller
-                    render={({ field }) => (
-                      <Tags
-                        placeholder="Enter Meta Keywords"
-                        label="Meta Keywords"
-                        value={
-                          field.value?.map((val, i) => {
-                            return { id: String(i), value: String(val) };
-                          }) || []
-                        }
-                        onChange={(val) =>
-                          field.onChange(val.map((i) => i.value))
-                        }
-                        error={errors?.meta?.keywords?.message}
-                      />
-                    )}
-                    control={control}
-                    name="meta.keywords"
-                  />
+                      label={t('common.meta_description')}
+                      placeholder={t('common.enter_meta_description')}
+                      value={data.meta_desc}
+                      onChange={(e) => setData({ ...data, meta_desc: e.target.value })}
+                      error={validationErrors.meta_desc}
+                      rows={3}
+                      required
+                    />
+                    
+                    <Tags
+                      label={t('common.meta_keywords')}
+                      placeholder={t('common.enter_meta_keywords')}
+                      value={metaKeywords}
+                      onChange={setMetaKeywords}
+                      error={validationErrors.meta_keywords}
+                    />
                 </div>
               </Card>
             </div>
           </div>
         </form>
-      </div>
-    </Page>
-            </MainLayout>
+        </div>
+      </Page>
+    </MainLayout>
   );
 };
 
