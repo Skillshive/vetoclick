@@ -9,6 +9,7 @@ import {
   Transition,
 } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import {
   forwardRef,
@@ -65,22 +66,52 @@ const Tags = forwardRef<HTMLElement, TagsProps>(
 
             <div className="relative mt-1">
               <div>
-                <ComboboxButton
-                  as="div"
+                <div
                   className={clsx(
                     "relative w-full cursor-default overflow-hidden rounded-lg border px-3 py-2 text-start outline-hidden transition-colors focus:outline-hidden ltr:pr-9 rtl:pl-9",
                     error
                       ? "border-error dark:border-error-lighter"
                       : "focus-within:border-primary-600! dark:border-dark-450 dark:focus-within:border-primary-500! dark:hover:border-dark-400 border-gray-300 hover:border-gray-400",
                   )}
+                  onClick={(e) => {
+                    console.log('Container clicked:', e.target);
+                    // Check if the click is on a tag button
+                    const clickedElement = e.target as HTMLElement;
+                    const isTagClick = clickedElement.tagName === 'BUTTON' || clickedElement.closest('button');
+                    
+                    if (isTagClick) {
+                      console.log('Tag button clicked, preventing default');
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return; // Don't open the dropdown
+                    }
+                    
+                    console.log('Not a tag click, allowing default behavior');
+                  }}
                 >
                   <ul className="flex flex-wrap gap-1.5">
                     {selectedValue.length > 0 &&
                       selectedValue.map((val: TagItem) => (
                         <li key={val.id}>
-                          <Tag component="button" type="button">
-                            {val.value}
-                          </Tag>
+                          <button
+                            type="button"
+                            className="group cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm bg-gray-100 dark:bg-gray-700 border-0"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('Tag clicked for removal:', val.value);
+                              const newTags = selectedValue.filter(tag => tag.id !== val.id);
+                              console.log('New tags after removal:', newTags);
+                              onChange(newTags);
+                            }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <span>{val.value}</span>
+                            <XMarkIcon className="ml-1 h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </button>
                         </li>
                       ))}
 
@@ -90,28 +121,33 @@ const Tags = forwardRef<HTMLElement, TagsProps>(
                       </span>
                     )}
 
-                    <ComboboxInput
-                      as={Input}
-                      unstyled
-                      classNames={{
-                        root: "flex-1",
-                      }}
-                      displayValue={(item: TagItem) => item.value}
-                      autoComplete="off"
-                      onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
-                        if (
-                          value.length > 0 &&
-                          event.keyCode === 8 &&
-                          (event.target as HTMLInputElement).value === ""
-                        ) {
-                          onChange(value.slice(0, -1));
-                        }
-                      }}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                        setQuery(event.target.value.trim());
-                      }}
-                      value={query}
-                    />
+                    <ComboboxButton
+                      as="div"
+                      className="flex-1"
+                    >
+                      <ComboboxInput
+                        as={Input}
+                        unstyled
+                        classNames={{
+                          root: "flex-1",
+                        }}
+                        displayValue={(item: TagItem) => item.value}
+                        autoComplete="off"
+                        onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
+                          if (
+                            value.length > 0 &&
+                            event.keyCode === 8 &&
+                            (event.target as HTMLInputElement).value === ""
+                          ) {
+                            onChange(value.slice(0, -1));
+                          }
+                        }}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                          setQuery(event.target.value.trim());
+                        }}
+                        value={query}
+                      />
+                    </ComboboxButton>
                   </ul>
                   <div className="absolute inset-y-0 flex cursor-pointer items-center ltr:right-0 ltr:pr-2 rtl:left-0 rtl:pl-2">
                     <ChevronDownIcon
@@ -122,7 +158,7 @@ const Tags = forwardRef<HTMLElement, TagsProps>(
                       aria-hidden="true"
                     />
                   </div>
-                </ComboboxButton>
+                </div>
                 <InputErrorMsg when={!!error && typeof error !== "boolean"}>
                   {error}
                 </InputErrorMsg>
