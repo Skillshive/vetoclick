@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Blog;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -34,7 +34,7 @@ class CreateCategoryBlogRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Category blog name is required.',
+            'name.required' => 'Category blog name is required.',   
             'name.unique' => 'A category blog with this name already exists.',
             'parent_category_id.exists' => 'The selected parent category does not exist.',
         ];
