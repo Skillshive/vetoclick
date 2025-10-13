@@ -1,5 +1,5 @@
 import React from 'react';
-import Select from 'react-select';
+import Select, { MultiValue, SingleValue, ActionMeta } from 'react-select';
 import { useThemeContext } from '@/contexts/theme/context';
 
 interface Option {
@@ -9,14 +9,16 @@ interface Option {
 
 interface ReactSelectProps {
     id?: string;
-    value?: Option | null;
-    onChange: (option: Option | null) => void;
+    value?: Option | Option[] | null;
+    onChange: (newValue: MultiValue<Option> | SingleValue<Option>, actionMeta: ActionMeta<Option>) => void;
     options: Option[];
     placeholder?: string;
     isDisabled?: boolean;
     isClearable?: boolean;
+    isMulti?: boolean;
     className?: string;
     error?: boolean;
+    label?: string;
 }
 
 const ReactSelect: React.FC<ReactSelectProps> = ({
@@ -27,8 +29,10 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
     placeholder = 'Select...',
     isDisabled = false,
     isClearable = false,
+    isMulti = false,
     className = '',
     error = false,
+    label,
 }) => {
     const { themeMode } = useThemeContext();
     const isDark = themeMode === 'dark';
@@ -64,6 +68,27 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
         singleValue: (provided: any) => ({
             ...provided,
             color: isDark ? '#FFFFFF' : '#000000',
+        }),
+        multiValue: (provided: any) => ({
+            ...provided,
+            backgroundColor: isDark ? '#4B5675' : '#E5E7EB',
+            borderRadius: '0.25rem',
+            margin: '0.125rem',
+        }),
+        multiValueLabel: (provided: any) => ({
+            ...provided,
+            color: isDark ? '#FFFFFF' : '#000000',
+            fontSize: '0.875rem',
+            padding: '0.125rem 0.25rem',
+        }),
+        multiValueRemove: (provided: any) => ({
+            ...provided,
+            color: isDark ? '#9CA3AF' : '#6B7280',
+            cursor: 'pointer',
+            '&:hover': {
+                backgroundColor: '#EF4444',
+                color: '#FFFFFF',
+            },
         }),
         menu: (provided: any) => ({
             ...provided,
@@ -110,6 +135,11 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
 
     return (
         <div className={className}>
+            {label && (
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    {label}
+                </label>
+            )}
             <Select
                 id={id}
                 value={value}
@@ -118,6 +148,7 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
                 placeholder={placeholder}
                 isDisabled={isDisabled}
                 isClearable={isClearable}
+                isMulti={isMulti}
                 styles={customStyles}
                 theme={(theme) => ({
                     ...theme,
