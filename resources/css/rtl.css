@@ -12,7 +12,7 @@
 }
 
 [dir="rtl"] body {
-  font-family: 'Noto Sans Arabic', 'Nunito', sans-serif;
+  font-family: 'Noto Sans Arabic', var(--font-sans, Inter, sans-serif);
   text-align: right;
   direction: rtl;
 }

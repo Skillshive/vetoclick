@@ -4,13 +4,11 @@ import { ToasterProps } from "sonner";
 export type DarkColor = "cinder" | "navy" | "mirage" | "black" | "mint";
 export type LightColor = "slate" | "gray" | "neutral";
 export type PrimaryColor =
-  | "indigo"
-  | "blue"
-  | "green"
-  | "amber"
-  | "purple"
-  | "rose"
-  | "primary";
+  | "teal"
+  | "navyBlue"
+  | "lightTurquoise"
+  | "deepTeal"
+  | "slateBlue";
 
 export type ThemeMode = "light" | "dark" | "system";
 export type IsMonochrome = boolean;

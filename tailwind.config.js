@@ -57,8 +57,24 @@ export default {
         },
       },
       fontFamily: {
+        sans: [
+          'Inter', 
+          'ui-sans-serif', 
+          'system-ui', 
+          'sans-serif', 
+          'Apple Color Emoji',
+          'Segoe UI Emoji', 
+          'Segoe UI Symbol', 
+          'Noto Color Emoji'
+        ],
         nunito: ['Nunito', 'sans-serif'],
         arabic: ['Noto Sans Arabic', 'sans-serif'],
+      },
+      fontSize: {
+        'tiny': ['0.625rem', '0.8125rem'],
+        'tiny-plus': ['0.6875rem', '0.875rem'],
+        'xs-plus': ['0.8125rem', '1.125rem'],
+        'sm-plus': ['0.9375rem', '1.375rem'],
       },
       spacing: {
         'rtl': '0 0 0 auto',

@@ -142,4 +142,13 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
   }
+  
+  /* Force Inter font family */
+  body {
+    font-family: var(--font-sans) !important;
+  }
+  
+  [dir="rtl"] body {
+    font-family: 'Noto Sans Arabic', var(--font-sans) !important;
+  }
 }
