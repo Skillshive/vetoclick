@@ -118,86 +118,72 @@
   --color-dark-900: #0e0f11;
 }
 
-[data-theme-primary="indigo"] {
+[data-theme-primary="teal"] {
   --color-primary-50: #f0fdfa;
   --color-primary-100: #ccfbf1;
   --color-primary-200: #99f6e4;
   --color-primary-300: #5eead4;
   --color-primary-400: #2dd4bf;
-  --color-primary-500: #4db9ad;
-  --color-primary-600: #15a093;
-  --color-primary-700: #0f7671;
+  --color-primary-500: #5dbfb3;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
   --color-primary-800: #115e59;
   --color-primary-900: #134e4a;
   --color-primary-950: #042f2e;
 }
 
-[data-theme-primary="blue"] {
+[data-theme-primary="navyBlue"] {
+  --color-primary-50: #f8fafc;
+  --color-primary-100: #f1f5f9;
+  --color-primary-200: #e2e8f0;
+  --color-primary-300: #cbd5e1;
+  --color-primary-400: #94a3b8;
+  --color-primary-500: #1e2a3a;
+  --color-primary-600: #1a2332;
+  --color-primary-700: #161d2a;
+  --color-primary-800: #121722;
+  --color-primary-900: #0e111a;
+  --color-primary-950: #0a0d12;
+}
+
+[data-theme-primary="lightTurquoise"] {
+  --color-primary-50: #f0fdfc;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #7dd4ca;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
+}
+
+[data-theme-primary="deepTeal"] {
   --color-primary-50: #f0fdfa;
   --color-primary-100: #ccfbf1;
   --color-primary-200: #99f6e4;
   --color-primary-300: #5eead4;
   --color-primary-400: #2dd4bf;
-  --color-primary-500: #4db9ad;
-  --color-primary-600: #15a093;
-  --color-primary-700: #0f7671;
+  --color-primary-500: #3a9b8e;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
   --color-primary-800: #115e59;
   --color-primary-900: #134e4a;
   --color-primary-950: #042f2e;
 }
 
-[data-theme-primary="green"] {
-  --color-primary-50: var(--color-green-50);
-  --color-primary-100: var(--color-green-100);
-  --color-primary-200: var(--color-green-200);
-  --color-primary-300: var(--color-green-300);
-  --color-primary-400: var(--color-green-400);
-  --color-primary-500: var(--color-green-500);
-  --color-primary-600: var(--color-green-600);
-  --color-primary-700: var(--color-green-700);
-  --color-primary-800: var(--color-green-800);
-  --color-primary-900: var(--color-green-900);
-  --color-primary-950: var(--color-green-950);
-}
-
-[data-theme-primary="amber"] {
-  --color-primary-50: var(--color-amber-50);
-  --color-primary-100: var(--color-amber-100);
-  --color-primary-200: var(--color-amber-300);
-  --color-primary-300: var(--color-amber-300);
-  --color-primary-400: var(--color-amber-400);
-  --color-primary-500: var(--color-amber-500);
-  --color-primary-600: var(--color-amber-600);
-  --color-primary-700: var(--color-amber-700);
-  --color-primary-800: var(--color-amber-800);
-  --color-primary-900: var(--color-amber-900);
-  --color-primary-950: var(--color-amber-950);
-}
-
-[data-theme-primary="purple"] {
-  --color-primary-50: var(--color-purple-50);
-  --color-primary-100: var(--color-purple-100);
-  --color-primary-200: var(--color-purple-200);
-  --color-primary-300: var(--color-purple-300);
-  --color-primary-400: var(--color-purple-400);
-  --color-primary-500: var(--color-purple-500);
-  --color-primary-600: var(--color-purple-600);
-  --color-primary-700: var(--color-purple-700);
-  --color-primary-800: var(--color-purple-800);
-  --color-primary-900: var(--color-purple-900);
-  --color-primary-950: var(--color-purple-950);
-}
-
-[data-theme-primary="rose"] {
-  --color-primary-50: var(--color-rose-50);
-  --color-primary-100: var(--color-rose-100);
-  --color-primary-200: var(--color-rose-200);
-  --color-primary-300: var(--color-rose-300);
-  --color-primary-400: var(--color-rose-400);
-  --color-primary-500: var(--color-rose-500);
-  --color-primary-600: var(--color-rose-600);
-  --color-primary-700: var(--color-rose-700);
-  --color-primary-800: var(--color-rose-800);
-  --color-primary-900: var(--color-rose-900);
-  --color-primary-950: var(--color-rose-950);
+[data-theme-primary="slateBlue"] {
+  --color-primary-50: #f8fafc;
+  --color-primary-100: #f1f5f9;
+  --color-primary-200: #e2e8f0;
+  --color-primary-300: #cbd5e1;
+  --color-primary-400: #94a3b8;
+  --color-primary-500: #2c3e50;
+  --color-primary-600: #1e293b;
+  --color-primary-700: #0f172a;
+  --color-primary-800: #0c1220;
+  --color-primary-900: #0a0f1a;
+  --color-primary-950: #080c12;
 }
