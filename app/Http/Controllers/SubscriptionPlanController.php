@@ -211,4 +211,20 @@ class SubscriptionPlanController extends Controller
             'count' => $activeCount
         ]);
     }
+
+    /**
+     * Get all active subscription plans as JSON
+     */
+    public function activePlans()
+    {
+        $activePlans = SubscriptionPlan::active()
+            ->ordered()
+            ->with(['planFeatures.group'])
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => SubscriptionPlanResource::collection($activePlans)
+        ]);
+    }
 }
