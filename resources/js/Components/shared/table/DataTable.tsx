@@ -3,6 +3,8 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  getFacetedUniqueValues,
+  getFacetedMinMaxValues,
   useReactTable,
   ColumnDef,
   Table as TanstackTable,
@@ -60,6 +62,10 @@ export interface DataTableProps<TData> {
   };
   sorting: SortingState;
   onSortingChange: (updaterOrValue: SortingState | Updater<SortingState>) => void;
+  columnVisibility?: Record<string, boolean>;
+  onColumnVisibilityChange?: (updaterOrValue: Record<string, boolean> | Updater<Record<string, boolean>>) => void;
+  columnPinning?: Record<string, boolean>;
+  onColumnPinningChange?: (updaterOrValue: Record<string, boolean> | Updater<Record<string, boolean>>) => void;
   globalFilter: string;
   onGlobalFilterChange: (filter: string) => void;
   tableSettings: TableSettings;
@@ -89,6 +95,10 @@ function DataTableInner<TData>(
     pagination,
     sorting,
     onSortingChange,
+    columnVisibility = {},
+    onColumnVisibilityChange,
+    columnPinning = {},
+    onColumnPinningChange,
     globalFilter,
     onGlobalFilterChange,
     tableSettings,
@@ -115,6 +125,8 @@ function DataTableInner<TData>(
       globalFilter,
       sorting,
       rowSelection,
+      columnVisibility,
+      columnPinning,
       pagination: {
         pageIndex: pagination.pageIndex,
         pageSize: pagination.pageSize,
@@ -127,8 +139,12 @@ function DataTableInner<TData>(
     enableColumnFilters: tableSettings.enableColumnFilters,
     enableRowSelection,
     getCoreRowModel: getCoreRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
     onGlobalFilterChange: onGlobalFilterChange,
     onSortingChange: onSortingChange,
+    onColumnVisibilityChange: onColumnVisibilityChange,
+    onColumnPinningChange: onColumnPinningChange,
     onRowSelectionChange: onRowSelectionChange,
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -160,7 +176,7 @@ function DataTableInner<TData>(
       {/* Header/Toolbar */}
       {(slots?.toolbar || renderToolbar) && (
         <div className={clsx(
-          tableSettings.enableFullScreen ? "px-4 sm:px-5" : "px-(--margin-x)"
+          tableSettings.enableFullScreen ? "px-4 sm:px-5" : ""
         )}>
           {slots?.toolbar ? slots.toolbar(table) : renderToolbar?.(table)}
         </div>
@@ -174,7 +190,7 @@ function DataTableInner<TData>(
           "transition-content flex grow flex-col pt-3",
           tableSettings.enableFullScreen
             ? "overflow-hidden"
-            : "px-(--margin-x)",
+            : "",
         )}
       >
         <Card
@@ -346,6 +362,7 @@ function DataTableInner<TData>(
   );
 }
 
+// Column visibility and pinning support added
 export const DataTable = forwardRef(DataTableInner) as <TData>(
   props: DataTableProps<TData> & { ref?: React.Ref<DataTableRef<TData>> }
 ) => React.ReactElement;
