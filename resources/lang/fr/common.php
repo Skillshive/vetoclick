@@ -712,6 +712,7 @@ return [
         'general' => 'Général',
         'appearance' => 'Apparence',
         'password' => 'Mot de passe',
+        'availabilities' => 'Disponibilités',
         'roles' => 'Rôles et Permissions',
         'subscription_plans' => 'Plans d\'Abonnement',
         'select_menu_item' => 'Sélectionnez un élément du menu pour voir les options',

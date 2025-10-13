@@ -61,6 +61,7 @@ return [
         'general' => 'عام',
         'appearance' => 'المظهر',
         'password' => 'كلمة المرور',
+        'availabilities' => 'المواعيد المتاحة',
         'roles' => 'الأدوار والصلاحيات',
         'subscription_plans' => 'خطط الاشتراك',
         'select_menu_item' => 'اختر عنصر من القائمة لرؤية الخيارات',

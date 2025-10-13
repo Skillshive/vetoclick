@@ -950,6 +950,7 @@ return [
         'general' => 'General',
         'appearance' => 'Appearance',
         'password' => 'Password',
+        'availabilities' => 'Availabilities',
         'roles' => 'Roles & Permissions',
         'subscription_plans' => 'Subscription Plans',
         'select_menu_item' => 'Select a menu item to see options',
