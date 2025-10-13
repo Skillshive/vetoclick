@@ -118,6 +118,39 @@ return [
     'confirm_delete_category_products' => 'Êtes-vous sûr de vouloir supprimer :count catégories de produits sélectionnées ?',
     'category_products_deleted_success' => ':count catégories de produits ont été supprimées avec succès',
     'created_date' => 'Date de création',
+    
+    // Product types
+    'product_type_medication' => 'Médicament',
+    'product_type_vaccine' => 'Vaccin',
+    'product_type_supplement' => 'Complément',
+    'product_type_equipment' => 'Équipement',
+    
+    // Product status
+    'product_status_available' => 'Disponible',
+    'product_status_out_of_stock' => 'Rupture de stock',
+    'product_status_on_order' => 'En commande',
+    
+    // Filter labels
+    'filter_category' => 'Catégorie',
+    'filter_type' => 'Type',
+    'filter_status' => 'Statut',
+    'filter_date' => 'Date',
+    'filter_price' => 'Prix',
+    
+    // Table view
+    'view' => 'Vue',
+    'table_view' => 'Vue du tableau',
+    'column_visibility' => 'Visibilité des colonnes',
+    'show_all_columns' => 'Afficher toutes les colonnes',
+    'pin_left' => 'Épingler à gauche',
+    'pin_right' => 'Épingler à droite',
+    'unpin_column' => 'Désépingler la colonne',
+    
+    // Common table actions
+    'reset_filters' => 'Réinitialiser les filtres',
+    'clear_filter' => 'Effacer le filtre',
+    'selected' => 'Sélectionné',
+    'from' => 'de',
     // Table and Pagination translations
     'show' => 'Afficher',
     'entries' => 'entrées',
@@ -627,5 +660,79 @@ return [
     'no_blogs_found' => 'Aucun blog trouvé',
     'blog_info' => 'Informations du Blog',
     'created_at' => 'Créé le',
+    
+    // Navigation settings translations
+    'nav' => [
+        'settings' => [
+            'settings' => 'Paramètres',
+            'general' => 'Général',
+            'appearance' => 'Apparence',
+            'billing' => 'Facturation',
+            'notifications' => 'Notifications',
+            'applications' => 'Applications',
+            'sessions' => 'Sessions et Mot de passe',
+        ],
+    ],
+
+    // Appearance settings translations
+    'appearance' => [
+        'title' => 'Apparence',
+        'description' => 'Personnalisez l\'apparence de l\'application. Sélectionnez les couleurs et le mode du thème pour changer l\'apparence de l\'application.',
+        'theme' => 'Thème',
+        'theme_description' => 'Vous pouvez sélectionner une couleur de thème dans la liste ci-dessous.',
+        'system' => 'Système',
+        'light' => 'Clair',
+        'dark' => 'Sombre',
+        'primary_color' => 'Couleur Primaire',
+        'primary_color_description' => 'Choisissez une couleur qui sera utilisée comme couleur primaire pour votre thème.',
+        'light_color_scheme' => 'Schéma de Couleurs Clair',
+        'light_color_scheme_description' => 'Sélectionnez le schéma de couleurs clair qui sera utilisé pour votre thème.',
+        'dark_color_scheme' => 'Schéma de Couleurs Sombre',
+        'dark_color_scheme_description' => 'Sélectionnez le schéma de couleurs sombre qui sera utilisé pour votre thème.',
+        'card_skin' => 'Apparence de la Carte :',
+        'theme_chrome_mode' => 'Mode Chrome du Thème :',
+        'monochrome_mode' => 'Mode Monochrome',
+        'reset_theme' => 'Réinitialiser le Thème',
+        'position_updated' => 'Position mise à jour',
+        'position_updated_description' => 'Position de notification mise à jour vers :position',
+        'this_is_a_toast' => 'Ceci est une notification',
+        'shadow' => 'Ombre',
+        'bordered' => 'Bordé',
+        'top_left' => 'Haut Gauche',
+        'top_center' => 'Haut Centre',
+        'top_right' => 'Haut Droite',
+        'bottom_left' => 'Bas Gauche',
+        'bottom_center' => 'Bas Centre',
+        'bottom_right' => 'Bas Droite',
+    ],
+
+    // PrimePanel specific translations
+    'prime_panel' => [
+        'settings' => 'Paramètres',
+        'general' => 'Général',
+        'appearance' => 'Apparence',
+        'password' => 'Mot de passe',
+        'roles' => 'Rôles et Permissions',
+        'subscription_plans' => 'Plans d\'Abonnement',
+        'select_menu_item' => 'Sélectionnez un élément du menu pour voir les options',
+    ],
+
+    // Sessions/Password Management translations
+    'sessions' => [
+        'password' => 'Mot de passe',
+        'manage_password_security' => 'Gérez les paramètres de sécurité de votre mot de passe.',
+        'change_password' => 'Changer le mot de passe',
+        'update_password_description' => 'Mettez à jour votre mot de passe pour sécuriser votre compte',
+        'current_password' => 'Mot de passe actuel',
+        'new_password' => 'Nouveau mot de passe',
+        'confirm_new_password' => 'Confirmer le nouveau mot de passe',
+        'enter_current_password' => 'Entrez votre mot de passe actuel',
+        'enter_new_password' => 'Entrez votre nouveau mot de passe',
+        'confirm_new_password_placeholder' => 'Confirmez votre nouveau mot de passe',
+        'password_requirements' => 'Le mot de passe doit contenir au moins 8 caractères et inclure des majuscules, minuscules, chiffres et caractères spéciaux.',
+        'updating' => 'Mise à jour...',
+        'update_password' => 'Mettre à jour le mot de passe',
+        'password_updated_successfully' => 'Mot de passe mis à jour avec succès',
+    ],
 
 ];
