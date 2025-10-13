@@ -59,13 +59,13 @@ function App({ children }: AppProps) {
     <LocaleProvider>
       <ThemeProvider>
         <ToastProvider>
-          {/* <AuthProvider> */}
+          <AuthProvider>
             <BreakpointProvider>
               <SidebarProvider>
                 {children}
               </SidebarProvider>
             </BreakpointProvider>
-          {/* </AuthProvider> */}
+          </AuthProvider>
           <Tooltip />
         </ToastProvider>
       </ThemeProvider>
