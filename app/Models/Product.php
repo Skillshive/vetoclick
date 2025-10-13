@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasImage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory,HasImage;
 
     protected $fillable = [
         'uuid',
@@ -27,7 +28,12 @@ class Product extends Model
         'is_active',
         'availability_status',
         'notes',
-        'images',
+        'image_id',
+        'manufacturer',
+        'batch_number',
+        'expiry_date',
+        'dosage_ml',
+        'vaccine_instructions',
     ];
 
     protected static function boot()
@@ -41,5 +47,12 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(ProductCategory::class, 'category_product_id');
+    }
+
+    public function vaccinationSchedules()
+    {
+        return $this->belongsToMany(VaccinationSchedule::class, 'vaccine_schedule_products')
+                    ->withPivot(['sequence_order', 'age_weeks', 'interval_weeks', 'is_required', 'notes'])
+                    ->withTimestamps();
     }
 }
