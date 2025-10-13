@@ -6,6 +6,7 @@ import { Profile } from "../../Profile";
 import { NavigationTree } from "@/@types/navigation";
 import { useThemeContext } from "@/contexts/theme/context";
 import { Logo } from "./Logo";
+import { SettingsButton } from "./SettingsButton";
 
 
 interface MainPanelProps {
@@ -34,14 +35,7 @@ export function MainPanel({
         <Menu nav={nav} />
 
         <div className="flex flex-col items-center space-y-3 py-2.5">
-          {/* <Item
-            id={settings.id}
-            component={Link}
-            href="/settings/appearance"
-            title="Settings"
-            isActive={activeSegmentPath === settings.path}
-            icon={settings.icon}
-          /> */}
+          <SettingsButton />
           <Profile />
         </div>
       </div>

@@ -1,15 +1,12 @@
 import { MenuItem, MenuConfig } from '../index';
 import { createMenuFromConfig } from '../helpers';
-import { DogIcon, PawPrint,  PawPrintIcon,  PenLine } from "lucide-react";
-import { TruckIcon, UserIcon, ShieldCheckIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import DashboardsIcon from "@/assets/dualicons/dashboards.svg?react";
 import PetIcon from "@/assets/dualicons/pet.svg?react";
 import BoxIcon from "@/assets/dualicons/box.svg?react";
-import BoxAddIcon from "@/assets/nav-icons/box-add.svg?react";
 import SettingIcon from "@/assets/dualicons/setting.svg?react";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
+import UserGroupIcon from "@/assets/nav-icons/people.svg?react";
 
-// Array-based menu configuration for easy dropdown creation
 const menuConfig: MenuConfig[] = [
   {
     id: 'dashboard',
@@ -22,17 +19,17 @@ const menuConfig: MenuConfig[] = [
     id: 'animals',
     title: 'common.menu.animals_management',
     icon: PetIcon,
-    type: 'collapse', // Changed to collapse for dropdown behavior
+    type: 'collapse', 
     children: [
       {
         id: 'allAnimals',
-        title: 'common.menu.breed_administration',
+        title: 'common.menu.species',
         path: route('species.index'),
         type: 'item',
       },
       {
         id: 'createAnimal',
-        title: 'common.menu.create_animal',
+        title: 'common.menu.create_species',
         path: route('species.create'),
         type: 'item',
       }
@@ -71,13 +68,19 @@ const menuConfig: MenuConfig[] = [
           {
             id: 'productsIndex',
             title: 'common.menu.products_list',
-            path: '',
+            path: route('products.index'),
             type: 'item',
           },
           {
             id: 'productsCreate',
             title: 'common.menu.create_product',
-            path: '',
+            path: route('products.create'),
+            type: 'item',
+          },
+          {
+            id: 'productsForm',
+            title: 'common.menu.create_product_form',
+            path: route('products.form'),
             type: 'item',
           }
         ],
@@ -124,27 +127,21 @@ const menuConfig: MenuConfig[] = [
     ],
   },
   {
-    id: 'settings',
-    title: 'common.menu.settings',
-    icon: SettingIcon,
-    type: 'group',
+    id: 'users',
+    title: 'common.menu.users_management',
+    icon: UserGroupIcon,
+    type: 'collapse',
     children: [
       {
-        id: 'allUsers',
+        id: 'usersList',
         title: 'common.menu.users_list',
         path: route('users.index'),
         type: 'item',
       },
       {
-        id: 'roleManagement',
-        title: 'common.menu.roles_permissions',
-        path: route('roles.index'),
-        type: 'item',
-      },
-      {
-        id: 'allSubscriptionPlans',
-        title: 'common.menu.subscription_plans_list',
-        path: route('subscription-plans.index'),
+        id: 'createUser',
+        title: 'common.menu.create_user',
+        path: route('users.create'),
         type: 'item',
       },
     ],
