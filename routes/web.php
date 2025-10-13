@@ -145,7 +145,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 // Product routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('products', ProductController::class);
+    Route::prefix('products')->group(function () {
+        Route::get('export', [ProductController::class, 'export'])->name('products.export');
+    });
+
+    Route::name('products.')->prefix('products')
+        ->controller(ProductController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::get('form', function () {
+                return Inertia::render('Products/ProductForm');
+            })->name('form');
+            Route::post('store', 'store')->name('store');
+            Route::get('{uuid}/edit', 'edit')->name('edit');
+            Route::put('{uuid}/update', 'update')->name('update');
+            Route::delete('{uuid}/delete', 'destroy')->name('destroy');
+        });
 });
 
 // Role routes
@@ -176,6 +192,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::patch('/{subscription_plan}/toggle', 'toggle')->name('toggle');
             Route::delete('/{subscription_plan}', 'destroy')->name('destroy');
         });
+});
+
+// Settings routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('settings.')->prefix('settings')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Settings/Index');
+        })->name('index');
+        
+        Route::get('/general', [ProfileController::class, 'show'])->name('general');
+        
+        Route::get('/appearance', function () {
+            return Inertia::render('Settings/Appearance');
+        })->name('appearance');
+        
+        Route::get('/sessions', function () {
+            return Inertia::render('Settings/Sessions');
+        })->name('sessions');
+        
+        Route::get('/availabilities', function () {
+            return Inertia::render('Settings/Availabilities');
+        })->name('availabilities');
+    });
 });
 
 require __DIR__.'/auth.php';
