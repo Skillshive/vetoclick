@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Services\ImageService;
-use App\Services\AvailabilityService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +18,7 @@ class ProfileController extends Controller
 {
     public function __construct(
         private ImageService $imageService,
-        private AvailabilityService $availabilityService
+       
     ) {
     }
 
@@ -29,24 +28,10 @@ class ProfileController extends Controller
     public function show(Request $request): Response
     {
         $user = $request->user()->load(['image']);
-        
-        // Get user's current week availability
-        $availabilities = $this->availabilityService->getCurrentWeekAvailability($user->id);
 
         return Inertia::render('Settings/General', [
             'user' => $user,
-            'availabilities' => $availabilities->map(function ($availability) {
-                return [
-                    'uuid' => $availability->uuid,
-                    'veterinarian_id' => $availability->veterinarian_id,
-                    'day_of_week' => $availability->day_of_week,
-                    'start_time' => $availability->start_time,
-                    'end_time' => $availability->end_time,
-                    'is_available' => $availability->is_available ?? true,
-                    'created_at' => $availability->created_at,
-                    'updated_at' => $availability->updated_at,
-                ];
-            }),
+          
         ]);
     }
 
