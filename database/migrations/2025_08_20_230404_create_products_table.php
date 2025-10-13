@@ -21,7 +21,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('sku')->unique();
             $table->string('barcode')->unique()->nullable();
-            $table->foreignId('category_product_id')->constrained('category_products')->onDelete('cascade');
+            $table->foreignId('category_product_id')->constrained('category_products')->onDelete('set null');
+            $table->foreignId('image_id')->nullable()->constrained('images')->onDelete('set null');
 
             $table->integer('type')->default(ProductType::MEDICATION->value);
             
@@ -36,9 +37,12 @@ return new class extends Migration
             
             $table->boolean('is_active')->default(true);
             $table->integer('availability_status')->default(AvailabilityStatus::IN_STOCK->value);
-            
+            $table->string('manufacturer')->nullable();
+            $table->string('batch_number')->nullable();
+            $table->date('expiry_date')->nullable();
+            $table->decimal('dosage_ml', 8, 2)->nullable();
+            $table->text('vaccine_instructions')->nullable();
             $table->text('notes')->nullable();
-            $table->json('images')->nullable();
                         
             $table->timestamps();
             $table->softDeletes(); 
