@@ -33,7 +33,7 @@ class ProfileController extends Controller
         // Get user's current week availability
         $availabilities = $this->availabilityService->getCurrentWeekAvailability($user->id);
 
-        return Inertia::render('Profile', [
+        return Inertia::render('Settings/General', [
             'user' => $user,
             'availabilities' => $availabilities->map(function ($availability) {
                 return [
