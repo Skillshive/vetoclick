@@ -18,6 +18,8 @@ return new class extends Migration
             $table->date('subscription_start_date')->nullable();
             $table->date('subscription_end_date')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('clinic_name')->nullable();
+            $table->string('address')->nullable();
             $table->timestamps();
         });
     }
