@@ -21,8 +21,18 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('sku')->unique();
             $table->string('barcode')->unique()->nullable();
-            $table->foreignId('category_product_id')->constrained('category_products')->onDelete('set null');
-            $table->foreignId('image_id')->nullable()->constrained('images')->onDelete('set null');
+$table->unsignedBigInteger('category_product_id')->nullable();
+$table
+    ->foreign('category_product_id')
+    ->references('id')
+    ->on('category_products')
+    ->onDelete('set null');
+$table->unsignedBigInteger('image_id')->nullable();
+$table
+    ->foreign('image_id')
+    ->references('id')
+    ->on('images')
+    ->onDelete('set null');
 
             $table->integer('type')->default(ProductType::MEDICATION->value);
             
