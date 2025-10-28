@@ -147,7 +147,7 @@ const Toolbar = ({
             </Button>
           )}
 
-          <Button
+          {/* <Button
             variant="outlined"
             color="primary"
             className="h-8 gap-2 rounded-md px-3 text-xs"
@@ -170,12 +170,11 @@ const Toolbar = ({
             >
               <ArrowUpTrayIcon className="size-4" />
               <QuestionMarkCircleIcon className="size-4 ml-1 text-gray-400" />
-            </Button>
+            </Button> */}
             
 
 
-            {/* Tooltip */}
-            <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
+            {/* <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
               <div>
                 <Button
                   variant="outlined"
@@ -308,7 +307,7 @@ const Toolbar = ({
                 }
               }}
             />
-          </div>
+          </div> */}
 
           <Button
             variant="filled"
@@ -320,7 +319,6 @@ const Toolbar = ({
             }}
           >
             <PlusIcon className="size-4" />
-            <span>{t('common.create_supplier')}</span>
           </Button>
 
           <ResponsiveFilter
