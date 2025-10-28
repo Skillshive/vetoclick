@@ -77,12 +77,6 @@ const menuConfig: MenuConfig[] = [
             path: route('category-products.index'),
             type: 'item',
           },
-          {
-            id: 'categoriesCreate',
-            title: 'common.menu.create_category',
-            path: '',
-            type: 'item',
-          }
         ],
       },
     ],
