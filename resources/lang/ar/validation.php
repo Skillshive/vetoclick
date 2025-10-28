@@ -169,4 +169,9 @@ return [
         "subscription_plan_max_clients_required" => "الحد الأقصى للعملاء مطلوب.",
         "subscription_plan_max_pets_required" => "الحد الأقصى للحيوانات الأليفة مطلوب.",
         "subscription_plan_max_appointments_required" => "الحد الأقصى للمواعيد مطلوب.",
+        "name_required" => "الاسم مطلوب",
+        "name_min_length" => "الاسم قصير جدًا",
+"name_max_length" => "الاسم طويل جدًا",
+"name_invalid_chars" => "الاسم يحتوي على أحرف غير صالحة",
+
 ];

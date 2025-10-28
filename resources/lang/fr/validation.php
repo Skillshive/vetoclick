@@ -204,4 +204,9 @@ return [
         "subscription_plan_max_clients_required" => "Le nombre maximum de clients est requis.",
         "subscription_plan_max_pets_required" => "Le nombre maximum d'animaux est requis.",
         "subscription_plan_max_appointments_required" => "Le nombre maximum de rendez-vous est requis.",
+        "name_required" => "Le nom est requis",
+        "name_min_length" => "Le nom est trop court",
+"name_max_length" => "Le nom est trop long",
+"name_invalid_chars" => "Le nom contient des caractères non valides",
+
 ];

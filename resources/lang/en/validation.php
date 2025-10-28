@@ -283,4 +283,9 @@ return [
     "blog_tags_required" => "The blog tags are required.",
     "blog_tags_string" => "The blog tags must be a valid text.",
     "blog_tags_max" => "The blog tags cannot exceed 1000 characters.",
+    "name_required" => "The name is required",
+    "name_min_length" => "The name is too short",
+"name_max_length" => "The name is too long",
+"name_invalid_chars" => "The name contains invalid characters",
+
 ];
