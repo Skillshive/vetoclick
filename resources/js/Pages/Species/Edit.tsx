@@ -65,7 +65,7 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [avatar, setAvatar] = useState<File | null>(null);
-console.log('species',species)
+
   const [validationErrors, setValidationErrors] = useState<{
     name?: string;
     description?: string;
@@ -90,8 +90,6 @@ console.log('species',species)
     description: specie.description || "",
     image: null as File | null,
   });
-
-  console.log("specie",specie);
   
   // Breed form
   const { data: breedData, setData: setBreedData, post: postBreed, processing: breedProcessing, errors: breedErrors, reset: resetBreed } = useForm({
@@ -143,7 +141,6 @@ console.log('species',species)
   // Breed form handlers
   const handleBreedSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('submitData', breedData);
  const result = breedsSchema.safeParse(breedData);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
@@ -155,7 +152,7 @@ console.log('species',species)
       });
       return;
     }
-console.log('specieX',specie)
+
     const submitData = {
       ...breedData,
       avg_weight_kg: breedData.avg_weight_kg ? Number(breedData.avg_weight_kg) : null,
@@ -163,7 +160,6 @@ console.log('specieX',specie)
       species_id: specie.uuid ?specie.uuid : null,
     };
 
-    console.log('submitDataX',submitData)
     if (isEditingBreed && editingBreed?.uuid) {
       postBreed(route('breeds.update', editingBreed.uuid), {
         data: submitData,
@@ -225,16 +221,15 @@ console.log('specieX',specie)
   };
 
   const handleEditBreed = (breed: Breed) => {
-    setEditingBreed(breed);
-    console.log("breed",breed);
-    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    setEditingBreed(breed);    
     setIsEditingBreed(true);
     setBreedData('breed_name', breed.breed_name);
     setBreedData('avg_weight_kg', Number(breed.avg_weight_kg) || "");
     setBreedData('life_span_years', Number(breed.life_span_years) || "");
     setBreedData('species_id', specie.uuid);
     setBreedData('image', null);
-    console.log('breedData',breedData)
     setBreedImage(null);
     showToast({
       type: 'info',

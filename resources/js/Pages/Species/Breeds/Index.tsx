@@ -76,15 +76,6 @@ export default function Breeds({
             {t('common.manage_breeds_for_species')}
           </p>
         </div>
-        <Button
-          onClick={onCreateBreed}
-          variant="filled"
-          color="primary"
-          className="h-8 gap-2 rounded-md px-3"
-        >
-          <HiPlus className="w-4 h-4" />
-          <span>{t('common.create_breed')}</span>
-        </Button>
       </div>
 
       {/* Breeds Grid */}
