@@ -44,7 +44,6 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
   const { showToast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Use custom hook for all table state management
   const {
     categoryProducts,
     isModalOpen,
@@ -147,22 +146,15 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
 
     setTimeout(() => {
       table.options.meta?.deleteRows?.(selectedRows);
-      setBulkDeleteSuccess(true);
       setConfirmBulkDeleteLoading(false);
+      closeBulkModal();
       // Show success toast
       showToast({
         type: 'success',
         message: t('common.category_products_deleted_success', { count: deleteCount }),
       });
-      // Reset success state after showing message
-      setTimeout(() => {
-        setBulkDeleteSuccess(false);
-        setBulkDeleteCount(0);
-      }, 3000);
     }, 1000);
   };
-
-  const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
 
   return (
     <>
@@ -399,14 +391,10 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
         pending: {
           description: t('common.confirm_delete_category_products', { count: table.getSelectedRowModel().rows.length }),
         },
-        success: {
-          title: t('common.category_products_deleted'),
-          description: t('common.category_products_deleted_success', { count: bulkDeleteCount }),
-        },
       }}
       onOk={handleBulkDeleteRows}
       confirmLoading={confirmBulkDeleteLoading}
-      state={bulkDeleteState}
+      state="pending"
     />
     </>
   );

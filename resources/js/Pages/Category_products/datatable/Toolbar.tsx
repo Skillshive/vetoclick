@@ -93,7 +93,7 @@ const Toolbar = ({
         </div>
 
         <div className="flex gap-2">
-          <Button
+        {/*   <Button
             variant="outlined"
             color="primary"
             className="h-8 gap-2 rounded-md px-3 text-xs"
@@ -106,9 +106,9 @@ const Toolbar = ({
           >
             <ArrowDownTrayIcon className="size-4" />
             <span>{t('common.export_csv')}</span>
-          </Button>
+          </Button> */}
 
-          <div className="relative inline-block group">
+          {/* <div className="relative inline-block group">
             <Button
               type="button"
               variant="outlined"
@@ -120,7 +120,6 @@ const Toolbar = ({
               <QuestionMarkCircleIcon className="size-4 ml-1 text-gray-400" />
             </Button>
             
-            {/* Tooltip */}
             <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
               <div>
                 <Button
@@ -280,7 +279,7 @@ const Toolbar = ({
                 }
               }}
             />
-          </div>
+          </div> */}
 
           <Button
             variant="filled"
@@ -292,7 +291,7 @@ const Toolbar = ({
             }}
           >
             <PlusIcon className="size-4" />
-            <span>{t('common.create_category_product')}</span>
+            {/* <span>{t('common.create_category_product')}</span> */}
           </Button>
 
           <ResponsiveFilter
