@@ -68,6 +68,8 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
         }
 
         if (isEditing) {
+console.log('supplier',supplier)
+console.log("Submitting data:", data);
             put(route('suppliers.update', supplier.uuid), {
                 onSuccess: () => {
                     showToast({
@@ -136,7 +138,7 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
 
     return (
         <Transition show={isOpen}>
-            <Dialog onClose={handleClose} className="relative z-50">
+            <Dialog onClose={handleClose} className="relative z-50" >
                 <TransitionChild
                     enter="ease-out duration-300"
                     enterFrom="opacity-0"
@@ -158,8 +160,7 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
-                                <div className="flex items-center justify-between mb-4">
+<DialogPanel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-8 text-left align-middle shadow-xl transition-all">                                <div className="flex items-center justify-between mb-4">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                         {isEditing ? 'Modifier le fournisseur' : 'Nouveau fournisseur'}
                                     </DialogTitle>
@@ -179,186 +180,183 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
                                 </p>
 
                                 <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <Input
+                type="name"
+                placeholder={t('common.supplier_name')}
+                label={t('common.supplier_name')}
+                className="rounded-xl"
+                required
+                prefix={<UserIcon className="size-4.5" />}
+                value={data.name}
+                onChange={(e) => {
+                    setData('name', e.target.value);
+                    const result = supplierSchema.safeParse({
+                        ...data,
+                        name: e.target.value,
+                    });
+                    if (!result.success) {
+                        const errors = result.error.flatten().fieldErrors;
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            name: errors.name?.[0] ? t(errors.name[0]) : undefined,
+                        }));
+                        setIsValid(false);
+                    } else {
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            name: undefined,
+                        }));
+                        setIsValid(true);
+                    }
+                }}
+            />
+            {
+                (errors?.name || validationErrors.name) && (
+                    <p className="text-red-500 text-sm mt-1">{errors?.name || validationErrors.name}</p>
+                )
+            }
+        </div>
 
+        <div>
+            <Input
+                type="email"
+                placeholder={t('common.supplier_email')}
+                label={t('common.supplier_email')}
+                className="rounded-xl"
+                prefix={<EnvelopeIcon className="size-4.5" />}
+                value={data.email}
+                required
+                onChange={(e) => {
+                    setData('email', e.target.value);
+                    const result = supplierSchema.safeParse({
+                        ...data,
+                        email: e.target.value,
+                    });
 
-                                        <Input
-                                            type="name"
-                                            placeholder={t('common.supplier_name')}
-                                            label={t('common.supplier_name')}
-                                            className="rounded-xl"
-                                            required
-                                            prefix={<UserIcon className="size-4.5" />}
-                                            value={data.name}
-                                            onChange={(e) => {
-                                                setData('name', e.target.value);
-                                                const result = supplierSchema.safeParse({
-                                                    ...data,
-                                                    name: e.target.value,
-                                                });
-                                                if (!result.success) {
-                                                    const errors = result.error.flatten().fieldErrors;
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        name: errors.name?.[0] ? t(errors.name[0]) : undefined,
-                                                    }));
-                                                    setIsValid(false);
-                                                } else {
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        name: undefined,
-                                                    }));
-                                                    setIsValid(true);
-                                                }
-                                            }}
-                                        />
-                                        {
-                                            (errors?.name || validationErrors.name) && (
-                                                <p className="text-red-500 text-sm mt-1">{errors?.name || validationErrors.name}</p>
-                                            )
-                                        }
-                                    </div>
+                    console.log('result',result);
+                    console.log('isValid',isValid);
+                    console.log('data',data);
+                    
+                    if (!result.success) {
+                        const errors = result.error.flatten().fieldErrors;
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            email: errors.email?.[0] ? t(errors.email[0]) : undefined,
+                        }));
+                        setIsValid(false);
+                    } else {
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            email: undefined,
+                        }));
+                        setIsValid(true);
+                    }
+                }}
+            />
+            {
+                (errors?.email || validationErrors.email) && (
+                    <p className="text-red-500 text-sm mt-1">{errors?.email || validationErrors.email}</p>
+                )
+            }
+        </div>
 
-                                    <div>
+        <div>
+            <Input
+                type="phone"
+                placeholder={t('common.supplier_phone')}
+                label={t('common.supplier_phone')}
+                className="rounded-xl"
+                prefix={<PhoneArrowDownLeftIcon className="size-4.5" />}
+                value={data.phone}
+                onChange={(e) => {
+                    setData('phone', e.target.value);
+                    const result = supplierSchema.safeParse({
+                        ...data,
+                        phone: e.target.value,
+                    });
+                    if (!result.success) {
+                        const errors = result.error.flatten().fieldErrors;
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
+                        }));
+                        setIsValid(false);
+                    } else {
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            phone: undefined,
+                        }));
+                        setIsValid(true);
+                    }
+                }}
+            />
+            {
+                (errors?.phone || validationErrors.phone) && (
+                    <p className="text-red-500 text-sm mt-1">{errors?.phone || validationErrors.phone}</p>
+                )
+            }
+        </div>
 
+        <div>
+            <Input
+                type="address"
+                placeholder={t('common.supplier_address')}
+                label={t('common.supplier_address')}
+                className="rounded-xl"
+                prefix={<MapIcon className="size-4.5" />}
+                value={data.address}
+                onChange={(e) => {
+                    setData('address', e.target.value);
+                    const result = supplierSchema.safeParse({
+                        ...data,
+                        address: e.target.value,
+                    });
+                    if (!result.success) {
+                        const errors = result.error.flatten().fieldErrors;
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            address: errors.address?.[0] ? t(errors.address[0]) : undefined,
+                        }));
+                    } else {
+                        setValidationErrors(prev => ({
+                            ...prev,
+                            address: undefined,
+                        }));
+                    }
+                }}
+            />
+            {
+                (errors?.address || validationErrors.address) && (
+                    <p className="text-red-500 text-sm mt-1">{errors?.address || validationErrors.address}</p>
+                )
+            }
+        </div>
+    </div>
 
-                                        <Input
-                                            type="email"
-                                            placeholder={t('common.supplier_email')}
-                                            label={t('common.supplier_email')}
-                                            className="rounded-xl"
-                                            prefix={<EnvelopeIcon className="size-4.5" />}
-                                            value={data.email}
-                                            required
-                                            onChange={(e) => {
-                                                setData('email', e.target.value);
-                                                const result = supplierSchema.safeParse({
-                                                    ...data,
-                                                    email: e.target.value,
-                                                });
-
-                                                console.log('result',result);
-                                                 console.log('isValid',isValid);
-                                                 console.log('data',data);
-                                                
-                                                if (!result.success) {
-                                                    const errors = result.error.flatten().fieldErrors;
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        email: errors.email?.[0] ? t(errors.email[0]) : undefined,
-                                                    }));
-                                                    setIsValid(false);
-                                                } else {
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        email: undefined,
-                                                    }));
-                                                    setIsValid(true);
-                                                }
-                                            }}
-                                        />
-                                        {
-                                            (errors?.email || validationErrors.email) && (
-                                                <p className="text-red-500 text-sm mt-1">{errors?.email || validationErrors.email}</p>
-                                            )
-                                        }
-                                    </div>
-                                    <div>
-
-
-                                        <Input
-                                            type="phone"
-                                            placeholder={t('common.supplier_phone')}
-                                            label={t('common.supplier_phone')}
-                                            className="rounded-xl"
-                                            prefix={<PhoneArrowDownLeftIcon className="size-4.5" />}
-                                            value={data.phone}
-                                            onChange={(e) => {
-                                                setData('phone', e.target.value);
-                                                const result = supplierSchema.safeParse({
-                                                    ...data,
-                                                    phone: e.target.value,
-                                                });
-                                                if (!result.success) {
-                                                    const errors = result.error.flatten().fieldErrors;
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
-                                                    }));
-                                                    setIsValid(false);
-                                                } else {
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        phone: undefined,
-                                                    }));
-                                                    setIsValid(true);
-                                                }
-                                            }}
-                                        />
-                                        {
-                                            (errors?.phone || validationErrors.phone) && (
-                                                <p className="text-red-500 text-sm mt-1">{errors?.phone || validationErrors.phone}</p>
-                                            )
-                                        }
-                                    </div>
-                                    <div>
-
-
-                                        <Input
-                                            type="address"
-                                            placeholder={t('common.supplier_address')}
-                                            label={t('common.supplier_address')}
-                                            className="rounded-xl"
-                                            prefix={<MapIcon className="size-4.5" />}
-                                            value={data.address}
-                                            onChange={(e) => {
-                                                setData('address', e.target.value);
-                                                const result = supplierSchema.safeParse({
-                                                    ...data,
-                                                    address: e.target.value,
-                                                });
-                                                if (!result.success) {
-                                                    const errors = result.error.flatten().fieldErrors;
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        address: errors.address?.[0] ? t(errors.address[0]) : undefined,
-                                                    }));
-                                                } else {
-                                                    setValidationErrors(prev => ({
-                                                        ...prev,
-                                                        address: undefined,
-                                                    }));
-                                                }
-                                            }}
-                                        />
-                                        {
-                                            (errors?.address || validationErrors.address) && (
-                                                <p className="text-red-500 text-sm mt-1">{errors?.address || validationErrors.address}</p>
-                                            )
-                                        }
-                                    </div>
-                                    <div className="flex items-center justify-end space-x-3 pt-4">
-                                        <Button
-                                            type="button"
-                                            variant="outlined"
-                                            onClick={handleClose}
-                                            disabled={processing}
-                                        >
-                                            Annuler
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            variant="filled"
-                                            disabled={processing}
-                                            color="primary"
-                                        >
-                                            {processing
-                                                ? (isEditing ? t('common.updating') : t('common.creating'))
-                                                : (isEditing ? t('common.update') : t('common.create'))
-                                            }
-                                        </Button>
-                                    </div>
-                                </form>
+    <div className="flex items-center justify-end space-x-3 pt-4">
+        <Button
+            type="button"
+            variant="outlined"
+            onClick={handleClose}
+            disabled={processing}
+        >
+            Annuler
+        </Button>
+        <Button
+            type="submit"
+            variant="filled"
+            disabled={processing}
+            color="primary"
+        >
+            {processing
+                ? (isEditing ? t('common.updating') : t('common.creating'))
+                : (isEditing ? t('common.update') : t('common.create'))
+            }
+        </Button>
+    </div>
+</form>
                             </DialogPanel>
                         </TransitionChild>
                     </div>

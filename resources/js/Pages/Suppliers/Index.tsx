@@ -1,6 +1,5 @@
 import MainLayout from '@/layouts/MainLayout';
 import { DataTable, DataTableRef } from '@/components/shared/table/DataTable';
-import { Page } from '@/components/shared/Page';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSupplierTable } from './datatable/hooks';
 import { createColumns } from './datatable/columns';
@@ -8,20 +7,18 @@ import { Toolbar } from './datatable/Toolbar';
 import { useToast } from '@/Components/common/Toast/ToastContext';
 import { ConfirmModal } from '@/components/shared/ConfirmModal';
 import { useEffect, useState, useRef } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Supplier } from '@/types/Suppliers';
 import SupplierFormModal from '@/components/modals/SupplierFormModal';
 import { SuppliersDatatableProps } from './datatable/types';
 
 export default function Index({suppliers, filters, old, errors}: SuppliersDatatableProps) {
-   console.log('suppliers',suppliers.data)
     const { t } = useTranslation();
     const { showToast } = useToast();
     const tableRef = useRef<DataTableRef<Supplier>>(null);
     const [rowSelection, setRowSelection] = useState({});
     const [currentUrl, setCurrentUrl] = useState(window.location.href);
 
-    // Use the custom hook for table state
     const {
         suppliers: tableData,
         isModalOpen,
@@ -118,22 +115,32 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
 
             setTimeout(() => {
                 tableMeta.deleteRows?.(selectedRows);
-                setBulkDeleteSuccess(true);
                 setConfirmBulkDeleteLoading(false);
-                // Show success toast
+                closeBulkModal();
+
                 showToast({
                     type: 'success',
-                    message: t('common.category_blogs_deleted_success', { count: deleteCount }),
+                    message: t('common.suppliers_deleted_success'),
                 });
-                // Reset success state after showing message
-                setTimeout(() => {
-                    setBulkDeleteSuccess(false);
-                    setBulkDeleteCount(0);
-                }, 3000);
             }, 1000);
         } else {
             setConfirmBulkDeleteLoading(false);
         }
+    };
+
+    const handleSingleDeleteRowWithToast = () => {
+        setConfirmSingleDeleteLoading(true);
+
+        setTimeout(() => {
+            tableMeta.deleteRow?.(selectedRowForDelete);
+            setConfirmSingleDeleteLoading(false);
+            closeSingleDeleteModal();
+
+            showToast({
+                type: 'success',
+                message: t('common.supplier_deleted_success'),
+            });
+        }, 1000);
     };
 
     useEffect(() => {
@@ -194,11 +201,8 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
         }
     }, [sorting]);
 
-
-    const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
-
     return <MainLayout>
-        <Page title={t('common.category_blogs')}>
+                <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
             <div className="transition-content w-full pb-5">
                 <DataTable<Supplier>
                     ref={tableRef}
@@ -232,7 +236,7 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
                     meta={tableMeta}
                 />
             </div>
-        </Page>
+            </div>
 
          <SupplierFormModal
               isOpen={isModalOpen}
@@ -249,15 +253,11 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
             messages={{
                 pending: {
                     description: t('common.confirm_delete_supplier', { count: bulkDeleteCount }),
-                },
-                success: {
-                    title: t('common.supplier_deleted'),
-                    description: t('common.supplier_deleted_success', { count: bulkDeleteCount }),
-                },
+                }
             }}
             onOk={handleBulkDeleteRows}
             confirmLoading={confirmBulkDeleteLoading}
-            state={bulkDeleteState}
+            state="pending"
         />
 
         <ConfirmModal
@@ -266,15 +266,11 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
             messages={{
                 pending: {
                     description: t('common.confirm_delete_supplier'),
-                },
-                success: {
-                    title: t('common.supplier_deleted'),
-                    description: t('common.supplier_deleted_success'),
-                },
+                }
             }}
-            onOk={handleSingleDeleteRow}
+            onOk={handleSingleDeleteRowWithToast}
             confirmLoading={confirmSingleDeleteLoading}
-            state={singleDeleteError ? "error" : singleDeleteSuccess ? "success" : "pending"}
+            state="pending"
         />
     </MainLayout>
 }
