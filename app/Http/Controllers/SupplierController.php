@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateSupplierRequest;
-use App\Http\Requests\UpdateSupplierRequest;
 use App\Services\SupplierService;
 use App\common\SupplierDto;
 use App\Http\Requests\Stock\ImportSuppliersRequest;
+use App\Http\Requests\SupplierRequest;
 use App\Http\Resources\Stock\SupplierResource;
-use App\Models\CategoryBlog;
 use App\Models\Supplier;
 use App\Services\CsvService;
 use Illuminate\Http\RedirectResponse;
@@ -101,7 +99,7 @@ class SupplierController extends Controller
     /**
      * Store a newly created supplier
      */
-    public function store(CreateSupplierRequest $request): RedirectResponse
+    public function store(SupplierRequest $request): RedirectResponse
     {
         try {
             $dto = SupplierDto::fromRequest($request);
@@ -119,7 +117,7 @@ class SupplierController extends Controller
     /**
      * Update the specified supplier by UUID
      */
-    public function update(UpdateSupplierRequest $request, string $uuid): RedirectResponse
+    public function update(SupplierRequest $request, string $uuid): RedirectResponse
     {
         try {
             $dto = SupplierDto::fromRequest($request);
