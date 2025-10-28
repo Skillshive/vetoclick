@@ -116,7 +116,7 @@ return [
     'confirm_delete_category_product' => 'Êtes-vous sûr de vouloir supprimer cette catégorie de produit ?',
     'category_products_deleted' => 'Catégories de produits supprimées',
     'confirm_delete_category_products' => 'Êtes-vous sûr de vouloir supprimer :count catégories de produits sélectionnées ?',
-    'category_products_deleted_success' => ':count catégories de produits ont été supprimées avec succès',
+    'category_products_deleted_success' => 'Catégories de produits ont été supprimées avec succès',
     'created_date' => 'Date de création',
     
     // Product types
@@ -311,10 +311,11 @@ return [
     'category_product_update_error' => 'Échec de la mise à jour de la catégorie de produit.',
     'category_product_create_error' => 'Échec de la création de la catégorie de produit.',
     'category_products_deleted' => 'Catégories de produits supprimées',
-    'category_products_deleted_success' => ':count catégories de produits ont été supprimées avec succès.',
+    'category_products_deleted_success' => 'Catégories de produits ont été supprimées avec succès.',
     'confirm_delete_category_product' => 'Êtes-vous sûr de vouloir supprimer cette catégorie de produit ? Une fois supprimée, elle ne peut pas être restaurée.',
     'confirm_delete_category_products' => 'Êtes-vous sûr de vouloir supprimer :count catégories de produits sélectionnées ? Une fois supprimées, elles ne peuvent pas être restaurées.',
     'no_category_products_found' => 'Aucune catégorie de produit trouvée',
+    'category_product_deleted_success' => 'Produits de la catégorie supprimés avec succès',
     'search_category_products' => 'Rechercher des catégories de produits...',
     'manage_category_products' => 'Gérer les catégories de produits',
     'category_product_management' => 'Catégories',

@@ -186,7 +186,7 @@ return [
     'confirm_delete_category_product' => 'Are you sure you want to delete this category product?',
     'category_products_deleted' => 'Category products deleted',
     'confirm_delete_category_products' => 'Are you sure you want to delete :count selected category products?',
-    'category_product_deleted_success' => 'Successfully deleted :count category products',
+    'category_product_deleted_success' => 'Successfully deleted category products',
     "filter_by_parent_category"=>"Filter by Parent Category",
     'created_date' => 'Created Date',
 
@@ -395,7 +395,7 @@ return [
     'category_product_update_error' => 'Failed to update category product.',
     'category_product_create_error' => 'Failed to create category product.',
     'category_products_deleted' => 'Category products deleted',
-    'category_products_deleted_success' => 'Successfully deleted :count category products.',
+    'category_products_deleted_success' => 'Successfully deleted category products.',
     'confirm_delete_category_product' => 'Are you sure you want to delete this category product? Once deleted, it cannot be restored.',
     'confirm_delete_category_products' => 'Are you sure you want to delete :count selected category products? Once deleted, they cannot be restored.',
     'no_category_products_found' => 'No category products found',
