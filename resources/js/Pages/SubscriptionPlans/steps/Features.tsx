@@ -36,6 +36,7 @@ export function Features({
     selected_features?: string;
   }>({});
   const selectedFeatures = subscriptionPlanFormCtx.state.formData.features.selected_features;       
+  
   const handleFeatureToggle = (featureId: string, isChecked: boolean) => {
     const currentSelected = selectedFeatures || [];
     if (isChecked) {
@@ -49,6 +50,11 @@ export function Features({
         payload: { features: { ...subscriptionPlanFormCtx.state.formData.features, selected_features: currentSelected.filter(id => id !== featureId) } },
       });
     }
+  };
+
+  const handleFeatureClick = (featureId: string) => {
+    const isCurrentlyChecked = selectedFeatures.includes(featureId);
+    handleFeatureToggle(featureId, !isCurrentlyChecked);
   };
 
   const toggleGroup = (groupId: string) => {
@@ -129,10 +135,17 @@ export function Features({
                       <div className="px-4 pb-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                           {groupFeatures.map((feature) => (
-                            <div key={feature.uuid} className="flex items-start">
+                            <div 
+                              key={feature.uuid} 
+                              className="flex items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded transition-colors"
+                              onClick={() => handleFeatureClick(feature.uuid)}
+                            >
                               <Checkbox
                                 checked={selectedFeatures.includes(feature.uuid)}
-                                onChange={(e) => handleFeatureToggle(feature.uuid, e.target.checked)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  handleFeatureToggle(feature.uuid, e.target.checked);
+                                }}
                                 className="mr-3 mt-1"
                               />
                               <div className="flex-1">
