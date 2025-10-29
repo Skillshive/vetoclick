@@ -10,6 +10,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { Blog, BlogsProps } from "./types";
 import { BlogCard } from "./partials/BlogCard";
+import LampIcon from "@/assets/dualicons/lamp.svg?react";
 
 
 export default function Index({
@@ -104,7 +105,10 @@ export default function Index({
 
       {blogsList.length === 0 ? (
         <Card className="p-6 text-center">
-          <p className="text-gray-500">{t('common.no_blogs_found')}</p>
+ <LampIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-dark-400" />
+                        <p className="mt-2 text-sm text-gray-500 dark:text-dark-300">
+                          {t('common.no_blogs_found')}
+                        </p>
         </Card>
       ) : (
         <>
