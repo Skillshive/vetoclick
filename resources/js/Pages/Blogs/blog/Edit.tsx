@@ -93,24 +93,24 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
     }
   }, [showToast]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+ const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const result = blogFormSchema.safeParse(data);
     if (!result.success) {
-      const errors = result.error.flatten().fieldErrors;
-      setValidationErrors({
-        title: errors.title?.[0] ? t(errors.title[0]) : undefined,
-        body: errors.body?.[0] ? t(errors.body[0]) : undefined,
-        caption: errors.caption?.[0] ? t(errors.caption[0]) : undefined,
-        image_file: (errors as any).image_file?.[0] ? t((errors as any).image_file[0]) : undefined,
-        meta_title: errors.meta_title?.[0] ? t(errors.meta_title[0]) : undefined,
-        meta_desc: errors.meta_desc?.[0] ? t(errors.meta_desc[0]) : undefined,
-        meta_keywords: errors.meta_keywords?.[0] ? t(errors.meta_keywords[0]) : undefined,
-        category_blog_id: errors.category_blog_id?.[0] ? t(errors.category_blog_id[0]) : undefined,
-        tags: errors.tags?.[0] ? t(errors.tags[0]) : undefined,
-      });
-      return;
+        const errors = result.error.flatten().fieldErrors;
+        setValidationErrors({
+            title: errors.title?.[0] ? t(errors.title[0]) : undefined,
+            body: errors.body?.[0] ? t(errors.body[0]) : undefined,
+            caption: errors.caption?.[0] ? t(errors.caption[0]) : undefined,
+            image_file: (errors as any).image_file?.[0] ? t((errors as any).image_file[0]) : undefined,
+            meta_title: errors.meta_title?.[0] ? t(errors.meta_title[0]) : undefined,
+            meta_desc: errors.meta_desc?.[0] ? t(errors.meta_desc[0]) : undefined,
+            meta_keywords: errors.meta_keywords?.[0] ? t(errors.meta_keywords[0]) : undefined,
+            category_blog_id: errors.category_blog_id?.[0] ? t(errors.category_blog_id[0]) : undefined,
+            tags: errors.tags?.[0] ? t(errors.tags[0]) : undefined,
+        });
+        return;
     }
 
     setProcessing(true);
@@ -126,35 +126,55 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
     formData.append('tags', tags.map(tag => tag.value).join(','));
     
     if (imageFile) {
-      formData.append('image_file', imageFile);
+        formData.append('image_file', imageFile);
     }
 
-    router.put(route('blogs.update', blog.uuid), formData as any, {
-      onSuccess: () => {
-        setProcessing(false);
-        showToast({
-          type: 'success',
-          message: t('common.blog_updated_success'),
-          duration: 3000,
-        });
-        router.visit(route('blogs.index'));
-      },
-      onError: (errors: any) => {
-        setProcessing(false);
-        showToast({
-          type: 'error',
-          message: t('common.blog_update_error'),
-          duration: 3000,
-        });
-      }
+    router.post(route('blogs.update', blog.uuid), formData as any, {
+        forceFormData: true,
+        onBefore: () => {
+            // Add _method for Laravel to recognize this as a PUT request
+            formData.append('_method', 'PUT');
+        },
+        onSuccess: () => {
+            setProcessing(false);
+            showToast({
+                type: 'success',
+                message: t('common.blog_updated_success'),
+                duration: 3000,
+            });
+            router.visit(route('blogs.index'));
+        },
+        onError: (errors: any) => {
+            setProcessing(false);
+
+            setValidationErrors({
+                title: errors.title?.[0] || errors.title,
+                body: errors.body?.[0] || errors.body,
+                caption: errors.caption?.[0] || errors.caption,
+                image_file: errors.image_file || errors.image_file,
+                meta_title: errors.meta_title?.[0] || errors.meta_title,
+                meta_desc: errors.meta_desc?.[0] || errors.meta_desc,
+                meta_keywords: errors.meta_keywords?.[0] || errors.meta_keywords,
+                category_blog_id: errors.category_blog_id?.[0] || errors.category_blog_id,
+                tags: errors.tags?.[0] || errors.tags,
+            });
+            
+            // Show toast with the first error message
+            const firstError = Object.values(errors)[0];
+            showToast({
+                type: 'error',
+                message: Array.isArray(firstError) ? firstError[0] : firstError || t('common.blog_update_error'),
+                duration: 3000,
+            });
+        }
     });
-  };
+};
 
   const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.blogs'), path: route('blogs.index') },
     { title: t('common.edit_blog')},
   ];
-
+  
   return (
     <MainLayout>
       <Page title={t("common.edit_blog")}>

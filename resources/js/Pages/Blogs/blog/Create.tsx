@@ -123,6 +123,19 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
       },
       onError: (errors: any) => {
         setProcessing(false);
+
+         setValidationErrors({
+                title: errors.title?.[0] || errors.title,
+                body: errors.body?.[0] || errors.body,
+                caption: errors.caption?.[0] || errors.caption,
+                image_file: errors.image_file || errors.image_file,
+                meta_title: errors.meta_title?.[0] || errors.meta_title,
+                meta_desc: errors.meta_desc?.[0] || errors.meta_desc,
+                meta_keywords: errors.meta_keywords?.[0] || errors.meta_keywords,
+                category_blog_id: errors.category_blog_id?.[0] || errors.category_blog_id,
+                tags: errors.tags?.[0] || errors.tags,
+            });
+            
         showToast({
           type: 'error',
           message: t('common.blog_create_error'),
