@@ -29,11 +29,9 @@ export default function Index({
   const { showToast } = useToast();
   const confirmContext = useConfirm();
   const { t } = useTranslation();
-console.log('subscriptionPlans',subscriptionPlans);
-  // Get plans list first
+
   const plansList: SubscriptionPlan[] = subscriptionPlans?.data.data || [];
 
-  // Fetch total active plans count
   useEffect(() => {
     const fetchActivePlansCount = async () => {
       try {
@@ -42,7 +40,6 @@ console.log('subscriptionPlans',subscriptionPlans);
         setTotalActivePlansCount(data.count || 0);
       } catch (error) {
         console.error('Error fetching active plans count:', error);
-        // Fallback to counting current page plans
         const currentPageActiveCount = plansList.filter((plan: SubscriptionPlan) => plan.is_active).length;
         setTotalActivePlansCount(currentPageActiveCount);
       }
@@ -157,7 +154,7 @@ console.log('subscriptionPlans',subscriptionPlans);
       <Page title={t('common.subscription_plans')}>
         <div className="transition-content px-(--margin-x) pb-6 my-5">
           {/* Header with Search and Create Button */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
               <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -166,7 +163,7 @@ console.log('subscriptionPlans',subscriptionPlans);
             </div>
             
             <div className="flex items-center gap-3">
-            <Input
+              <Input
                 classNames={{
                   input: "text-xs-plus h-9 rounded-full",
                   root: "max-sm:hidden",
@@ -178,25 +175,17 @@ console.log('subscriptionPlans',subscriptionPlans);
                 prefix={<MagnifyingGlassIcon className="size-4.5" />}
               />
 
-              {canCreateNewPlan ? (
-                <Button
-                  onClick={() => {
-                    router.visit(route('subscription-plans.create'));
-                  }}
-                  variant="filled"
-                  color="primary"
-                  className="h-8 gap-2 rounded-md px-3"
-                >
-                  <HiPlus className="w-4 h-4" />
-                </Button>
-              ) : (
-                <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span className="text-sm text-amber-700 dark:text-amber-300 font-medium">
-                    {t('common.max_active_plans_reached')}
-                  </span>
-                </div>
-              )}
+              <Button
+                disabled={!canCreateNewPlan}
+                onClick={() => {
+                  router.visit(route('subscription-plans.create'));
+                }}
+                variant="filled"
+                color="primary"
+                className="h-8 gap-2 rounded-md px-3"
+              >
+                <HiPlus className="w-4 h-4" />
+              </Button>
             </div>
           </div>
 
@@ -228,7 +217,7 @@ console.log('subscriptionPlans',subscriptionPlans);
             </Card>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {plansList.map((plan: SubscriptionPlan) => (
                   <SubscriptionPlanCard
                     key={plan.uuid}
@@ -247,7 +236,7 @@ console.log('subscriptionPlans',subscriptionPlans);
 
               {/* Pagination - Show when there are multiple pages */}
               {meta && meta.last_page > 1 && (
-                <div className="mt-6 flex justify-center">
+                <div className="mt-4 flex justify-center">
                   <Pagination
                     total={meta.last_page}
                     value={meta.current_page}
