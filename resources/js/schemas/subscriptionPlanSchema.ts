@@ -70,10 +70,11 @@ export const featuresSchema = z.object({
 });
 
 export const limitsSchema = z.object({
-    max_clients: z.number().min(1, 'validation.subscription_plan_max_clients_required'),
-    max_pets: z.number().min(1, 'validation.subscription_plan_max_pets_required'),
-    max_appointments: z.number().min(1, 'validation.subscription_plan_max_appointments_required'),
+  max_clients: z.coerce.number().min(1, 'validation.subscription_plan_max_clients_required'),
+  max_pets: z.coerce.number().min(1, 'validation.subscription_plan_max_pets_required'),
+  max_appointments: z.coerce.number().min(1, 'validation.subscription_plan_max_appointments_required'),
 });
+
 // export type SubscriptionPlanFormData = z.infer<typeof subscriptionPlanSchema>;
 export type BasicInfoType = z.infer<typeof basicInfoSchema>;
 export type PricingType = z.infer<typeof pricingSchema>;
