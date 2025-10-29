@@ -114,20 +114,15 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
             setBulkDeleteCount(deleteCount);
 
             setTimeout(() => {
-                tableMeta.deleteRows?.(selectedRows);
-                setBulkDeleteSuccess(true);
-                setConfirmBulkDeleteLoading(false);
-
-                showToast({
-                    type: 'success',
-                    message: t('common.category_blogs_deleted_success'),
-                });
-
-                setTimeout(() => {
-                    setBulkDeleteSuccess(false);
-                    setBulkDeleteCount(0);
-                }, 3000);
-            }, 1000);
+            tableMeta.deleteRows?.(selectedRows);
+            setConfirmBulkDeleteLoading(false);
+            closeBulkModal(); 
+            
+            showToast({
+                type: 'success',
+                message: t('common.category_blogs_deleted_success', { count: deleteCount }),
+            });
+        }, 1000);
         } else {
             setConfirmBulkDeleteLoading(false);
         }
