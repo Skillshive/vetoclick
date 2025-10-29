@@ -10,7 +10,7 @@ import CategoryBlogFormModal from '@/components/modals/CategoryBlogFormModal';
 import { useToast } from '@/Components/common/Toast/ToastContext';
 import { ConfirmModal } from '@/components/shared/ConfirmModal';
 import { useEffect, useState, useRef } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 export default function Index({categoryBlogs, parentCategories, filters, old, errors}: CategoryBlogManagementPageProps) {
     const { t } = useTranslation();
@@ -20,7 +20,6 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
     const [filtersInitialized, setFiltersInitialized] = useState(false);
     const [currentUrl, setCurrentUrl] = useState(window.location.href);
 
-    // Use the custom hook for table state
     const {
         categoryBlogs: tableData,
         isModalOpen,
@@ -36,7 +35,6 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
         bulkDeleteError,
         setBulkDeleteError,
 
-        // Single delete modal state
         singleDeleteModalOpen,
         setSingleDeleteModalOpen,
         confirmSingleDeleteLoading,
@@ -67,7 +65,6 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
         initialFilters: filters,
     });
 
-    // Create columns
     const columns = createColumns({
       setSelectedCategoryBlog,
       setIsModalOpen,
@@ -75,24 +72,6 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
       t
     });
 
-    // Search function that sends backend requests
-    const handleSearch = (searchValue: string) => {
-        const parentCategoryFilter = tableRef.current?.table.getColumn("parentCategory")?.getFilterValue() as string[] | undefined;
-        router.visit(route('category-blogs.index', {
-            page: 1, // Reset to first page when searching
-            per_page: filters.per_page || 10,
-            search: searchValue,
-            sort_by: sorting[0]?.id || 'created_at',
-            sort_direction: sorting[0]?.desc ? 'desc' : 'asc',
-            parent_category: parentCategoryFilter?.length ? parentCategoryFilter : null,
-        }), {
-            preserveScroll: false,
-            preserveState: false,
-            replace: true
-        });
-    };
-
-    // Pagination
     const pagination = {
         pageIndex: (categoryBlogs.meta?.current_page || 1) - 1,
         pageSize: filters.per_page || 10,
@@ -114,7 +93,6 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
         }
     };
 
-    // Bulk delete handlers
     const closeBulkModal = () => {
         setBulkDeleteModalOpen(false);
     };
@@ -130,31 +108,27 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
     const handleBulkDeleteRows = () => {
         setConfirmBulkDeleteLoading(true);
         const selectedRows = tableRef.current?.table.getSelectedRowModel().rows;
-        console.log('Selected rows for bulk delete:', selectedRows);
-        console.log('Table ref:', tableRef.current);
 
         if (selectedRows && selectedRows.length > 0) {
             const deleteCount = selectedRows.length;
             setBulkDeleteCount(deleteCount);
-            console.log(`Bulk deleting ${deleteCount} rows`);
 
             setTimeout(() => {
                 tableMeta.deleteRows?.(selectedRows);
                 setBulkDeleteSuccess(true);
                 setConfirmBulkDeleteLoading(false);
-                // Show success toast
+
                 showToast({
                     type: 'success',
-                    message: t('common.category_blogs_deleted_success', { count: deleteCount }),
+                    message: t('common.category_blogs_deleted_success'),
                 });
-                // Reset success state after showing message
+
                 setTimeout(() => {
                     setBulkDeleteSuccess(false);
                     setBulkDeleteCount(0);
                 }, 3000);
             }, 1000);
         } else {
-            console.log('No rows selected for bulk delete');
             setConfirmBulkDeleteLoading(false);
         }
     };
@@ -172,23 +146,18 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
         }
     }, [old, categoryBlogs.data]);
 
-    // Initialize parent category filter from URL parameters
     useEffect(() => {
-        // Reset initialization state when URL changes
         setFiltersInitialized(false);
 
         const initializeFilters = () => {
             const urlParams = new URLSearchParams(window.location.search);
 
-            // Try to get parent_category parameters in different formats
             let parentCategoryParams: string[] = [];
 
-            // First, try the standard multiple parameter format
             const standardParams = urlParams.getAll('parent_category');
             if (standardParams.length > 0) {
                 parentCategoryParams = standardParams;
             } else {
-                // Try array notation format: parent_category[0], parent_category[1], etc.
                 const arrayParams: string[] = [];
                 let index = 0;
                 while (true) {
@@ -201,14 +170,9 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
                 parentCategoryParams = arrayParams;
             }
 
-            console.log('URL params:', Object.fromEntries(urlParams));
-            console.log('Parent category params found:', parentCategoryParams);
-            console.log('Table ref on init:', tableRef.current);
-
             if (parentCategoryParams.length > 0 && tableRef.current?.table) {
                 const parentCategoryColumn = tableRef.current.table.getColumn("parentCategory");
                 if (parentCategoryColumn) {
-                    console.log('Setting filter values:', parentCategoryParams);
                     parentCategoryColumn.setFilterValue(parentCategoryParams);
                     setFiltersInitialized(true);
                 }
@@ -217,9 +181,8 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
             }
         };
 
-        // Use multiple attempts to ensure table is ready
         const attemptInitialization = (attempts = 0) => {
-            if (attempts > 10) return; // Max 10 attempts
+            if (attempts > 10) return; 
 
             if (tableRef.current?.table) {
                 initializeFilters();
@@ -229,9 +192,8 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
         };
 
         attemptInitialization();
-    }, [currentUrl]); // Run when URL changes
+    }, [currentUrl]); 
 
-    // Update current URL when location changes
     useEffect(() => {
         const handleLocationChange = () => {
             setCurrentUrl(window.location.href);
@@ -239,7 +201,6 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
 
         window.addEventListener('popstate', handleLocationChange);
 
-        // Also check for URL changes periodically (for programmatic navigation)
         const intervalId = setInterval(() => {
             if (window.location.href !== currentUrl) {
                 setCurrentUrl(window.location.href);
@@ -252,16 +213,11 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
         };
     }, [currentUrl]);
 
-
-    console.log('categoryBlogs',categoryBlogs)
-    console.log('parentCategories',parentCategories)
-
-    // Normalize parentCategories to array
     const normalizedParentCategories = Array.isArray(parentCategories) ? parentCategories : parentCategories?.data || [];
     const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
 
     return <MainLayout>
-        <Page title={t('common.category_blogs')}>
+        <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
             <div className="transition-content w-full pb-5">
                 <DataTable<CategoryBlog>
                     ref={tableRef}
@@ -295,7 +251,7 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
                     meta={tableMeta}
                 />
             </div>
-        </Page>
+        </div>
 
         <CategoryBlogFormModal
             isOpen={isModalOpen}
@@ -313,11 +269,11 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
             onClose={closeBulkModal}
             messages={{
                 pending: {
-                    description: t('common.confirm_delete_category_blogs', { count: bulkDeleteCount }),
+                    description: t('common.confirm_delete_category_blogs'),
                 },
                 success: {
                     title: t('common.category_blogs_deleted'),
-                    description: t('common.category_blogs_deleted_success', { count: bulkDeleteCount }),
+                    description: t('common.category_blogs_deleted_success'),
                 },
             }}
             onOk={handleBulkDeleteRows}

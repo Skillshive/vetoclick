@@ -29,26 +29,6 @@ interface ToolbarProps {
   parentCategories?: CategoryBlog[] | { data: CategoryBlog[] };
 }
 
-
-
-const solutions = [
-  {
-    name: "Insights",
-    description: "Measure actions your users take",
-    href: "##",
-  },
-  {
-    name: "Automations",
-    description: "Create your own targeted content",
-    href: "##",
-  },
-  {
-    name: "Reports",
-    description: "Keep track of your growth",
-    href: "##",
-  },
-];
-
 const Toolbar = ({
   table,
   globalFilter,
@@ -74,15 +54,11 @@ const Toolbar = ({
     (globalFilter && globalFilter.trim() !== '') ||
     hasUrlFilters;
 
-  // Clear all filters function
   const handleClearAllFilters = () => {
-    // Clear table column filters
     table.resetColumnFilters();
 
-    // Clear global search filter
     setGlobalFilter('');
 
-    // Navigate to clear URL parameters
     router.visit(route('category-blogs.index'), {
       preserveScroll: false,
       preserveState: false,
@@ -148,11 +124,10 @@ const Toolbar = ({
               className="h-8 gap-2 rounded-md px-3 text-xs"
             >
               <XMarkIcon className="size-4" />
-              {/* <span>{t('common.clear_filters')}</span> */}
             </Button>
           )}
 
-          <Button
+          {/* <Button
             variant="outlined"
             color="primary"
             className="h-8 gap-2 rounded-md px-3 text-xs"
@@ -165,24 +140,24 @@ const Toolbar = ({
           >
             <ArrowDownTrayIcon className="size-4" />
             <span>{t('common.export_csv')}</span>
-          </Button>
+          </Button> */}
 
           <div className="relative inline-block group">
-            <Button
+            {/* <Button
               type="button"
               variant="outlined"
               color="primary"
               className="h-8 gap-2 rounded-md px-3 text-xs pointer-events-none"
             >
               <ArrowUpTrayIcon className="size-4" />
-              {/* <span>{t('common.import_csv')}</span> */}
+              <span>{t('common.import_csv')}</span>
               <QuestionMarkCircleIcon className="size-4 ml-1 text-gray-400" />
-            </Button>
+            </Button> */}
             
 
 
             {/* Tooltip */}
-            <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
+            {/* <div className="invisible group-hover:visible absolute left-0 bottom-full mb-2 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
               <div>
                 <Button
                   variant="outlined"
@@ -321,8 +296,8 @@ const Toolbar = ({
                   console.log('No file selected');
                 }
               }}
-            />
-          </div>
+            /> */}
+          </div> 
 
           <Button
             variant="filled"
@@ -334,7 +309,6 @@ const Toolbar = ({
             }}
           >
             <PlusIcon className="size-4" />
-            <span>{t('common.create_category_blog')}</span>
           </Button>
 
           <ResponsiveFilter

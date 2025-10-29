@@ -115,16 +115,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('import', [CategoryBlogController::class, 'import'])->name('category-blogs.import');
     });
 
-    Route::name('category-blogs.')->prefix('category-blogs')
-        ->controller(CategoryBlogController::class)
-        ->group(function () {
-            Route::get('', 'index')->name('index');
-            Route::get('create', 'create')->name('create');
-            Route::post('store', 'store')->name('store');
-            Route::get('{categoryBlog}/edit', 'edit')->name('edit');
-            Route::put('{categoryBlog}/update', 'update')->name('update');
-            Route::delete('{categoryBlog}/delete', 'destroy')->name('destroy');
-        });
+    // Route::name('category-blogs.')->prefix('category-blogs')
+    //     ->controller(CategoryBlogController::class)
+    //     ->group(function () {
+    //         Route::get('', 'index')->name('index');
+    //         Route::get('create', 'create')->name('create');
+    //         Route::post('store', 'store')->name('store');
+    //         Route::get('{categoryBlog}/edit', 'edit')->name('edit');
+    //         Route::put('{categoryBlog}/update', 'update')->name('update');
+    //         Route::delete('{categoryBlog}/delete', 'destroy')->name('destroy');
+    //     });
+
+    Route::resource('category-blogs', CategoryBlogController::class)->except(['show']);
 
 });
 
@@ -216,5 +218,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('availabilities');
     });
 });
+
+// Address validation route (exclude CSRF for AJAX)
+Route::post('/validate-address', [App\Http\Controllers\AddressValidationController::class, 'validate'])
+    ->name('validate-address')
+    ->withoutMiddleware(['web']);
 
 require __DIR__.'/auth.php';
