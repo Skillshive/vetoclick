@@ -1,11 +1,11 @@
 import { Card, Badge, Button } from "@/components/ui";
 import { Switch } from "@/components/ui/Form";
 import { useTranslation } from "@/hooks/useTranslation";
-import { PencilSquareIcon, TrashIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, TrashIcon, CheckIcon, XMarkIcon, UsersIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { SubscriptionPlan } from "../types";
 import { useState } from "react";
 import clsx from "clsx";
-import { FaCar, FaPlane, FaRocket, FaCrown, FaStar, FaGem } from "react-icons/fa";
+import { FaCar, FaPlane, FaRocket, FaCrown, FaStar, FaGem, FaPaw } from "react-icons/fa";
 
 interface SubscriptionPlanCardProps {
   plan: SubscriptionPlan;
@@ -123,7 +123,7 @@ export function SubscriptionPlanCard({ plan, onEdit, onDelete, onToggle, isToggl
   const PlanIcon = getPlanIcon(plan);
 
   return (
-    <div className="relative p-4 text-center sm:p-5 bg-white dark:bg-dark-700 rounded-lg shadow-soft dark:shadow-none border border-gray-150 dark:border-dark-500 hover:shadow-lg transition-shadow duration-200">
+    <div className="group relative p-4 text-center sm:p-5 bg-white dark:bg-dark-700 rounded-lg shadow-soft dark:shadow-none border border-gray-150 dark:border-dark-500 hover:shadow-lg transition-all duration-200">
       {/* Popular Badge */}
       {plan.is_popular && (
         <div className="absolute right-0 top-0 p-3">
@@ -187,58 +187,78 @@ export function SubscriptionPlanCard({ plan, onEdit, onDelete, onToggle, isToggl
         )}
       </div>
 
-      {/* Limits */}
+      {/* Limits - Icon Tags */}
       {(plan.max_clients || plan.max_pets || plan.max_appointments) && (
-        <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-          <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 text-center">
-            {t('common.limits')}
-          </h5>
-          <div className="space-y-2">
-            {plan.max_clients && (
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-600 dark:text-gray-400">{t('common.max_clients')}</span>
-                <span className="font-medium text-primary-600 dark:text-primary-400">
-                  {plan.max_clients === -1 ? t('common.unlimited') : plan.max_clients}
-                </span>
-              </div>
-            )}
-            {plan.max_pets && (
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-600 dark:text-gray-400">{t('common.max_pets')}</span>
-                <span className="font-medium text-primary-600 dark:text-primary-400">
-                  {plan.max_pets === -1 ? t('common.unlimited') : plan.max_pets}
-                </span>
-              </div>
-            )}
-            {plan.max_appointments && (
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-600 dark:text-gray-400">{t('common.max_appointments')}</span>
-                <span className="font-medium text-primary-600 dark:text-primary-400">
-                  {plan.max_appointments === -1 ? t('common.unlimited') : plan.max_appointments}
-                </span>
-              </div>
-            )}
-          </div>
+        <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+          {plan.max_clients && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-200 dark:border-blue-800">
+              <UsersIcon className="size-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                {plan.max_clients === -1 ? '∞' : plan.max_clients}
+              </span>
+            </div>
+          )}
+          {plan.max_pets && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-full border border-purple-200 dark:border-purple-800">
+              <FaPaw className="size-3.5 text-purple-600 dark:text-purple-400" />
+              <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                {plan.max_pets === -1 ? '∞' : plan.max_pets}
+              </span>
+            </div>
+          )}
+          {plan.max_appointments && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-full border border-green-200 dark:border-green-800">
+              <CalendarIcon className="size-4 text-green-600 dark:text-green-400" />
+              <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                {plan.max_appointments === -1 ? '∞' : plan.max_appointments}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Status Toggle */}
-      <div className="mt-6 flex items-center justify-center">
-        {onToggle ? (
-          <div className="flex items-center space-x-2">
+      {/* Action Buttons - Show on Hover (Top Right) */}
+      <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+        
+        <Button
+          variant="soft"
+          color="primary"
+          onClick={onEdit}
+          aria-label={t('common.edit')}
+          className="h-9 w-9 p-0 shadow-lg"
+        >
+          <PencilSquareIcon className="size-4" />
+        </Button>
+        <Button
+          variant="soft"
+          color="error"
+          onClick={onDelete}
+          disabled={isDeleting}
+          aria-label={t('common.delete')}
+          className="h-9 w-9 p-0 shadow-lg"
+        >
+          <TrashIcon className="size-4" />
+        </Button>
+        {onToggle && (
+          <div className="flex items-center justify-end mb-1">
             <Switch
               checked={localIsActive}
               onChange={handleToggle}
               disabled={isToggling}
               color={localIsActive ? 'success' : 'primary'}
-              label={
-                <span className="text-xs text-gray-600 dark:text-gray-400">
-                  {localIsActive ? t('common.active') : t('common.inactive')}
-                </span>
-              }
+              // label={
+              //   <span className="text-xs text-gray-600 dark:text-gray-400">
+              //     {localIsActive ? t('common.active') : t('common.inactive')}
+              //   </span>
+              // }
             />
           </div>
-        ) : (
+        )}
+      </div>
+
+      {/* Status Badge - Show when not hovering and no toggle available */}
+      {!onToggle && (
+        <div className="mt-6 flex items-center justify-center">
           <Badge 
             color={plan.is_active ? 'success' : 'error'} 
             variant="soft"
@@ -246,36 +266,8 @@ export function SubscriptionPlanCard({ plan, onEdit, onDelete, onToggle, isToggl
           >
             {plan.is_active ? t('common.active') : t('common.inactive')}
           </Badge>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="mt-6 flex items-center justify-between">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
-          {new Date(plan.created_at).toLocaleDateString()}
         </div>
-        <div className="flex space-x-1">
-          <Button
-            variant="soft"
-            color="primary"
-            onClick={onEdit}
-            aria-label={t('common.edit')}
-            className="h-8 w-8 p-0"
-          >
-            <PencilSquareIcon className="size-4" />
-          </Button>
-          <Button
-            variant="soft"
-            color="error"
-            onClick={onDelete}
-            disabled={isDeleting}
-            aria-label={t('common.delete')}
-            className="h-8 w-8 p-0"
-          >
-            <TrashIcon className="size-4" />
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
