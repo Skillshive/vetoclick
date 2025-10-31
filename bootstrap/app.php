@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Add CORS middleware to API routes
+        $middleware->api(append: [
+            \App\Http\Middleware\CorsMiddleware::class,
+        ]);
+
         // Register subscription middleware
         $middleware->alias([
             'subscription.feature' => \App\Http\Middleware\CheckSubscriptionFeature::class,
