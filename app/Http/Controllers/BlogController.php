@@ -254,4 +254,14 @@ class BlogController extends Controller
             ]);
         }
     }
+
+    public function apiIndex(Request $request)
+    {
+        try {
+            $blogs = $this->blogService->getLatest(10);
+            return BlogResource::collection($blogs);
+        } catch (Exception $e) {
+            return response()->json(['error' => __('common.blog_retrieve_error')], 500);
+        }
+    }
 }

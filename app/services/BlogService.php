@@ -140,9 +140,6 @@ class BlogService implements ServiceInterface
             ->paginate($perPage);
     }
 
-    /**
-     * Get blogs by category
-     */
     public function getByCategoryId(int $categoryId, int $perPage = 15): LengthAwarePaginator
     {
         return Blog::with(['image', 'categoryBlog'])
@@ -150,4 +147,14 @@ class BlogService implements ServiceInterface
             ->paginate($perPage);
     }
 
+    /**
+     * Get the latest blogs.
+     */
+    public function getLatest(int $limit = 10): Collection
+    {
+        return Blog::with(['image', 'categoryBlog'])
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
 }
