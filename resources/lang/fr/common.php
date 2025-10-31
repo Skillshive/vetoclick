@@ -791,4 +791,7 @@ return [
     "confirm_delete_supplier" => "Êtes-vous sûr de vouloir supprimer ce(s) fournisseur(s) ?",
     "supplier_deleted" => "Fournisseur supprimé",
     "supplier_deleted_success" => "Le fournisseur a été supprimé avec succès",
+    "category_blog_deleted_success"=> "Catégorie du blog supprimée avec succès",
+     "create_subscription_plan"=>"Créer un plan d'abonnement",
+     "edit_subscription_plan"=>"Editer un plan d'abonnement",
 ];

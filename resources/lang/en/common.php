@@ -1075,4 +1075,7 @@ return [
     "confirm_delete_supplier" => "Are you sure you want to delete this/these supplier(s)?",
     "supplier_deleted" => "Supplier deleted",
     "supplier_deleted_success" => "The supplier has been deleted successfully",
+    "category_blog_deleted_success"=>"Category deleted successfully",
+    "create_subscription_plan"=>"Create subscription plan",
+    "edit_subscription_plan"=>"Edit subscription plan",
 ];

@@ -706,4 +706,7 @@ return [
     "confirm_delete_supplier" => "هل أنت متأكد أنك تريد حذف هذا المورد (أو هؤلاء الموردين)؟",
     "supplier_deleted" => "تم حذف المورد",
     "supplier_deleted_success" => "تم حذف المورد بنجاح",
+"category_blog_deleted_success" => "تم حذف فئة المدونة بنجاح",
+"create_subscription_plan" => "إنشاء خطة اشتراك",
+"edit_subscription_plan" => "تعديل خطة الاشتراك",
 ];
