@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $user= User::create(
-            ['firstname'=>'Jhon',
-            'lastname'=>'Doe',
+        $user = User::create(
+            ['firstname' => 'Jhon',
+            'lastname' => 'Doe',
             'email' => 'admin@gmail.com',
             'password' => bcrypt('Password1234!234'),
         ]
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
 
         // Assign veterinarian role to the user
         $user->assignRole('veterinarian');
-        
+
         // Seed other data
         $this->call([
             UserSeeder::class,
@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
             ProductCategorySeeder::class,
             ProductSeeder::class,
             CategoryBlogSeeder::class,
+            BlogSeeder::class,
             FeatureGroupSeeder::class,
             SubscriptionPlanSeeder::class,
         ]);
