@@ -32,7 +32,7 @@ class BlogController extends Controller
         try {
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
-            
+
             // Get blogs with search if provided
             if ($search) {
                 $blogs = $this->blogService->searchByTitle($search, $perPage);
@@ -177,7 +177,7 @@ class BlogController extends Controller
             return redirect()->route('blogs.index')->with('success', __('common.blog_updated_success'));
 
         } catch (Exception $e) {
-            return back()->with('error', __('common.blog_update_error') );
+            return back()->with('error', __('common.blog_update_error'));
         }
     }
 
@@ -255,10 +255,10 @@ class BlogController extends Controller
         }
     }
 
-    public function apiIndex(Request $request)
+    public function apiIndex()
     {
         try {
-            $blogs = $this->blogService->getLatest(10);
+            $blogs = $this->blogService->getLatest(3);
             return BlogResource::collection($blogs);
         } catch (Exception $e) {
             return response()->json(['error' => __('common.blog_retrieve_error')], 500);
