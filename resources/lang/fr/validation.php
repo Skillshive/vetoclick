@@ -208,5 +208,23 @@ return [
         "name_min_length" => "Le nom est trop court",
 "name_max_length" => "Le nom est trop long",
 "name_invalid_chars" => "Le nom contient des caractères non valides",
+        'client_id_required' => 'Le champ client est obligatoire.',
+    'client_id_exists' => 'Le client sélectionné n’existe pas.',
 
+    'pet_id_required' => 'Le champ animal est obligatoire.',
+    'pet_id_exists' => 'L’animal sélectionné n’existe pas.',
+
+    'veterinary_id_required' => 'Le champ vétérinaire est obligatoire.',
+    'veterinary_id_exists' => 'Le vétérinaire sélectionné n’existe pas.',
+
+    'appointment_date_required' => 'La date du rendez-vous est obligatoire.',
+    'appointment_date_date' => 'La date du rendez-vous doit être une date valide.',
+
+    'start_time_required' => 'L’heure de début est obligatoire.',
+    'start_time_date_format' => 'L’heure de début doit être au format HH:MM.',
+
+    'is_video_conseil_boolean' => 'Le champ de consultation vidéo doit être vrai ou faux.',
+
+    'reason_for_visit_string' => 'Le motif de la visite doit être un texte valide.',
+    'appointment_notes_string' => 'Les notes du rendez-vous doivent être un texte valide.',
 ];

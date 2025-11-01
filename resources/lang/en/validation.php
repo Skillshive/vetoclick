@@ -288,4 +288,23 @@ return [
 "name_max_length" => "The name is too long",
 "name_invalid_chars" => "The name contains invalid characters",
 
+    'client_id_required' => 'The client field is required.',
+    'client_id_exists' => 'The selected client does not exist.',
+
+    'pet_id_required' => 'The pet field is required.',
+    'pet_id_exists' => 'The selected pet does not exist.',
+
+    'veterinary_id_required' => 'The veterinary field is required.',
+    'veterinary_id_exists' => 'The selected veterinary does not exist.',
+
+    'appointment_date_required' => 'The appointment date is required.',
+    'appointment_date_date' => 'The appointment date must be a valid date.',
+
+    'start_time_required' => 'The start time is required.',
+    'start_time_date_format' => 'The start time must be in the format HH:MM.',
+
+    'is_video_conseil_boolean' => 'The video consultation field must be true or false.',
+
+    'reason_for_visit_string' => 'The reason for visit must be a valid text.',
+    'appointment_notes_string' => 'The appointment notes must be a valid text.',
 ];

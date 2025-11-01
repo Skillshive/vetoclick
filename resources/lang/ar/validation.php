@@ -173,5 +173,24 @@ return [
         "name_min_length" => "الاسم قصير جدًا",
 "name_max_length" => "الاسم طويل جدًا",
 "name_invalid_chars" => "الاسم يحتوي على أحرف غير صالحة",
+    'client_id_required' => 'حقل العميل مطلوب.',
+    'client_id_exists' => 'العميل المحدد غير موجود.',
+
+    'pet_id_required' => 'حقل الحيوان مطلوب.',
+    'pet_id_exists' => 'الحيوان المحدد غير موجود.',
+
+    'veterinary_id_required' => 'حقل الطبيب البيطري مطلوب.',
+    'veterinary_id_exists' => 'الطبيب البيطري المحدد غير موجود.',
+
+    'appointment_date_required' => 'تاريخ الموعد مطلوب.',
+    'appointment_date_date' => 'يجب أن يكون تاريخ الموعد تاريخًا صالحًا.',
+
+    'start_time_required' => 'وقت البدء مطلوب.',
+    'start_time_date_format' => 'يجب أن يكون وقت البدء بالتنسيق HH:MM.',
+
+    'is_video_conseil_boolean' => 'يجب أن يكون حقل الاستشارة عبر الفيديو صحيحًا أو خطأً.',
+
+    'reason_for_visit_string' => 'يجب أن يكون سبب الزيارة نصًا صالحًا.',
+    'appointment_notes_string' => 'يجب أن تكون ملاحظات الموعد نصًا صالحًا.',
 
 ];
