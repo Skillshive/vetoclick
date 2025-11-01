@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\Appointment;
 use App\common\AppointmentDTO;
 use App\Interfaces\ServiceInterface;
+use App\Models\Client;
+use App\Models\Pet;
+use App\Models\Veterinary;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
 
@@ -38,18 +41,50 @@ class AppointmentService implements ServiceInterface
             ->first();
     }
 
+    private function getClient(string $clientId){
+        $client = Client::where('uuid',$clientId)->first();
+
+        if($client){
+            return $client->id;
+        }
+        return null;
+    } 
+    private function getPet(string $petId){
+        $pet = Pet::where('uuid',$petId)->first();
+
+        if($pet){
+            return $pet->id;
+        }
+        return null;
+    } 
+    private function getVet(string $vetId){
+        $vet = Veterinary::where('uuid',$vetId)->first();
+
+        if($vet){
+            return $vet->id;
+        }
+        return null;
+    } 
+
     /**
      * Create new appointment from DTO
      */
     public function create(AppointmentDTO $dto): Appointment
     {
-        try {
-            $this->checkForConflicts($dto->toCreateArray());
-            $appointment = Appointment::create($dto->toCreateArray());
-            return $appointment->load(['client.user', 'pet', 'veterinary']);
-        } catch (Exception $e) {
-            throw new Exception("Failed to create appointment: " . $e->getMessage());
-        }
+
+        $appointment= Appointment::create([
+            "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
+            "client_id"=>$this->getClient($dto->client_id),
+            "pet_id"=>$this->getPet($dto->pet_id),
+            "appointment_type"=>$dto->appointment_type,
+            "appointment_date"=>$dto->appointment_date,
+            "start_time"=>$dto->start_time,
+            "is_video_conseil"=>$dto->is_video_conseil,
+            "reason_for_visit"=>$dto->reason_for_visit,
+            "appointment_notes"=>$dto->appointment_notes,
+        ]);
+
+        return $appointment->load(['client.user', 'pet', 'veterinary']);
     }
 
     /**
@@ -64,18 +99,22 @@ class AppointmentService implements ServiceInterface
                 return null;
             }
 
-            $updateData = $dto->toUpdateArray();
+            $updateData = $appointment->update([
+            "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
+            "client_id"=>$this->getClient($dto->client_id),
+            "pet_id"=>$this->getPet($dto->pet_id),
+            "appointment_type"=>$dto->appointment_type,
+            "appointment_date"=>$dto->appointment_date,
+            "start_time"=>$dto->start_time,
+            "is_video_conseil"=>$dto->is_video_conseil,
+            "reason_for_visit"=>$dto->reason_for_visit,
+            "appointment_notes"=>$dto->appointment_notes,
+        ]);
             
             if (empty($updateData)) {
                 return $appointment;
             }
 
-            // Check for conflicts if time or veterinary changed
-            if (isset($updateData['start_time']) || isset($updateData['end_time']) || isset($updateData['veterinary_id'])) {
-                $this->checkForConflicts($updateData, $appointment->id);
-            }
-
-            $appointment->update($updateData);
             return $appointment->fresh(['client.user', 'pet', 'veterinary']);
         } catch (Exception $e) {
             throw new Exception("Failed to update appointment: " . $e->getMessage());
@@ -156,24 +195,19 @@ class AppointmentService implements ServiceInterface
         return $query->count() === 0;
     }
 
-    /**
-     * Check for scheduling conflicts
-     */
-    protected function checkForConflicts(array $data, ?int $excludeAppointmentId = null): void
+
+    public function search(string $query, int $perPage = 15): LengthAwarePaginator
     {
-        if (!isset($data['veterinary_id']) || !isset($data['start_time']) || !isset($data['end_time'])) {
-            return;
-        }
-
-        $isAvailable = $this->checkAvailability(
-            $data['veterinary_id'],
-            $data['start_time'],
-            $data['end_time'],
-            $excludeAppointmentId
-        );
-
-        if (!$isAvailable) {
-            throw new Exception('The selected time slot is not available for the chosen veterinary.');
-        }
+        return Appointment::with(['pet', 'veterinary',"client"])
+            ->where('reason_for_visit', 'LIKE', "%{$query}%")
+            ->orWhereHas('client', function ($q) use ($query) {
+                $q->where('first_name', 'LIKE', '%' . $query . '%')
+                ->orWhere('last_name', 'LIKE', '%' . $query . '%');
+            })
+            ->orWhereHas('veterinary.user', function ($q) use ($query) {
+                $q->where('first_name', 'LIKE', '%' . $query . '%')
+                ->orWhere('last_name', 'LIKE', '%' . $query . '%');
+            })
+            ->paginate($perPage);
     }
 }

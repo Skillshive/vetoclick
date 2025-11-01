@@ -24,42 +24,39 @@ class AppointmentRequest extends FormRequest
         $now = now()->format('Y-m-d H:i:s');
         
         return [
-            'client_id' => 'required|exists:clients,id',
-            'pet_id' => 'nullable|exists:pets,id',
-            'veterinary_id' => 'required|exists:veterinaries,id',
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'start_time' => [
-                'required',
-                'date',
-                'after_or_equal:' . $now,
-                function ($attribute, $value, $fail) {
-                    $endTime = $this->input('end_time');
-                    if (strtotime($value) >= strtotime($endTime)) {
-                        $fail('The start time must be before the end time.');
-                    }
-                },
-            ],
-            'end_time' => [
-                'required',
-                'date',
-                'after:start_time',
-            ],
-            'status' => 'required|in:scheduled,confirmed,completed,cancelled,no_show',
-            'type' => 'nullable|string|max:100',
-            'location' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
-            'cancellation_reason' => 'nullable|required_if:status,cancelled|string|max:500',
+            'veterinary_id' => 'required|integer|exists:veterinaries,uuid',
+            'client_id' => 'required|integer|exists:clients,uuid',
+            'pet_id' => 'required|integer|exists:pets,uuid',
+            'appointment_date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'is_video_conseil' => 'sometimes|boolean',
+            'reason_for_visit' => 'nullable|string',
+            'appointment_notes' => 'nullable|string',
         ];
     }
 
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation()
+     public function messages(): array
     {
-        if ($this->status !== 'cancelled') {
-            $this->merge(['cancellation_reason' => null]);
-        }
+        return [
+            'client_id.required' => __('validation.client_id_required'),
+            'client_id.exists' => __('validation.client_id_exists'),
+
+            'pet_id.required' => __('validation.pet_id_required'),
+            'pet_id.exists' => __('validation.pet_id_exists'),
+
+            'veterinary_id.required' => __('validation.veterinary_id_required'),
+            'veterinary_id.exists' => __('validation.veterinary_id_exists'),
+
+            'appointment_date.required' => __('validation.appointment_date_required'),
+            'appointment_date.date' => __('validation.appointment_date_date'),
+
+            'start_time.required' => __('validation.start_time_required'),
+            'start_time.date_format' => __('validation.start_time_date_format'),
+
+            'is_video_conseil.boolean' => __('validation.is_video_conseil_boolean'),
+
+            'reason_for_visit.string' => __('validation.reason_for_visit_string'),
+            'appointment_notes.string' => __('validation.appointment_notes_string'),
+        ];
     }
 }
