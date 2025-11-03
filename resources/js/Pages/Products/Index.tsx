@@ -29,8 +29,8 @@ export default function Index({products, categories, filters, old, errors}: Prod
     const [filtersInitialized, setFiltersInitialized] = useState(false);
     const [currentUrl, setCurrentUrl] = useState(window.location.href);
     const isUpdatingUrl = useRef(false);
-console.log('products',products)
-    // Use the custom hook for table state
+    
+
     const {
         products: tableData,
         bulkDeleteModalOpen,
@@ -147,7 +147,7 @@ console.log('products',products)
                 } else {
                     params.delete('search');
                 }
-                params.set('page', '1'); // Reset to page 1 on search change
+                params.set('page', '1'); 
                 
                 router.get(`${window.location.pathname}?${params.toString()}`, {
                     preserveState: true,
@@ -168,7 +168,6 @@ console.log('products',products)
             const newUrl = window.location.href;
             if (newUrl !== currentUrl) {
                 setCurrentUrl(newUrl);
-                // Just update the state, don't navigate again to avoid infinite loop
             }
         };
 
