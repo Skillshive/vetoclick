@@ -31,7 +31,6 @@ export default function CategoryBlogFormModal({ isOpen, onClose, categoryBlog, p
     const { showToast } = useToast();
     const { t } = useTranslation();
     const isEditing = !!categoryBlog;
-    console.log('parentCategories',parentCategories  )
     const [validationErrors, setValidationErrors] = useState<{
         name?: string;
         desp?: string;
@@ -75,10 +74,11 @@ export default function CategoryBlogFormModal({ isOpen, onClose, categoryBlog, p
 
 
         setProcessing(true);
-
         if (isEditing) {
-            axios.put(route('category-blogs.update', categoryBlog.uuid), data)
-                .then(() => {
+axios.post(route('category-blogs.update', categoryBlog.uuid), {
+        ...data,
+        _method: 'PUT'
+    })                .then(() => {
                     showToast({
                         type: 'success',
                         message: t('common.category_blog_updated_success'),
@@ -94,7 +94,6 @@ export default function CategoryBlogFormModal({ isOpen, onClose, categoryBlog, p
                .catch((error) => {
     if (error.response && error.response.status === 422) {
         const errors = error.response.data.errors;
-console.log('errors',errors)
         setValidationErrors({
             name: errors?.name ? errors.name[0] : undefined,
             desp: errors?.desp ? errors.desp[0] : undefined,
@@ -130,7 +129,7 @@ console.log('errors',errors)
                  .catch((error) => {
     if (error.response && error.response.status === 422) {
         const errors = error.response.data.errors;
-console.log('errors',errors)
+
         setValidationErrors({
             name: errors?.name ? errors.name[0] : undefined,
             desp: errors?.desp ? errors.desp[0] : undefined,
