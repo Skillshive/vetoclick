@@ -21,13 +21,13 @@ declare global {
 }
 
 // @ts-ignore
-const pages = import.meta.glob('./Pages/**/*.{tsx,jsx}');
+const pages = import.meta.glob('./pages/**/*.{tsx,jsx}');
 
 createInertiaApp({
   resolve: name => {
     // Try .tsx first, then .jsx
-    const tsxPage = pages[`./Pages/${name}.tsx`];
-    const jsxPage = pages[`./Pages/${name}.jsx`];
+    const tsxPage = pages[`./pages/${name}.tsx`];
+    const jsxPage = pages[`./pages/${name}.jsx`];
     const importPage = tsxPage || jsxPage;
     
     if (!importPage) {
