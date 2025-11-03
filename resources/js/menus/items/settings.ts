@@ -2,6 +2,7 @@ import { MenuItem, MenuConfig } from '../index';
 import { createMenuFromConfig } from '../helpers';
 import DashboardsIcon from "@/assets/dualicons/dashboards.svg?react";
 import PetIcon from "@/assets/dualicons/pet.svg?react";
+import AppointmentIcon from "@/assets/dualicons/calendar.svg?react";
 import BoxIcon from "@/assets/dualicons/box.svg?react";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
 import UserGroupIcon from "@/assets/nav-icons/people.svg?react";
@@ -13,6 +14,20 @@ const menuConfig: MenuConfig[] = [
     icon: DashboardsIcon,
     path: route('dashboard'),
     type: 'item',
+  },
+  {
+    id: 'appointments',
+    title: 'common.menu.appointments_management',
+    icon: AppointmentIcon,
+    type: 'collapse', 
+    children: [
+      {
+        id: 'allAppointments',
+        title: 'common.menu.appointments',
+        path: route('appointments.index'),
+        type: 'item',
+      }
+    ],
   },
   {
     id: 'animals',

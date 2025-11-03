@@ -452,6 +452,7 @@ return [
             "create_species" => "Create Species",
             "users_management" => "Users Management",
             "create_user" => "Create User",
+            "appointments_management" => "Appointments Management",
     ],
 
     // Category Blogs specific translations
