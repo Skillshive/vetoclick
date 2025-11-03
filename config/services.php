@@ -41,4 +41,9 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'openstreetmap' => [
+        'nominatim_url' => 'https://nominatim.openstreetmap.org/search',
+        'user_agent' => 'VetoClick/1.0 (Address Validation)',
+    ],
+
 ];

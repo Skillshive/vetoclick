@@ -18,7 +18,13 @@ export const profileFormSchema = z.object({
     .optional()
     .refine((val) => !val || /^(\+212|0)[0-9]{9}$/.test(val), {
       message: 'validation.phone_invalid',
-    })
+    }),
+  // Veterinary fields
+  license_number: z.string().optional(),
+  specialization: z.string().optional(),
+  years_experience: z.union([z.string(), z.number()]).optional().transform((val) => val ? String(val) : undefined),
+  clinic_name: z.string().optional(),
+  address: z.string().optional(),
 });
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>;
