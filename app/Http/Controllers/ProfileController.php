@@ -27,11 +27,20 @@ class ProfileController extends Controller
      */
     public function show(Request $request): Response
     {
-        $user = $request->user()->load(['image']);
+        $user = $request->user()->load(['image', 'veterinary', 'roles']);
+
+        // Check if user has veterinarian role
+        $isVeterinarian = $user->hasRole('veterinarian');
+        $veterinaryInfo = null;
+        
+        if ($isVeterinarian && $user->veterinary) {
+            $veterinaryInfo = $user->veterinary;
+        }
 
         return Inertia::render('Settings/General', [
             'user' => $user,
-          
+            'isVeterinarian' => $isVeterinarian,
+            'veterinaryInfo' => $veterinaryInfo,
         ]);
     }
 
@@ -70,24 +79,31 @@ class ProfileController extends Controller
             }
         }
 
-        if (isset($validated['firstname'])) {
-            $validated['firstname'] = $validated['firstname'];
-        }
+        // Separate user fields from veterinary fields
+        $userFields = ['firstname', 'lastname', 'email', 'phone', 'image_id'];
+        $veterinaryFields = ['license_number', 'specialization', 'years_experience', 'clinic_name', 'address'];
+        
+        $userData = array_intersect_key($validated, array_flip($userFields));
+        $veterinaryData = array_intersect_key($validated, array_flip($veterinaryFields));
 
-        if (isset($validated['lastname'])) {
-            $validated['lastname'] = $validated['lastname'];
-        }
-        if (isset($validated['phone'])) {
-            $validated['phone'] = $validated['phone'];
-        }
-
-        $user->fill($validated);
+        // Update user data
+        $user->fill($userData);
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
         $user->save();
+
+        // Update veterinary information if user has veterinarian role
+        if ($user->hasRole('veterinarian') && !empty($veterinaryData)) {
+            if ($user->veterinary) {
+                $user->veterinary->update($veterinaryData);
+            } else {
+                // Create veterinary record if it doesn't exist
+                $user->veterinary()->create($veterinaryData);
+            }
+        }
 
         return Redirect::route('profile.show')->with('success', 'Profile updated successfully.');
     }

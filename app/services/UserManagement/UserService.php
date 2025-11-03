@@ -65,7 +65,7 @@ return User::where('id', '!=', Auth::id())
             }
 
             // Generate password if not provided
-            $password = $dto->password ?: $dto->firstname . "@" . date("Y");
+            $password = $dto->password ?: $dto->lastname . "@" . date("Y");
             
             $user = User::create(
                 [

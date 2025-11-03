@@ -26,9 +26,7 @@ class UserRequest extends FormRequest
             'firstname' => [
                 'required',
                 'string',
-                'max:20',
-                Rule::unique('users', 'firstname')
-                    ->ignore($this->route('user'), 'uuid'),
+                'max:20'
             ],
             'lastname' => [
                 'required',
