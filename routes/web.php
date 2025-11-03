@@ -151,7 +151,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->controller(AppointmentController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::post('{uuid}/cancel', 'cancel')->name('cancel');
+            Route::delete('{uuid}/cancel', 'cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->name('report');
         });
 });

@@ -36,6 +36,34 @@ export default function Index({appointments, filters, vets, clients, statuses, o
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [cancelSuccess, setCancelSuccess] = useState(false);
     const [cancelError, setCancelError] = useState<string | null>(null);
+    const [confirmCancelLoading, setConfirmCancelLoading] = useState(false);
+
+    const handleConfirmCancel = () => {
+        if (!selectedAppointment) return;
+
+        setConfirmCancelLoading(true);
+        setCancelError(null);
+        setCancelSuccess(false);
+
+        router.delete(route('appointments.cancel', selectedAppointment.uuid), {
+            onSuccess: () => {
+                setCancelModalOpen(false);
+                setCancelSuccess(true);
+                setConfirmCancelLoading(false);
+                showToast({ type: 'success', message: t('common.appointment_cancelled_successfully') });
+                console.log('hello')
+                setTimeout(() => {
+                    setCancelModalOpen(false);
+                    setCancelSuccess(false); // Reset state
+                }, 2000); // Use 2000ms
+            },
+            onError: (errors: any) => {
+                setCancelError(errors.message || t('common.failed_to_cancel_appointment'));
+                setConfirmCancelLoading(false);
+                showToast({ type: 'error', message: t('common.failed_to_cancel_appointment') });
+            }
+        });
+    };
 
     const handleReport = (appointment: Appointment) => {
         setSelectedAppointment(appointment);
@@ -197,66 +225,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
         setBulkDeleteModalOpen(true);
     };
 
-    const handleBulkDelete = () => {
-        setConfirmBulkDeleteLoading(true);
-        setBulkDeleteError(null);
-        setBulkDeleteSuccess(false);
-
-        const selectedRows = tableRef.current?.table.getSelectedRowModel().rows || [];
-        const productUuids = selectedRows.map(row => row.original.uuid);
-
-        router.post(route('appointments.bulk-delete'), {
-            product_uuids: productUuids,
-            onSuccess: () => {
-                setBulkDeleteSuccess(true);
-                setConfirmBulkDeleteLoading(false);
-                setRowSelection({});
-                showToast({ type: 'success', message: t('common.appointments_deleted_successfully') });
-                setTimeout(() => {
-                    setBulkDeleteModalOpen(false);
-                    setBulkDeleteSuccess(false);
-                }, 2000);
-            },
-            onError: (errors: any) => {
-                setBulkDeleteError(errors.message || 'Failed to delete appointments');
-                setConfirmBulkDeleteLoading(false);
-                showToast({ type: 'error', message: t('common.failed_to_delete_appointments') });
-            }
-        });
-    };
-
-    // Handle single delete
-    const handleSingleDelete = () => {
-        if (!selectedRowForDelete) return;
-
-        setConfirmSingleDeleteLoading(true);
-        setSingleDeleteError(null);
-        setSingleDeleteSuccess(false);
-
-        // @ts-ignore
-        router.delete(route('appointments.destroy', selectedRowForDelete.uuid), {
-            onSuccess: () => {
-                setSingleDeleteSuccess(true);
-                setConfirmSingleDeleteLoading(false);
-                showToast({ type: 'success', message: t('common.appointment_deleted_successfully') });
-                setTimeout(() => {
-                    closeSingleDeleteModal();
-                }, 2000);
-            },
-            onError: (errors: any) => {
-                setSingleDeleteError(errors.message || t('common.failed_to_delete_appointment'));
-                setConfirmSingleDeleteLoading(false);
-                showToast({ type: 'error', message: t('common.failed_to_delete_appointment') });
-            }
-        });
-    };
-
-    const handleCreate = () => {
-        router.visit(route('appointments.create'));
-      };
-
-    const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
-    const singleDeleteState = singleDeleteError ? "error" : singleDeleteSuccess ? "success" : "pending";
+    
     const cancelState = cancelError ? "error" : cancelSuccess ? "success" : "pending";
 
     // Calculate stats from appointments data
@@ -388,24 +357,9 @@ export default function Index({appointments, filters, vets, clients, statuses, o
         <ConfirmModal
             show={cancelModalOpen}
             onClose={() => setCancelModalOpen(false)}
-            onOk={() => {
-                if (selectedAppointment) {
-                    router.post(route('appointments.cancel', selectedAppointment.uuid), {
-                        onSuccess: () => {
-                            showToast({ type: 'success', message: t('common.appointment_cancelled_successfully') });
-                            setCancelModalOpen(false);
-                            setCancelSuccess(true); // Set success state
-                            setCancelError(null); // Clear any previous error
-                        },
-                        onError: (errors: any) => {
-                            showToast({ type: 'error', message: t('common.failed_to_cancel_appointment') });
-                            setCancelError(errors.message || t('common.failed_to_cancel_appointment')); // Set error state
-                            setCancelSuccess(false); // Clear any previous success
-                        }
-                    });
-                }
-            }}
-            state={cancelState}
+            onOk={handleConfirmCancel}
+            state="pending"
+            confirmLoading={confirmCancelLoading}
             messages={{
                 pending: {
                     title: t('common.confirm_cancel'),

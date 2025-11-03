@@ -143,7 +143,6 @@ return [
     'filter_price' => 'Price',
     
     // Table view
-    'view' => 'View',
     'table_view' => 'Table View',
     'column_visibility' => 'Column Visibility',
     'show_all_columns' => 'Show All Columns',
@@ -1098,5 +1097,15 @@ return [
     'consultation_status_completed' => 'Completed',
     'consultation_status_in_progress' => 'In Progress',
     'consultation_status_cancelled' => 'Cancelled',
-    "filter_client"=>"Clients Filter"
+    "filter_client"=>"Clients Filter",
+    "client"=>"Client",
+    "date"=>"Date",
+    "type"=>"Type",
+   'new_appointment_date' => 'New Appointment Date',
+'report_appointment_description' => 'Please select a new date and time for the appointment.',
+'report' => 'Report',
+'report_appointment' => 'Report Appointment',
+'confirm_cancel_appointment' => 'Are you sure you want to cancel this appointment?',
+'confirm_cancel' => 'Confirm Cancellation',
+"appointment_cancelled_successfully"=>"Appointment Cancelled Successfully"
 ];

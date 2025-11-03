@@ -142,20 +142,20 @@ class AppointmentController extends Controller
         }
     }
 
-    public function cancel(string $uuid)
+    public function cancel(string $uuid): \Illuminate\Http\RedirectResponse
     {
         try {
             $appointment = $this->appointmentService->getByUuid($uuid);
 
             if (!$appointment) {
-                return back()->with('error', __('common.appointment_not_found'));
+                return redirect()->back()->withErrors(['error' => __('common.appointment_not_found')]);
             }
 
             $this->appointmentService->cancel($uuid);
             
-            return back()->with('success', __('common.appointment_cancelled_successfully'));
+            return redirect()->route('appointments.index')->with('success', __('common.appointment_cancelled_successfully'));
         } catch (Exception $e) {
-            return back()->with('error', __('common.failed_to_cancel_appointment'));
+            return redirect()->back()->withErrors(['error' => __('common.failed_to_cancel_appointment')]);
         }
     }
 
