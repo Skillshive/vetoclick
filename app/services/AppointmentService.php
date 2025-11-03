@@ -16,11 +16,31 @@ class AppointmentService implements ServiceInterface
     /**
      * Get all appointments with optional pagination
      */
-    public function getAll(int $perPage = 15): LengthAwarePaginator
+    public function getAll(array $filters = []): LengthAwarePaginator
     {
-        return Appointment::with(['client.user', 'pet', 'veterinary'])
-            ->orderBy('start_time', 'asc')
-            ->paginate($perPage);
+        $perPage = $filters['per_page'] ?? 15;
+        $query = Appointment::with(['client', 'pet', 'veterinary']);
+
+        if (!empty($filters['status'])) {
+            $statusValues = is_array($filters['status']) ? $filters['status'] : explode(',', $filters['status']);
+            $statusValues = array_map('intval', $statusValues);
+            $query->whereIn('status', $statusValues);
+        }
+
+        if (!empty($filters['client'])) {
+            $clientIds = is_array($filters['client']) ? $filters['client'] : explode(',', $filters['client']);
+            $query->whereIn('client_id', $clientIds);
+        }
+
+        if (!empty($filters['search'])) {
+            $this->applySearch($query, $filters['search']);
+        }
+
+        $sortBy = $filters['sort_by'] ?? 'start_time';
+        $sortDirection = $filters['sort_direction'] ?? 'asc';
+        $query->orderBy($sortBy, $sortDirection);
+
+        return $query->paginate($perPage);
     }
 
     /**
@@ -28,7 +48,7 @@ class AppointmentService implements ServiceInterface
      */
     public function getById(int $id): ?Appointment
     {
-        return Appointment::with(['client.user', 'pet', 'veterinary'])->find($id);
+        return Appointment::with(['client', 'pet', 'veterinary'])->find($id);
     }
 
     /**
@@ -36,7 +56,7 @@ class AppointmentService implements ServiceInterface
      */
     public function getByUuid(string $uuid): ?Appointment
     {
-        return Appointment::with(['client.user', 'pet', 'veterinary'])
+        return Appointment::with(['client', 'pet', 'veterinary'])
             ->where('uuid', $uuid)
             ->first();
     }
@@ -84,7 +104,7 @@ class AppointmentService implements ServiceInterface
             "appointment_notes"=>$dto->appointment_notes,
         ]);
 
-        return $appointment->load(['client.user', 'pet', 'veterinary']);
+        return $appointment->load(['client', 'pet', 'veterinary']);
     }
 
     /**
@@ -115,7 +135,7 @@ class AppointmentService implements ServiceInterface
                 return $appointment;
             }
 
-            return $appointment->fresh(['client.user', 'pet', 'veterinary']);
+            return $appointment->fresh(['client', 'pet', 'veterinary']);
         } catch (Exception $e) {
             throw new Exception("Failed to update appointment: " . $e->getMessage());
         }
@@ -139,12 +159,50 @@ class AppointmentService implements ServiceInterface
         }
     }
 
+    public function cancel(string $uuid): bool
+    {
+        try {
+            $appointment = $this->getByUuid($uuid);
+            
+            if (!$appointment) {
+                return false;
+            }
+
+            $appointment->status = 'cancelled';
+            return $appointment->save();
+        } catch (Exception $e) {
+            throw new Exception("Failed to cancel appointment: " . $e->getMessage());
+        }
+    }
+
+    public function report(string $uuid, AppointmentDTO $dto): ?Appointment
+    {
+        try {
+            $appointment = $this->getByUuid($uuid);
+            
+            if (!$appointment) {
+                return null;
+            }
+
+            $updateData = [
+                'appointment_date' => $dto->appointment_date,
+                'start_time' => $dto->start_time,
+            ];
+            
+            $appointment->update($updateData);
+            
+            return $appointment->fresh(['client', 'pet', 'veterinary']);
+        } catch (Exception $e) {
+            throw new Exception("Failed to report appointment: " . $e->getMessage());
+        }
+    }
+
     /**
      * Search appointments by title
      */
     public function searchByTitle(string $title, int $perPage = 15): LengthAwarePaginator
     {
-        return Appointment::with(['client.user', 'pet', 'veterinary'])
+        return Appointment::with(['client', 'pet', 'veterinary'])
             ->where('title', 'LIKE', "%{$title}%")
             ->orderBy('start_time', 'asc')
             ->paginate($perPage);
@@ -166,7 +224,7 @@ class AppointmentService implements ServiceInterface
      */
     public function getByVeterinaryId(int $veterinaryId, int $perPage = 15): LengthAwarePaginator
     {
-        return Appointment::with(['client.user', 'pet'])
+        return Appointment::with(['client', 'pet'])
             ->where('veterinary_id', $veterinaryId)
             ->orderBy('start_time', 'asc')
             ->paginate($perPage);
@@ -196,18 +254,17 @@ class AppointmentService implements ServiceInterface
     }
 
 
+    private function applySearch($query, $search)
+    {
+        $query->where(function ($q) use ($search) {
+            $q->where('reason_for_visit', 'LIKE', "%{$search}%");
+        });
+    }
+
     public function search(string $query, int $perPage = 15): LengthAwarePaginator
     {
-        return Appointment::with(['pet', 'veterinary',"client"])
-            ->where('reason_for_visit', 'LIKE', "%{$query}%")
-            ->orWhereHas('client', function ($q) use ($query) {
-                $q->where('first_name', 'LIKE', '%' . $query . '%')
-                ->orWhere('last_name', 'LIKE', '%' . $query . '%');
-            })
-            ->orWhereHas('veterinary.user', function ($q) use ($query) {
-                $q->where('first_name', 'LIKE', '%' . $query . '%')
-                ->orWhere('last_name', 'LIKE', '%' . $query . '%');
-            })
-            ->paginate($perPage);
+        $queryBuilder = Appointment::with(['pet', 'veterinary', 'client']);
+        $this->applySearch($queryBuilder, $query);
+        return $queryBuilder->paginate($perPage);
     }
 }

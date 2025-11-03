@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\common\AppointmentDTO;
 use App\Http\Requests\AppointmentRequest;
 use App\Services\AppointmentService;
-use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
+use App\Models\Client;
+use App\Models\Veterinary;
+use App\Enums\ConsultationStatus;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Http\Request;
@@ -23,7 +25,7 @@ class AppointmentController extends Controller
     }
 
 
-    public function store(StoreAppointmentRequest $request): JsonResponse
+    public function store(AppointmentRequest $request): JsonResponse
     {
         try {
             $dto = AppointmentDTO::fromRequest($request);
@@ -37,16 +39,10 @@ class AppointmentController extends Controller
     public function index(Request $request): Response
     {
         try {
-            $perPage = $request->input('per_page', 15);
-            $search = $request->input('search');
+            $filters = $request->only(['search', 'per_page', 'sort_by', 'sort_direction', 'status', 'client']);
+            $appointments = $this->appointmentService->getAll($filters);
             
-            if ($search) {
-                $appointments = $this->appointmentService->search($search, $perPage);
-            } else {
-                $appointments = $this->appointmentService->getAll($perPage);
-            }
-
-            return Inertia::render('Appointment/Index', [
+            return Inertia::render('Appointments/Index', [
                 'appointments' => [
                     'data' => AppointmentResource::collection($appointments->items())->toArray(request()),
                     'meta' => [
@@ -64,15 +60,24 @@ class AppointmentController extends Controller
                         'next' => $appointments->nextPageUrl(),
                     ]
                 ],
-                'filters' => [
-                    'search' => $search
-                ]
+                'filters' => $filters,
+                'vets' => Veterinary::all(),
+                'clients' => Client::all(),
+                'statuses' => ConsultationStatus::toArray(),
             ]);
         } catch (Exception $e) {
-            return Inertia::render('Appointment/Index', [
+            \Illuminate\Support\Facades\Log::error($e->getMessage());
+            return Inertia::render('Appointments/Index', [
                 'error' => __('common.error'),
-                'appointments' => null,
-                'filters' => []
+                'appointments' => [
+                    'data' => [],
+                    'meta' => null,
+                    'links' => null
+                ],
+                'filters' => $filters,
+                'vets' => Veterinary::all(),
+                'clients' => Client::all(),
+                'statuses' => ConsultationStatus::toArray(),
             ]);
         }
     }
@@ -134,6 +139,41 @@ class AppointmentController extends Controller
             return response()->json(['success'=> __('common.appointment_deleted_success')]);
         } catch (Exception $e) {
                 return response()->json(['error'=> __('common.appointment_delete_error')]);
+        }
+    }
+
+    public function cancel(string $uuid)
+    {
+        try {
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return back()->with('error', __('common.appointment_not_found'));
+            }
+
+            $this->appointmentService->cancel($uuid);
+            
+            return back()->with('success', __('common.appointment_cancelled_successfully'));
+        } catch (Exception $e) {
+            return back()->with('error', __('common.failed_to_cancel_appointment'));
+        }
+    }
+
+    public function report(Request $request, string $uuid)
+    {
+        try {
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return back()->with('error', __('common.appointment_not_found'));
+            }
+
+            $dto = AppointmentDTO::fromRequest($request);
+            $this->appointmentService->report($uuid, $dto);
+            
+            return back()->with('success', __('common.appointment_reported_successfully'));
+        } catch (Exception $e) {
+            return back()->with('error', __('common.failed_to_report_appointment'));
         }
     }
 }

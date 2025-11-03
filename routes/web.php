@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
@@ -27,7 +28,7 @@ Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name(
 Route::redirect('/', '/dashboard');
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboards/Vet/index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Profile routes
@@ -143,6 +144,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('{blog}', 'update')->name('update');
             Route::delete('{blog}', 'destroy')->name('destroy');
             Route::get('search', 'search')->name('search');
+        });
+});
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('appointments.')->prefix('appointments')
+        ->controller(AppointmentController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::post('{uuid}/cancel', 'cancel')->name('cancel');
+            Route::post('{uuid}/report', 'report')->name('report');
         });
 });
 // Product routes
