@@ -13,29 +13,8 @@ export function createColumns(
 
   return [
     {
-      id: 'select',
-      header: ({ table }) => (
-        <input
-          type="checkbox"
-          checked={table.getIsAllPageRowsSelected()}
-          onChange={(e) => table.toggleAllPageRowsSelected(!!e.target.checked)}
-          className="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
-        />
-      ),
-      cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={row.getIsSelected()}
-          onChange={(e) => row.toggleSelected(!!e.target.checked)}
-          className="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       accessorKey: 'client_pet',
-      header: t('common.client_pet'),
+      header: t('common.client'),
       cell: ({ row }) => {
         const { client, pet } = row.original;
         return (
@@ -66,7 +45,7 @@ export function createColumns(
     
     {
       accessorKey: 'appointment_type',
-      header: t('common.appointment_type'),
+      header: t('common.type'),
       cell: ({ row }) => {
         const appointment_type = row.getValue('appointment_type') as string;
         return appointment_type ? (
@@ -82,7 +61,7 @@ export function createColumns(
     },
     {
       accessorKey: 'appointment_date',
-      header: t('common.date_time'),
+      header: t('common.date'),
       cell: ({ row }) => {
         const { locale } = useTranslation();
         const date = new Date(row.getValue('appointment_date'));
