@@ -4,6 +4,8 @@ import { useLocalStorage } from "@/hooks";
 import { useSkipper } from "@/utils/react-table/useSkipper";
 import { CategoryBlog, TableSettings } from "./types";
 import { router } from "@inertiajs/react";
+import { useToast } from "@/Components/common/Toast/ToastContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
@@ -31,6 +33,10 @@ interface UseCategoryBlogDatatableProps {
 }
 
 export function useCategoryBlogTable({ initialData, initialFilters }: UseCategoryBlogDatatableProps) {
+      const { showToast } = useToast();
+    const { t } = useTranslation();
+
+  
   // Data state
   const [categoryBlogs, setCategoryBlogs] = useState<{
     data: {
@@ -110,14 +116,18 @@ export function useCategoryBlogTable({ initialData, initialFilters }: UseCategor
     if (!selectedRowForDelete) return;
 
     setConfirmSingleDeleteLoading(true);
-    console.log('Deleting single row:', selectedRowForDelete);
 
     setTimeout(() => {
-      tableMeta.deleteRow?.(selectedRowForDelete);
-      setSingleDeleteSuccess(true);
-      setConfirmSingleDeleteLoading(false);
+        tableMeta.deleteRow?.(selectedRowForDelete);
+        setConfirmSingleDeleteLoading(false);
+        closeSingleDeleteModal(); 
+        
+        showToast({
+            type: 'success',
+            message: t('common.category_blog_deleted_success'),
+        });
     }, 1000);
-  };
+};
 
   // Table meta functions
   const tableMeta = {
