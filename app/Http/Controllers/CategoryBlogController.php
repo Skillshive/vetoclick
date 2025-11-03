@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\CategoryBlogDto;
+use App\Http\Requests\Blog\CategoryBlogRequest;
 use App\Http\Requests\Blog\ImportCategoryBlogRequest;
 use App\Services\CategoryBlogService;
-use App\Http\Requests\Blog\CreateCategoryBlogRequest;
-use App\Http\Requests\Blog\UpdateCategoryBlogRequest;
 use App\Http\Resources\Blog\CategoryBlogResource;
 use App\Services\CsvService;
 use Illuminate\Http\RedirectResponse;
@@ -127,7 +126,7 @@ class CategoryBlogController extends Controller
     /**
      * Store a newly created category blog
      */
-    public function store(CreateCategoryBlogRequest $request): mixed
+    public function store(CategoryBlogRequest $request): mixed
     {
         try {
             $dto = CategoryBlogDto::fromRequest($request);
@@ -142,7 +141,7 @@ class CategoryBlogController extends Controller
     /**
      * Update the specified category blog by UUID
      */
-    public function update(UpdateCategoryBlogRequest $request, string $uuid): mixed
+    public function update(CategoryBlogRequest $request, string $uuid): mixed
     {
         try {
             $dto = CategoryBlogDto::fromRequest($request);
