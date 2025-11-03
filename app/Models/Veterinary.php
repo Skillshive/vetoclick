@@ -12,7 +12,7 @@ class Veterinary extends Model
 protected $table = "veterinarians";
 
 protected $fillable = [
-        'license_number','specialization', 'years_experience', 'profile_img',
+        'license_number','specialization', 'years_experience', 'clinic_name', 'profile_img', 'address',
         'subscription_plan_id', 'subscription_status', 'subscription_start_date',
         'subscription_end_date'
     ];
@@ -38,5 +38,9 @@ protected $fillable = [
         return $this->hasMany(Vaccination::class, 'vet_id');
     }
 
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
   
 }
