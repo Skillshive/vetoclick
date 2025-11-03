@@ -53,6 +53,10 @@ class DatabaseSeeder extends Seeder
             BlogSeeder::class,
             FeatureGroupSeeder::class,
             SubscriptionPlanSeeder::class,
+            ClientSeeder::class,
+            PetSeeder::class,
+            VeterinarySeeder::class,
+            AppointmentSeeder::class,
         ]);
     }
 }
