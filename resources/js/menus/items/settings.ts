@@ -3,9 +3,9 @@ import { createMenuFromConfig } from '../helpers';
 import DashboardsIcon from "@/assets/dualicons/dashboards.svg?react";
 import PetIcon from "@/assets/dualicons/pet.svg?react";
 import AppointmentIcon from "@/assets/dualicons/calendar.svg?react";
+import UserGroupIcon from "@/assets/dualicons/users.svg?react";
 import BoxIcon from "@/assets/dualicons/box.svg?react";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
-import UserGroupIcon from "@/assets/nav-icons/people.svg?react";
 
 const menuConfig: MenuConfig[] = [
   {
