@@ -49,7 +49,7 @@ export function createColumns(
       cell: ({ row }) => {
         const appointment_type = row.getValue('appointment_type') as string;
         return appointment_type ? (
-          <Badge color="info">
+          <Badge color="primary">
             {appointment_type}
           </Badge>
         ) : (
@@ -85,7 +85,7 @@ export function createColumns(
       cell: ({ row }) => {
         const status = row.getValue('status') as string;
         return status ? (
-          <Badge color="info">
+          <Badge color="primary">
             {status}
           </Badge>
         ) : (
@@ -101,9 +101,11 @@ export function createColumns(
       cell: ({ row }) => {
         const is_video_conseil = row.getValue('is_video_conseil');
         return (
-          <Badge color={is_video_conseil ? 'success' : 'neutral'}>
-            {is_video_conseil ? t('common.yes') : t('common.no')}
-          </Badge>
+          <div className="text-center">
+            <Badge color={is_video_conseil ? 'primary' : 'neutral'}>
+              {is_video_conseil ? t('common.yes') : t('common.no')}
+            </Badge>
+          </div>
         );
       },
     },
@@ -125,7 +127,6 @@ export function createColumns(
         const { locale } = useTranslation();
         const date = new Date(row.getValue('created_at'));
   
-  // Use appropriate locale for date formatting
   const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
   
   const formattedDate = new Date(date).toLocaleDateString(dateLocale, {

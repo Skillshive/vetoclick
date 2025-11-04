@@ -8,7 +8,6 @@ import { useToast } from '@/Components/common/Toast/ToastContext';
 import { ConfirmModal } from '@/components/shared/ConfirmModal';
 import { useEffect, useState, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { Button } from '@/components/ui';
 import { 
   CheckBadgeIcon, 
   ClockIcon, 
@@ -19,7 +18,6 @@ import {
 } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 import { ReportModal } from './datatable/ReportModal';
-import { PlusSmallIcon } from '@heroicons/react/24/outline';
 
 export default function Index({appointments, filters, vets, clients, statuses, old, errors}: AppointmentPageProps) {
     const { t } = useTranslation();
@@ -54,8 +52,8 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                 console.log('hello')
                 setTimeout(() => {
                     setCancelModalOpen(false);
-                    setCancelSuccess(false); // Reset state
-                }, 2000); // Use 2000ms
+                    setCancelSuccess(false); 
+                }, 2000); 
             },
             onError: (errors: any) => {
                 setCancelError(errors.message || t('common.failed_to_cancel_appointment'));

@@ -10,7 +10,12 @@ export interface Appointment {
     uuid:string;
     name: string;
     breed: string;
-    avatar:string
+    avatar:string;
+    microchip:string;
+    species:string;
+    gender:string;
+    dob:Date;
+    wieght:number;
   }
   appointment_type: string;
   appointment_date: Date;
