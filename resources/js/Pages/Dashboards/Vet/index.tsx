@@ -2,11 +2,7 @@
 import { Page } from "@/components/shared/Page";
 import { Overview } from "./Overview";
 import { Statistics } from "./Statistics";
-import { Projects } from "./Projects";
-import { CustomerSatisfaction } from "./CustomerSatisfaction";
-import { TopSellers } from "./TopSellers";
-import { UsersActivity } from "./UsersActivity";
-import { BandwidthReport } from "./BandwidthReport";
+import { Projects } from "./Projects";;
 import MainLayout from "@/layouts/MainLayout";
 
 // ----------------------------------------------------------------------

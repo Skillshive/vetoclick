@@ -24,7 +24,7 @@ export function Statistics() {
             </p>
             <ClockIcon className="this:primary size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Appointments Today</p>
+          <p className="mt-1 text-xs-plus">Appointments</p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -33,7 +33,7 @@ export function Statistics() {
             </p>
             <CheckBadgeIcon className="this:success size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Pending Appointments</p>
+          <p className="mt-1 text-xs-plus">Pending</p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -42,7 +42,7 @@ export function Statistics() {
             </p>
             <ClockIcon className="this:warning size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Cancelled Appointments</p>
+          <p className="mt-1 text-xs-plus">Cancelled</p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -51,7 +51,7 @@ export function Statistics() {
             </p>
             <UsersIcon className="this:info size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Total Pets</p>
+          <p className="mt-1 text-xs-plus">Pets</p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -60,7 +60,7 @@ export function Statistics() {
             </p>
             <UsersIcon className="this:secondary size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Total Clients</p>
+          <p className="mt-1 text-xs-plus">Clients</p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
