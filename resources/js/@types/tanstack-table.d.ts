@@ -3,7 +3,7 @@ import { TableSettings } from "@/components/shared/table/TableSettings";
 import { Dispatch, SetStateAction } from "react";
 import { ItemViewType } from "@/components/shared/table/ItemViewTypeSelect";
 declare module "@tanstack/react-table" {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   interface TableMeta<TData extends RowData> {
     deleteRow?: (row: Row<TData>) => void;
     deleteRows?: (rows: Row<TData>[]) => void;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,Fragment  } from 'react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { 
@@ -14,10 +14,10 @@ import {
     History 
 } from 'lucide-react';
 import { Appointment } from "@/pages/Appointments/datatable/types"; // Ensure this path is correct
-
+import "./main.css";
 // --- Helper Component for Pet/Client Details ---
 const DetailItem = ({ label, value, className = '' }: { label: string, value: string, className?: string }) => (
-    <div className={`py-1.5 ${className}`}>
+    <div className={`${className}`}>
         <dt className="text-sm font-medium text-gray-500">{label}</dt>
         <dd className="text-sm text-gray-900">{value}</dd>
     </div>
@@ -136,12 +136,11 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
     ];
 
     return (
-        <Transition show={isOpen}>
-          <div className="flex min-h-full items-center justify-center p-4 ">
-            <Dialog onClose={onClose} className="relative z-50">
-                
+     <Transition appear show={isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={onClose}>
                 {/* Backdrop */}
                 <TransitionChild
+                    as={Fragment}
                     enter="ease-out duration-300"
                     enterFrom="opacity-0"
                     enterTo="opacity-100"
@@ -149,129 +148,118 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+                    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur transition-opacity dark:bg-black/40" />
                 </TransitionChild>
 
-                {/* Modal Content */}
-                <div className="fixed inset-0 overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-4">
-                        <TransitionChild
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 scale-95"
-                            enterTo="opacity-100 scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 scale-100"
-                            leaveTo="opacity-0 scale-95"
-                        >
-                            <DialogPanel 
-                                onClick={(e) => e.stopPropagation()}
-                                className="w-full max-w-5xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all max-h-[90vh] flex flex-col m-auto"
+                {/* Drawer Slide In */}
+                <TransitionChild
+                    as={Fragment}
+                    enter="ease-out transform-gpu transition-transform duration-300"
+                    enterFrom="translate-x-full"
+                    enterTo="translate-x-0"
+                    leave="ease-in transform-gpu transition-transform duration-300"
+                    leaveFrom="translate-x-0"
+                    leaveTo="translate-x-full"
+                >
+                    <DialogPanel className="fixed right-0 top-0 flex h-full w-full max-w-5xl transform-gpu flex-col bg-white transition-transform duration-300 dark:bg-dark-700 shadow-2xl">
+                        
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-500 flex-shrink-0">
+                            <DialogTitle as="div" className="flex items-center gap-3">
+                                <div className="flex-shrink-0 bg-primary-100 text-primary-600 rounded-full p-2 dark:bg-primary-900/30 dark:text-primary-400">
+                                    <PawPrint size={20} />
+                                </div>
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+                                    Pet Record
+                                </h2>
+                            </DialogTitle>
+                            <button 
+                                onClick={onClose} 
+                                className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-dark-600 dark:hover:text-dark-200 transition-colors"
                             >
-                                {/* Modal Header */}
-                                <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                                    <DialogTitle as="div" className="flex items-center gap-3">
-                                        <div className="flex-shrink-0 bg-primary-100 text-primary-600 rounded-full p-2">
-                                            <PawPrint size={20} />
-                                        </div>
-                                        <h2 className="text-xl font-semibold text-gray-900">
-                                            Pet Record: {pet.name}
-                                        </h2>
-                                    </DialogTitle>
-                                    <button 
-                                        onClick={onClose} 
-                                        className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                                    >
-                                        <XMarkIcon className="h-6 w-6" />
-                                    </button>
-                                </div>
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
 
-                                {/* --- Top Section: Pet + Client Info --- */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 p-6 border-b border-gray-200">
-                                    {/* Left Col: Pet Info */}
-                                    <div className="flex items-start gap-4">
-                                        <img 
-                                            src={petImage} 
-                                            alt={pet.name} 
-                                            className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
-                                        />
-                                        <div>
-                                            <h3 className="text-3xl font-bold text-gray-900">{pet.name}</h3>
-                                            <span className="text-sm text-gray-500 font-mono">ID: {pet.microchip}</span>
-                                            <dl className="mt-2 grid grid-cols-2 gap-x-4">
-                                                <DetailItem label="Species" value={pet.species} />
-                                                <DetailItem label="Breed" value={pet.breed} />
-                                                <DetailItem label="Gender" value={pet.gender} />
-                                                <DetailItem label="DOB" value={pet.dob.toLocaleDateString()} />
-                                                <DetailItem label="Weight" value={`${pet.wieght} kg`} />
-                                            </dl>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Right Col: Client Info */}
-                                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4 md:mt-0">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="flex-shrink-0 bg-gray-200 text-gray-700 rounded-full p-2">
-                                                <User size={18} />
-                                            </div>
-                                            <h4 className="text-xl font-semibold text-gray-900">
-                                                {client.first_name} {client.last_name}
-                                            </h4>
-                                        </div>
-                                        <div className="space-y-2 text-sm">
-                                            <div className="flex items-center gap-2.5 text-gray-700">
-                                                <Phone size={14} className="flex-shrink-0" />
-                                                <span>(123) 456-7890</span>
-                                            </div>
-                                            <div className="flex items-center gap-2.5 text-gray-700">
-                                                <Mail size={14} className="flex-shrink-0" />
-                                                <span>{client.first_name.toLowerCase()}@emaildomain.com</span>
-                                            </div>
-                                            <div className="flex items-start gap-2.5 text-gray-700">
-                                                <MapPin size={14} className="flex-shrink-0 mt-0.5" />
-                                                <span>1234 Main St, San Luis Obispo, CA 93401</span>
-                                            </div>
-                                        </div>
+                        {/* Content - Scrollable */}
+                        <div className="flex-1 overflow-y-auto">
+                            
+                            {/* Pet + Client Info Section */}
+                            <div className="grid grid-cols-2 gap-6 p-6 border-b border-gray-200 dark:border-dark-500">
+                                {/* Pet Info */}
+                                <div className="flex items-start gap-4">
+                                    <img 
+                                        src={petImage} 
+                                        alt={pet.name} 
+                                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-dark-500 flex-shrink-0"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-dark-50">{pet.name}</h3>
+                                        <span className="text-xs text-gray-500 dark:text-dark-300 font-mono">ID: {pet.microchip}</span>
+                                        <dl className="mt-3 grid grid-cols-2 gap-3">
+                                            <DetailItem label="Species" value={pet.species} />
+                                            <DetailItem label="Breed" value={pet.breed} />
+                                            <DetailItem label="Gender" value={pet.gender} />
+                                            <DetailItem label="DOB" value={pet.dob.toLocaleDateString()} />
+                                            <DetailItem label="Weight" value={`${pet.wieght} kg`} />
+                                        </dl>
                                     </div>
                                 </div>
+                                
+                                {/* Client Info */}
+                             <div className="client-info-card">
+        <div className="client-info-item">
+            <User size={18} />
+            <span>{client.first_name} {client.last_name}</span>
+        </div>
+        <div className="client-info-item">
+            <Phone size={18} />
+            <span>(123) 456-7890</span>
+        </div>
+        <div className="client-info-item">
+            <Mail size={18} />
+            <span>{client.first_name.toLowerCase()}@emaildomain.com</span>
+        </div>
+        <div className="client-info-item">
+            <MapPin size={18} />
+            <span>1234 Main St, San Luis Obispo, CA 93401</span>
+        </div>
+    </div>
+                            </div>
 
-                                {/* --- Bottom Section: Tabs --- */}
-                                <div className="flex-1 overflow-y-auto">
-                                    {/* Tab Headers */}
-                                    <div className="border-b border-gray-200 px-6">
-                                        <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                                            {tabs.map((tab) => (
-                                                <button
-                                                    key={tab.id}
-                                                    onClick={() => setActiveTab(tab.id)}
-                                                    className={`
-                                                        flex items-center gap-2 whitespace-nowrap py-3 px-1 border-b-2
-                                                        text-sm font-medium
-                                                        ${activeTab === tab.id
-                                                            ? 'border-primary-500 text-primary-600'
-                                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                                        }
-                                                    `}
-                                                >
-                                                    <tab.icon size={16} />
-                                                    {tab.label}
-                                                </button>
-                                            ))}
-                                        </nav>
-                                    </div>
+                            {/* Tabs */}
+                            <div className="border-b border-gray-200 dark:border-dark-500 px-6 bg-white dark:bg-dark-700 sticky top-0 z-10">
+                                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                                    {tabs.map((tab) => (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`
+                                                flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 transition-colors
+                                                text-sm font-medium
+                                                ${activeTab === tab.id
+                                                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                                                    : 'border-transparent text-gray-500 dark:text-dark-300 hover:text-gray-700 dark:hover:text-dark-100 hover:border-gray-300 dark:hover:border-dark-400'
+                                                }
+                                            `}
+                                        >
+                                            <tab.icon size={16} />
+                                            {tab.label}
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
 
-                                    {/* Tab Content */}
-                                    <div className="p-6 bg-gray-50/70">
-                                        {activeTab === 'consultations' && <RecentConsultations />}
-                                        {activeTab === 'vaccinations' && <Vaccinations />}
-                                        {activeTab === 'notes' && <Notes />}
-                                    </div>
-                                </div>
-                            </DialogPanel>
-                        </TransitionChild>
-                    </div>
-                </div>
+                            {/* Tab Content */}
+                            <div className="p-6 bg-gray-50/70 dark:bg-dark-600/50">
+                                {activeTab === 'consultations' && <RecentConsultations />}
+                                {activeTab === 'vaccinations' && <Vaccinations />}
+                                {activeTab === 'notes' && <Notes />}
+                            </div>
+                        </div>
+                    </DialogPanel>
+                </TransitionChild>
             </Dialog>
-            </div>
         </Transition>
     );
 };

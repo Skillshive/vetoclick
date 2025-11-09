@@ -453,6 +453,7 @@ return [
             "users_management" => "Users Management",
             "create_user" => "Create User",
             "appointments_management" => "Appointments Management",
+            "appointments" => "Appointments",
     ],
 
     // Category Blogs specific translations
@@ -1108,5 +1109,26 @@ return [
 'report_appointment' => 'Report Appointment',
 'confirm_cancel_appointment' => 'Are you sure you want to cancel this appointment?',
 'confirm_cancel' => 'Confirm Cancellation',
-"appointment_cancelled_successfully"=>"Appointment Cancelled Successfully"
+"appointment_cancelled_successfully"=>"Appointment Cancelled Successfully",
+    'appointment_type'           => 'Appointment Type', 
+    'checkup'                    => 'Check-up',
+    'new_patient'                => 'New Patient',
+    'vaccination'                => 'Vaccination',
+    'surgery_consult'            => 'Surgery Consult',
+    'select_date_and_time'       => 'Select date and time',
+    'date_and_time'              => 'Date & Time',
+    'reason_for_visit_placeholder' => 'e.g., Annual check-up, not eating...',
+    'reason_for_visit'           => 'Reason for Visit',
+    'appointment_notes'          => 'Appointment Notes',
+    'video_consult'              => 'This is a video consultation',
+    'request_appointment'        => 'Request Appointment',
+"appointment_notes_placeholder" => "Enter any notes related to the appointment...",
+    "checkup"                     => "Check-up",
+    "other"                       => "Other",
+    "firstname"                   => "First Name",
+    "lastname"                    => "Last Name",
+    "phone_number"                => "Phone Number",
+    "new_appointment_description" => "Fill in the details to create a new appointment.",
+    "new_appointment"             => "New Appointment",
+
 ];

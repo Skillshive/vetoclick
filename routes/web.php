@@ -153,6 +153,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('', 'index')->name('index');
             Route::delete('{uuid}/cancel', 'cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->name('report');
+            Route::get('create', function () {
+                return Inertia::render('Appointments/Create');
+            })->name('create');
+            Route::post('store', 'store')->name('store');
         });
 });
 // Product routes

@@ -1,20 +1,22 @@
 // Import Dependencies
 import { CalendarIcon } from "@heroicons/react/24/solid";
 import clsx from "clsx";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import { BaseOptions } from "flatpickr/dist/types/options";
 import Flatpickr from "react-flatpickr";
 import flatpickrCSS from "flatpickr/dist/themes/light.css?inline";
+import "flatpickr/dist/l10n/fr";
+import "flatpickr/dist/l10n/ar";
 
 // Local Imports
 import { Input, InputProps } from "@/components/ui";
 import { useMergedRef } from "@/hooks";
 import { injectStyles, insertStylesToHead, makeStyleTag } from "@/utils/dom/injectStylesToHead";
 import { FlatpickrProps, FlatpickrRef } from "./Flatpickr";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
-// Define prop types for the DatePicker component
 interface DatePickerProps
   extends Omit<FlatpickrProps, "options">,
     Omit<
@@ -46,11 +48,12 @@ const DatePicker = forwardRef<FlatpickrRef, DatePickerProps>(
     },
     ref,
   ) => {
+    const { locale } = useTranslation();
     const flatpickrRef = useRef<FlatpickrRef | null>(null);
 
     const options = {
       inline: isCalendar,
-      locale: "fr",
+      locale: locale === "en" ? "default" : locale,
       ...userOptions,
     };
 

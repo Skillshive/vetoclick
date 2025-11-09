@@ -1,24 +1,9 @@
 import { useLocaleContext } from '@/contexts/locale/context';
 import { usePage } from '@inertiajs/react';
 
-function getInertiaProps() {
-  try {
-    const { translations, locale } = usePage().props;
-    return { translations, locale };
-  } catch {
-    return {
-      translations: {},
-      locale: {
-        current: 'en',
-        available: { en: 'English' },
-      },
-    };
-  }
-}
-
 export function useTranslation() {
   const { locale, isRtl } = useLocaleContext();
-  const { translations } = getInertiaProps();
+  const { translations } = usePage().props;
 
   const t = (key: string, replacements: Record<string, string | number> = {}): string => {
     const keys = key.split('.');

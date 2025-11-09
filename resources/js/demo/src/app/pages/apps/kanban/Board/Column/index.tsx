@@ -186,7 +186,7 @@ export function Column({ data, tasks }: ColumnProps) {
           source.data.instanceId === instanceId && source.data.type === "card",
       }),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [id, instanceId, registerColumn]);
 
   const tasksIdList: string[] = data.tasks || [];

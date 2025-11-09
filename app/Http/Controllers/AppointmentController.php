@@ -25,14 +25,14 @@ class AppointmentController extends Controller
     }
 
 
-    public function store(AppointmentRequest $request): JsonResponse
+    public function store(AppointmentRequest $request)
     {
         try {
             $dto = AppointmentDTO::fromRequest($request);
-            $appointment = $this->appointmentService->create($dto);
-            return response()->json($appointment, 201);
+            $this->appointmentService->create($dto);
+            return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 

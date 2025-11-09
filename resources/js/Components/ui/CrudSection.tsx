@@ -87,7 +87,7 @@ export function CrudSection<T>({
     const avatarValue = String(item[avatarField] ?? '').charAt(0).toUpperCase();
     const titleValue = String(item[titleField] ?? '');
     let subtitleValue = subtitleField ? String(item[subtitleField] ?? '') : undefined;
-    let descriptionValue = descField ? String(item[descField] ?? '') : undefined;
+    const descriptionValue = descField ? String(item[descField] ?? '') : undefined;
     if (createdAtField && item[createdAtField]) {
       const date = item[createdAtField];
       subtitleValue = typeof date === 'string' || date instanceof Date
@@ -187,16 +187,16 @@ export function CrudSection<T>({
             const total = paginationMeta.last_page;
             const current = paginationMeta.current_page;
             const delta = 2; 
-            let left = current - delta;
-            let right = current + delta;
-            let range = [];
+            const left = current - delta;
+            const right = current + delta;
+            const range = [];
             let l: number | undefined;
             for (let i = 1; i <= total; i++) {
               if (i === 1 || i === total || (i >= left && i <= right)) {
                 range.push(i);
               }
             }
-            for (let i of range) {
+            for (const i of range) {
               if (l !== undefined) {
                 if (i - l === 2) {
                   pages.push(

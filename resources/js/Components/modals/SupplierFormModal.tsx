@@ -28,7 +28,7 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
         email?: string;
         phone?: string;
     }>({});
-    let [isValid,setIsValid] = useState(false);
+    const [isValid,setIsValid] = useState(false);
 
     const { data, setData, post, put, processing, reset } = useForm<SupplierFormValues>({
         name: supplier?.name || '',
