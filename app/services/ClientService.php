@@ -7,9 +7,18 @@ use App\common\ClientDTO;
 use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 class ClientService implements ServiceInterface
 {
+    /**
+     * Get all clients as a collection
+     */
+    public function getAllClients(): Collection
+    {
+        return Client::with('user')->get();
+    }
+
     /**
      * Get all clients with optional pagination
      */
@@ -54,13 +63,13 @@ class ClientService implements ServiceInterface
     {
         try {
             $client = $this->getByUuid($uuid);
-            
+
             if (!$client) {
                 return null;
             }
 
             $updateData = $dto->toUpdateArray();
-            
+
             if (empty($updateData)) {
                 return $client;
             }
@@ -79,7 +88,7 @@ class ClientService implements ServiceInterface
     {
         try {
             $client = $this->getByUuid($uuid);
-            
+
             if (!$client) {
                 return false;
             }
@@ -96,7 +105,7 @@ class ClientService implements ServiceInterface
     public function searchByUser(string $search, int $perPage = 15): LengthAwarePaginator
     {
         return Client::with(['user', 'pets'])
-            ->whereHas('user', function($q) use ($search) {
+            ->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                   ->orWhere('email', 'LIKE', "%{$search}%");
             })
