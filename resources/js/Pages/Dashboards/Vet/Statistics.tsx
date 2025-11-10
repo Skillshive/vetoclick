@@ -15,7 +15,7 @@ import { Card } from "@/components/ui";
 
 export function Statistics() {
   return (
-    <div className="col-span-12 lg:col-span-4">
+    <div className="col-span-12 lg:col-span-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-2">
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">

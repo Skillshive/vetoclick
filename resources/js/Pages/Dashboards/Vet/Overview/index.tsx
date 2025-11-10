@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Box } from "@/components/ui";
 import { AppointmentInfo } from "./AppointmentInfo";
 import { AppointmentsChart } from "./AppointmentsChart";
+import { History } from "../History";
 
 // ----------------------------------------------------------------------
 
@@ -60,49 +61,12 @@ export function Overview() {
   const categories = appointmentsData[activeRange].categories;
 
   return (
-    <Box className="col-span-12 lg:col-span-8">
-      <div className="flex min-w-0 items-center justify-between gap-2">
-        <h2 className="truncate text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
-          Appointments Overview
-        </h2>
-        <RadioGroup
-          name="options"
-          value={activeRange}
-          onChange={setActiveRange}
-          className="flex rounded-lg bg-gray-200 p-1 text-gray-600 dark:bg-dark-800 dark:text-dark-200"
-        >
-          <Radio
-            value="monthly"
-            className={({ checked }) =>
-              clsx(
-                "shrink-0 cursor-pointer rounded-lg px-3 py-1 text-xs-plus font-medium outline-hidden",
-                checked
-                  ? "bg-white shadow-sm dark:bg-dark-500 dark:text-gray-100"
-                  : "hover:text-gray-800 focus:text-gray-800 dark:hover:text-dark-100 dark:focus:text-dark-100",
-              )
-            }
-          >
-            Last Month
-          </Radio>
-          <Radio
-            value="yearly"
-            className={({ checked }) =>
-              clsx(
-                "shrink-0 cursor-pointer rounded-lg px-3 py-1 text-xs-plus font-medium outline-hidden",
-                checked
-                  ? "bg-white shadow-sm dark:bg-dark-500 dark:text-gray-100"
-                  : "hover:text-gray-800 focus:text-gray-800 dark:hover:text-dark-100 dark:focus:text-dark-100",
-              )
-            }
-          >
-            Last Year
-          </Radio>
-        </RadioGroup>
-      </div>
-      <div className="flex flex-col sm:flex-row sm:gap-7">
-        <AppointmentInfo />
-        <AppointmentsChart series={series} categories={categories} />
-      </div>
+    <Box className="col-span-12 lg:col-span-6">
+
+      {/* <div className="flex flex-col"> */}
+        {/* <AppointmentInfo /> */}
+        <History />
+      {/* </div> */}
     </Box>
   );
 }
