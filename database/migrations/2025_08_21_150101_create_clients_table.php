@@ -15,6 +15,7 @@ return new class extends Migration
     $table->id();
     $table->uuid('uuid')->unique();
     $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
+    $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
     $table->string('first_name');
     $table->string('last_name');
     $table->string('email')->nullable();
