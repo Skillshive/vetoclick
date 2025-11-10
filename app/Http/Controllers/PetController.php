@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
+use Illuminate\Http\JsonResponse;
 
 class PetController extends Controller
 {
@@ -134,6 +135,19 @@ class PetController extends Controller
         } catch (Exception $e) {
             return back()->withInput()
                 ->withErrors(['error' => 'Error updating pet: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get pets by client UUID
+     */
+    public function getByClient(string $clientUuid): JsonResponse
+    {
+        try {
+            $pets = $this->petService->getByClientUuid($clientUuid);
+            return response()->json($pets);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Error retrieving pets: ' . $e->getMessage()], 500);
         }
     }
 

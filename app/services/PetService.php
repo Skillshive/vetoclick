@@ -4,10 +4,8 @@ namespace App\Services;
 
 use App\common\PetDTO;
 use App\Models\Pet;
-use App\Http\Requests\PetRequest;
 use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Exception;
 
 class PetService implements ServiceInterface
@@ -112,6 +110,18 @@ class PetService implements ServiceInterface
         return Pet::with(['species', 'breed'])
             ->where('client_id', $clientId)
             ->paginate($perPage);
+    }
+
+    /**
+     * Get pets by client UUID
+     */
+    public function getByClientUuid(string $clientUuid)
+    {
+        return Pet::with(['species', 'breed'])
+            ->whereHas('client', function ($query) use ($clientUuid) {
+                $query->where('uuid', $clientUuid);
+            })
+            ->get();
     }
 
     /**
