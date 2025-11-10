@@ -1,11 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EmailController;
-use App\Http\Controllers\SubscriptionPlanController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\PetController;
 
 Route::prefix('email')->controller(EmailController::class)->group(function () {
     Route::post('/send', 'sendEmail');
@@ -34,3 +31,6 @@ Route::prefix('appointments')->controller(AppointmentController::class)->group(f
     Route::post('/', 'store');
     Route::post('/{uuid}/update', 'update');
 });
+
+Route::get('/clients', [ClientController::class, 'getAll'])->name('clients.all');
+Route::get('/clients/{uuid}/pets', [PetController::class, 'getByClient'])->name('clients.pets');

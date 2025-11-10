@@ -17,6 +17,7 @@ use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoleManagementController;
 use App\Http\Controllers\SubscriptionPlanController;
+use App\Models\Client;
 
 require_once 'common.php';
 
@@ -28,7 +29,12 @@ Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name(
 Route::redirect('/', '/dashboard');
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboards/Vet/index');
+$clients = Client::all()->mapWithKeys(function ($client) {
+    return [$client->uuid => $client->first_name];
+});
+    return Inertia::render('Dashboards/Vet/index')->with([
+        "clients"=>$clients
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Profile routes
