@@ -12,6 +12,7 @@ use App\Enums\ConsultationStatus;
 use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,9 +30,24 @@ class AppointmentController extends Controller
     {
         try {
             $dto = AppointmentDTO::fromRequest($request);
-            $this->appointmentService->create($dto);
+            if (!$dto->veterinarian_id) {
+                $dto->veterinarian_id = Auth::user()?->veterinary?->uuid;
+            }
+            $appointment = $this->appointmentService->create($dto);
+            if ($request->expectsJson()) {
+                return new JsonResponse([
+                    'appointment' => new AppointmentResource($appointment),
+                    'message' => __('common.appointment_created_success'),
+                ], 201);
+            }
+
             return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
         } catch (Exception $e) {
+            if ($request->expectsJson()) {
+                return new JsonResponse([
+                    'error' => $e->getMessage(),
+                ], 422);
+            }
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -41,7 +57,7 @@ class AppointmentController extends Controller
         try {
             $filters = $request->only(['search', 'per_page', 'sort_by', 'sort_direction', 'status', 'client']);
             $appointments = $this->appointmentService->getAll($filters);
-            
+
             return Inertia::render('Appointments/Index', [
                 'appointments' => [
                     'data' => AppointmentResource::collection($appointments->items())->toArray(request()),
@@ -94,13 +110,13 @@ class AppointmentController extends Controller
             }
 
             $appointmentResource = new AppointmentResource($appointment);
-             return response()->json([
-                    'app$appointment' => $appointment
-                ]);
+            return response()->json([
+                   'app$appointment' => $appointment
+               ]);
         } catch (Exception $e) {
-             return response()->json([
-                    'error' => __('common.error')
-                ]);
+            return response()->json([
+                   'error' => __('common.error')
+               ]);
         }
     }
 
@@ -110,18 +126,21 @@ class AppointmentController extends Controller
             $appointment = $this->appointmentService->getByUuid($uuid);
 
             if (!$appointment) {
-                return response()->json(['error'=> __('common.appointment_not_found')]);
+                return response()->json(['error' => __('common.appointment_not_found')]);
             }
 
             $dto = AppointmentDTO::fromRequest($request);
+            if (!$dto->veterinarian_id && $request->user()?->veterinary?->uuid) {
+                $dto->veterinarian_id = $request->user()->veterinary->uuid;
+            }
             $updatedAppointment = $this->appointmentService->update($uuid, $dto);
 
             return response()->json([
-                "appointment"=>$updatedAppointment
+                "appointment" => $updatedAppointment
             ]);
 
         } catch (Exception $e) {
-            return back()->with('error', __('common.error') );
+            return back()->with('error', __('common.error'));
         }
     }
 
@@ -131,14 +150,14 @@ class AppointmentController extends Controller
             $appointment = $this->appointmentService->getByUuid($uuid);
 
             if (!$appointment) {
-                return response()->json(['error'=> __('common.appointment_not_found')]);
+                return response()->json(['error' => __('common.appointment_not_found')]);
             }
 
             $this->appointmentService->delete($uuid);
-            
-            return response()->json(['success'=> __('common.appointment_deleted_success')]);
+
+            return response()->json(['success' => __('common.appointment_deleted_success')]);
         } catch (Exception $e) {
-                return response()->json(['error'=> __('common.appointment_delete_error')]);
+            return response()->json(['error' => __('common.appointment_delete_error')]);
         }
     }
 
@@ -152,7 +171,7 @@ class AppointmentController extends Controller
             }
 
             $this->appointmentService->cancel($uuid);
-            
+
             return redirect()->route('appointments.index')->with('success', __('common.appointment_cancelled_successfully'));
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['error' => __('common.failed_to_cancel_appointment')]);
@@ -170,7 +189,7 @@ class AppointmentController extends Controller
 
             $dto = AppointmentDTO::fromRequest($request);
             $this->appointmentService->report($uuid, $dto);
-            
+
             return back()->with('success', __('common.appointment_reported_successfully'));
         } catch (Exception $e) {
             return back()->with('error', __('common.failed_to_report_appointment'));

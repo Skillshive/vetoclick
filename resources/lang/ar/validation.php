@@ -75,6 +75,23 @@ return [
         'category_product.category_product_id' => 'الفئة الأم',
     ],
     
+    // Order validation messages
+    'order_reference_max' => 'Order reference may not be greater than 50 characters.',
+    'order_supplier_required' => 'Please select a supplier.',
+    'order_type_required' => 'Please select an order type.',
+    'order_status_required' => 'Please select an order status.',
+    'order_subtotal_invalid' => 'Subtotal must be a valid number greater than or equal to 0.',
+    'order_tax_invalid' => 'Tax amount must be a valid number greater than or equal to 0.',
+    'order_shipping_invalid' => 'Shipping cost must be a valid number greater than or equal to 0.',
+    'order_discount_invalid' => 'Discount amount must be a valid number greater than or equal to 0.',
+    'order_total_invalid' => 'Total amount must be a valid number greater than or equal to 0.',
+    'order_discount_percentage_invalid' => 'Discount percentage must be a valid number.',
+    'order_discount_percentage_range' => 'Discount percentage must be between 0 and 100.',
+    'order_payment_method_required' => 'Please select a payment method.',
+    'order_date_required' => 'Order date is required.',
+    'order_received_by_invalid' => 'Received by must reference a valid user.',
+    'order_cancelled_by_invalid' => 'Cancelled by must reference a valid user.',
+
     // Custom validation messages for species
     'custom' => [
         'name' => [

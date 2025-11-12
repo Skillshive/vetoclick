@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\CategoryProductController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\SupplierController;
@@ -17,7 +18,10 @@ use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoleManagementController;
 use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Resources\AppointmentResource;
 use App\Models\Client;
+use App\Models\Appointment;
+use Illuminate\Support\Facades\Auth;
 
 require_once 'common.php';
 
@@ -29,11 +33,27 @@ Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name(
 Route::redirect('/', '/dashboard');
 
 Route::get('/dashboard', function () {
-$clients = Client::all()->mapWithKeys(function ($client) {
-    return [$client->uuid => $client->first_name];
-});
-    return Inertia::render('Dashboards/Vet/index')->with([
-        "clients"=>$clients
+    $clients = Client::all()->mapWithKeys(function ($client) {
+        return [$client->uuid => $client->first_name];
+    });
+
+    $todayAppointments = [];
+
+    $user = Auth::user();
+
+    if ($user && $user->veterinary) {
+        $appointments = Appointment::with(['client', 'pet.breed'])
+            // ->where('veterinarian_id', $user->veterinary->id)
+            // ->whereDate('appointment_date', today()->toDateString())
+            // ->orderBy('start_time')
+            ->get();
+
+        $todayAppointments = AppointmentResource::collection($appointments)->resolve();
+    }
+
+    return Inertia::render('Dashboards/Vet/index', [
+        'clients' => $clients,
+        'todayAppointments' => $todayAppointments,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -113,6 +133,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('import', [CategoryProductController::class, 'import'])->name('category-products.import');
     });
     Route::resource('category-products', CategoryProductController::class)->names('category-products');
+});
+
+// Orders routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('orders', OrderController::class)->names('orders');
 });
 
 // Category Blog routes

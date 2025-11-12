@@ -59,6 +59,23 @@ return [
     'category_parent_exists' => 'La catégorie parente sélectionnée n\'existe pas.',
     'category_parent_not_self' => 'Une catégorie ne peut pas être sa propre catégorie parente.',
 
+    // Messages de validation pour les commandes
+    'order_reference_max' => 'La référence de commande ne peut pas dépasser 50 caractères.',
+    'order_supplier_required' => 'Veuillez sélectionner un fournisseur.',
+    'order_type_required' => 'Veuillez sélectionner un type de commande.',
+    'order_status_required' => 'Veuillez sélectionner un statut de commande.',
+    'order_subtotal_invalid' => 'Le sous-total doit être un nombre supérieur ou égal à 0.',
+    'order_tax_invalid' => 'Le montant de la taxe doit être un nombre supérieur ou égal à 0.',
+    'order_shipping_invalid' => 'Les frais de livraison doivent être un nombre supérieur ou égal à 0.',
+    'order_discount_invalid' => 'Le montant de la remise doit être un nombre supérieur ou égal à 0.',
+    'order_total_invalid' => 'Le montant total doit être un nombre supérieur ou égal à 0.',
+    'order_discount_percentage_invalid' => 'Le pourcentage de remise doit être un nombre valide.',
+    'order_discount_percentage_range' => 'Le pourcentage de remise doit être compris entre 0 et 100.',
+    'order_payment_method_required' => 'Veuillez sélectionner un mode de paiement.',
+    'order_date_required' => 'La date de commande est requise.',
+    'order_received_by_invalid' => 'Le champ reçu par doit référencer un utilisateur valide.',
+    'order_cancelled_by_invalid' => "Le champ annulé par doit référencer un utilisateur valide.",
+
     // Messages de validation personnalisés pour les catégories de produits
     'category_name_unique' => 'Ce nom de catégorie est déjà utilisé',
     'category_name_required' => 'Le nom de la catégorie est requis',

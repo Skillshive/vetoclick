@@ -19,9 +19,16 @@ class Appointment extends Model
     }
     
     protected $fillable = [
-        'veterinary_id', 'client_id', 'pet_id', 'appointment_type', 'appointment_date',
+        'veterinarian_id', 'client_id', 'pet_id', 'appointment_type', 'appointment_date',
         'start_time', 'end_time', 'duration_minutes', 'status', 'is_video_conseil',
-        'video_meeting_id', 'video_join_url', 'reason_for_visit', 'appointment_notes'
+        'video_provider', 'video_auto_record', 'video_meeting_id', 'video_join_url',
+        'video_start_url', 'video_password', 'video_recording_status', 'video_recording_url',
+        'reason_for_visit', 'appointment_notes'
+    ];
+
+    protected $casts = [
+        'is_video_conseil' => 'boolean',
+        'video_auto_record' => 'boolean',
     ];
 
     public function veterinary()

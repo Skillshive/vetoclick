@@ -46,4 +46,11 @@ return [
         'user_agent' => 'VetoClick/1.0 (Address Validation)',
     ],
 
+    'zoom' => [
+        'account_id' => env('ZOOM_ACCOUNT_ID'),
+        'client_id' => env('ZOOM_CLIENT_ID'),
+        'client_secret' => env('ZOOM_CLIENT_SECRET'),
+        'user' => env('ZOOM_DEFAULT_USER', 'me'),
+    ],
+
 ];

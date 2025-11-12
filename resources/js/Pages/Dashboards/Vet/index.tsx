@@ -1,14 +1,23 @@
 import { Page } from "@/components/shared/Page";
+import { usePage } from "@inertiajs/react";
 import { Overview } from "./Overview";
 import { Statistics } from "./Statistics";
 import { Projects } from "./Projects";
 import { AppointmentForm } from "./AppointmentForm";
 import MainLayout from "@/layouts/MainLayout";
 import { Budget } from "./Budget";
+import { DashboardAppointment } from "./TopSellers/AppointmentCard";
 
 // ----------------------------------------------------------------------
 
+type DashboardPageProps = {
+  todayAppointments: DashboardAppointment[];
+};
+
 export default function CRMAnalytics() {
+  const { props } = usePage<DashboardPageProps>();
+  const todayAppointments = props.todayAppointments ?? [];
+
   return (
         <MainLayout>
     
@@ -25,7 +34,7 @@ export default function CRMAnalytics() {
             
             <Overview />
             <Statistics />
-            <Projects />
+            <Projects appointments={todayAppointments} />
           </div>
        <div className="col-span-12 lg:col-span-4 gap-4 sm:gap-5 lg:gap-6">                                        
                     <AppointmentForm />

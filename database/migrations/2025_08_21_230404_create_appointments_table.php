@@ -16,7 +16,7 @@ return new class extends Migration
     $table->uuid('uuid')->unique();
     $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
     $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
-    $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
+    $table->foreignId('pet_id')->nullable()->constrained('pet_id')->nullOnDelete();
     $table->string('appointment_type');
     $table->date('appointment_date');
     $table->time('start_time');

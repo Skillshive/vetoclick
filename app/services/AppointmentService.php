@@ -10,9 +10,17 @@ use App\Models\Pet;
 use App\Models\Veterinary;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentService implements ServiceInterface
 {
+    public function __construct(
+        protected ZoomMeetingService $zoomMeetingService
+    ) {
+    }
+
     /**
      * Get all appointments with optional pagination
      */
@@ -69,10 +77,15 @@ class AppointmentService implements ServiceInterface
         }
         return null;
     } 
-    private function getPet(string $petId){
-        $pet = Pet::where('uuid',$petId)->first();
+    private function getPet(?string $petId)
+    {
+        if (empty($petId)) {
+            return null;
+        }
 
-        if($pet){
+        $pet = Pet::where('uuid', $petId)->first();
+
+        if ($pet) {
             return $pet->id;
         }
         return null;
@@ -91,17 +104,32 @@ class AppointmentService implements ServiceInterface
      */
     public function create(AppointmentDTO $dto): Appointment
     {
+        $isVideoConsultation = filter_var($dto->is_video_conseil, FILTER_VALIDATE_BOOLEAN);
+        $duration = $this->resolveDuration($dto);
+        $meetingData = [];
 
-        $appointment= Appointment::create([
-            "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
-            "client_id"=>$this->getClient($dto->client_id),
-            "pet_id"=>$this->getPet($dto->pet_id),
-            "appointment_type"=>$dto->appointment_type,
-            "appointment_date"=>$dto->appointment_date,
-            "start_time"=>$dto->start_time,
-            "is_video_conseil"=>$dto->is_video_conseil,
-            "reason_for_visit"=>$dto->reason_for_visit,
-            "appointment_notes"=>$dto->appointment_notes,
+        if ($isVideoConsultation) {
+            $meetingData = $this->createZoomMeeting($dto);
+        }
+        $appointment = Appointment::create([
+            "veterinarian_id" => Auth::user()->veterinary->id,
+            "client_id" => $this->getClient($dto->client_id),
+            "pet_id" =>$dto->pet_id ? $this->getPet($dto->pet_id) : null,
+            "appointment_type" => $dto->appointment_type,
+            "appointment_date" => $dto->appointment_date,
+            "start_time" => $dto->start_time,
+            "end_time" => $dto->end_time,
+            "duration_minutes" => $duration,
+            "is_video_conseil" => $isVideoConsultation,
+            "video_provider" => $dto->meeting_provider ?? ($isVideoConsultation ? 'zoom' : null),
+            "video_auto_record" => $isVideoConsultation ? $dto->auto_record : false,
+            "video_meeting_id" => $meetingData['id'] ?? null,
+            "video_join_url" => $meetingData['join_url'] ?? null,
+            "video_start_url" => $meetingData['start_url'] ?? null,
+            "video_password" => $meetingData['password'] ?? null,
+            "video_recording_status" => $meetingData['recording_status'] ?? null,
+            "reason_for_visit" => $dto->reason_for_visit,
+            "appointment_notes" => $dto->appointment_notes,
         ]);
 
         return $appointment->load(['client', 'pet', 'veterinary']);
@@ -119,17 +147,34 @@ class AppointmentService implements ServiceInterface
                 return null;
             }
 
+            $isVideoConsultation = filter_var($dto->is_video_conseil, FILTER_VALIDATE_BOOLEAN);
+            $duration = $this->resolveDuration($dto);
+            $meetingData = [];
+
+            if ($isVideoConsultation) {
+                $meetingData = $this->createZoomMeeting($dto);
+            }
+
             $updateData = $appointment->update([
-            "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
-            "client_id"=>$this->getClient($dto->client_id),
-            "pet_id"=>$this->getPet($dto->pet_id),
-            "appointment_type"=>$dto->appointment_type,
-            "appointment_date"=>$dto->appointment_date,
-            "start_time"=>$dto->start_time,
-            "is_video_conseil"=>$dto->is_video_conseil,
-            "reason_for_visit"=>$dto->reason_for_visit,
-            "appointment_notes"=>$dto->appointment_notes,
-        ]);
+                "veterinarian_id" => $this->getVet($dto->veterinarian_id),
+                "client_id" => $this->getClient($dto->client_id),
+                "pet_id" => $this->getPet($dto->pet_id),
+                "appointment_type" => $dto->appointment_type,
+                "appointment_date" => $dto->appointment_date,
+                "start_time" => $dto->start_time,
+                "end_time" => $dto->end_time,
+                "duration_minutes" => $duration,
+                "is_video_conseil" => $isVideoConsultation,
+                "video_provider" => $dto->meeting_provider ?? ($isVideoConsultation ? 'zoom' : null),
+                "video_auto_record" => $isVideoConsultation ? $dto->auto_record : false,
+                "video_meeting_id" => $meetingData['id'] ?? $appointment->video_meeting_id,
+                "video_join_url" => $meetingData['join_url'] ?? $appointment->video_join_url,
+                "video_start_url" => $meetingData['start_url'] ?? $appointment->video_start_url,
+                "video_password" => $meetingData['password'] ?? $appointment->video_password,
+                "video_recording_status" => $meetingData['recording_status'] ?? $appointment->video_recording_status,
+                "reason_for_visit" => $dto->reason_for_visit,
+                "appointment_notes" => $dto->appointment_notes,
+            ]);
             
             if (empty($updateData)) {
                 return $appointment;
@@ -225,7 +270,7 @@ class AppointmentService implements ServiceInterface
     public function getByVeterinaryId(int $veterinaryId, int $perPage = 15): LengthAwarePaginator
     {
         return Appointment::with(['client', 'pet'])
-            ->where('veterinary_id', $veterinaryId)
+            ->where('veterinarian_id', $veterinaryId)
             ->orderBy('start_time', 'asc')
             ->paginate($perPage);
     }
@@ -235,7 +280,7 @@ class AppointmentService implements ServiceInterface
      */
     public function checkAvailability(int $veterinaryId, string $startTime, string $endTime, ?int $excludeAppointmentId = null): bool
     {
-        $query = Appointment::where('veterinary_id', $veterinaryId)
+        $query = Appointment::where('veterinarian_id', $veterinaryId)
             ->where('status', '!=', 'cancelled')
             ->where(function($q) use ($startTime, $endTime) {
                 $q->whereBetween('start_time', [$startTime, $endTime])
@@ -266,5 +311,44 @@ class AppointmentService implements ServiceInterface
         $queryBuilder = Appointment::with(['pet', 'veterinary', 'client']);
         $this->applySearch($queryBuilder, $query);
         return $queryBuilder->paginate($perPage);
+    }
+
+    private function resolveDuration(AppointmentDTO $dto): ?int
+    {
+        if (!empty($dto->duration_minutes)) {
+            return $dto->duration_minutes;
+        }
+
+        if (!empty($dto->start_time) && !empty($dto->end_time)) {
+            try {
+                $start = Carbon::createFromFormat('H:i', $dto->start_time);
+                $end = Carbon::createFromFormat('H:i', $dto->end_time);
+
+                if ($end->lessThanOrEqualTo($start)) {
+                    $end->addDay();
+                }
+
+                return (int) max(15, $start->diffInMinutes($end));
+            } catch (Exception $e) {
+                Log::warning('Failed to calculate appointment duration', [
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return null;
+    }
+
+    private function createZoomMeeting(AppointmentDTO $dto): array
+    {
+        try {
+            return $this->zoomMeetingService->createMeeting($dto);
+        } catch (Exception $e) {
+            Log::error('Zoom meeting creation error', [
+                'message' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
     }
 }

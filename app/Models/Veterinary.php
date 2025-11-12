@@ -2,20 +2,31 @@
 
 namespace App\Models;
 
+use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Veterinary extends Model
 {
     use HasFactory;
+    use HasUuid;
 
-protected $table = "veterinarians";
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($veterinary) {
+            $veterinary->uuid = Str::uuid();
+        });
+    }
 
-protected $fillable = [
-        'license_number','specialization', 'years_experience', 'clinic_name', 'profile_img', 'address',
-        'subscription_plan_id', 'subscription_status', 'subscription_start_date',
-        'subscription_end_date'
-    ];
+    protected $table = "veterinarians";
+
+    protected $fillable = [
+            'license_number','specialization', 'years_experience', 'clinic_name', 'profile_img', 'address',
+            'subscription_plan_id', 'subscription_status', 'subscription_start_date',
+            'subscription_end_date'
+        ];
 
     // Relations
     public function clients()
@@ -39,8 +50,9 @@ protected $fillable = [
     }
 
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
-  
+
 }

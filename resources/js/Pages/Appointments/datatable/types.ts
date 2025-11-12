@@ -24,8 +24,14 @@ export interface Appointment {
   duration_minutes: number;
   status: string;
   is_video_conseil: boolean;
+  video_provider?: string | null;
+  video_auto_record?: boolean;
   video_meeting_id: string;
   video_join_url: string;
+  video_start_url?: string | null;
+  video_password?: string | null;
+  video_recording_status?: string | null;
+  video_recording_url?: string | null;
   reason_for_visit: string;
   appointment_notes: string;
   created_at: string;
