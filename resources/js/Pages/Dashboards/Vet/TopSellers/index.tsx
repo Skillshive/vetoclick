@@ -4,6 +4,7 @@ import { ArrowUpIcon } from "@heroicons/react/24/outline";
 // Local Imports
 import { Avatar } from "@/components/ui";
 import { Seller, SellerCard } from "./AppointmentCard";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -193,20 +194,21 @@ const sellers: Seller[] = [
 ];
 
 export function TopSellers() {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-gray-150 dark:bg-dark-800 mt-4 grid grid-cols-12 gap-4 py-5 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
       <div className="transition-content col-span-12 flex flex-col px-(--margin-x) lg:col-span-3 lg:ltr:pr-0 lg:rtl:pl-0">
         <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800 lg:text-xl">
-          Top Sellers
+          {t("common.vet_dashboard.top_sellers.title")}
         </h2>
 
         <p className="mt-3 grow">
-          The top sellers is calculated based on the sales of a product and
-          undergoes hourly updations.
+          {t("common.vet_dashboard.top_sellers.description")}
         </p>
 
         <div className="mt-4">
-          <p>Sales Growth</p>
+          <p>{t("common.vet_dashboard.top_sellers.sales_growth")}</p>
           <div className="mt-1.5 flex items-center gap-2">
             <Avatar size={7} initialColor="success" initialVariant="soft">
               <ArrowUpIcon className="size-4" />

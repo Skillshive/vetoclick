@@ -8,12 +8,13 @@ import {
 } from "@headlessui/react";
 import { EllipsisHorizontalIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
 // Local Imports
 import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -77,17 +78,47 @@ const chartConfig: ApexOptions = {
 };
 
 export function History() {
+  const { t } = useTranslation();
+
+  const localizedSeries = useMemo(
+    () =>
+      series.map((item) => ({
+        ...item,
+        name: t(
+          item.name === "High"
+            ? "common.vet_dashboard.history.series.high"
+            : "common.vet_dashboard.history.series.low",
+        ),
+      })),
+    [t],
+  );
+
+  const localizedOptions = useMemo<ApexOptions>(
+    () => ({
+      ...chartConfig,
+      xaxis: {
+        ...chartConfig.xaxis,
+        categories: (chartConfig.xaxis?.categories as string[]).map((month) =>
+          t(`common.vet_dashboard.history.months.${month.toLowerCase()}`),
+        ),
+      },
+    }),
+    [t],
+  );
+
   return (
     <Card className="">
 
       <div className="p-2">
-        <Chart type="area" height="290" options={chartConfig} series={series} />
+        <Chart type="area" height="290" options={localizedOptions} series={localizedSeries} />
       </div>
     </Card>
   );
 }
 
 function ActionMenu() {
+  const { t } = useTranslation();
+
   return (
     <Menu
       as="div"
@@ -120,7 +151,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Action</span>
+                <span>{t("common.vet_dashboard.action_menu.action")}</span>
               </button>
             )}
           </MenuItem>
@@ -133,7 +164,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Another action</span>
+                <span>{t("common.vet_dashboard.action_menu.another_action")}</span>
               </button>
             )}
           </MenuItem>
@@ -146,7 +177,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Other action</span>
+                <span>{t("common.vet_dashboard.action_menu.other_action")}</span>
               </button>
             )}
           </MenuItem>
@@ -162,7 +193,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Separated action</span>
+                <span>{t("common.vet_dashboard.action_menu.separated_action")}</span>
               </button>
             )}
           </MenuItem>

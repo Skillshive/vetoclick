@@ -12,15 +12,18 @@ import { Fragment } from "react";
 
 // Local Imports
 import { Box, Button } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
 export function CustomerSatisfaction() {
+  const { t } = useTranslation();
+
   return (
     <Box className="col-span-12 lg:col-span-4">
       <div className="flex min-w-0 items-center justify-between">
         <h2 className="min-w-0 font-medium tracking-wide text-gray-800 dark:text-dark-100">
-          Customer Satisfaction
+          {t("common.vet_dashboard.customer_satisfaction.title")}
         </h2>
         <ActionMenu />
       </div>
@@ -31,7 +34,9 @@ export function CustomerSatisfaction() {
             +2.1%
           </span>
         </p>
-        <p className="text-xs-plus">Performance score</p>
+        <p className="text-xs-plus">
+          {t("common.vet_dashboard.customer_satisfaction.performance_score")}
+        </p>
       </div>
       <div className="mt-4 flex w-full gap-1">
         <div className="this:primary h-2 w-5/12 rounded-full bg-this dark:bg-this-light" />
@@ -48,7 +53,7 @@ export function CustomerSatisfaction() {
                 <div className="flex items-center gap-2">
                   <div className="this:primary size-3.5 rounded-full border-2 border-this dark:border-this-light"></div>
                   <p className="font-medium tracking-wide text-gray-800 dark:text-dark-100">
-                    Exellent
+                    {t("common.vet_dashboard.customer_satisfaction.excellent")}
                   </p>
                 </div>
               </td>
@@ -64,7 +69,7 @@ export function CustomerSatisfaction() {
                 <div className="flex items-center gap-2">
                   <div className="this:success size-3.5 rounded-full border-2 border-this dark:border-this-light"></div>
                   <p className="font-medium tracking-wide text-gray-800 dark:text-dark-100">
-                    Very Good
+                    {t("common.vet_dashboard.customer_satisfaction.very_good")}
                   </p>
                 </div>
               </td>
@@ -80,7 +85,7 @@ export function CustomerSatisfaction() {
                 <div className="flex items-center gap-2">
                   <div className="this:info size-3.5 rounded-full border-2 border-this dark:border-this-light"></div>
                   <p className="font-medium tracking-wide text-gray-800 dark:text-dark-100">
-                    Good
+                    {t("common.vet_dashboard.customer_satisfaction.good")}
                   </p>
                 </div>
               </td>
@@ -96,7 +101,7 @@ export function CustomerSatisfaction() {
                 <div className="flex items-center gap-2">
                   <div className="this:warning size-3.5 rounded-full border-2 border-this dark:border-this-light"></div>
                   <p className="font-medium tracking-wide text-gray-800 dark:text-dark-100">
-                    Poor
+                    {t("common.vet_dashboard.customer_satisfaction.poor")}
                   </p>
                 </div>
               </td>
@@ -112,7 +117,7 @@ export function CustomerSatisfaction() {
                 <div className="flex items-center gap-2">
                   <div className="this:error size-3.5 rounded-full border-2 border-this dark:border-this-light"></div>
                   <p className="font-medium tracking-wide text-gray-800 dark:text-dark-100">
-                    Very Poor
+                    {t("common.vet_dashboard.customer_satisfaction.very_poor")}
                   </p>
                 </div>
               </td>
@@ -131,6 +136,8 @@ export function CustomerSatisfaction() {
 }
 
 function ActionMenu() {
+  const { t } = useTranslation();
+
   return (
     <Menu
       as="div"
@@ -163,7 +170,7 @@ function ActionMenu() {
                     "bg-gray-100 text-gray-800 dark:bg-dark-600 dark:text-dark-100",
                 )}
               >
-                <span>Action</span>
+                <span>{t("common.vet_dashboard.action_menu.action")}</span>
               </button>
             )}
           </MenuItem>
@@ -176,7 +183,7 @@ function ActionMenu() {
                     "bg-gray-100 text-gray-800 dark:bg-dark-600 dark:text-dark-100",
                 )}
               >
-                <span>Another action</span>
+                <span>{t("common.vet_dashboard.action_menu.another_action")}</span>
               </button>
             )}
           </MenuItem>
@@ -189,7 +196,7 @@ function ActionMenu() {
                     "bg-gray-100 text-gray-800 dark:bg-dark-600 dark:text-dark-100",
                 )}
               >
-                <span>Other action</span>
+                <span>{t("common.vet_dashboard.action_menu.other_action")}</span>
               </button>
             )}
           </MenuItem>
@@ -205,7 +212,7 @@ function ActionMenu() {
                     "bg-gray-100 text-gray-800 dark:bg-dark-600 dark:text-dark-100",
                 )}
               >
-                <span>Separated action</span>
+                <span>{t("common.vet_dashboard.action_menu.separated_action")}</span>
               </button>
             )}
           </MenuItem>

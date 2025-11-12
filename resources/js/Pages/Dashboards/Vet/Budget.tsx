@@ -1,19 +1,10 @@
 // Import Dependencies
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  Transition,
-} from "@headlessui/react";
-import { EllipsisHorizontalIcon } from "@heroicons/react/20/solid";
-import clsx from "clsx";
 import Chart from "react-apexcharts";
-import { Fragment } from "react";
 import { ApexOptions } from "apexcharts";
 
 // Local Imports
 import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -88,11 +79,13 @@ const chartConfig: ApexOptions = {
 };
 
 export function Budget() {
+  const { t } = useTranslation();
+
   return (
     <Card className="px-4 pb-5 sm:px-5 lg:mt-6">
       <div className="flex min-w-0 items-center justify-between py-3">
         <h2 className="dark:text-dark-100 truncate font-medium tracking-wide text-gray-800">
-          Budget
+          {t("common.vet_dashboard.budget.title")}
         </h2>
       </div>
       <div className="flex grow gap-5">
@@ -105,11 +98,11 @@ export function Budget() {
               href="##"
               className="text-tiny text-primary-600 hover:text-primary-600/70 focus:text-primary-600/70 dark:text-primary-400 dark:hover:text-primary-400 dark:focus:text-primary-400/70 border-b border-dotted border-current pb-0.5 font-medium uppercase outline-hidden transition-colors duration-300"
             >
-              Yearly Budget
+              {t("common.vet_dashboard.budget.yearly_budget")}
             </a>
           </div>
           <p className="mt-2 line-clamp-3 text-xs leading-normal">
-            You have spent about 25% of your annual budget.
+            {t("common.vet_dashboard.budget.spent_description")}
           </p>
         </div>
         <div className="ax-transparent-gridline flex w-1/2 items-end">

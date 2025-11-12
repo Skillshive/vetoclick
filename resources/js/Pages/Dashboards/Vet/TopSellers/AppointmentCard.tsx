@@ -1,10 +1,11 @@
 // Import Dependencies
+import clsx from "clsx";
 import {
   VideoCameraIcon,
   CheckCircleIcon,
-  ClockIcon,       
-  CheckBadgeIcon, 
-  XCircleIcon,     
+  ClockIcon,
+  CheckBadgeIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
@@ -12,6 +13,8 @@ import { Avatar, Button, Card, Modal } from "@/components/ui";
 import { Appointment } from "@/pages/Appointments/datatable/types";
 import { useState } from "react";
 import PetDetailModal from "../modals/PetModal";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useRTL } from "@/hooks/useRTL";
 
 // ----------------------------------------------------------------------
 
@@ -20,6 +23,9 @@ export function AppointmentCard({
 }: {
   appointment: Appointment;
 }) {
+  const { t } = useTranslation();
+  const { rtlClasses } = useRTL();
+
   const StatusIcon = () => {
     switch (appointment.status) {
       case "confirmed":
@@ -81,7 +87,12 @@ export function AppointmentCard({
   
           <div className="border-t border-gray-200 dark:border-dark-600 pt-4">
             <div className="flex items-center justify-center text-sm">
-              <ClockIcon className="size-5 mr-2 text-gray-500" />
+              <ClockIcon
+                className={clsx(
+                  "size-5 text-gray-500",
+                  rtlClasses.mr("2"),
+                )}
+              />
               <span className="font-semibold text-gray-800 dark:text-dark-100">
                 {appointment.start_time} - {appointment.end_time}
               </span>
@@ -94,8 +105,10 @@ export function AppointmentCard({
                 color="primary"
                 className="w-full"
                 onClick={() => window.open(appointment.video_join_url, '_blank')}>
-                <VideoCameraIcon className="size-5 mr-2" />
-                Join Video Call
+                <VideoCameraIcon
+                  className={clsx("size-5", rtlClasses.mr("2"))}
+                />
+                {t("common.vet_dashboard.appointment_card.join_video_call")}
               </Button>
             </div>
           )}

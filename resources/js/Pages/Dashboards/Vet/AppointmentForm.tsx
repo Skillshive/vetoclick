@@ -6,15 +6,17 @@ import { Card, Button } from '@/components/ui';
 import Select from 'react-select'; // Import ReactSelect
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/hooks/useTranslation';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 const schema = yup.object().shape({
-  date: yup.string().required('Date is required'),
-  client: yup.string().required('Client name is required'),
-  pet: yup.string().required('Pet name is required'),
-  appointment_type: yup.string().required('Appointment type is required'),
+  date: yup.string().required('common.vet_dashboard.form.errors.date_required'),
+  client: yup.string().required('common.vet_dashboard.form.errors.client_required'),
+  pet: yup.string().required('common.vet_dashboard.form.errors.pet_required'),
+  appointment_type: yup
+    .string()
+    .required('common.vet_dashboard.form.errors.appointment_type_required'),
 });
 
 interface Client {
@@ -29,7 +31,8 @@ interface Pet {
 }
 
 export const AppointmentForm = () => {
-  const { t } = useTranslation();
+  const { t, isRTL } = useTranslation();
+  const isRtl = isRTL();
   const [startDate, setStartDate] = useState(new Date());
   const [clients, setClients] = useState<Client[]>([]);
   const [pets, setPets] = useState<Pet[]>([]);
@@ -88,7 +91,7 @@ export const AppointmentForm = () => {
 
   const onSubmit = (data: any) => {
     console.log(data);
-    alert('Appointment Scheduled!');
+    alert(t('common.vet_dashboard.messages.appointment_scheduled'));
   };
 
   const clientOptions = clients.map((client) => ({
@@ -105,7 +108,7 @@ export const AppointmentForm = () => {
     <Card className="h-fit pb-4">
       <div className="px-4 py-3">
         <h2 className="font-medium tracking-wide text-gray-800 dark:text-dark-100">
-          Schedule New Appointment
+          {t('common.vet_dashboard.form.schedule_new_appointment')}
         </h2>
       </div>
       <div className="px-4 py-2">
@@ -125,7 +128,9 @@ export const AppointmentForm = () => {
             control={control}
             render={({ field }) => (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Client Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {t('common.vet_dashboard.form.client_name')}
+                </label>
                 <Select
                   {...field}
                   options={clientOptions}
@@ -135,11 +140,16 @@ export const AppointmentForm = () => {
                     setValue('pet', ''); 
                   }}
                   value={clientOptions.find(option => option.value === field.value)}
-                  placeholder="Select a client"
+                  placeholder={t('common.vet_dashboard.form.select_client')}
                   isClearable
-                  noOptionsMessage={() => "No clients found"}
+                  noOptionsMessage={() => t('common.vet_dashboard.form.no_clients_found')}
+                  isRtl={isRtl}
                 />
-                {errors.client && <p className="mt-2 text-sm text-red-600">{errors.client.message}</p>}
+                {errors.client && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {t(String(errors.client.message))}
+                  </p>
+                )}
               </div>
             )}
           />
@@ -148,18 +158,27 @@ export const AppointmentForm = () => {
             control={control}
             render={({ field }) => (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pet Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {t('common.vet_dashboard.form.pet_name')}
+                </label>
                 <Select
                   {...field}
                   options={petOptions}
                   onChange={(selectedOption: any) => field.onChange(selectedOption ? selectedOption.value : '')}
                   value={petOptions.find(option => option.value === field.value)}
-                  placeholder="Select a pet"
+                  placeholder={t('common.vet_dashboard.form.select_pet')}
                   isClearable
                   isDisabled={!selectedClient}
-                  noOptionsMessage={() => "No pets found for this client"}
+                  noOptionsMessage={() =>
+                    t('common.vet_dashboard.form.no_pets_found_for_client')
+                  }
+                  isRtl={isRtl}
                 />
-                {errors.pet && <p className="mt-2 text-sm text-red-600">{errors.pet.message}</p>}
+                {errors.pet && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {t(String(errors.pet.message))}
+                  </p>
+                )}
               </div>
             )}
           />
@@ -168,22 +187,31 @@ export const AppointmentForm = () => {
             control={control}
             render={({ field }) => (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Appointment Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  {t('common.vet_dashboard.form.appointment_type')}
+                </label>
                 <Select
                   {...field}
                   options={appointmentOptions}
                   onChange={(selectedOption: any) => field.onChange(selectedOption ? selectedOption.value : '')}
                   value={appointmentOptions.find(option => option.value === field.value)}
-                  placeholder="Select appointment type"
+                  placeholder={t('common.vet_dashboard.form.select_appointment_type')}
                   isClearable
-                  noOptionsMessage={() => "No appointment types found"}
+                  noOptionsMessage={() =>
+                    t('common.vet_dashboard.form.no_appointment_types_found')
+                  }
+                  isRtl={isRtl}
                 />
-                {errors.appointment_type && <p className="mt-2 text-sm text-red-600">{errors.appointment_type.message}</p>}
+                {errors.appointment_type && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {t(String(errors.appointment_type.message))}
+                  </p>
+                )}
               </div>
             )}
           />
           <Button type="submit" className="w-full">
-            Schedule Appointment
+            {t('common.vet_dashboard.form.schedule_appointment')}
           </Button>
         </form>
       </div>

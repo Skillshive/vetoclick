@@ -10,10 +10,13 @@ import {
 
 // Local Imports
 import { Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
 export function Statistics() {
+  const { t } = useTranslation();
+
   return (
     <div className="col-span-12 lg:col-span-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-2">
@@ -24,7 +27,9 @@ export function Statistics() {
             </p>
             <ClockIcon className="this:primary size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Appointments</p>
+          <p className="mt-1 text-xs-plus">
+            {t("common.vet_dashboard.statistics.appointments")}
+          </p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -33,7 +38,9 @@ export function Statistics() {
             </p>
             <CheckBadgeIcon className="this:success size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Pending</p>
+          <p className="mt-1 text-xs-plus">
+            {t("common.vet_dashboard.statistics.pending")}
+          </p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -42,7 +49,9 @@ export function Statistics() {
             </p>
             <ClockIcon className="this:warning size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Cancelled</p>
+          <p className="mt-1 text-xs-plus">
+            {t("common.vet_dashboard.statistics.cancelled")}
+          </p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -51,7 +60,9 @@ export function Statistics() {
             </p>
             <UsersIcon className="this:info size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Pets</p>
+          <p className="mt-1 text-xs-plus">
+            {t("common.vet_dashboard.statistics.pets")}
+          </p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -60,7 +71,9 @@ export function Statistics() {
             </p>
             <UsersIcon className="this:secondary size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">Clients</p>
+          <p className="mt-1 text-xs-plus">
+            {t("common.vet_dashboard.statistics.clients")}
+          </p>
         </Card>
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
@@ -69,7 +82,9 @@ export function Statistics() {
             </p>
             <UsersIcon className="this:error size-5 text-this dark:text-this-light" />
           </div>
-          <p className="mt-1 text-xs-plus">New Clients</p>
+          <p className="mt-1 text-xs-plus">
+            {t("common.vet_dashboard.statistics.new_clients")}
+          </p>
         </Card>
       </div>
     </div>

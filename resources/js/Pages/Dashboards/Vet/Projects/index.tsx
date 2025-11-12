@@ -16,6 +16,7 @@ import { Button, Card } from "@/components/ui";
 import { ColorType } from "@/constants/app";
 import { AppointmentCard } from "../TopSellers/AppointmentCard";
 import { Appointment } from "@/pages/Appointments/datatable/types";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
@@ -443,11 +444,13 @@ const projects: Project[] = [
 ];
 
 export function Projects() {
+  const { t } = useTranslation();
+
   return (
     <Card className="col-span-12 py-2">
       <div className="flex min-w-0 items-center justify-between px-4 py-3">
         <h2 className="dark:text-dark-100 min-w-0 font-medium tracking-wide text-gray-800">
-          Today's Appointments
+          {t("common.vet_dashboard.projects.today_appointments")}
         </h2>
         {/* <ActionMenu /> */}
       </div>
@@ -462,6 +465,8 @@ export function Projects() {
 }
 
 function ActionMenu() {
+  const { t } = useTranslation();
+
   return (
     <Menu
       as="div"
@@ -494,7 +499,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Action</span>
+                <span>{t("common.vet_dashboard.action_menu.action")}</span>
               </button>
             )}
           </MenuItem>
@@ -507,7 +512,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Another action</span>
+                <span>{t("common.vet_dashboard.action_menu.another_action")}</span>
               </button>
             )}
           </MenuItem>
@@ -520,7 +525,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Other action</span>
+                <span>{t("common.vet_dashboard.action_menu.other_action")}</span>
               </button>
             )}
           </MenuItem>
@@ -536,7 +541,7 @@ function ActionMenu() {
                     "dark:bg-dark-600 dark:text-dark-100 bg-gray-100 text-gray-800",
                 )}
               >
-                <span>Separated action</span>
+                <span>{t("common.vet_dashboard.action_menu.separated_action")}</span>
               </button>
             )}
           </MenuItem>
