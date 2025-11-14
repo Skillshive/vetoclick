@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PetController;
+use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\EmailController;
+use App\Http\Controllers\ProductController;
 
 Route::prefix('email')->controller(EmailController::class)->group(function () {
     Route::post('/send', 'sendEmail');
