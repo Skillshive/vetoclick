@@ -67,7 +67,7 @@ export function UserCard({
          
           {user.email && (
             <div className="flex items-start justify-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
-              <EnvelopeIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+              <EnvelopeIcon className="w-4 h-4 text-[#4DB9AD] flex-shrink-0 mt-0.5" />
               <span 
                 className="break-all text-center leading-tight"
                 title={user.email}
@@ -99,7 +99,7 @@ export function UserCard({
           onClick={onEdit}
           aria-label={t('common.edit_user')}
         >
-          <PencilSquareIcon className="size-4 stroke-2 text-green-500" />
+          <PencilSquareIcon className="size-4 stroke-2 text-[#4DB9AD]" />
         </Button>
         <Button
           className="size-7 rounded-full"

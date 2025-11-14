@@ -29,7 +29,7 @@ export function AppointmentCard({
   const StatusIcon = () => {
     switch (appointment.status) {
       case "confirmed":
-        return <CheckCircleIcon className="size-5 text-green-500" />;
+        return <CheckCircleIcon className="size-5 text-[#4DB9AD]" />;
       case "pending":
         return <ClockIcon className="size-5 text-yellow-500" />;
       case "completed":

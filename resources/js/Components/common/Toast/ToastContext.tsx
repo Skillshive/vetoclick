@@ -21,7 +21,7 @@ export function useToast() {
 }
 
 const icons = {
-  success: <CheckCircleIcon className="size-6 text-green-500" />,
+  success: <CheckCircleIcon className="size-6 text-[#4DB9AD]" />,
   warning: <ExclamationTriangleIcon className="size-6 text-yellow-500" />,
   error: <XCircleIcon className="size-6 text-red-500" />,
   info: <InformationCircleIcon className="size-6 text-blue-500" />,

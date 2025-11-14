@@ -114,7 +114,7 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
                         onClick={onEdit}
                         aria-label={t('common.edit')}
                     >
-                        <PencilSquareIcon className="size-3 sm:size-4 stroke-2 text-green-500" />
+                        <PencilSquareIcon className="size-3 sm:size-4 stroke-2 text-[#4DB9AD]" />
                     </Button>
                     <Button
                         className="size-6 sm:size-7 rounded-full"

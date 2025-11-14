@@ -45,13 +45,13 @@ export function BreedCard({
    <div className="space-y-2">
             {breed.avg_weight_kg !== null && breed.avg_weight_kg !== undefined && (
               <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
-                <HiScale className="w-4 h-4 text-blue-500" />
+                <HiScale className="w-4 h-4 text-[#4DB9AD]" />
                 <span>{t('common.breed_avg_weight')}: {breed.avg_weight_kg} {t('common.weight_unit')}</span>
               </div>
             )}
             {breed.life_span_years !== null && breed.life_span_years !== undefined && (
               <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
-                <HiClock className="w-4 h-4 text-green-500" />
+                <HiClock className="w-4 h-4 text-[#4DB9AD]" />
                 <span>{t('common.breed_life_span')}: {breed.life_span_years} {t('common.years')}</span>
               </div>
             )}
@@ -63,7 +63,7 @@ export function BreedCard({
                        onClick={onEdit}
           aria-label={t('common.edit_breed')}
         >
-          <PencilSquareIcon className="size-4 stroke-2  text-green-500" />
+          <PencilSquareIcon className="size-4 stroke-2  text-[#4DB9AD]" />
         </Button>
         <Button
           className="size-7 rounded-full"
