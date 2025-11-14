@@ -114,8 +114,8 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
       });
       return;
     }
-
-    post(route('species.update', {uuid: specie.uuid}), {
+console.log('specie',specie)
+    post(route('species.update', specie.uuid), {
       onSuccess: () => {
         setValidationErrors({});
         showToast({
