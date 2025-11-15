@@ -23,7 +23,7 @@ export function Statistics() {
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
             <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              12
+              30
             </p>
             <ClockIcon className="this:primary size-5 text-this dark:text-this-light" />
           </div>
