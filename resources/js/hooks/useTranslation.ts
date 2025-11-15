@@ -3,7 +3,17 @@ import { usePage } from '@inertiajs/react';
 
 export function useTranslation() {
   const { locale, isRtl } = useLocaleContext();
-  const { translations } = usePage().props;
+  
+  // Safely get translations with fallback
+  let translations: any = {};
+  try {
+    const page = usePage();
+    translations = page?.props?.translations || {};
+  } catch (error) {
+    // usePage is not available (component not within Inertia context)
+    // This is okay for components like modals that may render outside the page context
+    console.debug('useTranslation: usePage not available, using fallback translations');
+  }
 
   const t = (key: string, replacements: Record<string, string | number> = {}): string => {
     const keys = key.split('.');
