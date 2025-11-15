@@ -40,9 +40,7 @@ createInertiaApp({
       <StrictMode>
         <ErrorBoundary>
           <App>
-            <ConfirmProvider>
-              <InertiaApp {...props} />
-            </ConfirmProvider>
+            <InertiaApp {...props} />
           </App>
         </ErrorBoundary>
       </StrictMode>
@@ -62,7 +60,9 @@ function App({ children }: AppProps) {
           <AuthProvider>
             <BreakpointProvider>
               <SidebarProvider>
-                {children}
+                <ConfirmProvider>
+                  {children}
+                </ConfirmProvider>
               </SidebarProvider>
             </BreakpointProvider>
           </AuthProvider>
