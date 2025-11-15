@@ -165,4 +165,5 @@ return [
         ],
     ],
 ],
+"cancel_appointment"=>"إلغاء الموعد",
 ];

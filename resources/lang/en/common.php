@@ -1109,6 +1109,7 @@ return [
 'report_appointment' => 'Report Appointment',
 'confirm_cancel_appointment' => 'Are you sure you want to cancel this appointment?',
 'confirm_cancel' => 'Confirm Cancellation',
+"cancel_appointment"=>"Cancel Appointment",
 "appointment_cancelled_successfully"=>"Appointment Cancelled Successfully",
     'appointment_type'           => 'Appointment Type', 
     'checkup'                    => 'Check-up',
