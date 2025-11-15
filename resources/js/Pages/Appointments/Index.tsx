@@ -20,6 +20,7 @@ import clsx from 'clsx';
 import { ReportModal } from './datatable/ReportModal';
 
 export default function Index({appointments, filters, vets, clients, statuses, old, errors}: AppointmentPageProps) {
+ console.log('appointments',appointments)
     const { t } = useTranslation();
     const { showToast } = useToast();
     const { props } = usePage();
@@ -362,7 +363,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                 pending: {
                     title: t('common.confirm_cancel'),
                     description: t('common.confirm_cancel_appointment'),
-                    actionText: t('common.cancel'),
+                    actionText: t('common.cancel_appointment'),
                 }
             }}
         />

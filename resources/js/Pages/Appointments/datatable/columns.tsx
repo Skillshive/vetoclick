@@ -4,6 +4,7 @@ import { Badge, Avatar } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { CalendarIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { PawPrintIcon } from 'lucide-react';
 
 export function createColumns(
   onReport: (appointment: Appointment) => void,
@@ -28,15 +29,26 @@ export function createColumns(
               }}
             />
             <div>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <span className="dark:text-dark-100 font-medium text-md text-gray-800">
                   {pet.name}
                 </span>
                 <Badge color="neutral">{pet.breed}</Badge>
+              </div> */}
+              <div className="hover:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors">
+                {client.first_name}{' '}{client.last_name}
               </div>
-              <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                {client.first_name} {client.last_name}
-              </div>
+
+              <div className="flex items-center text-xs mt-2">
+          <div className="flex shrink-0 items-center space-x-1">
+            <PawPrintIcon className="dark:text-dark-300 size-4 text-gray-400" />
+            <p className="opacity-80"> {pet.name}</p>
+          </div>
+          <div className="dark:bg-dark-500 mx-2 my-0.5 w-px self-stretch bg-gray-200"></div>
+          <p>
+            <span>{pet.breed}</span>
+          </p>
+        </div>
             </div>
           </div>
         );
@@ -48,8 +60,25 @@ export function createColumns(
       header: t('common.type'),
       cell: ({ row }) => {
         const appointment_type = row.getValue('appointment_type') as string;
+        
+        // Map appointment types to badge colors
+        const getTypeColor = (type: string): "primary" | "neutral" | "secondary" | "info" | "success" | "warning" | "error" => {
+          const typeMap = {
+            'consultation': 'primary',
+            'checkup': 'success',
+            'vaccination': 'info',
+            'surgery': 'error',
+            'emergency': 'warning',
+            'follow-up': 'secondary',
+          } as const;
+          
+          type TypeMapKey = keyof typeof typeMap;
+          const lowerType = type?.toLowerCase() as TypeMapKey;
+          return (typeMap[lowerType] as "primary" | "neutral" | "secondary" | "info" | "success" | "warning" | "error") || 'primary';
+        };
+
         return appointment_type ? (
-          <Badge color="primary">
+          <Badge color={getTypeColor(appointment_type)}>
             {appointment_type}
           </Badge>
         ) : (
@@ -72,7 +101,7 @@ export function createColumns(
           day: 'numeric',
         });
         return (
-          <div className="text-gray-900 dark:text-gray-100">
+          <div className="dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors">
             <div>{formattedDate}</div>
             <div>{row.original.start_time}</div>
           </div>
@@ -84,8 +113,23 @@ export function createColumns(
       header: t('common.status'),
       cell: ({ row }) => {
         const status = row.getValue('status') as string;
+        
+        // Map status to badge colors
+        const getStatusColor = (status: string): "primary" | "neutral" | "secondary" | "info" | "success" | "warning" | "error" => {
+          const statusMap = {
+            'scheduled': 'primary',
+            'confirmed': 'success',
+            'cancelled': 'error',
+            'no_show': 'warning',
+            'completed': 'info',
+          } as const;
+          
+          type StatusMapKey = keyof typeof statusMap;
+          return (statusMap[status as StatusMapKey] as "primary" | "neutral" | "secondary" | "info" | "success" | "warning" | "error") || 'neutral';
+        };
+
         return status ? (
-          <Badge color="primary">
+          <Badge color={getStatusColor(status)}>
             {status}
           </Badge>
         ) : (
@@ -114,7 +158,7 @@ export function createColumns(
       header: t('common.reason_for_visit'),
       cell: ({ row }) => {
         return (
-          <span className="text-gray-900 dark:text-gray-100">
+          <span className="dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors">
             {row.getValue('reason_for_visit')}
           </span>
         );
@@ -135,7 +179,7 @@ export function createColumns(
     day: 'numeric',
   });
         return (
-          <span className="text-gray-900 dark:text-gray-100">
+          <span className="dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors">
             {formattedDate}
           </span>
         );

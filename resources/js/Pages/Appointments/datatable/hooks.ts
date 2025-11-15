@@ -50,10 +50,8 @@ export function useAppointmentTable({
     }
   ]);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
-    sku: false,
-    brand: false,
-    vaccine_info: false,
     created_at: false,
+    reason_for_visit: false,
   });
   const [columnPinning, setColumnPinning] = useState({});
   const [tableSettings, setTableSettings] = useState({

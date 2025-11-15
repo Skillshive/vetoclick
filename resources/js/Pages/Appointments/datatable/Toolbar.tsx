@@ -9,7 +9,7 @@ import { ResponsiveFilter } from '@/components/shared/table/ResponsiveFilter';
 import clsx from 'clsx';
 import { CSSProperties, useMemo, useState } from 'react';
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
-import { ViewColumnsIcon } from '@heroicons/react/24/outline';
+import { ViewColumnsIcon, UserIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
@@ -224,6 +224,7 @@ function Filters({
         filterKey="client"
         onFilterChange={handleFilterChange}
         currentValue={urlParams.get('client')?.split(',') || []}
+        icon={<UserIcon className="size-4" />}
       />
 
       <ServerSideFilter
@@ -232,6 +233,7 @@ function Filters({
         filterKey="status"
         onFilterChange={handleFilterChange}
         currentValue={urlParams.get('status')?.split(',') || []}
+        icon={<ClipboardDocumentCheckIcon className="size-4" />}
       />
 
       {hasActiveFilters && (
@@ -253,6 +255,7 @@ interface ServerSideFilterProps {
   filterKey: string;
   onFilterChange: (filterType: string, value: string[]) => void;
   currentValue: string[];
+  icon?: React.ReactNode;
 }
 
 function ServerSideFilter({ 
@@ -260,7 +263,8 @@ function ServerSideFilter({
   title, 
   filterKey, 
   onFilterChange, 
-  currentValue 
+  currentValue,
+  icon
 }: ServerSideFilterProps) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
@@ -291,6 +295,7 @@ function ServerSideFilter({
                 : "border-dashed",
             )}
       >
+        {icon && <span className="shrink-0">{icon}</span>}
         <span>{title}</span>
             {selectedItems.length > 0 && (
               <>
