@@ -4,13 +4,18 @@ import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 
 // Local Imports
-import { Button, Input, InputErrorMsg, Upload, Avatar } from "@/components/ui";
+import { Button, Input, Upload, Avatar, Textarea } from "@/components/ui";
 import { useProductFormContext } from "../ProductFormContext";
 import { BasicInfoType, basicInfoSchema } from "../schema";
 import { PreviewImg } from "@/components/shared/PreviewImg";
 import { useTranslation } from "@/hooks/useTranslation";
 import { HiPencil } from "react-icons/hi";
-import { PhotoIcon } from "@heroicons/react/24/outline";
+import { 
+  TagIcon,
+  CubeIcon,
+  BuildingOfficeIcon,
+  BarsArrowUpIcon
+} from "@heroicons/react/24/outline";
 
 // ----------------------------------------------------------------------
 
@@ -59,21 +64,23 @@ export function BasicInfo({
     }
   };
 
+  // Save data to context when form is submitted or when navigating away
+  const saveToContext = (data: BasicInfoType) => {
+    console.log('BasicInfo - Saving to context:', data);
+    productFormCtx.dispatch({
+      type: "SET_FORM_DATA",
+      payload: { basicInfo: { ...data } },
+    });
+  };
+
   const onSubmit = (data: BasicInfoType) => {
+    console.log('BasicInfo - Form submitted:', data);
     saveToContext(data);
     productFormCtx.dispatch({
       type: "SET_STEP_STATUS",
       payload: { basicInfo: { isDone: true } },
     });
     setCurrentStep(1);
-  };
-
-  // Save data to context when form is submitted or when navigating away
-  const saveToContext = (data: BasicInfoType) => {
-    productFormCtx.dispatch({
-      type: "SET_FORM_DATA",
-      payload: { basicInfo: { ...data } },
-    });
   };
 
   // Save current form data to context when component unmounts
@@ -132,6 +139,7 @@ export function BasicInfo({
           <Input
             {...register("name")}
             label="Product Name"
+            leftIcon={<TagIcon className="h-5 w-5" />}
             error={errors?.name?.message}
             placeholder="Enter product name"
             required
@@ -139,6 +147,7 @@ export function BasicInfo({
           <Input
             {...register("sku")}
             label="SKU"
+            leftIcon={<CubeIcon className="h-5 w-5" />}
             error={errors?.sku?.message}
             placeholder="Enter SKU"
             required
@@ -149,12 +158,14 @@ export function BasicInfo({
           <Input
             {...register("brand")}
             label="Brand"
+            leftIcon={<BuildingOfficeIcon className="h-5 w-5" />}
             error={errors?.brand?.message}
             placeholder="Enter brand name"
           />
           <Input
             {...register("barcode")}
             label="Barcode"
+            leftIcon={<BarsArrowUpIcon className="h-5 w-5" />}
             error={errors?.barcode?.message}
             placeholder="Enter barcode"
           />
@@ -164,7 +175,7 @@ export function BasicInfo({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Description
           </label>
-          <textarea
+          <Textarea
             {...register("description")}
             rows={3}
             className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"

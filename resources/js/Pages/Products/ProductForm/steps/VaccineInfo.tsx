@@ -1,14 +1,21 @@
 // Import Dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useState, useEffect } from "react";
 
 // Local Imports
 import { Button, Input } from "@/components/ui";
+import { DatePicker } from "@/components/shared/form/Datepicker";
 import { useProductFormContext } from "../ProductFormContext";
 import { VaccineInfoType, vaccineInfoSchema } from "../schema";
 import { useTranslation } from "@/hooks/useTranslation";
 import { VaccinationScheduleModal } from "../components/VaccinationScheduleModal";
+import { 
+  BuildingOfficeIcon,
+  HashtagIcon,
+  CalendarIcon,
+  BeakerIcon
+} from "@heroicons/react/24/outline";
 
 // ----------------------------------------------------------------------
 
@@ -23,6 +30,7 @@ export function VaccineInfo({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isValid },
     reset,
@@ -82,6 +90,7 @@ export function VaccineInfo({
           <Input
             {...register("manufacturer")}
             label="Manufacturer"
+            leftIcon={<BuildingOfficeIcon className="h-5 w-5" />}
             error={errors?.manufacturer?.message}
             placeholder="Vaccine manufacturer"
             required
@@ -89,6 +98,7 @@ export function VaccineInfo({
           <Input
             {...register("batch_number")}
             label="Batch Number"
+            leftIcon={<HashtagIcon className="h-5 w-5" />}
             error={errors?.batch_number?.message}
             placeholder="Batch number"
             required
@@ -96,16 +106,38 @@ export function VaccineInfo({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Input
-            {...register("expiry_date")}
-            type="date"
-            label="Expiry Date"
-            error={errors?.expiry_date?.message}
+          <Controller
+            name="expiry_date"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                value={field.value || ""}
+                label="Expiry Date"
+                leftIcon={<CalendarIcon className="h-5 w-5" />}
+                error={errors?.expiry_date?.message}
+                onChange={(date: Date[]) => {
+                  // DatePicker returns Date[] even for single dates
+                  if (date && date.length > 0 && date[0]) {
+                    // Format as YYYY-MM-DD for backend
+                    const year = date[0].getFullYear();
+                    const month = String(date[0].getMonth() + 1).padStart(2, '0');
+                    const day = String(date[0].getDate()).padStart(2, '0');
+                    field.onChange(`${year}-${month}-${day}`);
+                  } else {
+                    field.onChange("");
+                  }
+                }}
+                options={{
+                  dateFormat: "Y-m-d",
+                }}
+              />
+            )}
           />
           <Input
             {...register("dosage_ml", { valueAsNumber: true })}
             type="number"
             label="Dosage (ml)"
+            leftIcon={<BeakerIcon className="h-5 w-5" />}
             error={errors?.dosage_ml?.message}
             placeholder="Dosage in ml"
             step="0.1"

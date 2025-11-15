@@ -1,11 +1,12 @@
 // Import Dependencies
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useState } from "react";
 
 // Local Imports
 import {
   FormAction,
   FormState,
   ProductFormContextProvider,
+  StepKey,
 } from "./ProductFormContext";
 import { Product, Category } from "../datatable/types";
 
@@ -85,6 +86,18 @@ const reducer = (state: FormState, action: FormAction) => {
           ...action.payload,
         },
       };
+    case "SET_STEP_ERRORS":
+      return {
+        ...state,
+        stepStatus: Object.keys(state.stepStatus).reduce((acc, key) => {
+          const stepKey = key as StepKey;
+          acc[stepKey] = {
+            ...state.stepStatus[stepKey],
+            hasErrors: action.payload[stepKey] ?? state.stepStatus[stepKey].hasErrors ?? false,
+          };
+          return acc;
+        }, {} as FormState["stepStatus"]),
+      };
     default:
       return state;
   }
@@ -99,27 +112,26 @@ interface ProductFormProviderProps {
 export function ProductFormProvider({ children, product, categories = [] }: ProductFormProviderProps) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const isEditing = !!(product as any)?.data;
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize form data when editing
   useEffect(() => {
-    if ((product as any)?.data) {
+    if ((product as any)?.data && !isInitialized) {
       const productData = (product as any).data;
       console.log('productData', productData);
       
-      // Only initialize if we don't already have form data (to preserve user changes)
-      if (!state.formData.basicInfo.name) {
-        dispatch({
-          type: "SET_FORM_DATA",
-          payload: {
-            basicInfo: {
-              name: productData.name || "",
-              sku: productData.sku || "",
-              brand: productData.brand || "",
-              description: productData.description || "",
-              barcode: productData.barcode || "",
-              image: null, // Will be set by the form if user uploads a new image
-              previewImage: productData.image ? `/storage/${productData.image}` : null,
-            },
+      dispatch({
+        type: "SET_FORM_DATA",
+        payload: {
+          basicInfo: {
+            name: productData.name || "",
+            sku: productData.sku || "",
+            brand: productData.brand || "",
+            description: productData.description || "",
+            barcode: productData.barcode || "",
+            image: null, // Will be set by the form if user uploads a new image
+            previewImage: productData.image ? `/storage/${productData.image}` : null,
+          },
           categoryType: {
             category_product_id: productData.category?.id?.toString() || "",
             type: productData.type || 1,
@@ -144,12 +156,14 @@ export function ProductFormProvider({ children, product, categories = [] }: Prod
             is_active: productData.is_active ?? true,
             notes: productData.notes || "",
           },
-            vaccinationSchedules: [],
-          },
-        });
-      }
+          vaccinationSchedules: productData.vaccination_schedules || [],
+        },
+      });
+      
+      setIsInitialized(true);
     }
-  }, [product, state.formData.basicInfo.name]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product]);
 
   const value = { state, dispatch, categories, isEditing, product };
   return (

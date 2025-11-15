@@ -9,6 +9,10 @@ import ReactSelect from "@/components/ui/ReactSelect";
 import { useProductFormContext } from "../ProductFormContext";
 import { MedicalDetailsType, medicalDetailsSchema } from "../schema";
 import { useTranslation } from "@/hooks/useTranslation";
+import { 
+  BeakerIcon,
+  ArrowPathIcon
+} from "@heroicons/react/24/outline";
 
 // ----------------------------------------------------------------------
 
@@ -109,12 +113,14 @@ export function MedicalDetails({
               <Input
                 {...register("dosage_form")}
                 label="Dosage Form"
+                leftIcon={<BeakerIcon className="h-5 w-5" />}
                 error={errors?.dosage_form?.message}
                 placeholder="e.g., tablet, injection, oral solution"
               />
               <Input
                 {...register("administration_route")}
                 label="Administration Route"
+                leftIcon={<ArrowPathIcon className="h-5 w-5" />}
                 error={errors?.administration_route?.message}
                 placeholder="e.g., oral, topical, injection"
               />

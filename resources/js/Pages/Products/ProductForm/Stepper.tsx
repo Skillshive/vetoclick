@@ -1,6 +1,7 @@
 // Import Dependencies
 import clsx from "clsx";
 import { HiCheck } from "react-icons/hi";
+import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
 
 // Local Imports
 import { useBreakpointsContext } from "@/contexts/breakpoint/context";
@@ -52,12 +53,14 @@ export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
           >
             <button
               className={clsx(
-                "step-header rounded-full outline-hidden dark:text-white",
+                "step-header rounded-full outline-hidden dark:text-white relative",
                 isClickable && "cursor-pointer",
-                currentStep === i && "ring-primary-500 ring-2",
-                stepStatus[step.key as StepKey].isDone
-                  ? "bg-primary-600 dark:bg-primary-500 dark:ring-offset-dark-900 text-white ring-offset-[3px] ring-offset-gray-100"
-                  : "dark:bg-dark-500 bg-gray-200 text-gray-950",
+                currentStep === i && "ring-2",
+                stepStatus[step.key as StepKey].hasErrors
+                  ? "bg-error dark:bg-error-light text-white ring-error dark:ring-error-light ring-offset-[3px] ring-offset-gray-100 dark:ring-offset-dark-900"
+                  : stepStatus[step.key as StepKey].isDone
+                  ? "bg-primary-600 dark:bg-primary-500 dark:ring-offset-dark-900 text-white ring-offset-[3px] ring-offset-gray-100 ring-primary-500"
+                  : "dark:bg-dark-500 bg-gray-200 text-gray-950 ring-primary-500",
               )}
               {...{
                 onClick: isClickable
@@ -73,7 +76,9 @@ export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
               })}
               disabled={!isClickable}
             >
-              {stepStatus[step.key as StepKey].isDone ? (
+              {stepStatus[step.key as StepKey].hasErrors ? (
+                <ExclamationCircleIcon className="size-4.5" />
+              ) : stepStatus[step.key as StepKey].isDone ? (
                 <HiCheck className="size-4.5" />
               ) : (
                 i + 1
@@ -83,6 +88,7 @@ export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
               className={clsx(
                 "dark:text-dark-100 text-gray-800 sm:text-start",
                 smAndUp && "ltr:ml-4 rtl:mr-4",
+                stepStatus[step.key as StepKey].hasErrors && "text-error dark:text-error-light font-medium",
               )}
             >
               {step.label}

@@ -12,6 +12,7 @@ import { Category, Product } from "../datatable/types";
 
 export interface StepStatus {
   isDone: boolean;
+  hasErrors?: boolean;
 }
 
 export type StepKey =
@@ -37,7 +38,8 @@ export interface FormState {
 
 export type FormAction =
   | { type: "SET_FORM_DATA"; payload: Partial<FormState["formData"]> }
-  | { type: "SET_STEP_STATUS"; payload: Partial<FormState["stepStatus"]> };
+  | { type: "SET_STEP_STATUS"; payload: Partial<FormState["stepStatus"]> }
+  | { type: "SET_STEP_ERRORS"; payload: { [key in StepKey]?: boolean } };
 
 export interface ProductFormContextType {
   state: FormState;

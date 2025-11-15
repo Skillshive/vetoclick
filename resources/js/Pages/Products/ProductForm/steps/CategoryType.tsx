@@ -1,16 +1,18 @@
 // Import Dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useEffect, useCallback } from "react";
 
 // Local Imports
-import { Button, Select } from "@/components/ui";
+import { Button } from "@/components/ui";
+import ReactSelect from "@/components/ui/ReactSelect";
 import { useProductFormContext } from "../ProductFormContext";
 import { CategoryTypeType, categoryTypeSchema } from "../schema";
-import { useTranslation } from "@/hooks/useTranslation";
-import { router } from "@inertiajs/react";
-
-declare const route: (name: string, params?: any, absolute?: boolean) => string;
+import { 
+  FolderIcon,
+  Squares2X2Icon
+} from "@heroicons/react/24/outline";
+import { Category } from "../../datatable/types";
 
 // ----------------------------------------------------------------------
 
@@ -19,13 +21,12 @@ export function CategoryType({
 }: {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
-  const { t } = useTranslation();
   const productFormCtx = useProductFormContext();
 
   const {
-    register,
+    control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
     reset,
     watch,
   } = useForm<CategoryTypeType>({
@@ -46,13 +47,23 @@ export function CategoryType({
     { value: 4, label: 'Equipment' },
   ];
 
-  // This would normally come from props or API call
-  const categories = [
-    { id: 1, name: 'Medications' },
-    { id: 2, name: 'Vaccines' },
-    { id: 3, name: 'Supplements' },
-    { id: 4, name: 'Equipment' },
-  ];
+  // Get categories from database via context
+  const categories = productFormCtx.categories || [];
+  
+  // Transform categories for ReactSelect
+  const categoryOptions = categories.map((category: Category) => ({
+    value: category.id.toString(),
+    label: category.name,
+  }));
+
+  // Save data to context when form is submitted or when navigating away
+  const saveToContext = useCallback((data: CategoryTypeType) => {
+    productFormCtx.dispatch({
+      type: "SET_FORM_DATA",
+      payload: { categoryType: { ...data } },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productFormCtx.dispatch]);
 
   const onSubmit = (data: CategoryTypeType) => {
     saveToContext(data);
@@ -63,69 +74,77 @@ export function CategoryType({
     setCurrentStep(2);
   };
 
-  // Save data to context when form is submitted or when navigating away
-  const saveToContext = (data: CategoryTypeType) => {
-    productFormCtx.dispatch({
-      type: "SET_FORM_DATA",
-      payload: { categoryType: { ...data } },
-    });
-  };
-
   // Save current form data to context when component unmounts
   useEffect(() => {
     return () => {
       const currentValues = watch();
       saveToContext(currentValues);
     };
-  }, [watch]);
+  }, [watch, saveToContext]);
 
   const onPrevious = () => {
     setCurrentStep(0);
   };
 
+  // Get current values for ReactSelect
+  const currentCategoryId = watch("category_product_id");
+  const currentType = watch("type");
+
+  // Find selected values for ReactSelect
+  const selectedCategory = categoryOptions.find(opt => opt.value === currentCategoryId) || null;
+  const selectedType = productTypeOptions.find(opt => opt.value === currentType) || null;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
       <div className="mt-6 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Product Category
-            </label>
-            <select
-              {...register("category_product_id")}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="">Select Category</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            {errors?.category_product_id && (
-              <p className="mt-1 text-sm text-red-600">{errors.category_product_id.message}</p>
+          <Controller
+            name="category_product_id"
+            control={control}
+            render={({ field }) => (
+              <ReactSelect
+                id="category_product_id"
+                label="Product Category"
+                leftIcon={<FolderIcon className="h-5 w-5" />}
+                options={categoryOptions}
+                value={selectedCategory}
+                onChange={(selected) => {
+                  const option = selected as { value: string; label: string } | null;
+                  field.onChange(option?.value || "");
+                }}
+                placeholder="Select Category"
+                error={!!errors?.category_product_id}
+                isClearable
+              />
             )}
-          </div>
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Product Type
-            </label>
-            <select
-              {...register("type", { valueAsNumber: true })}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              {productTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {errors?.type && (
-              <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
+          <Controller
+            name="type"
+            control={control}
+            render={({ field }) => (
+              <ReactSelect
+                id="type"
+                label="Product Type"
+                leftIcon={<Squares2X2Icon className="h-5 w-5" />}
+                options={productTypeOptions}
+                value={selectedType}
+                onChange={(selected) => {
+                  const option = selected as { value: number; label: string } | null;
+                  field.onChange(option?.value || 1);
+                }}
+                placeholder="Select Type"
+                error={!!errors?.type}
+              />
             )}
-          </div>
+          />
         </div>
+        {errors?.category_product_id && (
+          <p className="text-sm text-red-600 dark:text-red-400">{errors.category_product_id.message}</p>
+        )}
+        {errors?.type && (
+          <p className="text-sm text-red-600 dark:text-red-400">{errors.type.message}</p>
+        )}
       </div>
       
       <div className="mt-8 flex justify-between">
