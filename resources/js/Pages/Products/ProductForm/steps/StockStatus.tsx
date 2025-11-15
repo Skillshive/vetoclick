@@ -100,8 +100,53 @@ export function StockStatus({
       vaccination_schedules: formData.vaccinationSchedules,
     };
 
-    // Remove previewImage from submit data but keep image if it exists
+    // Remove previewImage from submit data
     delete submitData.previewImage;
+    
+    // For updates: Only send fields that have actual values
+    // This prevents clearing existing database values with empty strings
+    if (isEditing) {
+      // Remove image field if no new image was uploaded
+      if (!submitData.image) {
+        delete submitData.image;
+      }
+      
+      // Remove any field that is empty string, null, or undefined
+      // But keep: boolean fields, number fields (including 0), arrays, and the uuid
+      Object.keys(submitData).forEach(key => {
+        const value = submitData[key as keyof typeof submitData];
+        
+        // Skip special fields that should always be sent
+        if (['vaccination_schedules', 'target_species', 'type', 'category_product_id'].includes(key)) {
+          return;
+        }
+        
+        // Skip boolean fields (prescription_required, is_active)
+        if (typeof value === 'boolean') {
+          return;
+        }
+        
+        // Skip number fields that are 0 or greater (stock levels, dosage_ml, availability_status)
+        if (typeof value === 'number') {
+          return;
+        }
+        
+        // Remove empty strings, null, or undefined for string fields
+        if (value === '' || value === null || value === undefined) {
+          delete (submitData as any)[key];
+        }
+      });
+    } else {
+      // For create operations: Convert null/undefined to empty strings
+      Object.keys(submitData).forEach(key => {
+        const value = submitData[key as keyof typeof submitData];
+        if (value === null || value === undefined) {
+          if (key !== 'image' && key !== 'dosage_ml' && key !== 'vaccination_schedules' && key !== 'target_species') {
+            (submitData as any)[key] = '';
+          }
+        }
+      });
+    }
     
     // Log the submit data to debug image handling
     console.log('Submit data:', submitData);
@@ -117,9 +162,11 @@ export function StockStatus({
 
     // Submit with proper file handling
     if (isEditing) {
-      router.visit(submitRoute, {
-        method: 'put',
-        data: submitData,
+      // Use POST with _method spoofing for file uploads (Laravel limitation with PUT)
+      router.post(submitRoute, {
+        ...submitData,
+        _method: 'PUT',
+      }, {
         forceFormData: true,
         onSuccess: () => {
           showToast({
@@ -170,7 +217,7 @@ export function StockStatus({
         }
       });
     } else {
-      router.post(submitRoute, submitData as Record<string, any>, {
+      router.post(submitRoute, submitData, {
         forceFormData: true,
         onSuccess: () => {
           showToast({

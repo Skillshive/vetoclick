@@ -114,9 +114,14 @@ class ProductService implements ServiceInterface
                 'expiry_date' => $dto->expiry_date,
                 'dosage_ml' => $dto->dosage_ml,
                 'vaccine_instructions' => $dto->vaccine_instructions,
-            ], function($value) {
-                return $value !== null;
-            });
+            ], function($value, $key) {
+                // Keep boolean values (including false) and numeric values (including 0)
+                if (is_bool($value) || is_numeric($value)) {
+                    return true;
+                }
+                // Remove null values and empty strings (to preserve existing DB values)
+                return $value !== null && $value !== '';
+            }, ARRAY_FILTER_USE_BOTH);
             
             $product->update($updateData);
             

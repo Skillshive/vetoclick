@@ -7,7 +7,18 @@ export const basicInfoSchema = z.object({
   brand: z.string().optional(),
   description: z.string().optional(),
   barcode: z.string().optional(),
-  image: z.instanceof(File).optional().nullable(),
+  image: z
+    .instanceof(File)
+    .refine(
+      (file) => !file || file.size <= 5000000,
+      "Image must be less than 5MB"
+    )
+    .refine(
+      (file) => !file || ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"].includes(file.type),
+      "Only .jpg, .jpeg, .png, .gif, and .webp formats are supported"
+    )
+    .optional()
+    .nullable(),
   previewImage: z.string().optional().nullable(),
 });
 

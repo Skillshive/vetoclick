@@ -100,11 +100,11 @@ export function BasicInfo({
             {t('common.avatar')}
           </span>
           <div className="flex">
-            <Upload
-              accept="image/*"
-              onChange={handleImageChange}
-              className="inline-block"
-            >
+          <Upload
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+            onChange={handleImageChange}
+            className="inline-block"
+          >
               {({ onClick, disabled }) => (
                 <button
                   type="button"
