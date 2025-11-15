@@ -1,5 +1,5 @@
 // Import Dependencies
-import { ElementType, ReactNode, HTMLAttributes, ForwardedRef } from "react";
+import { ElementType, ReactNode, HTMLAttributes, forwardRef } from "react";
 import clsx from "clsx";
 
 // Local Imports
@@ -39,7 +39,8 @@ export type TextareaProps<E extends ElementType = "textarea"> =
   PolymorphicComponentProps<E, TextareaOwnProps<E>>;
 
 const TextareaInner = <C extends ElementType = "textarea">(
-  props: any
+  props: any,
+  ref: any
 ) => {
   const {
     component,
@@ -82,6 +83,7 @@ const TextareaInner = <C extends ElementType = "textarea">(
       >
         <Component
           id={inputId}
+          ref={ref}
           className={clsx(
             "form-textarea-base",
             !unstyled && [
@@ -97,6 +99,7 @@ const TextareaInner = <C extends ElementType = "textarea">(
             className,
             classNames.input,
           )}
+          disabled={disabled}
           {...(rest as any)}
         />
       </div>
@@ -121,11 +124,10 @@ const TextareaInner = <C extends ElementType = "textarea">(
   );
 };
 
-type TextareaComponent = (<E extends ElementType = "textarea">(
+const Textarea = forwardRef(TextareaInner) as (<E extends ElementType = "textarea">(
   props: TextareaProps<E> & { ref?: PolymorphicRef<E> },
 ) => ReactNode) & { displayName?: string };
 
-const Textarea = TextareaInner as TextareaComponent;
 Textarea.displayName = "Textarea";
 
 export { Textarea };
