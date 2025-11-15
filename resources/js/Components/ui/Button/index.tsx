@@ -29,8 +29,8 @@ export type ButtonProps<E extends ElementType = "button"> =
 
 const variants: Record<Variant, string> = {
   filled:
-    "bg-this text-white hover:bg-this-darker focus:bg-this-darker active:bg-this-darker/90 disabled:bg-this-light dark:disabled:bg-this-darker",
-  soft: "text-this-darker bg-this-darker/[.08] hover:bg-this-darker/[.15] focus:bg-this-darker/[.15] active:focus:bg-this-darker/20 dark:bg-this-lighter/10 dark:text-this-lighter dark:hover:bg-this-lighter/20 dark:focus:bg-this-lighter/20 dark:active:bg-this-lighter/25",
+  "bg-this text-white hover:bg-this-darker focus:bg-this-darker active:bg-this-darker/90 disabled:bg-this-light disabled:text-this-darker/50 dark:disabled:bg-this-darker dark:disabled:text-this-lighter/50",
+   soft: "text-this-darker bg-this-darker/[.08] hover:bg-this-darker/[.15] focus:bg-this-darker/[.15] active:focus:bg-this-darker/20 dark:bg-this-lighter/10 dark:text-this-lighter dark:hover:bg-this-lighter/20 dark:focus:bg-this-lighter/20 dark:active:bg-this-lighter/25",
   outlined:
     "text-this-darker border border-this-darker hover:bg-this-darker/[.05] focus:bg-this-darker/[.05] active:bg-this-darker/10 dark:border-this-lighter dark:text-this-lighter dark:hover:bg-this-lighter/[.05] dark:focus:bg-this-lighter/[.05] dark:active:bg-this-lighter/10",
   flat: "text-this-darker hover:bg-this-darker/[.08] focus:bg-this-darker/[.08] active:bg-this-darker/[.15] dark:text-this-lighter dark:hover:bg-this-lighter/10 dark:focus:bg-this-lighter/10 dark:active:bg-this-lighter/[.15]",
@@ -38,8 +38,7 @@ const variants: Record<Variant, string> = {
 
 const primaryVariants: Record<Variant, string> = {
   filled:
-    "bg-[#4DB9AD] text-white hover:bg-[#15A093] focus:bg-[#15A093] active:bg-[#15A093]/90 disabled:bg-[#F0FCFA] dark:disabled:bg-[#1B2441]",
-  soft: "text-[#4DB9AD] bg-[#4DB9AD]/[.08] hover:bg-[#4DB9AD]/[.15] focus:bg-[#4DB9AD]/[.15] active:bg-[#4DB9AD]/20 dark:bg-[#4DB9AD]/10 dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/20 dark:focus:bg-[#4DB9AD]/20 dark:active:bg-[#4DB9AD]/25",
+  "bg-[#4DB9AD] text-white hover:bg-[#15A093] focus:bg-[#15A093] active:bg-[#15A093]/90 disabled:bg-[#F0FCFA] disabled:text-[#4DB9AD]/40 dark:disabled:bg-[#1B2441] dark:disabled:text-[#4DB9AD]/60", soft: "text-[#4DB9AD] bg-[#4DB9AD]/[.08] hover:bg-[#4DB9AD]/[.15] focus:bg-[#4DB9AD]/[.15] active:bg-[#4DB9AD]/20 dark:bg-[#4DB9AD]/10 dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/20 dark:focus:bg-[#4DB9AD]/20 dark:active:bg-[#4DB9AD]/25",
   outlined:
     "text-[#4DB9AD] border border-[#4DB9AD] hover:bg-[#4DB9AD]/[.05] focus:bg-[#4DB9AD]/[.05] active:bg-[#4DB9AD]/10 dark:border-[#4DB9AD] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/[.05] dark:focus:bg-[#4DB9AD]/[.05] dark:active:bg-[#4DB9AD]/10",
   flat: "text-[#4DB9AD] hover:bg-[#4DB9AD]/[.08] focus:bg-[#4DB9AD]/[.08] active:bg-[#4DB9AD]/[.15] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/10 dark:focus:bg-[#4DB9AD]/10 dark:active:bg-[#4DB9AD]/[.15]",
@@ -47,8 +46,7 @@ const primaryVariants: Record<Variant, string> = {
 
 const neutralVariants: Record<Variant, string> = {
   filled:
-    "bg-gray-150 text-gray-900 hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-200/80 dark:bg-surface-2 dark:text-dark-50 dark:hover:bg-surface-1 dark:focus:bg-surface-1 dark:active:bg-surface-1/90",
-  soft: "bg-gray-150/30 text-gray-900 hover:bg-gray-200/[.15] focus:bg-gray-200/[.15] active:bg-gray-200/20 dark:bg-dark-500/30 dark:text-dark-50 dark:hover:bg-dark-450/[.15] dark:focus:bg-dark-450/[.15] dark:active:bg-dark-450/20",
+  "bg-gray-150 text-gray-900 hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-200/80 disabled:bg-gray-100 disabled:text-gray-400 dark:bg-surface-2 dark:text-dark-50 dark:hover:bg-surface-1 dark:focus:bg-surface-1 dark:active:bg-surface-1/90 dark:disabled:bg-dark-600 dark:disabled:text-dark-400", soft: "bg-gray-150/30 text-gray-900 hover:bg-gray-200/[.15] focus:bg-gray-200/[.15] active:bg-gray-200/20 dark:bg-dark-500/30 dark:text-dark-50 dark:hover:bg-dark-450/[.15] dark:focus:bg-dark-450/[.15] dark:active:bg-dark-450/20",
   outlined:
     "border border-gray-300 hover:bg-gray-300/20 focus:bg-gray-300/20 text-gray-900 active:bg-gray-300/25 dark:text-dark-50 dark:hover:bg-dark-300/20 dark:focus:bg-dark-300/20 dark:active:bg-dark-300/25 dark:border-dark-450",
   flat: "hover:bg-gray-300/20 focus:bg-gray-300/20 text-gray-700 active:bg-gray-300/25 dark:text-dark-200 dark:hover:bg-dark-300/10 dark:focus:bg-dark-300/10 dark:active:bg-dark-300/20",
