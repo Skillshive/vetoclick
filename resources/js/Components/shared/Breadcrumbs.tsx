@@ -36,7 +36,7 @@ function Breadcrumbs({
           {item.path ? (
             <>
               <Link
-                to={item.path}
+                href={item.path}
                 className="tracking-wide text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-500"
               >
                 {item.title}
