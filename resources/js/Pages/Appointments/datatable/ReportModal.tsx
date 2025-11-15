@@ -42,7 +42,9 @@ export function ReportModal({ show, onClose, appointment }: ReportModalProps) {
       <Button onClick={onClose} variant="secondary">
         {t('common.close')}
       </Button>
-      <Button onClick={handleReport}>
+      <Button onClick={handleReport} 
+                color="primary"
+                type="submit">
         {t('common.report')}
       </Button>
     </>
