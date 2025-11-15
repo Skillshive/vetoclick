@@ -13,6 +13,7 @@ import clsx from "clsx";
 import { Fragment, useState, useRef, useEffect } from "react";
 import { TrashIcon, InboxIcon } from "@heroicons/react/24/outline";
 import { Transition } from "@headlessui/react";
+import { router } from "@inertiajs/react";
 
 // Local Imports
 import { Table, Card, THead, TBody, Th, Tr, Td, Button } from "@/components/ui";
@@ -108,6 +109,46 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
     onColumnPinningChange: setColumnPinning,
     autoResetPageIndex,
   });
+
+  // Handle search changes with debouncing for backend filtering
+  const isUpdatingUrl = useRef(false);
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!filtersInitialized) {
+      setFiltersInitialized(true);
+      return;
+    }
+
+    if (isUpdatingUrl.current) return;
+
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const currentSearch = params.get('search') || '';
+      
+      // Only update if the search has actually changed
+      if (globalFilter !== currentSearch) {
+        isUpdatingUrl.current = true;
+        
+        if (globalFilter) {
+          params.set('search', globalFilter);
+        } else {
+          params.delete('search');
+        }
+        params.set('page', '1'); // Reset to first page on search
+        
+        router.get(`${window.location.pathname}?${params.toString()}`, {
+          preserveState: true,
+          replace: true,
+          onFinish: () => {
+            isUpdatingUrl.current = false;
+          }
+        });
+      }
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [globalFilter, filtersInitialized]);
 
   useDidUpdate(() => table.resetRowSelection(), [categoryProducts]);
   useLockScrollbar(tableSettings.enableFullScreen);

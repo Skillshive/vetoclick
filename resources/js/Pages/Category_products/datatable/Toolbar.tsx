@@ -75,7 +75,6 @@ const Toolbar = ({
             onChange={(e) => {
               const value = e.target.value;
               setGlobalFilter(value);
-              table.setGlobalFilter(value);
             }}
             prefix={<MagnifyingGlassIcon className="size-4" />}
             placeholder={t('common.search_category_products')}

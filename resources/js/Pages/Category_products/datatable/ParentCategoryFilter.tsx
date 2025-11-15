@@ -3,6 +3,7 @@ import { CategoryProduct } from "@/types/CategoryProducts";
 import { FacedtedFilter } from "@/components/shared/table/FacedtedFilter";
 import { router } from "@inertiajs/react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BiCategory } from "react-icons/bi";
 
 export function ParentCategoryFilter({
   column,
@@ -47,6 +48,7 @@ export function ParentCategoryFilter({
       valueField="value"
       showCheckbox={false}
       onFilterChange={handleFilterChange}
+      Icon={BiCategory}
     />
   );
 }

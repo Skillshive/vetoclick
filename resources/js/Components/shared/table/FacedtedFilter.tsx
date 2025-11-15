@@ -20,7 +20,7 @@ import { useBreakpointsContext } from "@/contexts/breakpoint/context";
 
 interface FilterOption {
   [key: string]: any;
-  icon?: ElementType;
+  icon?: React.ElementType;
 }
 
 interface FacetedFilterProps {
@@ -29,8 +29,8 @@ interface FacetedFilterProps {
   options: FilterOption[];
   labelField?: string;
   valueField?: string;
-  Icon?: ElementType;
-  renderPrefix?: (item: FilterOption, selected: boolean) => ReactElement;
+  Icon?: React.ElementType;
+  renderPrefix?: (item: FilterOption, selected: boolean) => React.ReactNode;
   showCheckbox?: boolean;
   onFilterChange?: (selectedValues: string[]) => void;
 }
