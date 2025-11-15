@@ -17,6 +17,7 @@ import { StockStatus } from "./steps/StockStatus.tsx";
 import { FormState } from "./ProductFormContext.ts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Product, Category } from "../datatable/types";
+import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs.tsx";
 
 // ----------------------------------------------------------------------
 
@@ -103,13 +104,26 @@ const ProductForm = ({ product, categories }: ProductFormPageProps) => {
     </>
   );
 
+  
+
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: t('common.products'), path: route('products.index') },
+    { title: isEditing ? t('common.edit_product') : t('common.create_product')},
+  ];
   return (
     <Page title={isEditing ? "Edit Product" : "Create Product"}>
       <div className="transition-content grid w-full grid-rows-[auto_1fr] px-(--margin-x) pb-8">
-        <h2 className="dark:text-dark-50 py-5 text-xl font-medium tracking-wide text-gray-800 lg:py-6 lg:text-2xl">
+        {/* <h2 className="dark:text-dark-50 py-5 text-xl font-medium tracking-wide text-gray-800 lg:py-6 lg:text-2xl">
           {isEditing ? "Edit Product" : "Create New Product"}
-        </h2>
-
+        </h2> */}
+ <div className="flex items-center gap-1">
+              <div>
+          <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('common.edit_blog_description')}
+          </p>
+        </div>
+            </div>
         <ProductFormProvider product={product} categories={categories}>
           <div
             className={clsx(
