@@ -29,12 +29,12 @@ class AppointmentResource extends JsonResource
             'reason_for_visit' => $this->reason_for_visit,
             'appointment_notes' => $this->appointment_notes,
             'client' => [
-                "uuid"=>$this->client->uuid,
+                "uuid"=>$this?->client?->uuid,
                 "first_name"=>$this?->client?->first_name,
                 "last_name"=>$this?->client?->last_name,
             ],
             'pet' => [
-                "uuid"=>$this->pet->uuid,
+                "uuid"=>$this?->pet?->uuid,
                 "name"=>$this?->pet?->name,
                 "breed"=>$this?->pet?->breed?->breed_name,
             ],

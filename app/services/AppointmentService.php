@@ -36,8 +36,8 @@ class AppointmentService implements ServiceInterface
             $this->applySearch($query, $filters['search']);
         }
 
-        $sortBy = $filters['sort_by'] ?? 'start_time';
-        $sortDirection = $filters['sort_direction'] ?? 'asc';
+        $sortBy = $filters['sort_by'] ?? 'created_at';
+        $sortDirection = $filters['sort_direction'] ?? 'desc';
         $query->orderBy($sortBy, $sortDirection);
 
         return $query->paginate($perPage);
