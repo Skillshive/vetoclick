@@ -4,6 +4,7 @@ import { Page } from "@/components/shared/Page";
 import { Button, Card, Input, Textarea } from "@/components/ui";
 import { CoverImageUpload } from "@/components/shared/form/CoverImageUpload";
 import { Tags } from "@/components/shared/form/Tags";
+import ReactSelect from "@/components/ui/ReactSelect";
 import MainLayout from "@/layouts/MainLayout";
 import { useTranslation } from "@/hooks/useTranslation";
 import { blogFormSchema } from "@/schemas/blogSchema";
@@ -11,6 +12,14 @@ import { useToast } from "@/Components/common/Toast/ToastContext";
 import { getImageUrl } from "@/utils/imageHelper";
 import { BlogFormData, CategoryBlog, Blog } from "./types";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { 
+  DocumentTextIcon, 
+  ChatBubbleBottomCenterTextIcon, 
+  FolderIcon,
+  GlobeAltIcon,
+  TagIcon,
+  KeyIcon
+} from "@heroicons/react/24/outline";
 
 interface TagItem {
   id: string;
@@ -70,6 +79,11 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
   });
 
   const [processing, setProcessing] = useState(false);
+  
+  const categoryOptions = category_blogs.map(category => ({
+    value: category.uuid,
+    label: category.name
+  }));
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -226,6 +240,7 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                       value={data.title}
                       onChange={(e) => setData({ ...data, title: e.target.value })}
                       error={validationErrors.title}
+                      leftIcon={<DocumentTextIcon className="h-5 w-5" />}
                       required
                     />
 
@@ -235,6 +250,7 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                       value={data.caption}
                       onChange={(e) => setData({ ...data, caption: e.target.value })}
                       error={validationErrors.caption}
+                      leftIcon={<ChatBubbleBottomCenterTextIcon className="h-5 w-5" />}
                       required
                     />
 
@@ -276,21 +292,21 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                     {t('common.category')}
                   </h6>
                   
-                  <select
-                    value={data.category_blog_id}
-                    onChange={(e) => setData({ ...data, category_blog_id: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-this focus:outline-none focus:ring-1 focus:ring-this"
-                    required
-                  >
-                    <option value="">{t('common.choose_category')}</option>
-                    {category_blogs.map((category) => (
-                      <option key={category.uuid} value={category.uuid}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                  <ReactSelect
+                    label={t('common.category')}
+                    leftIcon={<FolderIcon className="h-5 w-5" />}
+                    options={categoryOptions}
+                    value={categoryOptions.find(opt => opt.value === data.category_blog_id) || null}
+                    onChange={(selected) => {
+                      const option = selected as { value: string; label: string } | null;
+                      setData({ ...data, category_blog_id: option?.value || '' });
+                    }}
+                    placeholder={t('common.choose_category')}
+                    error={!!validationErrors.category_blog_id}
+                    isClearable
+                  />
                   {validationErrors.category_blog_id && (
-                    <p className="text-red-500 text-sm">{validationErrors.category_blog_id}</p>
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.category_blog_id}</p>
                   )}
 
                   <Tags
@@ -299,6 +315,7 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                     value={tags}
                     onChange={setTags}
                     error={validationErrors.tags}
+                    leftIcon={<TagIcon className="h-5 w-5" />}
                   />
                 </Card>
 
@@ -314,6 +331,7 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                       value={data.meta_title}
                       onChange={(e) => setData({ ...data, meta_title: e.target.value })}
                       error={validationErrors.meta_title}
+                      leftIcon={<GlobeAltIcon className="h-5 w-5" />}
                       required
                     />
                     
@@ -333,6 +351,7 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                       value={metaKeywords}
                       onChange={setMetaKeywords}
                       error={validationErrors.meta_keywords}
+                      leftIcon={<KeyIcon className="h-5 w-5" />}
                     />
                   </div>
                 </Card>
