@@ -22,7 +22,7 @@ class BlogService implements ServiceInterface
      */
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Blog::with(['image', 'categoryBlog'])->paginate($perPage);
+        return Blog::with(['image', 'categoryBlog'])->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**
@@ -137,6 +137,7 @@ class BlogService implements ServiceInterface
     {
         return Blog::with(['image', 'categoryBlog'])
             ->where('title', 'LIKE', "%{$title}%")
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
@@ -144,6 +145,7 @@ class BlogService implements ServiceInterface
     {
         return Blog::with(['image', 'categoryBlog'])
             ->where('category_blog_id', $categoryId)
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
