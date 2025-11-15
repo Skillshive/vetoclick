@@ -11,8 +11,7 @@ use Exception;
 
 class CategoryBlogService implements ServiceInterface
 {
-
-        public function query()
+    public function query()
     {
         return CategoryBlog::with('parentCategory');
     }
@@ -29,9 +28,9 @@ class CategoryBlogService implements ServiceInterface
     /**
      * Get all category blogs with pagination
      */
-        public function getAll(int $perPage = 15): LengthAwarePaginator
+    public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return $this->query()->paginate($perPage);
+        return $this->query()->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**
@@ -40,7 +39,7 @@ class CategoryBlogService implements ServiceInterface
     public function getAllAsCollection(): Collection
     {
         return CategoryBlog::with(['parentCategory', 'childCategories'])
-            ->orderBy('name', 'asc')
+            ->orderBy('created_at', 'desc')
             ->get();
     }
 
@@ -50,19 +49,19 @@ class CategoryBlogService implements ServiceInterface
     public function create(CategoryBlogDto $dto): CategoryBlog
     {
         try {
-          $categoryBlog=  CategoryBlog::create([
-                "name" => $dto->name,
-                "desp" => $dto->desp,
-                "parent_category_id" => $dto->parent_category_id ? $this->getByUuid($dto->parent_category_id)->id : null,
-          ]);
+            $categoryBlog =  CategoryBlog::create([
+                  "name" => $dto->name,
+                  "desp" => $dto->desp,
+                  "parent_category_id" => $dto->parent_category_id ? $this->getByUuid($dto->parent_category_id)->id : null,
+            ]);
 
-          return $categoryBlog->load(['parentCategory', 'childCategories']);
+            return $categoryBlog->load(['parentCategory', 'childCategories']);
         } catch (Exception $e) {
             throw new Exception("Failed to create category blog");
         }
     }
 
-   
+
     /**
      * Update category blog by UUID
      */
@@ -70,7 +69,7 @@ class CategoryBlogService implements ServiceInterface
     {
         try {
             $categoryBlog = $this->getByUuid($uuid);
-            
+
             if (!$categoryBlog) {
                 return null;
             }
@@ -80,7 +79,7 @@ class CategoryBlogService implements ServiceInterface
                 "desp" => $dto->desp,
                 "parent_category_id" => $dto->parent_category_id ? $this->getByUuid($dto->parent_category_id)->id : null,
             ]);
-            
+
             $categoryBlog->refresh();
             return $categoryBlog->fresh(['parentCategory', 'childCategories']);
         } catch (Exception $e) {
@@ -95,7 +94,7 @@ class CategoryBlogService implements ServiceInterface
     {
         try {
             $categoryBlog = $this->getByUuid($uuid);
-            
+
             if (!$categoryBlog) {
                 return false;
             }
@@ -126,7 +125,7 @@ class CategoryBlogService implements ServiceInterface
     private function isDescendant(int $ancestorId, int $descendantId): bool
     {
         $descendant = CategoryBlog::find($descendantId);
-        
+
         while ($descendant && $descendant->parent_category_id) {
             if ($descendant->parent_category_id === $ancestorId) {
                 return true;
@@ -141,7 +140,7 @@ class CategoryBlogService implements ServiceInterface
     {
         return CategoryBlog::whereNull('parent_category_id')->get();
     }
-    
+
     public function getAllForExport(): Collection
     {
         return CategoryBlog::get();

@@ -14,22 +14,22 @@ class ProductService implements ServiceInterface
 {
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Product::with('category')->paginate($perPage);
+        return Product::with('category')->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     public function getAllWithoutPagination(): Collection
     {
-        return Product::with('category')->get();
+        return Product::with('category')->orderBy('created_at', 'desc')->get();
     }
 
     public function getAllAsCollection(): Collection
     {
-        return Product::with('category')->get();
+        return Product::with('category')->orderBy('created_at', 'desc')->get();
     }
 
     public function getAllForExport(): Collection
     {
-        return Product::with('category')->get();
+        return Product::with('category')->orderBy('created_at', 'desc')->get();
     }
 
     public function getById(int $id): ?Product

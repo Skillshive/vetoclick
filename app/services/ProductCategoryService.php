@@ -13,7 +13,7 @@ class ProductCategoryService implements ServiceInterface
 {
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return ProductCategory::with('parent', 'children')->paginate($perPage);
+        return ProductCategory::with('parent', 'children')->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     public function getById(int $id): ?ProductCategory
