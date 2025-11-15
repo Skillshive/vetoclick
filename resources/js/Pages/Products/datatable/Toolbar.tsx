@@ -18,6 +18,11 @@ import { createPortal } from 'react-dom';
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
 import { ViewColumnsIcon } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
+import { BiCategory } from "react-icons/bi";
+import { MdCategory, MdOutlineCategory } from 'react-icons/md';
+import { FaFilter } from 'react-icons/fa6';
+import { CiFilter } from 'react-icons/ci';
+import { Filter, TypeIcon, TypeOutline } from 'lucide-react';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
@@ -250,7 +255,8 @@ function Filters({
         filterKey="category"
         onFilterChange={handleFilterChange}
         currentValue={urlParams.get('category')?.split(',') || []}
-      />
+        icon={<BiCategory className="size-4" />}
+        />
 
       <ServerSideFilter
         options={productTypeOptions}
@@ -258,6 +264,7 @@ function Filters({
         filterKey="type"
         onFilterChange={handleFilterChange}
         currentValue={urlParams.get('type')?.split(',') || []}
+        icon={<MdOutlineCategory className="size-4" />}
       />
 
       <ServerSideFilter
@@ -266,6 +273,7 @@ function Filters({
         filterKey="status"
         onFilterChange={handleFilterChange}
         currentValue={urlParams.get('status')?.split(',') || []}
+        icon={<Filter className="size-4" />}
       />
 
       {hasActiveFilters && (
@@ -287,6 +295,7 @@ interface ServerSideFilterProps {
   filterKey: string;
   onFilterChange: (filterType: string, value: string[]) => void;
   currentValue: string[];
+  icon?: React.ReactNode;
 }
 
 function ServerSideFilter({ 
@@ -294,7 +303,8 @@ function ServerSideFilter({
   title, 
   filterKey, 
   onFilterChange, 
-  currentValue 
+  currentValue,
+  icon
 }: ServerSideFilterProps) {
   const { t } = useTranslation();
 
@@ -318,6 +328,7 @@ function ServerSideFilter({
                 : "border-dashed",
             )}
       >
+         {icon && <span className="shrink-0">{icon}</span>}
         <span>{title}</span>
             {selectedItems.length > 0 && (
               <>
