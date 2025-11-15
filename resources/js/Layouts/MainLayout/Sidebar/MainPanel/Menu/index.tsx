@@ -50,8 +50,6 @@ export function Menu({
       {itemsToRender.length === 0 ? (
         <div className="text-center text-gray-500 text-sm p-4">
           <p>No menu items found</p>
-          <p>Role: {userRole}</p>
-          <p>Authenticated: {isAuthenticated ? 'Yes' : 'No'}</p>
         </div>
       ) : (
         itemsToRender.map((item) => {

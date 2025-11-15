@@ -101,7 +101,7 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
           cardSkin === "shadow" ? "dark:bg-dark-750" : "dark:bg-dark-900",
         )}
       >
-        <div className="relative flex h-16 w-full shrink-0 items-center gap-2 pl-4 pr-1 rtl:pl-1 rtl:pr-4">
+        <div className="relative flex h-16 w-full aspect-square shrink-0 items-center gap-2 pl-4 pr-1 rtl:pl-1 rtl:pr-4">
         {(currentMenuItem?.icon || isSettingsActive) && <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20"  style={{ borderRadius: '50%' }}>
             {isSettingsActive ? (
               <SettingIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
