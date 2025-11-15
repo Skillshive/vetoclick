@@ -173,7 +173,6 @@ return [
     'stock_management' => 'Stock Management',
     'categories' => 'Categories',
     'parentCategory' => 'Parent Category',
-    'filter_by_parent_category' => 'Filter by parent category',
     'no_category_product' => 'No Parent Category',
     'no_result' => 'No results found',
     'create_category_product' => 'Create Category Product',
@@ -186,7 +185,7 @@ return [
     'category_products_deleted' => 'Category products deleted',
     'confirm_delete_category_products' => 'Are you sure you want to delete :count selected category products?',
     'category_product_deleted_success' => 'Successfully deleted category products',
-    "filter_by_parent_category"=>"Filter by Parent Category",
+    "filter_by_parent_category"=>"Parent Category",
     'created_date' => 'Created Date',
 
     // Table and Pagination translations
