@@ -28,7 +28,7 @@ const icons = {
 };
 
 const borderColors = {
-  success: 'bg-green-500',
+  success: 'bg-[#4DB9AD]',
   warning: 'bg-yellow-500',
   error: 'bg-red-500',
   info: 'bg-blue-500',
