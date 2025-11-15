@@ -60,7 +60,7 @@ export function UserCard({
         <div className="space-y-2 w-full">
           {user.phone && (
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
-              <PhoneArrowDownLeftIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <PhoneArrowDownLeftIcon className="w-4 h-4 text-[#4DB9AD] flex-shrink-0" />
               <span className="truncate min-w-0">{user.phone}</span>
             </div>
           )}
@@ -79,7 +79,7 @@ export function UserCard({
 
           {user.roles && user.roles.length > 0 && (
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
-              <HiShieldCheck className="w-4 h-4 text-purple-500 flex-shrink-0" />
+              <HiShieldCheck className="w-4 h-4 text-[#4DB9AD] flex-shrink-0" />
               <Badge
                 color="primary"
                 variant="soft"
