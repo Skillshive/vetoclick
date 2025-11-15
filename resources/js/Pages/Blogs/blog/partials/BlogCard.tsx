@@ -1,5 +1,4 @@
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { router } from "@inertiajs/react";
 import { Highlight } from "@/components/shared/Highlight";
 import { Card } from "@/components/ui";
 import { Blog } from "../types";
@@ -10,6 +9,9 @@ import { MdCategory } from "react-icons/md";
 import { getImageUrl } from "@/utils/imageHelper";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import axios from "axios";
+
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 dayjs.extend(relativeTime);
 
@@ -27,7 +29,8 @@ export function BlogCard({
   const { t } = useTranslation();
 
   const handleEdit = () => {
-    router.visit(route('blogs.edit', blog.uuid) as string);
+    const editUrl = route('blogs.edit', blog.uuid) as string;
+    window.location.href = editUrl;
   };
 
   const handleDelete = async () => {
@@ -43,24 +46,28 @@ export function BlogCard({
     if (confirmed) {
       if (onDelete) {
         onDelete(blog);
-      } else {
-        router.delete(route('blogs.destroy', blog.uuid) as string, {
-          onSuccess: () => {
-            showToast({
-              type: 'success',
-              message: t('common.blog_deleted_success'),
-              duration: 3000,
-            });
-          },
-          onError: () => {
-            showToast({
-              type: 'error',
-              message: t('common.blog_delete_error'),
-              duration: 3000,
-            });
-          }
-        });
-      }
+      } 
+      // else {
+      //   try {
+      //     const deleteUrl = route('blogs.destroy', blog.uuid) as string;
+      //     await axios.delete(deleteUrl);
+          
+      //     showToast({
+      //       type: 'success',
+      //       message: t('common.blog_deleted_success'),
+      //       duration: 3000,
+      //     });
+          
+      //     // Reload the page after successful deletion
+      //     window.location.reload();
+      //   } catch (error) {
+      //     showToast({
+      //       type: 'error',
+      //       message: t('common.blog_delete_error'),
+      //       duration: 3000,
+      //     });
+      //   }
+      // }
     }
   };
 

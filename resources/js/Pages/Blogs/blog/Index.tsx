@@ -12,6 +12,7 @@ import { Blog, BlogsProps } from "./types";
 import { BlogCard } from "./partials/BlogCard";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
 
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 export default function Index({
    blogs,
@@ -24,17 +25,28 @@ export default function Index({
   const { t } = useTranslation();
 
   const handleDeleteBlog = async (blog: Blog) => {
-    router.delete(route('blogs.destroy', blog.uuid) as string, {
+    // @ts-ignore
+    router.delete(route('blogs.destroy', blog.uuid), {
+      preserveState: true,
+      preserveScroll: true,
       onSuccess: () => {
         showToast({
           type: 'success',
           message: t('common.blog_deleted_success'),
           duration: 3000,
         });
-        router.visit(window.location.href, {
-          preserveState: false,
-          preserveScroll: true
-        });
+        
+        // Refresh the page to get updated data
+        setTimeout(() => {
+          router.visit(route('blogs.index') as any, {
+            data: {
+              search: searchQuery,
+              page: meta?.current_page || 1,
+              per_page: meta?.per_page || 10
+            },
+            preserveScroll: true,
+          });
+        }, 100);
       },
       onError: () => {
         showToast({
