@@ -31,7 +31,9 @@ type SelectClassNames = {
   wrapper?: string;
   select?: string;
   prefix?: string;
+  leftIcon?: string;
   suffix?: string;
+  rightIcon?: string;
   error?: string;
   description?: string;
 };
@@ -39,7 +41,9 @@ type SelectClassNames = {
 type SelectProps = {
   label?: ReactNode;
   prefix?: ReactNode;
+  leftIcon?: ReactNode;
   suffix?: ReactNode;
+  rightIcon?: ReactNode;
   description?: string;
   classNames?: SelectClassNames;
   error?: boolean | ReactNode;
@@ -87,7 +91,9 @@ function findNearestBackgroundColor(element: HTMLElement): string | null {
 const Select = ({
   label,
   prefix,
+  leftIcon,
   suffix = <ChevronDownIcon className="w-2/3" />,
+  rightIcon,
   description,
   classNames = {},
   className,
@@ -107,6 +113,11 @@ const Select = ({
   const selectRef = useRef<HTMLSelectElement>(null);
   const { rtlClasses } = useRTL();
 //   const theme = useThemeContext();
+
+  // prefer leftIcon over prefix for display
+  const _prefix = leftIcon ?? prefix;
+  // prefer rightIcon over suffix for display (only if not default chevron or explicitly set)
+  const _suffix = rightIcon ?? suffix;
 
   const options = useMemo(
     () =>
@@ -168,8 +179,8 @@ const Select = ({
             multiple ? "form-multiselect" : "form-select-base",
             !unstyled && [
               !multiple && "form-select",
-              suffix && "ltr:pr-9 rtl:pl-9",
-              prefix && "ltr:pl-9 rtl:pr-9",
+              _suffix && "ltr:pr-9 rtl:pl-9",
+              _prefix && "ltr:pl-9 rtl:pr-9",
               error
                 ? "border-error dark:border-error-lighter"
                 : [
@@ -190,27 +201,27 @@ const Select = ({
         >
           {children || options}
         </select>
-        {!multiple && !unstyled && prefix && (
+        {!multiple && !unstyled && _prefix && (
           <div
             className={clsx(
               "prefix ltr:left-0 rtl:right-0",
               affixClass,
-              classNames.prefix,
+              leftIcon ? classNames.leftIcon : classNames.prefix,
             )}
           >
-            {prefix}
+            {_prefix}
           </div>
         )}
 
-        {!multiple && !unstyled && (
+        {!multiple && !unstyled && _suffix && (
           <div
             className={clsx(
               "suffix ltr:right-0 rtl:left-0",
               affixClass,
-              classNames.suffix,
+              rightIcon ? classNames.rightIcon : classNames.suffix,
             )}
           >
-            {suffix}
+            {_suffix}
           </div>
         )}
       </div>

@@ -18,6 +18,7 @@ export type InputOwnProps<T extends ElementType = "input"> = {
   prefix?: ReactNode; 
   leftIcon?: ReactNode; 
   suffix?: ReactNode;
+  rightIcon?: ReactNode;
   description?: string;
   className?: string;
   placeholder?: string;
@@ -28,7 +29,9 @@ export type InputOwnProps<T extends ElementType = "input"> = {
     wrapper?: string;
     input?: string;
     prefix?: string;
+    leftIcon?: string;
     suffix?: string;
+    rightIcon?: string;
     error?: string;
     description?: string;
   };
@@ -53,6 +56,7 @@ const InputInner = forwardRef(
       prefix,
       leftIcon,
       suffix,
+      rightIcon,
       description,
       className,
       classNames = {},
@@ -70,8 +74,10 @@ const InputInner = forwardRef(
     const Component: ElementType = component || "input";
     const inputId = useId(id, "input");
 
-    // prefer leftIcon, fallback to prefix
-    const _prefix = prefix ?? leftIcon;
+    // prefer leftIcon over prefix for display
+    const _prefix = leftIcon ?? prefix;
+    // prefer rightIcon over suffix for display
+    const _suffix = rightIcon ?? suffix;
 
     const affixClass = clsx(
       "absolute top-0 flex h-full w-9 items-center justify-center transition-colors",
@@ -105,7 +111,7 @@ const InputInner = forwardRef(
           <Component
             className={clsx(
               "form-input-base",
-              suffix && "ltr:pr-9 rtl:pl-9",
+              _suffix && "ltr:pr-9 rtl:pl-9",
               _prefix && "ltr:pl-9 rtl:pr-9",
               !unstyled && [
                 "form-input",
@@ -129,21 +135,21 @@ const InputInner = forwardRef(
               className={clsx(
                 "prefix ltr:left-0 rtl:right-0",
                 affixClass,
-                classNames.prefix,
+                leftIcon ? classNames.leftIcon : classNames.prefix,
               )}
             >
               {_prefix}
             </div>
           )}
-          {suffix && (
+          {_suffix && (
             <div
               className={clsx(
                 "suffix ltr:right-0 rtl:left-0",
                 affixClass,
-                classNames.suffix,
+                rightIcon ? classNames.rightIcon : classNames.suffix,
               )}
             >
-              {suffix}
+              {_suffix}
             </div>
           )}
         </div>

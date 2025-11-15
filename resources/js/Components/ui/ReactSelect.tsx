@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Select, { MultiValue, SingleValue, ActionMeta } from 'react-select';
 import { useThemeContext } from '@/contexts/theme/context';
 
@@ -19,6 +19,8 @@ interface ReactSelectProps {
     className?: string;
     error?: boolean;
     label?: string;
+    leftIcon?: ReactNode;
+    rightIcon?: ReactNode;
 }
 
 const ReactSelect: React.FC<ReactSelectProps> = ({
@@ -33,6 +35,8 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
     className = '',
     error = false,
     label,
+    leftIcon,
+    rightIcon,
 }) => {
     const { themeMode } = useThemeContext();
     const isDark = themeMode === 'dark';
@@ -42,6 +46,8 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
             ...provided,
             minHeight: '2.5rem',
             borderRadius: '0.375rem',
+            paddingLeft: leftIcon ? '2rem' : provided.paddingLeft,
+            paddingRight: rightIcon ? '2rem' : provided.paddingRight,
             border: error
                 ? '1px solid #ef4444'
                 : state.isFocused
@@ -140,27 +146,39 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
                     {label}
                 </label>
             )}
-            <Select
-                id={id}
-                value={value}
-                onChange={onChange}
-                options={options}
-                placeholder={placeholder}
-                isDisabled={isDisabled}
-                isClearable={isClearable}
-                isMulti={isMulti}
-                styles={customStyles}
-                theme={(theme) => ({
-                    ...theme,
-                    colors: {
-                        ...theme.colors,
-                        primary: '#4DB9AD',
-                        primary75: '#6FC9C0',
-                        primary50: '#A1D9D4',
-                        primary25: '#D0EBE9',
-                    },
-                })}
-            />
+            <div className="relative">
+                {leftIcon && (
+                    <div className="absolute left-0 top-0 flex h-full w-9 items-center justify-center pointer-events-none z-10 text-gray-400 dark:text-gray-500">
+                        {leftIcon}
+                    </div>
+                )}
+                <Select
+                    id={id}
+                    value={value}
+                    onChange={onChange}
+                    options={options}
+                    placeholder={placeholder}
+                    isDisabled={isDisabled}
+                    isClearable={isClearable}
+                    isMulti={isMulti}
+                    styles={customStyles}
+                    theme={(theme) => ({
+                        ...theme,
+                        colors: {
+                            ...theme.colors,
+                            primary: '#4DB9AD',
+                            primary75: '#6FC9C0',
+                            primary50: '#A1D9D4',
+                            primary25: '#D0EBE9',
+                        },
+                    })}
+                />
+                {rightIcon && (
+                    <div className="absolute right-0 top-0 flex h-full w-9 items-center justify-center pointer-events-none z-10 text-gray-400 dark:text-gray-500">
+                        {rightIcon}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
