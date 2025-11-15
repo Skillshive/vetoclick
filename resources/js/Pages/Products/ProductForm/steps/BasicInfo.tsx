@@ -133,6 +133,9 @@ export function BasicInfo({
               )}
             </Upload>
           </div>
+          {errors?.image && (
+            <p className="mt-1 text-sm text-red-600">{errors.image.message}</p>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
