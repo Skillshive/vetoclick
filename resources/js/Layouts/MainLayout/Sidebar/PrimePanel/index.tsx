@@ -40,7 +40,7 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
   const settingsItems = [
     { name: t("common.prime_panel.general"), icon: UserIcon, href: "/settings/general" },
     { name: t("common.prime_panel.appearance"), icon: PaintBrushIcon, href: "/settings/appearance" },
-    { name: t("common.prime_panel.password"), icon: ShieldCheckIcon, href: "/settings/sessions" },
+    // { name: t("common.prime_panel.password"), icon: ShieldCheckIcon, href: "/settings/sessions" },
     { name: t("common.prime_panel.availabilities"), icon: CalendarDaysIcon, href: "/settings/availabilities" },
     { name: t("common.prime_panel.roles"), icon: UserGroupIcon, href: "/roles" },
     { name: t("common.prime_panel.subscription_plans"), icon: CreditCardIcon, href: "/subscription-plans" }
