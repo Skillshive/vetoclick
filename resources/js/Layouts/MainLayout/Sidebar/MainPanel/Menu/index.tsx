@@ -10,11 +10,9 @@ export interface MenuProps {
   nav?: NavigationTree[];
 }
 
-export function Menu({
-  nav,
-}: MenuProps) {
+export function Menu({}: MenuProps) {
   const { isExpanded, open, close, setActiveSegmentPath: setSidebarActiveSegment } = useSidebarContext();
-  const { menuItems, userRole, isAuthenticated } = useRoleBasedMenu();
+  const { menuItems } = useRoleBasedMenu();
 
   const handleSegmentSelect = (path: string) => {
     setSidebarActiveSegment(path);
@@ -28,17 +26,6 @@ export function Menu({
     if (!isExpanded) {
       open();
     }
-  };
-
-  const getMainNavigationItems = (items: any[]) => {
-    const mainItems = items.map(item => ({
-      id: item.id,
-      title: item.title,
-      icon: item.icon,
-      path: item.path || '',
-      type: item.type,
-    }));
-    return mainItems;
   };
 
   const itemsToRender = menuItems;
@@ -58,7 +45,7 @@ export function Menu({
             if (window.location.href === item.path) return true;
             if (item.submenu && Array.isArray(item.submenu)) {
               return item.submenu.some(
-              (sub: any) => window.location.href === sub.path
+              (sub) => window.location.href === sub.path
               );
             }
             return false;
@@ -73,7 +60,13 @@ export function Menu({
               component={isLink ? Link : "button"}
               href={isLink ? item.path : undefined}
               onClick={() => {
-              if (!isLink) handleSegmentSelect(item.path || item.id);
+              if (!isLink) {
+                handleSegmentSelect(item.path || item.id);
+              } else {
+                // Reset activeSegmentPath when clicking a direct link
+                setSidebarActiveSegment('');
+                close();
+              }
               }}
               onMouseEnter={() => {
               if (!isLink) handleMouseEnter(item.path || item.id);

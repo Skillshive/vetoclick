@@ -6,7 +6,6 @@ import { Link } from "@inertiajs/react";
 import { 
   UserIcon, 
   PaintBrushIcon, 
-  ShieldCheckIcon,
   UserGroupIcon,
   CreditCardIcon,
   CalendarDaysIcon,
@@ -47,12 +46,16 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
   ];
 
   // Check if we're showing settings menu
+  const isPathSettings = pathname.startsWith('/settings/') || 
+                        pathname === '/roles' || 
+                        pathname.startsWith('/roles/') ||
+                        pathname === '/subscription-plans' || 
+                        pathname.startsWith('/subscription-plans/');
+  
+  // If activeSegmentPath is explicitly set to something other than 'settings', use that
+  // Otherwise, determine based on pathname
   const isSettingsActive = activeSegmentPath === 'settings' || 
-                          pathname.startsWith('/settings/') || 
-                          pathname === '/roles' || 
-                          pathname.startsWith('/roles/') ||
-                          pathname === '/subscription-plans' || 
-                          pathname.startsWith('/subscription-plans/');
+                          (!activeSegmentPath && isPathSettings);
 
   // Find the current menu item based on active segment
   const currentMenuItem = menuItems.find(item => item.id === activeSegmentPath) || 
