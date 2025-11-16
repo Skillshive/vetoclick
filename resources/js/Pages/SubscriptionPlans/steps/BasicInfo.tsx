@@ -26,9 +26,6 @@ export function BasicInfo({
 }) {
   const subscriptionPlanFormCtx = useSubscriptionPlanFormContext();
   const { t } = useTranslation();
-  
-  console.log('BasicInfo - plan data:', plan);
-  console.log('BasicInfo - form data:', subscriptionPlanFormCtx.state.formData.basicInfo);
 
   const [basicInfoValidationErrors, setBasicInfoValidationErrors] = useState<{
     name_en?: string;
@@ -83,7 +80,6 @@ export function BasicInfo({
               type="text"
               value={subscriptionPlanFormCtx.state.formData.basicInfo.name_en}
               onChange={(e) => {
-                console.log('e.target.value', e.target.value);
                 subscriptionPlanFormCtx.dispatch({
                   type: "SET_FORM_DATA",
                   payload: { basicInfo: { ...subscriptionPlanFormCtx.state.formData.basicInfo, name_en: e.target.value } },
@@ -94,7 +90,6 @@ export function BasicInfo({
                 });
                 if (!result.success) {
                   const errors = result.error.flatten().fieldErrors;
-                  console.log('errors', errors);
                   setBasicInfoValidationErrors(prev => ({
                     ...prev,
                     name_en: errors.name_en?.[0] ? t(errors.name_en[0]) : undefined,
@@ -124,7 +119,6 @@ export function BasicInfo({
               type="text"
               value={subscriptionPlanFormCtx.state.formData.basicInfo.name_ar}
               onChange={(e) => {
-                console.log('e.target.value', e.target.value);
                 subscriptionPlanFormCtx.dispatch({
                   type: "SET_FORM_DATA",
                   payload: { basicInfo: { ...subscriptionPlanFormCtx.state.formData.basicInfo, name_ar: e.target.value } },
@@ -135,7 +129,6 @@ export function BasicInfo({
                 });
                 if (!result.success) {
                   const errors = result.error.flatten().fieldErrors;
-                  console.log('errors', errors);
                   setBasicInfoValidationErrors(prev => ({
                     ...prev,
                     name_ar: errors.name_ar?.[0] ? t(errors.name_ar[0]) : undefined,
@@ -164,7 +157,6 @@ export function BasicInfo({
               type="text"
               value={subscriptionPlanFormCtx.state.formData.basicInfo.name_fr}
               onChange={(e) => {
-                console.log('e.target.value', e.target.value);
                 subscriptionPlanFormCtx.dispatch({
                   type: "SET_FORM_DATA",
                   payload: { basicInfo: { ...subscriptionPlanFormCtx.state.formData.basicInfo, name_fr: e.target.value } },
@@ -175,7 +167,6 @@ export function BasicInfo({
                 });
                 if (!result.success) {
                   const errors = result.error.flatten().fieldErrors;
-                  console.log('errors', errors);
                   setBasicInfoValidationErrors(prev => ({
                     ...prev,
                     name_fr: errors.name_fr?.[0] ? t(errors.name_fr[0]) : undefined,
@@ -210,7 +201,6 @@ export function BasicInfo({
             label={t('common.description_en')}
             value={subscriptionPlanFormCtx.state.formData.basicInfo.description_en}
             onChange={(e) => {
-              console.log('e.target.value', e.target.value);
               subscriptionPlanFormCtx.dispatch({
                 type: "SET_FORM_DATA",
                 payload: { basicInfo: { ...subscriptionPlanFormCtx.state.formData.basicInfo, description_en: e.target.value } },
@@ -221,7 +211,6 @@ export function BasicInfo({
               });
               if (!result.success) {
                 const errors = result.error.flatten().fieldErrors;
-                console.log('errors', errors);
                 setBasicInfoValidationErrors(prev => ({
                   ...prev,
                   description_en: errors.description_en?.[0] ? t(errors.description_en[0]) : undefined,
@@ -251,7 +240,6 @@ export function BasicInfo({
             label={t('common.description_ar')}
             value={subscriptionPlanFormCtx.state.formData.basicInfo.description_ar}
             onChange={(e) => {
-              console.log('e.target.value', e.target.value);
               subscriptionPlanFormCtx.dispatch({
                 type: "SET_FORM_DATA",
                 payload: { basicInfo: { ...subscriptionPlanFormCtx.state.formData.basicInfo, description_ar: e.target.value } },
@@ -262,7 +250,6 @@ export function BasicInfo({
               });
               if (!result.success) {
                 const errors = result.error.flatten().fieldErrors;
-                console.log('errors', errors);
                 setBasicInfoValidationErrors(prev => ({
                   ...prev,
                   description_ar: errors.description_ar?.[0] ? t(errors.description_ar[0]) : undefined,
@@ -292,7 +279,6 @@ export function BasicInfo({
             label={t('common.description_fr')}
             value={subscriptionPlanFormCtx.state.formData.basicInfo.description_fr}
             onChange={(e) => {
-              console.log('e.target.value', e.target.value);
               subscriptionPlanFormCtx.dispatch({
                 type: "SET_FORM_DATA",
                 payload: { basicInfo: { ...subscriptionPlanFormCtx.state.formData.basicInfo, description_fr: e.target.value } },
@@ -303,7 +289,6 @@ export function BasicInfo({
               });
               if (!result.success) {
                 const errors = result.error.flatten().fieldErrors;
-                console.log('errors', errors);
                 setBasicInfoValidationErrors(prev => ({
                   ...prev,
                   description_fr: errors.description_fr?.[0] ? t(errors.description_fr[0]) : undefined,
@@ -343,7 +328,6 @@ export function BasicInfo({
               });
               if (!result.success) {
                 const errors = result.error.flatten().fieldErrors;
-                console.log('errors', errors);
                 setBasicInfoValidationErrors(prev => ({
                   ...prev,
                   sort_order: errors.sort_order?.[0] ? t(errors.sort_order[0]) : undefined,

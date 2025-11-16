@@ -77,7 +77,7 @@ export function Limits({
       payload: { limits: { isDone: true } },
     });
 
-    const formData = {
+    const submissionData = {
       // Basic Info
       name_en: subscriptionPlanFormCtx.state.formData.basicInfo.name_en,
       name_ar: subscriptionPlanFormCtx.state.formData.basicInfo.name_ar,
@@ -106,11 +106,10 @@ export function Limits({
       max_appointments: limitsData.max_appointments,
     };
 
-
-    // Submit the form
+    // Submit the form with data passed directly
     if (isEditing && plan) {
       const planUuid = plan.data?.uuid || plan.uuid;
-      put(route('subscription-plans.update', planUuid), {
+      router.put(route('subscription-plans.update', planUuid), submissionData, {
         onSuccess: () => {
           showToast({
             type: 'success',
@@ -130,7 +129,7 @@ export function Limits({
         }
       });
     } else {
-      post(route('subscription-plans.store'), {
+      router.post(route('subscription-plans.store'), submissionData, {
         onSuccess: () => {
           showToast({
             type: 'success',
@@ -210,7 +209,7 @@ export function Limits({
                 }
               }}
               label={t('common.max_clients')}
-              placeholder={t('common.category_name_placeholder')}
+              placeholder={t('common.max_clients')}
               className={limitsValidationErrors.max_clients ? 'border-red-500' : ''}
               required
               leftIcon={<PersonStanding className="size-5" />}
@@ -251,7 +250,7 @@ export function Limits({
                 }
               }}
               label={t('common.max_pets')}
-              placeholder={t('common.category_name_placeholder')}
+              placeholder={t('common.max_pets')}
               className={limitsValidationErrors.max_pets ? 'border-red-500' : ''}
               required
               leftIcon={<PawPrint className="size-5" />}
@@ -292,7 +291,7 @@ export function Limits({
                 }
               }}
               label={t('common.max_appointments')}
-              placeholder={t('common.category_name_placeholder')}
+              placeholder={t('common.max_appointments')}
               className={limitsValidationErrors.max_appointments ? 'border-red-500' : ''}
               required
               leftIcon={<CalendarIcon className="size-5" />}

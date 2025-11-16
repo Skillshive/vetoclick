@@ -21,7 +21,7 @@ export function UserCard({
 
   const handleDelete = async () => {
     const confirmed = await confirmContext.confirm({
-      title: t('common.confirm_delete'),
+      title: t('common.are_you_sure'),
       message: t('common.confirm_delete_user', { name: user.name }),
       confirmLabel: t('common.delete'),
       cancelLabel: t('common.cancel'),

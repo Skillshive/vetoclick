@@ -1,14 +1,14 @@
 // Local Imports
 import { Button, Card, Input, Pagination, PaginationItems, PaginationFirst, PaginationLast, PaginationNext, PaginationPrevious } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
-import { HiPlus, HiMagnifyingGlass } from "react-icons/hi2";
+import { HiPlus } from "react-icons/hi2";
 import { router } from "@inertiajs/react";
 import { UserCard } from "./partials/UserCard";
 import MainLayout from "@/layouts/MainLayout";
 import { Page } from "@/components/shared/Page";
 import { User, UsersProps } from "./types";
 import UserFormModal from "@/components/modals/UserFormModal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
@@ -26,7 +26,7 @@ export default function Index({
        const { showToast } = useToast();
 
    const { t } = useTranslation();
-console.log("users",users);
+
    const handleDeleteUser = async (user: User) => {
      // @ts-ignore
      router.delete(route('users.destroy', user.uuid), {
@@ -51,11 +51,9 @@ console.log("users",users);
        }
      });
    };
-console.log("users",users);
-
+   
   const usersList = users?.data.data || [];
   const meta = users?.meta || null;
-
   
   const breadcrumbs: BreadcrumbItem[] = [
     { title: t('common.users'), path: "/" },
