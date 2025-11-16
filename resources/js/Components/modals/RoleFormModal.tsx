@@ -46,14 +46,14 @@ export default function RoleFormModal({
     };
     const [validationErrors, setValidationErrors] = useState<{
         name?: string;
-        description?: string;
+        // description?: string;
         permissions?: string;
     }>({});
 
     const { data, setData, reset } = useForm<RoleFormData>({
         name: role?.name || '',
         guard_name: role?.guard_name || 'web',
-        description: role?.description || '',
+        // description: role?.description || '',
         permissions: role?.permissions?.map(p => p.uuid) || [],
     });
 
@@ -63,7 +63,7 @@ export default function RoleFormModal({
         if (role) {
             setData('name', role.name);
             setData('guard_name', role.guard_name || 'web');
-            setData('description', role.description || '');
+            // setData('description', role.description || '');
             setData('permissions', role.permissions?.map(p => p.uuid) || []);
         } else {
             reset();
@@ -78,7 +78,7 @@ export default function RoleFormModal({
             const errors = result.error.flatten().fieldErrors;
             setValidationErrors({
                 name: errors.name?.[0] ? t(errors.name[0]) : undefined,
-                description: errors.description?.[0] ? t(errors.description[0]) : undefined,
+                // description: errors.description?.[0] ? t(errors.description[0]) : undefined,
                 permissions: errors.permissions?.[0] ? t(errors.permissions[0]) : undefined,
             });
             return;
@@ -89,7 +89,7 @@ export default function RoleFormModal({
         const formData = {
             name: data.name,
             guard_name: data.guard_name,
-            description: data.description,
+            // description: data.description,
             permissions: data.permissions,
         };
 
@@ -113,7 +113,7 @@ export default function RoleFormModal({
                         const errors = error.response.data.errors;
                         setValidationErrors({
                             name: errors.name?.[0] ? t(errors.name[0]) : undefined,
-                            description: errors.description?.[0] ? t(errors.description[0]) : undefined,
+                            // description: errors.description?.[0] ? t(errors.description[0]) : undefined,
                             permissions: errors.permissions?.[0] ? t(errors.permissions[0]) : undefined,
                         });
                         showToast({
@@ -147,7 +147,7 @@ export default function RoleFormModal({
                         const errors = error.response.data.errors;
                         setValidationErrors({
                             name: errors.name?.[0] ? t(errors.name[0]) : undefined,
-                            description: errors.description?.[0] ? t(errors.description[0]) : undefined,
+                            // description: errors.description?.[0] ? t(errors.description[0]) : undefined,
                             permissions: errors.permissions?.[0] ? t(errors.permissions[0]) : undefined,
                         });
                         showToast({
@@ -266,7 +266,7 @@ export default function RoleFormModal({
                                         )}
                                     </div>
 
-                                    <div>
+                                    {/* <div>
                                         <Input
                                             id="description"
                                             type="text"
@@ -298,7 +298,7 @@ export default function RoleFormModal({
                                         {(errors?.description || validationErrors.description) && (
                                             <p className="text-red-500 text-sm mt-1">{errors?.description || validationErrors?.description}</p>
                                         )}
-                                    </div>
+                                    </div> */}
 
                                     {/* Permissions Selection */}
                                     <div>

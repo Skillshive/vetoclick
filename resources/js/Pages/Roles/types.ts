@@ -6,7 +6,7 @@ export interface Role {
     uuid: string;
     name: string;
     guard_name: string;
-    description?: string;
+    // description?: string;
     permissions?: Permission[];
     permissions_count?: number;
     created_at: string;
