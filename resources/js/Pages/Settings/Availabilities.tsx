@@ -415,7 +415,7 @@ const [statistics, setStatistics] = useState<any>(null);
                   const today = new Date();
                   // if today is Sunday (0), jump to next Monday
                   if (today.getDay() === 0) {
-                    today.setDate(today.getDate + 1); // move to Monday
+                    today.setDate(today.getDate() + 1); // move to Monday
                   }
                   return today;
                 })()}

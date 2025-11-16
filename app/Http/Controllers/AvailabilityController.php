@@ -161,9 +161,13 @@ class AvailabilityController extends Controller
                 })
             ], 200);
         } catch (Exception $e) {
+            \Log::error('Failed to retrieve current week availability: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve current week availability',
+                'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
@@ -284,6 +288,16 @@ class AvailabilityController extends Controller
             $hourCounts[$startHour] = ($hourCounts[$startHour] ?? 0) + 1;
         }
 
+        // Handle empty data
+        if (empty($hourCounts)) {
+            return [
+                'hour' => '09:00',
+                'end_hour' => '10:00',
+                'slots' => 0,
+                'label' => '09:00 - 10:00'
+            ];
+        }
+
         arsort($hourCounts);
         $topHour = key($hourCounts);
         $count = reset($hourCounts);
@@ -316,6 +330,16 @@ class AvailabilityController extends Controller
             $hourCounts[$startHour]++;
         }
 
+        // Handle empty data
+        if (empty($hourCounts)) {
+            return [
+                'hour' => '08:00',
+                'end_hour' => '09:00',
+                'slots' => 0,
+                'label' => '08:00 - 09:00'
+            ];
+        }
+
         asort($hourCounts);
         $bottomHour = key($hourCounts);
         $count = reset($hourCounts);
@@ -335,11 +359,16 @@ class AvailabilityController extends Controller
      */
     private function calculateDailyAverage($availabilityData): float
     {
-        if (empty($availabilityData)) {
+        if (empty($availabilityData) || $availabilityData->isEmpty()) {
             return 0.0;
         }
 
         $daysWithAvailability = $availabilityData->pluck('day_of_week')->unique()->count();
+        
+        if ($daysWithAvailability === 0) {
+            return 0.0;
+        }
+        
         $totalHours = $this->calculateTotalHours($availabilityData);
 
         $average = $totalHours / $daysWithAvailability;
@@ -361,6 +390,15 @@ class AvailabilityController extends Controller
             'saturday' => 'Saturday',
             'sunday' => 'Sunday'
         ];
+
+        // Handle empty data
+        if (empty($availabilityData) || $availabilityData->isEmpty()) {
+            return [
+                'day' => 'Monday',
+                'hours' => 0,
+                'slots' => 0
+            ];
+        }
 
         foreach ($availabilityData as $slot) {
             $day = $slot->day_of_week;
