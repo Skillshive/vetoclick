@@ -216,7 +216,7 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    console.log('Password form submitted with data:', passwordData);
     // Clear previous validation errors
     setPasswordValidationErrors({});
     
