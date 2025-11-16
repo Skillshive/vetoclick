@@ -3,6 +3,7 @@ import { CategoryBlog } from "./types";
 import { FacedtedFilter } from "@/components/shared/table/FacedtedFilter";
 import { router } from "@inertiajs/react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BiCategory } from "react-icons/bi";
 
 export function ParentCategoryFilter({
   column,
@@ -18,7 +19,6 @@ export function ParentCategoryFilter({
 
   const {t} = useTranslation();
   const handleFilterChange = (selectedValues: string[]) => {
-    console.log("selectedValues", selectedValues);
     column.setFilterValue(selectedValues);
 
     router.visit(route('category-blogs.index', {
@@ -44,6 +44,7 @@ export function ParentCategoryFilter({
       valueField="value"
       showCheckbox={true}
       onFilterChange={handleFilterChange}
+      Icon={BiCategory}
     />
   );
 }
