@@ -3,10 +3,6 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
   ViewColumnsIcon,
-  ArrowDownTrayIcon,
-  ArrowUpTrayIcon,
-  QuestionMarkCircleIcon,
-  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 import { Button, Input } from "@/components/ui";
 import { TableSettings } from "@/components/shared/table/TableSettings";
@@ -16,17 +12,25 @@ import { CategoryBlog } from "@/Pages/CategoryBlogs/datatable/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { ParentCategoryFilter } from "./ParentCategoryFilter";
-import { router, usePage } from "@inertiajs/react";
-import { useToast } from "@/Components/common/Toast/ToastContext";
+import { router } from "@inertiajs/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+
+import { Table } from '@tanstack/react-table';
 
 interface ToolbarProps {
-  table: any;
+  table: Table<CategoryBlog>;
   globalFilter: string;
   setGlobalFilter: (value: string) => void;
   setSelectedCategoryBlog: (categoryBlog: CategoryBlog | null) => void;
   setIsModalOpen: (open: boolean) => void;
   parentCategories?: CategoryBlog[] | { data: CategoryBlog[] };
+  filters?: {
+    search?: string;
+    per_page?: number;
+    sort_by?: string;
+    sort_direction?: string;
+  };
 }
 
 const Toolbar = ({
@@ -35,13 +39,13 @@ const Toolbar = ({
   setGlobalFilter,
   setSelectedCategoryBlog,
   setIsModalOpen,
-  parentCategories
+  parentCategories,
+  filters = {}
 }: ToolbarProps) => {
-  const { smAndDown, isXs } = useBreakpointsContext();
+  const { smAndDown } = useBreakpointsContext();
   const { t } = useTranslation();
-  const { props } = usePage();
   const isFullScreenEnabled = table.getState().tableSettings?.enableFullScreen;
-  const { showToast } = useToast();
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const urlParams = new URLSearchParams(window.location.search);
   const hasUrlFilters = urlParams.has('search') ||
@@ -97,7 +101,29 @@ const Toolbar = ({
             onChange={(e) => {
               const value = e.target.value;
               setGlobalFilter(value);
-              table.setGlobalFilter(value);
+              
+              // Clear existing timeout
+              if (searchTimeout) {
+                clearTimeout(searchTimeout);
+              }
+              
+              // Set new timeout for backend search
+              const timeout = setTimeout(() => {
+                router.visit(route('category-blogs.index'), {
+                  data: { 
+                    search: value,
+                    page: 1,
+                    per_page: filters.per_page || 10,
+                    sort_by: filters.sort_by,
+                    sort_direction: filters.sort_direction,
+                  },
+                  preserveState: true,
+                  preserveScroll: true,
+                  only: ['categoryBlogs', 'filters'],
+                });
+              }, 500); // 500ms debounce
+              
+              setSearchTimeout(timeout);
             }}
             prefix={<MagnifyingGlassIcon className="size-4" />}
             placeholder={t('common.search_category_blogs')}

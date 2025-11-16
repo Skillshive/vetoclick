@@ -240,6 +240,7 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
                                     setSelectedCategoryBlog={setSelectedCategoryBlog}
                                     setIsModalOpen={setIsModalOpen}
                                     parentCategories={normalizedParentCategories}
+                                    filters={filters}
                                 />
                         )
                     }}
