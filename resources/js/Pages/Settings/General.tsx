@@ -92,7 +92,6 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
 
     const avatarUrl = getUserAvatarUrl(user);
 
-  // Address validation with debouncing
   useEffect(() => {
     if (!isVeterinarian || !data.address) {
       clearValidation();
@@ -139,7 +138,6 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with data:', data);
 
     // Check if address validation is in progress or waiting
     if (isValidating || isWaitingForValidation) {
@@ -162,7 +160,6 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
     // Validate profile data
     const profileResult = profileFormSchema.safeParse(data);
     if (!profileResult.success) {
-      console.log('Validation failed:', profileResult.error.flatten().fieldErrors);
       const errors = profileResult.error.flatten().fieldErrors;
       setProfileValidationErrors({
         firstname: errors?.firstname?.[0] ? t(errors.firstname[0]) : undefined,
@@ -216,7 +213,6 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Password form submitted with data:', passwordData);
     // Clear previous validation errors
     setPasswordValidationErrors({});
     
@@ -225,8 +221,8 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
       passwordFormSchema.parse(passwordData);
     } catch (error: any) {
       const validationErrors: any = {};
-      error.errors?.forEach((err: any) => {
-        validationErrors[err.path[0]] = err.message;
+      error.issues?.forEach((err: any) => {
+        validationErrors[err.path[0]] = t(err.message);  
       });
       setPasswordValidationErrors(validationErrors);
       return;
