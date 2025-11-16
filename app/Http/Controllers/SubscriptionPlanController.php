@@ -25,21 +25,22 @@ class SubscriptionPlanController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('search');
+        $search = trim($request->get('search', ''));
         $perPage = $request->get('per_page', 6);
         $page = $request->get('page', 1);
 
         $query = $this->subscriptionPlanService->query();
-        
-        // Apply search filter
-        if ($search) {
+
+        // Apply search filter (case-insensitive) only if search is not empty
+        if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.fr')) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(description, '$.en')) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(description, '$.ar')) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(description, '$.fr')) LIKE ?", ["%{$search}%"]);
+                $searchLower = strtolower($search);
+                $q->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$searchLower}%"])
+                  ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))) LIKE ?", ["%{$searchLower}%"])
+                  ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.fr'))) LIKE ?", ["%{$searchLower}%"])
+                  ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(description, '$.en'))) LIKE ?", ["%{$searchLower}%"])
+                  ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(description, '$.ar'))) LIKE ?", ["%{$searchLower}%"])
+                  ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(description, '$.fr'))) LIKE ?", ["%{$searchLower}%"]);
             });
         }
 
@@ -86,7 +87,7 @@ class SubscriptionPlanController extends Controller
         // Get feature groups and features for the form
         $featureGroups = FeatureGroup::with('features')->ordered()->get();
         $allFeatures = Feature::with('group')->ordered()->get();
-        
+
         return Inertia::render('SubscriptionPlans/Create', [
             'plan' => null,
             'featureGroups' => $featureGroups,
@@ -105,7 +106,7 @@ class SubscriptionPlanController extends Controller
             return redirect()->route('subscription-plans.index')
                 ->with('success', 'Subscription plan created successfully.');
         } catch (\Exception $e) {
-            
+
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error' => 'Failed to create subscription plan.']);
@@ -118,7 +119,7 @@ class SubscriptionPlanController extends Controller
     public function show(SubscriptionPlan $subscriptionPlan)
     {
         $subscriptionPlan->load(['planFeatures.group']);
-        
+
         return Inertia::render('SubscriptionPlans/Show', [
             'subscriptionPlan' => new SubscriptionPlanResource($subscriptionPlan),
         ]);
@@ -130,11 +131,11 @@ class SubscriptionPlanController extends Controller
     public function edit(SubscriptionPlan $subscriptionPlan)
     {
         $subscriptionPlan->load(['planFeatures.group']);
-        
+
         // Get feature groups and features for the form
         $featureGroups = FeatureGroup::with('features')->ordered()->get();
         $allFeatures = Feature::with('group')->ordered()->get();
-        
+
         return Inertia::render('SubscriptionPlans/Edit', [
             'plan' => new SubscriptionPlanResource($subscriptionPlan),
             'featureGroups' => $featureGroups,
@@ -149,7 +150,7 @@ class SubscriptionPlanController extends Controller
     {
         try {
             $this->subscriptionPlanService->update($subscriptionPlan, $request->validated());
-            
+
             return redirect()->route('subscription-plans.index')
                 ->with('success', 'Subscription plan updated successfully.');
         } catch (\Exception $e) {
@@ -175,7 +176,7 @@ class SubscriptionPlanController extends Controller
             }
 
             $subscriptionPlan->update(['is_active' => !$subscriptionPlan->is_active]);
-            
+
             return redirect()->back()
                 ->with('success', 'Subscription plan status updated successfully.');
         } catch (\Exception $e) {
@@ -191,7 +192,7 @@ class SubscriptionPlanController extends Controller
     {
         try {
             $this->subscriptionPlanService->delete($subscriptionPlan);
-            
+
             return redirect()->route('subscription-plans.index')
                 ->with('success', 'Subscription plan deleted successfully.');
         } catch (\Exception $e) {
@@ -206,7 +207,7 @@ class SubscriptionPlanController extends Controller
     public function countActive()
     {
         $activeCount = SubscriptionPlan::where('is_active', true)->count();
-        
+
         return response()->json([
             'count' => $activeCount
         ]);
