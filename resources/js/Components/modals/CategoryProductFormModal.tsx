@@ -9,6 +9,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { categoryProductFormSchema } from '@/schemas/categoryProductSchema';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { TagIcon } from 'lucide-react';
+import { BiCategory } from 'react-icons/bi';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
@@ -216,6 +217,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                             {t('common.parent_category_label')}
                                         </label>
                                         <ReactSelect
+                                        leftIcon={<BiCategory className="size-5" />}
                                             id="parent_category"
                                             value={
                                                 data.category_product_id
