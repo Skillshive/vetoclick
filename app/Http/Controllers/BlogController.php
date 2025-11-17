@@ -30,7 +30,7 @@ class BlogController extends Controller
     public function index(Request $request): Response
     {
         try {
-            $perPage = $request->input('per_page', 15);
+            $perPage = $request->input('per_page', 8);
             $search = $request->input('search');
 
             // Get blogs with search if provided
