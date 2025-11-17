@@ -57,7 +57,6 @@ export function Toolbar({
             onChange={(e) => {
               const value = e.target.value;
               setGlobalFilter(value);
-              table.setGlobalFilter(value);
             }}
             prefix={<MagnifyingGlassIcon className="size-4" />}
             placeholder={t('common.search_species')}
@@ -79,7 +78,6 @@ export function Toolbar({
             }}
           >
             <PlusIcon className="size-4" />
-            <span>{t('common.add_species')}</span>
           </Button>
         <ResponsiveFilter
           anchor={{ to: "bottom end", gap: 12 }}

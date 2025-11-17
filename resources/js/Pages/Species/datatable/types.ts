@@ -32,10 +32,10 @@ export interface SpeciesDatatableProps {
     sort_direction: string;
   };
 }
-
 export interface TableSettings {
   enableFullScreen: boolean;
   enableRowDense: boolean;
   enableSorting?: boolean;
   enableColumnFilters?: boolean;
 }
+

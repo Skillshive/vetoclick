@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { SortingState } from "@tanstack/react-table";
+import { SortingState, Row } from "@tanstack/react-table";
 import { useLocalStorage } from "@/hooks";
 import { useSkipper } from "@/utils/react-table/useSkipper";
 import { Species, TableSettings } from "./types";
 import { router } from "@inertiajs/react";
+import { useToast } from "@/Components/common/Toast/ToastContext";
+import { useTranslation } from "@/hooks/useTranslation";
+
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 interface UseSpeciesTableProps {
   initialData: Species[];
@@ -13,6 +17,9 @@ interface UseSpeciesTableProps {
 }
 
 export function useSpeciesTable({ initialData, initialFilters }: UseSpeciesTableProps) {
+  const { showToast } = useToast();
+  const { t } = useTranslation();
+  
   // Data state
   const [species, setSpecies] = useState<Species[]>(initialData || []);
 
@@ -30,6 +37,8 @@ export function useSpeciesTable({ initialData, initialFilters }: UseSpeciesTable
   const [tableSettings, setTableSettings] = useState<TableSettings>({
     enableFullScreen: false,
     enableRowDense: false,
+    enableSorting: true,
+    enableColumnFilters: false,
   });
 
   // Filters and search
@@ -53,7 +62,7 @@ export function useSpeciesTable({ initialData, initialFilters }: UseSpeciesTable
 
   // Table meta functions
   const tableMeta = {
-    deleteRow: (row: any) => {
+    deleteRow: (row: Row<Species>) => {
       skipAutoResetPageIndex();
 
       // Optimistically remove the row from local state
@@ -66,20 +75,28 @@ export function useSpeciesTable({ initialData, initialFilters }: UseSpeciesTable
         preserveState: true, // Keep the optimistic update
         preserveScroll: true,
         onSuccess: () => {
+          showToast({
+            type: 'success',
+            message: t('common.species_deleted_success', { count: 1 }),
+          });
           // Force a fresh reload after a short delay to ensure server state is synced
           setTimeout(() => {
-            router.reload({ preserveScroll: true });
+            router.visit(window.location.href, { preserveScroll: true, preserveState: false });
           }, 100);
         },
         onError: () => {
+          showToast({
+            type: 'error',
+            message: t('common.error_occurred'),
+          });
           // If delete fails, revert the optimistic update
-          router.reload({ preserveScroll: true });
+          router.visit(window.location.href, { preserveScroll: true, preserveState: false });
           console.error('Failed to delete species');
         }
       });
     },
 
-    deleteRows: async (rows: any[]) => {
+    deleteRows: async (rows: Row<Species>[]) => {
       skipAutoResetPageIndex();
       const rowIds = rows.map((row) => row.original.uuid);
 
@@ -103,15 +120,16 @@ export function useSpeciesTable({ initialData, initialFilters }: UseSpeciesTable
 
         // After all deletes complete successfully, force a fresh reload
         setTimeout(() => {
-          router.reload({ preserveScroll: true });
+          router.visit(window.location.href, { preserveScroll: true, preserveState: false });
         }, 100);
 
       } catch (error) {
         console.error('Some deletes failed:', error);
         // If any delete fails, reload to get the accurate state
-        router.reload({ preserveScroll: true });
+        router.visit(window.location.href, { preserveScroll: true, preserveState: false });
       }
     },
+    tableSettings,
     setTableSettings,
     setToolbarFilters,
   };

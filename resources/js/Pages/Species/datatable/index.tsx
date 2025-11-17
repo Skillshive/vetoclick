@@ -10,9 +10,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import clsx from "clsx";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { Transition } from "@headlessui/react";
+import { router } from "@inertiajs/react";
 
 // Local Imports
 import { Table, Card, THead, TBody, Th, Tr, Td, Button } from "@/components/ui";
@@ -45,6 +46,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
   // Use custom hook for all table state management
   const {
     species,
+    setSpecies,
     isModalOpen,
     setIsModalOpen,
     selectedSpecies,
@@ -70,7 +72,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
     autoResetPageIndex,
     tableMeta,
   } = useSpeciesTable({
-    initialData: speciesData.data.data,
+    initialData: speciesData.data,
     initialFilters: filters,
   });
 
@@ -110,7 +112,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
       fuzzy: fuzzyFilter,
     },
     enableSorting: tableSettings.enableSorting,
-    enableColumnFilters: tableSettings.enableColumnFilters,
+    enableColumnFilters: false,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
@@ -124,6 +126,51 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
     onColumnPinningChange: setColumnPinning,
     autoResetPageIndex,
   });
+
+  // Sync species data when it changes from backend
+  useEffect(() => {
+    setSpecies(speciesData.data.data);
+  }, [speciesData.data.data, setSpecies]);
+
+  // Backend search synchronization
+  const isUpdatingUrl = useRef(false);
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
+
+  useEffect(() => {
+    if (!filtersInitialized) {
+      setFiltersInitialized(true);
+      return;
+    }
+
+    if (isUpdatingUrl.current) return;
+
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const currentSearch = params.get('search') || '';
+      
+      // Only update if the search has actually changed
+      if (globalFilter !== currentSearch) {
+        isUpdatingUrl.current = true;
+        
+        if (globalFilter) {
+          params.set('search', globalFilter);
+        } else {
+          params.delete('search');
+        }
+        params.set('page', '1'); // Reset to first page on search
+        
+        router.get(`${window.location.pathname}?${params.toString()}`, {}, {
+          preserveState: true,
+          replace: true,
+          onFinish: () => {
+            isUpdatingUrl.current = false;
+          }
+        });
+      }
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [globalFilter, filtersInitialized]);
 
   useDidUpdate(() => table.resetRowSelection(), [species]);
   useLockScrollbar(tableSettings.enableFullScreen);
@@ -256,6 +303,7 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
                       return (
                         <Tr
                           key={row.id}
+                          
                           className={clsx(
                             "dark:border-b-dark-500 relative border-y border-transparent border-b-gray-200",
                             row.getIsSelected() &&

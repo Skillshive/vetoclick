@@ -13,7 +13,7 @@ import {
   MenuItems,
   Transition,
 } from "@headlessui/react";
-import { Button } from "@/components/ui";
+import { Badge, Button } from "@/components/ui";
 import {
   ConfirmModal,
   type ConfirmMessages,
@@ -77,7 +77,13 @@ export function DescriptionCell({ getValue }: CellProps) {
   return (
     <div className="max-w-xs">
       <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-        {description || t('common.no_description')}
+        {description ? (
+          description
+        ) : (
+          <Badge color="neutral">
+            {t('common.no_description')}
+          </Badge>
+        )}
       </p>
     </div>
   );

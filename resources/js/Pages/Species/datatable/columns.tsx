@@ -9,7 +9,6 @@ import {
   CreatedAtCell,
   ActionsCell
 } from "./cells";
-import { useTranslation } from "@/hooks/useTranslation";
 import { Species } from "./types";
 
 interface ColumnsProps {
@@ -18,21 +17,12 @@ interface ColumnsProps {
 }
 
 export const createColumns = ({ setSelectedSpecies, setIsModalOpen }: ColumnsProps): ColumnDef<Species>[] => {
-  // We need to use the hook inside a component, so we'll create a wrapper
-  const ColumnHeaders = () => {
-    const { t } = useTranslation();
-    return {
-      speciesName: t('common.species_name'),
-      description: t('common.description'),
-      createdDate: t('common.created_date'),
-    };
-  };
-
   return [
     {
       id: "select",
       header: SelectHeader,
       cell: SelectCell,
+      enableHiding: false,
     },
     {
       id: "name",
@@ -63,6 +53,7 @@ export const createColumns = ({ setSelectedSpecies, setIsModalOpen }: ColumnsPro
           setIsModalOpen={setIsModalOpen}
         />
       ),
+      enableHiding: false,
     },
   ];
 };
