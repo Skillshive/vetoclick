@@ -16,18 +16,18 @@ class SpeciesService implements ServiceInterface
     {
         $this->imageService = $imageService;
     }
-    
+
     /**
      * Get all species with optional pagination
      */
     public function getAll(?int $perPage = 15)
     {
         if ($perPage === null || $perPage === 0) {
-            return Species::with('image')->get();
+            return Species::with('image')->orderBy('created_at', 'desc')->get();
         }
-        return Species::with('image')->paginate($perPage);
+        return Species::with('image')->orderBy('created_at', 'desc')->paginate($perPage);
     }
-    
+
     /**
      * Get species by UUID
      */
@@ -42,7 +42,7 @@ class SpeciesService implements ServiceInterface
     public function create(SpeciesDto $dto): Species
     {
         try {
-            if($dto->image) {
+            if ($dto->image) {
                 $image = $this->imageService->saveImage($dto->image, 'species/');
                 $image_id = $image->id;
             } else {
@@ -54,7 +54,7 @@ class SpeciesService implements ServiceInterface
                 'description' => $dto->description,
                 'image_id' =>  $image_id,
             ]);
-            
+
             return $createData;
         } catch (Exception $e) {
             throw new Exception("Failed to create species");
@@ -73,7 +73,7 @@ class SpeciesService implements ServiceInterface
                 return null;
             }
 
-            if($dto->image) {
+            if ($dto->image) {
                 $image = $this->imageService->saveImage($dto->image, 'species/');
                 $image_id = $image->id;
             } else {
@@ -99,7 +99,7 @@ class SpeciesService implements ServiceInterface
     {
         try {
             $species = $this->getByUuid($uuid);
-            
+
             if (!$species) {
                 return false;
             }
@@ -116,7 +116,8 @@ class SpeciesService implements ServiceInterface
     public function searchByName(string $name, ?int $perPage = 15)
     {
         $query = Species::with('image')
-            ->where('name', 'LIKE', "%{$name}%");
+            ->where('name', 'LIKE', "%{$name}%")
+            ->orderBy('created_at', 'desc');
 
         if ($perPage === null || $perPage === 0) {
             // Return all records without pagination
