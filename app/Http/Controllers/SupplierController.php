@@ -45,11 +45,12 @@ class SupplierController extends Controller
                     $q->where('name', 'like', "%{$search}%")
                       ->orWhere('address', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ;
                 });
             }
 
-            $suppliers = $query->paginate($perPage, ['*'], 'page', $page);
+            $suppliers = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
 
             return Inertia::render('Suppliers/Index', [
                 'suppliers' => [

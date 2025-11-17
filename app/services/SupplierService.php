@@ -20,7 +20,7 @@ class SupplierService implements ServiceInterface
      */
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Supplier::paginate($perPage);
+        return Supplier::orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**
@@ -126,6 +126,7 @@ class SupplierService implements ServiceInterface
     public function searchByName(string $name, int $perPage = 15): LengthAwarePaginator
     {
         return Supplier::where('name', 'LIKE', "%{$name}%")
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 }
