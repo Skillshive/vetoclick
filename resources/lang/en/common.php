@@ -423,6 +423,7 @@ return [
     'error_deleting_availability' => 'Error deleting availability',
     'availability_saved' => 'Availability saved successfully',
     'availability_deleted' => 'Availability deleted successfully',
+    'availability_slot_overlap' => 'This time slot overlaps with an existing availability. Please select a different time.',
     'confirm_delete_availability' => 'Are you sure you want to delete this availability slot?',
 
         "menu" => [
@@ -1270,5 +1271,7 @@ return [
             ],
         ],
     ],
-
+"confirm_delete" => "Are you sure you want to delete this?",
+"confirm_delete_product" => "Are you sure you want to delete this product?",
+"vaccine_info"=>"Vaccin information",
 ];
