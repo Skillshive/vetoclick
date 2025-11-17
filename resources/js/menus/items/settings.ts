@@ -19,12 +19,12 @@ const menuConfig: MenuConfig[] = [
     id: 'appointments',
     title: 'common.menu.appointments_management',
     icon: AppointmentIcon,
-    type: 'collapse', 
+    type: 'group', 
     children: [
       {
+        path: route('appointments.index'),
         id: 'allAppointments',
         title: 'common.menu.appointments',
-        path: route('appointments.index'),
         type: 'item',
       }
     ],
@@ -33,7 +33,7 @@ const menuConfig: MenuConfig[] = [
     id: 'animals',
     title: 'common.menu.animals_management',
     icon: PetIcon,
-    type: 'collapse', 
+    type: 'group', 
     children: [
       {
         id: 'allAnimals',
@@ -52,15 +52,8 @@ const menuConfig: MenuConfig[] = [
       {
         id: 'suppliers',
         title: 'common.menu.suppliers',
-        type: 'collapse', 
-        children: [
-          {
-            id: 'suppliersIndex',
-            title: 'common.menu.suppliers_list',
-            path: route('suppliers.index'),
-            type: 'item',
-          }
-        ],
+        path: route('suppliers.index'),
+        type: 'item',
       },
       {
         id: 'products',
@@ -84,15 +77,8 @@ const menuConfig: MenuConfig[] = [
       {
         id: 'categories',
         title: 'common.menu.categories',
-        type: 'collapse', 
-        children: [
-          {
-            id: 'categoriesIndex',
-            title: 'common.menu.categories_list',
-            path: route('category-products.index'),
-            type: 'item',
-          },
-        ],
+        path: route('category-products.index'),
+        type: 'item',
       },
     ],
   },
@@ -120,7 +106,7 @@ const menuConfig: MenuConfig[] = [
     id: 'users',
     title: 'common.menu.users_management',
     icon: UserGroupIcon,
-    type: 'collapse',
+    type: 'group',
     children: [
       {
         id: 'usersList',
