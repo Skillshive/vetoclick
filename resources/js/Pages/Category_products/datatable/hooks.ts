@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SortingState } from "@tanstack/react-table";
+import { SortingState, Row } from "@tanstack/react-table";
 import { useLocalStorage } from "@/hooks";
 import { useSkipper } from "@/utils/react-table/useSkipper";
 import { CategoryProduct } from "@/types/CategoryProducts";
@@ -36,6 +36,7 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
   const [tableSettings, setTableSettings] = useState<TableSettings>({
     enableFullScreen: false,
     enableRowDense: true,
+    enableSorting: true,
   });
 
   // Filters and search
@@ -59,7 +60,7 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
 
   // Table meta functions
   const tableMeta = {
-    deleteRow: (row: any) => {
+    deleteRow: (row: Row<CategoryProduct>) => {
       skipAutoResetPageIndex();
       
       // Optimistically remove the row from local state
@@ -75,17 +76,17 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
         onSuccess: () => {
           // Force a fresh reload after a short delay to ensure server state is synced
           setTimeout(() => {
-            router.reload({ preserveScroll: true });
+            router.visit(window.location.href, { preserveScroll: true, preserveState: false });
           }, 100);
         },
         onError: () => {
           // If delete fails, revert the optimistic update
-          router.reload({ preserveScroll: true });
+          router.visit(window.location.href, { preserveScroll: true, preserveState: false });
           console.error('Failed to delete category product');
         }
       });
     },
-    deleteRows: async (rows: any[]) => {
+    deleteRows: async (rows: Row<CategoryProduct>[]) => {
       skipAutoResetPageIndex();
       const rowIds = rows.map((row) => row.original.uuid);
 
@@ -110,15 +111,16 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
 
         // After all deletes complete successfully, force a fresh reload
         setTimeout(() => {
-          router.reload({ preserveScroll: true });
+          router.visit(window.location.href, { preserveScroll: true, preserveState: false });
         }, 100);
 
       } catch (error) {
         console.error('Some deletes failed:', error);
         // If any delete fails, reload to get the accurate state
-        router.reload({ preserveScroll: true });
+        router.visit(window.location.href, { preserveScroll: true, preserveState: false });
       }
     },
+    tableSettings,
     setTableSettings,
     setToolbarFilters,
   };

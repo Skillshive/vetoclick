@@ -23,6 +23,7 @@ export const createColumns = ({ setSelectedCategoryProduct, setIsModalOpen, t }:
     id: "select",
     header: SelectHeader,
     cell: SelectCell,
+    enableHiding: false,
   },
   {
     id: "name",
@@ -65,5 +66,6 @@ export const createColumns = ({ setSelectedCategoryProduct, setIsModalOpen, t }:
         setIsModalOpen={setIsModalOpen}
       />
     ),
+    enableHiding: false,
   },
 ];
