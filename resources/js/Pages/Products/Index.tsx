@@ -191,14 +191,9 @@ export default function Index({products, categories, filters, old, errors}: Prod
         router.post(route('products.bulk-delete'), {
             product_uuids: productUuids,
             onSuccess: () => {
-                setBulkDeleteSuccess(true);
-                setConfirmBulkDeleteLoading(false);
+                setBulkDeleteModalOpen(false);
                 setRowSelection({});
                 showToast({ type: 'success', message: 'Products deleted successfully' });
-                setTimeout(() => {
-                    setBulkDeleteModalOpen(false);
-                    setBulkDeleteSuccess(false);
-                }, 2000);
             },
             onError: (errors: any) => {
                 setBulkDeleteError(errors.message || 'Failed to delete products');
@@ -219,12 +214,8 @@ export default function Index({products, categories, filters, old, errors}: Prod
         // @ts-ignore
         router.delete(route('products.destroy', selectedRowForDelete.uuid), {
             onSuccess: () => {
-                setSingleDeleteSuccess(true);
-                setConfirmSingleDeleteLoading(false);
+                closeSingleDeleteModal();
                 showToast({ type: 'success', message: 'Product deleted successfully' });
-                setTimeout(() => {
-                    closeSingleDeleteModal();
-                }, 2000);
             },
             onError: (errors: any) => {
                 setSingleDeleteError(errors.message || 'Failed to delete product');
