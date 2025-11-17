@@ -307,4 +307,5 @@ return [
 
     'reason_for_visit_string' => 'The reason for visit must be a valid text.',
     'appointment_notes_string' => 'The appointment notes must be a valid text.',
+    'email_lowercase' => 'The email must be in lowercase.',
 ];
