@@ -72,24 +72,6 @@ export function TableSettings({ table }: { table: Table<any> }) {
           )} */}
           {Object.prototype.hasOwnProperty.call(
             tableSettings,
-            "enableColumnFilters",
-          ) && (
-            <Switch
-              label={t('common.column_filters')}
-              checked={tableSettings.enableColumnFilters}
-              onChange={(e) => {
-                setTableSettings((state) => ({
-                  ...state,
-                  enableColumnFilters: e.target.checked,
-                }));
-
-                table.resetColumnFilters();
-              }}
-              className="h-4 w-8"
-            />
-          )}
-          {Object.prototype.hasOwnProperty.call(
-            tableSettings,
             "enableSorting",
           ) && (
             <Switch
@@ -116,7 +98,7 @@ export function TableSettings({ table }: { table: Table<any> }) {
       <div className="dark:text-dark-100 mt-3 flex max-h-[50vh] flex-col space-y-2 overflow-y-auto overscroll-y-contain px-3 pb-3 text-gray-600">
         {table
           .getAllLeafColumns()
-          .filter((column) => !column.columnDef?.isHiddenColumn)
+          .filter((column) => column.getCanHide())
           .map((column) => {
             // Get the translated column label
             let columnLabel = column.id;
