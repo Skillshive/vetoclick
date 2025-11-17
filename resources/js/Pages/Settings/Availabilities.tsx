@@ -62,6 +62,31 @@ const [statistics, setStatistics] = useState<any>(null);
     const startTime = new Date(selectInfo.start).toTimeString().split(' ')[0];
     const endTime = new Date(selectInfo.end).toTimeString().split(' ')[0];
     const dayOfWeek = getDayName(selectInfo.start.getDay());
+    const selectedDay = selectInfo.start.getDay();
+
+    // Check for overlapping slots on the same day
+    const hasOverlap = availabilitySlots.some(slot => {
+      // Check if it's the same day
+      if (!slot.daysOfWeek.includes(selectedDay)) return false;
+
+      // Convert time strings to minutes for easier comparison
+      const slotStart = timeToMinutes(slot.startTime);
+      const slotEnd = timeToMinutes(slot.endTime);
+      const newStart = timeToMinutes(startTime);
+      const newEnd = timeToMinutes(endTime);
+
+      // Check if there's any overlap
+      return (newStart < slotEnd && newEnd > slotStart);
+    });
+
+    if (hasOverlap) {
+      showToast({
+        type: 'error',
+        message: t('common.availability_slot_overlap'),
+      });
+      selectInfo.view.calendar.unselect();
+      return;
+    }
 
     try {
       const response = await axios.post(route('availability.store'), {
@@ -131,6 +156,11 @@ const [statistics, setStatistics] = useState<any>(null);
   };
 
   // Helper functions
+  const timeToMinutes = (timeString: string): number => {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
   const getDayNumber = (dayName: string): number => {
     const days: Record<string, number> = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
     return days[dayName.toLowerCase()] ?? 0;
