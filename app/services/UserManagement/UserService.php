@@ -30,6 +30,7 @@ class UserService implements ServiceInterface
     {
 return User::where('id', '!=', Auth::id())
     ->with('image')
+    ->orderBy('created_at', 'desc')
     ->paginate($perPage);
     }
 

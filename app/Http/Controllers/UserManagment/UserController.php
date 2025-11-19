@@ -45,7 +45,7 @@ class UserController extends Controller
                 $query->search($search);
             }
 
-            $users = $query->paginate($perPage, ['*'], 'page', $page);
+            $users = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
 
             // Get all roles for the form
             $allRoles = $this->roleService->query()->get();
