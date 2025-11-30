@@ -9,12 +9,21 @@ import MainLayout from "@/layouts/MainLayout";
 import { Budget } from "./Budget";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRTL } from "@/hooks/useRTL";
+import { usePage } from "@inertiajs/react";
+import { Appointment } from "@/pages/Appointments/datatable/types";
 
 // ----------------------------------------------------------------------
+
+interface DashboardProps {
+  todayAppointments?: Appointment[];
+  clients?: Record<string, string>;
+}
 
 export default function CRMAnalytics() {
   const { t } = useTranslation();
   const { rtlProps } = useRTL();
+  const { props } = usePage<DashboardProps>();
+  const todayAppointments = props.todayAppointments || [];
 
   return (
     <MainLayout>
@@ -32,7 +41,7 @@ export default function CRMAnalytics() {
             <div className="col-span-12 grid grid-cols-12 gap-4 sm:gap-5 lg:col-span-8 lg:gap-6">
               <Overview />
               <Statistics />
-              <Projects />
+              <Projects todayAppointments={todayAppointments} />
             </div>
             <div className="col-span-12 lg:col-span-4 gap-4 sm:gap-5 lg:gap-6">
               <AppointmentForm />
