@@ -10,9 +10,16 @@ use App\Models\Pet;
 use App\Models\Veterinary;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
+use Carbon\Carbon;
 
 class AppointmentService implements ServiceInterface
 {
+    protected $jitsiMeetService;
+
+    public function __construct(JitsiMeetService $jitsiMeetService = null)
+    {
+        $this->jitsiMeetService = $jitsiMeetService ?? new JitsiMeetService();
+    }
     /**
      * Get all appointments with optional pagination
      */
@@ -69,7 +76,7 @@ class AppointmentService implements ServiceInterface
         }
         return null;
     } 
-    private function getPet(string $petId){
+    private function getPet($petId){
         $pet = Pet::where('uuid',$petId)->first();
 
         if($pet){
@@ -91,7 +98,17 @@ class AppointmentService implements ServiceInterface
      */
     public function create(AppointmentDTO $dto): Appointment
     {
-
+        // Calculate end_time and duration_minutes (default 30 minutes)
+        $defaultDurationMinutes = 30;
+        $startTime = Carbon::createFromFormat('H:i', $dto->start_time);
+        $endTime = $startTime->copy()->addMinutes($defaultDurationMinutes);
+        
+        // Convert is_video_conseil to boolean
+        $isVideoConseil = filter_var($dto->is_video_conseil, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($isVideoConseil === null) {
+            $isVideoConseil = false; // Default to false if not provided or invalid
+        }
+        
         $appointment= Appointment::create([
             "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
             "client_id"=>$this->getClient($dto->client_id),
@@ -99,12 +116,87 @@ class AppointmentService implements ServiceInterface
             "appointment_type"=>$dto->appointment_type,
             "appointment_date"=>$dto->appointment_date,
             "start_time"=>$dto->start_time,
-            "is_video_conseil"=>$dto->is_video_conseil,
+            "end_time"=>$endTime->format('H:i:s'),
+            "duration_minutes"=>$defaultDurationMinutes,
+            "is_video_conseil"=>$isVideoConseil,
             "reason_for_visit"=>$dto->reason_for_visit,
             "appointment_notes"=>$dto->appointment_notes,
         ]);
 
+        // Generate Jitsi Meet link for the appointment
+        $this->generateJitsiMeetingLink($appointment);
+
         return $appointment->load(['client', 'pet', 'veterinary']);
+    }
+
+    
+    /**
+     * Generate and store Jitsi Meet link for an appointment
+     *
+     * @param Appointment $appointment
+     * @return void
+     */
+    private function generateJitsiMeetingLink(Appointment $appointment): void
+    {
+        try {
+            $clientName = null;
+            $petName = null;
+
+            // Load relationships if not already loaded
+            if (!$appointment->relationLoaded('client')) {
+                $appointment->load('client');
+            }
+            if (!$appointment->relationLoaded('pet')) {
+                $appointment->load('pet');
+            }
+
+            // Get client and pet names for better meeting experience
+            if ($appointment->client) {
+                $clientName = trim(($appointment->client->first_name ?? '') . ' ' . ($appointment->client->last_name ?? ''));
+                $clientName = trim($clientName) ?: null;
+            }
+            if ($appointment->pet && isset($appointment->pet->name)) {
+                $petName = $appointment->pet->name;
+            }
+
+            // Generate the Jitsi Meet link based on appointment date and time
+            // Handle date format
+            $appointmentDate = $appointment->appointment_date instanceof \Carbon\Carbon 
+                ? $appointment->appointment_date->format('Y-m-d')
+                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
+            
+            // Handle time format (stored as time string H:i:s or H:i)
+            $startTime = is_string($appointment->start_time) 
+                ? substr($appointment->start_time, 0, 5) // Get HH:MM from HH:MM:SS
+                : \Carbon\Carbon::parse($appointment->start_time)->format('H:i');
+            
+            // Set redirect URL when user leaves the meeting (configurable via config)
+            $redirectUrl = config('services.jitsi.redirect_url', '/dashboard');
+            if (!filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
+                $redirectUrl = url($redirectUrl);
+            }
+            
+            $meetingInfo = $this->jitsiMeetService->generateMeetingLink(
+                $appointment->uuid,
+                $appointmentDate,
+                $startTime,
+                $clientName,
+                $petName,
+                $redirectUrl
+            );
+
+            // Update the appointment with the meeting information
+            $appointment->update([
+                'video_meeting_id' => $meetingInfo['meeting_id'],
+                'video_join_url' => $meetingInfo['join_url'],
+            ]);
+
+            // Refresh the appointment to get updated attributes
+            $appointment->refresh();
+        } catch (Exception $e) {
+            // Log the error but don't fail the appointment creation
+            \Illuminate\Support\Facades\Log::error('Failed to generate Jitsi Meet link: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -119,6 +211,17 @@ class AppointmentService implements ServiceInterface
                 return null;
             }
 
+            // Calculate end_time and duration_minutes if start_time is being updated
+            $defaultDurationMinutes = 30;
+            $startTime = Carbon::createFromFormat('H:i', $dto->start_time);
+            $endTime = $startTime->copy()->addMinutes($defaultDurationMinutes);
+
+            // Convert is_video_conseil to boolean
+            $isVideoConseil = filter_var($dto->is_video_conseil, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($isVideoConseil === null) {
+                $isVideoConseil = false; // Default to false if not provided or invalid
+            }
+
             $updateData = $appointment->update([
             "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
             "client_id"=>$this->getClient($dto->client_id),
@@ -126,7 +229,9 @@ class AppointmentService implements ServiceInterface
             "appointment_type"=>$dto->appointment_type,
             "appointment_date"=>$dto->appointment_date,
             "start_time"=>$dto->start_time,
-            "is_video_conseil"=>$dto->is_video_conseil,
+            "end_time"=>$endTime->format('H:i:s'),
+            "duration_minutes"=>$defaultDurationMinutes,
+            "is_video_conseil"=>$isVideoConseil,
             "reason_for_visit"=>$dto->reason_for_visit,
             "appointment_notes"=>$dto->appointment_notes,
         ]);
@@ -266,5 +371,25 @@ class AppointmentService implements ServiceInterface
         $queryBuilder = Appointment::with(['pet', 'veterinary', 'client']);
         $this->applySearch($queryBuilder, $query);
         return $queryBuilder->paginate($perPage);
+    }
+
+    /**
+     * Get today's appointments for a specific veterinary
+     *
+     * @param int|null $veterinaryId Optional veterinary ID to filter by
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getTodayAppointments(?int $veterinaryId = null): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = Appointment::with(['client', 'pet.breed.species', 'veterinary'])
+            ->whereDate('appointment_date', Carbon::today())
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('start_time', 'asc');
+
+        if ($veterinaryId) {
+            $query->where('veterinarian_id', $veterinaryId);
+        }
+
+        return $query->get();
     }
 }

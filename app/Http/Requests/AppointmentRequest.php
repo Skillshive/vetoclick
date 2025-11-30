@@ -15,6 +15,24 @@ class AppointmentRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Convert is_video_conseil to proper boolean
+        if ($this->has('is_video_conseil')) {
+            $value = $this->input('is_video_conseil');
+            // Convert empty string, '0', 'false', etc. to false
+            $this->merge([
+                'is_video_conseil' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
+            ]);
+        } else {
+            // Default to false if not provided
+            $this->merge(['is_video_conseil' => false]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -24,9 +42,9 @@ class AppointmentRequest extends FormRequest
         $now = now()->format('Y-m-d H:i:s');
         
         return [
-            'veterinary_id' => 'required|integer|exists:veterinaries,uuid',
-            'client_id' => 'required|integer|exists:clients,uuid',
-            'pet_id' => 'required|integer|exists:pets,uuid',
+            'veterinary_id' => 'required|string|exists:veterinarians,uuid',
+            'client_id' => 'required|string|exists:clients,uuid',
+            'pet_id' => 'nullable|string|exists:pets,uuid',
             'appointment_date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'is_video_conseil' => 'sometimes|boolean',

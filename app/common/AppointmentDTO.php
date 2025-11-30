@@ -42,7 +42,7 @@ class AppointmentDTO extends DTO
     public static function fromRequest(Request $req): self
     {
         return new self(
-            veterinarian_id: $req->input('veterinarian_id'),
+            veterinarian_id: $req->input('veterinary_id'),
             client_id: $req->input('client_id'),
             pet_id: $req->input('pet_id'),
             appointment_type: $req->input('appointment_type'),
