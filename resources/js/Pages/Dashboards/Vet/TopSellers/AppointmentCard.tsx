@@ -15,6 +15,11 @@ import { useState } from "react";
 import PetDetailModal from "../modals/PetModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRTL } from "@/hooks/useRTL";
+import { router } from "@inertiajs/react";
+import { useToast } from "@/components/common/Toast/ToastContext";
+
+// Declare route helper
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 // ----------------------------------------------------------------------
 
@@ -25,6 +30,8 @@ export function AppointmentCard({
 }) {
   const { t } = useTranslation();
   const { rtlClasses } = useRTL();
+  const { showToast } = useToast();
+  const [isCheckingAccess, setIsCheckingAccess] = useState(false);
 
   const StatusIcon = () => {
     switch (appointment.status) {
@@ -49,6 +56,47 @@ export function AppointmentCard({
   
     const handleCloseModal = () => {
       setIsModalOpen(false);
+    };
+
+    const handleJoinMeeting = async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent card click
+      
+      if (!appointment.video_join_url) {
+        showToast({
+          type: 'error',
+          message: 'Meeting link not available',
+          duration: 3000,
+        });
+        return;
+      }
+
+      setIsCheckingAccess(true);
+
+      try {
+        // Check if meeting can be accessed
+        const response = await fetch(route('appointments.check-meeting-access', { uuid: appointment.uuid }));
+        const data = await response.json();
+
+        if (data.can_access) {
+          // Redirect to join meeting route which will validate and redirect to Jitsi
+          window.location.href = route('appointments.join-meeting', { uuid: appointment.uuid });
+        } else {
+          showToast({
+            type: 'error',
+            message: data.message || 'Meeting is not available at this time',
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error('Error checking meeting access:', error);
+        showToast({
+          type: 'error',
+          message: 'Failed to check meeting access. Please try again.',
+          duration: 3000,
+        });
+      } finally {
+        setIsCheckingAccess(false);
+      }
     };
   
     return (
@@ -104,11 +152,14 @@ export function AppointmentCard({
               <Button
                 color="primary"
                 className="w-full"
-                onClick={() => window.open(appointment.video_join_url, '_blank')}>
+                onClick={handleJoinMeeting}
+                disabled={isCheckingAccess}>
                 <VideoCameraIcon
                   className={clsx("size-5", rtlClasses.mr("2"))}
                 />
-                {t("common.vet_dashboard.appointment_card.join_video_call")}
+                {isCheckingAccess 
+                  ? t("common.checking") || "Checking..."
+                  : t("common.vet_dashboard.appointment_card.join_video_call")}
               </Button>
             </div>
           )}
