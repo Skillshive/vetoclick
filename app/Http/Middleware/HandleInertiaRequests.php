@@ -33,7 +33,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                  'user' => fn () => $request->user()
-                ? $request->user()->load(['image'])
+                ? $this->formatUserData($request->user())
                 : null,
             ],
             'locale' => [
@@ -76,5 +76,37 @@ class HandleInertiaRequests extends Middleware
                 return $translations;
             },
         ];
+    }
+
+    /**
+     * Format user data for Inertia, ensuring veterinary has UUID and no ID
+     *
+     * @param \App\Models\User $user
+     * @return array
+     */
+    protected function formatUserData($user)
+    {
+        $user->load(['image', 'veterinary']);
+        
+        $userData = $user->toArray();
+        
+        // Format veterinary data: remove id, ensure uuid exists
+        if ($user->veterinary) {
+            $veterinary = $user->veterinary->toArray();
+            
+            // Remove id from veterinary data
+            unset($veterinary['id']);
+            
+            // Ensure UUID exists (generate if missing for existing records)
+            if (empty($veterinary['uuid'])) {
+                $user->veterinary->uuid = \Illuminate\Support\Str::uuid();
+                $user->veterinary->save();
+                $veterinary['uuid'] = $user->veterinary->uuid;
+            }
+            
+            $userData['veterinary'] = $veterinary;
+        }
+        
+        return $userData;
     }
 }
