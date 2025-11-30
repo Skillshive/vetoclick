@@ -8,11 +8,23 @@ use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\TwilioController;
 
 Route::prefix('email')->controller(EmailController::class)->group(function () {
     Route::post('/send', 'sendEmail');
     Route::post('/send-template', 'sendTemplateEmail');
     Route::post('/send-bulk', 'sendBulkEmails');
+});
+
+Route::prefix('twilio')->controller(TwilioController::class)->group(function () {
+    Route::post('/sms/send', 'sendSMS');
+    Route::post('/sms/send-bulk', 'sendBulkSMS');
+    Route::post('/sms/send-smart', 'sendSmartSMS');
+    Route::post('/sms/send-with-callback', 'sendSMSWithCallback');
+    Route::post('/sms/schedule', 'scheduleMessage');
+    Route::get('/sms/status', 'getMessageStatus');
+    Route::post('/whatsapp/send', 'sendWhatsApp');
+    Route::post('/phone/validate', 'validatePhoneNumber');
 });
 
 Route::get('/subscription-plans/active', [SubscriptionPlanController::class, 'activePlans']);

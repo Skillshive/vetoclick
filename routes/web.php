@@ -18,6 +18,9 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoleManagementController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Models\Client;
+use App\Services\AppointmentService;
+use App\Http\Resources\AppointmentResource;
+use Illuminate\Support\Facades\Auth;
 
 require_once 'common.php';
 
@@ -28,12 +31,23 @@ Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name(
 
 Route::redirect('/', '/dashboard');
 
-Route::get('/dashboard', function () {
-$clients = Client::all()->mapWithKeys(function ($client) {
-    return [$client->uuid => $client->first_name];
-});
+Route::get('/dashboard', function (AppointmentService $appointmentService) {
+    $clients = Client::all()->mapWithKeys(function ($client) {
+        return [$client->uuid => $client->first_name];
+    });
+    
+    // Get today's appointments for the logged-in veterinary
+    $user = Auth::user();
+    $veterinaryId = null;
+    if ($user && $user->veterinary) {
+        $veterinaryId = $user->veterinary->id;
+    }
+    
+    $todayAppointments = $appointmentService->getTodayAppointments($veterinaryId);
+    
     return Inertia::render('Dashboards/Vet/index')->with([
-        "clients"=>$clients
+        "clients" => $clients,
+        "todayAppointments" => AppointmentResource::collection($todayAppointments)->toArray(request()),
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -163,6 +177,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 return Inertia::render('Appointments/Create');
             })->name('create');
             Route::post('store', 'store')->name('store');
+            Route::get('{uuid}/join-meeting', 'joinMeeting')->name('join-meeting');
+            Route::get('{uuid}/check-meeting-access', 'checkMeetingAccess')->name('check-meeting-access');
         });
 });
 // Product routes
