@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Log;
 class TwilioService
 {
     protected Client $twilio;
-    protected string $twilioNumber;
-    protected string $messagingServiceSid;
+    protected ?string $twilioNumber;
+    protected ?string $messagingServiceSid;
 
     public function __construct()
     {
@@ -18,6 +18,10 @@ class TwilioService
         $authToken = config('services.twilio.auth_token');
         $this->twilioNumber = config('services.twilio.phone_number');
         $this->messagingServiceSid = config('services.twilio.messaging_service_sid');
+        
+        if (!$accountSid || !$authToken) {
+            throw new \RuntimeException('Twilio Account SID and Auth Token must be configured in .env file');
+        }
         
         $this->twilio = new Client($accountSid, $authToken);
     }
@@ -30,17 +34,20 @@ class TwilioService
         try {
             $messageData = [
                 'body' => $message,
-                'to' => $to,
             ];
 
             // Use messaging service SID or phone number
             if ($this->messagingServiceSid) {
                 $messageData['messagingServiceSid'] = $this->messagingServiceSid;
             } else {
-                $messageData['from'] = $from ?? $this->twilioNumber;
+                $senderNumber = $from ?? $this->twilioNumber;
+                if (!$senderNumber) {
+                    throw new \RuntimeException('Twilio phone number or messaging service SID must be configured, or provide a "from" parameter');
+                }
+                $messageData['from'] = $senderNumber;
             }
 
-            $twilioMessage = $this->twilio->messages->create($messageData);
+            $twilioMessage = $this->twilio->messages->create($to, $messageData);
 
             return [
                 'success' => true,
@@ -63,17 +70,20 @@ class TwilioService
     public function sendWhatsApp(string $to, string $message, array $mediaUrls = []): array
     {
         try {
+            if (!$this->twilioNumber) {
+                throw new \RuntimeException('Twilio phone number must be configured for WhatsApp messages');
+            }
+
             $messageData = [
                 'body' => $message,
                 'from' => 'whatsapp:' . $this->twilioNumber,
-                'to' => 'whatsapp:' . $to
             ];
 
             if (!empty($mediaUrls)) {
                 $messageData['mediaUrl'] = $mediaUrls;
             }
 
-            $twilioMessage = $this->twilio->messages->create($messageData);
+            $twilioMessage = $this->twilio->messages->create('whatsapp:' . $to, $messageData);
 
             return [
                 'success' => true,
@@ -129,17 +139,20 @@ class TwilioService
         try {
             $messageData = [
                 'body' => $message,
-                'to' => $to,
                 'statusCallback' => $callbackUrl
             ];
 
             if ($this->messagingServiceSid) {
                 $messageData['messagingServiceSid'] = $this->messagingServiceSid;
             } else {
-                $messageData['from'] = $from ?? $this->twilioNumber;
+                $senderNumber = $from ?? $this->twilioNumber;
+                if (!$senderNumber) {
+                    throw new \RuntimeException('Twilio phone number or messaging service SID must be configured, or provide a "from" parameter');
+                }
+                $messageData['from'] = $senderNumber;
             }
 
-            $twilioMessage = $this->twilio->messages->create($messageData);
+            $twilioMessage = $this->twilio->messages->create($to, $messageData);
 
             return [
                 'success' => true,
@@ -164,7 +177,6 @@ class TwilioService
         try {
             $messageData = [
                 'body' => $message,
-                'to' => $to,
                 'scheduleType' => 'fixed',
                 'sendAt' => $sendAt->format('c') // ISO 8601 format
             ];
@@ -172,10 +184,14 @@ class TwilioService
             if ($this->messagingServiceSid) {
                 $messageData['messagingServiceSid'] = $this->messagingServiceSid;
             } else {
-                $messageData['from'] = $from ?? $this->twilioNumber;
+                $senderNumber = $from ?? $this->twilioNumber;
+                if (!$senderNumber) {
+                    throw new \RuntimeException('Twilio phone number or messaging service SID must be configured, or provide a "from" parameter');
+                }
+                $messageData['from'] = $senderNumber;
             }
 
-            $twilioMessage = $this->twilio->messages->create($messageData);
+            $twilioMessage = $this->twilio->messages->create($to, $messageData);
 
             return [
                 'success' => true,
@@ -232,17 +248,20 @@ class TwilioService
         try {
             $messageData = [
                 'body' => $message,
-                'to' => $to,
                 'smartEncoded' => true
             ];
 
             if ($this->messagingServiceSid) {
                 $messageData['messagingServiceSid'] = $this->messagingServiceSid;
             } else {
-                $messageData['from'] = $from ?? $this->twilioNumber;
+                $senderNumber = $from ?? $this->twilioNumber;
+                if (!$senderNumber) {
+                    throw new \RuntimeException('Twilio phone number or messaging service SID must be configured, or provide a "from" parameter');
+                }
+                $messageData['from'] = $senderNumber;
             }
 
-            $twilioMessage = $this->twilio->messages->create($messageData);
+            $twilioMessage = $this->twilio->messages->create($to, $messageData);
 
             return [
                 'success' => true,
