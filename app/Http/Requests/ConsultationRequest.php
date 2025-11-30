@@ -23,7 +23,7 @@ class ConsultationRequest extends FormRequest
     {
         return [
             'appointment_id' => 'required|exists:appointments,id',
-            'veterinary_id' => 'required|exists:veterinaries,id',
+            'veterinary_id' => 'required|exists:veterinarians,id',
             'pet_id' => 'required|exists:pets,id',
             'diagnosis' => 'required|string',
             'treatment_plan' => 'nullable|string',
