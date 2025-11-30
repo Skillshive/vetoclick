@@ -4,14 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Veterinary extends Model
 {
     use HasFactory;
 
-protected $table = "veterinarians";
+    protected $table = "veterinarians";
 
-protected $fillable = [
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($veterinary) {
+            if (empty($veterinary->uuid)) {
+                $veterinary->uuid = Str::uuid();
+            }
+        });
+    }
+
+    protected $fillable = [
+        'uuid',
         'license_number','specialization', 'years_experience', 'clinic_name', 'profile_img', 'address',
         'subscription_plan_id', 'subscription_status', 'subscription_start_date',
         'subscription_end_date'
