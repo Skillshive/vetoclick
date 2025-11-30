@@ -117,7 +117,7 @@ class PetService implements ServiceInterface
      */
     public function getByClientUuid(string $clientUuid)
     {
-        return Pet::with(['species', 'breed'])
+        return Pet::with([ 'breed'])
             ->whereHas('client', function ($query) use ($clientUuid) {
                 $query->where('uuid', $clientUuid);
             })
