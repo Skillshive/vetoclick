@@ -38,7 +38,12 @@ export interface Project {
 }
 
 
-export const appointments: Appointment[] = [
+interface ProjectsProps {
+  todayAppointments?: Appointment[];
+}
+
+// Keep as fallback for development/testing
+export const mockAppointments: Appointment[] = [
   {
     uuid: "a1b2c3d4",
     client: {
@@ -443,8 +448,23 @@ const projects: Project[] = [
   },
 ];
 
-export function Projects() {
+export function Projects({ todayAppointments = [] }: ProjectsProps) {
   const { t } = useTranslation();
+
+  // Use real appointments data, fallback to empty array
+  // Convert appointment_date from string to Date if needed
+  const appointmentsToShow = todayAppointments && todayAppointments.length > 0 
+    ? todayAppointments.map(appointment => ({
+        ...appointment,
+        appointment_date: appointment.appointment_date instanceof Date 
+          ? appointment.appointment_date 
+          : new Date(appointment.appointment_date),
+        pet: {
+          ...appointment.pet,
+          dob: appointment.pet?.dob ? (appointment.pet.dob instanceof Date ? appointment.pet.dob : new Date(appointment.pet.dob)) : undefined,
+        }
+      }))
+    : [];
 
   return (
     <Card className="col-span-12 py-2">
@@ -454,12 +474,17 @@ export function Projects() {
         </h2>
         {/* <ActionMenu /> */}
       </div>
-            <div className="hide-scrollbar transition-content col-span-12 flex gap-4 overflow-x-auto px-(--margin-x) lg:col-span-9 lg:ltr:pl-0 lg:rtl:pr-0">
-              {appointments.map((appointment) => (
-                <AppointmentCard key={appointment.uuid} appointment={appointment} />
-              ))}
-            </div>
-      
+      <div className="hide-scrollbar transition-content col-span-12 flex gap-4 overflow-x-auto px-(--margin-x) lg:col-span-9 lg:ltr:pl-0 lg:rtl:pr-0">
+        {appointmentsToShow.length > 0 ? (
+          appointmentsToShow.map((appointment) => (
+            <AppointmentCard key={appointment.uuid} appointment={appointment} />
+          ))
+        ) : (
+          <div className="flex items-center justify-center w-full py-8 text-gray-500 dark:text-gray-400">
+            <p>{t("common.vet_dashboard.projects.no_appointments_today") || "No appointments scheduled for today"}</p>
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\common\AppointmentDTO;
 use App\Http\Requests\AppointmentRequest;
 use App\Services\AppointmentService;
+use App\Services\JitsiMeetService;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Client;
 use App\Models\Veterinary;
@@ -18,10 +19,12 @@ use Inertia\Response;
 class AppointmentController extends Controller
 {
     protected $appointmentService;
+    protected $jitsiMeetService;
 
-    public function __construct(AppointmentService $appointmentService)
+    public function __construct(AppointmentService $appointmentService, JitsiMeetService $jitsiMeetService)
     {
         $this->appointmentService = $appointmentService;
+        $this->jitsiMeetService = $jitsiMeetService;
     }
 
 
@@ -174,6 +177,102 @@ class AppointmentController extends Controller
             return back()->with('success', __('common.appointment_reported_successfully'));
         } catch (Exception $e) {
             return back()->with('error', __('common.failed_to_report_appointment'));
+        }
+    }
+
+    /**
+     * Validate and redirect to Jitsi Meet meeting
+     * Checks if the current time matches the appointment time before allowing access
+     */
+    public function joinMeeting(string $uuid)
+    {
+        try {
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return back()->withErrors(['error' => __('common.appointment_not_found')]);
+            }
+
+            // Check if this is a video consultation
+            if (!$appointment->is_video_conseil) {
+                return back()->withErrors(['error' => 'This appointment does not have video consultation enabled']);
+            }
+
+            // Check if meeting link exists
+            if (!$appointment->video_join_url) {
+                return back()->withErrors(['error' => 'Meeting link not available']);
+            }
+
+            // Get appointment date and time
+            $appointmentDate = $appointment->appointment_date instanceof \Carbon\Carbon 
+                ? $appointment->appointment_date->format('Y-m-d')
+                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
+            
+            // Handle time format (stored as time string H:i:s or H:i)
+            $startTime = is_string($appointment->start_time) 
+                ? substr($appointment->start_time, 0, 5) // Get HH:MM from HH:MM:SS
+                : \Carbon\Carbon::parse($appointment->start_time)->format('H:i');
+
+            // Validate if meeting can be accessed
+            $accessCheck = $this->jitsiMeetService->canAccessMeeting($appointmentDate, $startTime);
+
+            if (!$accessCheck['can_access']) {
+                return back()->withErrors(['error' => $accessCheck['message']]);
+            }
+
+            // Redirect to Jitsi Meet
+            return redirect($appointment->video_join_url);
+        } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to join meeting: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to join meeting. Please try again.']);
+        }
+    }
+
+    /**
+     * Check if meeting can be accessed (API endpoint)
+     */
+    public function checkMeetingAccess(string $uuid): JsonResponse
+    {
+        try {
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return response()->json([
+                    'can_access' => false,
+                    'message' => __('common.appointment_not_found')
+                ], 404);
+            }
+
+            if (!$appointment->is_video_conseil) {
+                return response()->json([
+                    'can_access' => false,
+                    'message' => 'This appointment does not have video consultation enabled'
+                ], 400);
+            }
+
+            // Get appointment date and time
+            $appointmentDate = $appointment->appointment_date instanceof \Carbon\Carbon 
+                ? $appointment->appointment_date->format('Y-m-d')
+                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
+            
+            // Handle time format (stored as time string H:i:s or H:i)
+            $startTime = is_string($appointment->start_time) 
+                ? substr($appointment->start_time, 0, 5) // Get HH:MM from HH:MM:SS
+                : \Carbon\Carbon::parse($appointment->start_time)->format('H:i');
+
+            $accessCheck = $this->jitsiMeetService->canAccessMeeting($appointmentDate, $startTime);
+
+            return response()->json([
+                'can_access' => $accessCheck['can_access'],
+                'message' => $accessCheck['message'],
+                'video_join_url' => $appointment->video_join_url,
+                'appointment_datetime' => $accessCheck['appointment_datetime'] ?? null,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'can_access' => false,
+                'message' => 'Failed to check meeting access'
+            ], 500);
         }
     }
 }
