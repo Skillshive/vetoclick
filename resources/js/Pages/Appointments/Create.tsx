@@ -1,11 +1,11 @@
 import MainLayout from '@/layouts/MainLayout';
 import React, { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
-import { Button, Card, Checkbox, Input, Textarea } from '@/components/ui';
+import { Button, Card, Input, Textarea, Switch } from '@/components/ui';
 import { useToast } from '@/components/common/Toast/ToastContext';
 import { appointmentSchema, AppointmentFormValues } from '@/schemas/appointmentSchema';
 import { useTranslation } from '@/hooks/useTranslation';
-import { UserIcon, PhoneArrowDownLeftIcon, CalendarIcon, ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { UserIcon, PhoneArrowDownLeftIcon, CalendarIcon, ClockIcon, InformationCircleIcon, VideoCameraIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { DatePicker } from '@/components/shared/form/Datepicker';
 import { Page } from '@/components/shared/Page';
 import { BreadcrumbItem, Breadcrumbs } from '@/components/shared/Breadcrumbs';
@@ -235,16 +235,36 @@ const CreateAppointment: React.FC = () => {
                             {validationErrors.appointment_notes && <p className="text-red-500 text-sm mt-1">{validationErrors.appointment_notes}</p>}
                         </div>
 
-                        <div className="flex items-center mt-4">
-                          <Checkbox
-                             id="is_video_conseil"
-                                name="is_video_conseil"
-                                checked={data.is_video_conseil}
-                                onChange={(e) => setData('is_video_conseil', e.target.checked)}
-                          />
-                            <label htmlFor="is_video_conseil" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-                                {t('common.video_consult')}
-                            </label> 
+                        <div className="mt-4">
+                          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-500">
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2 rounded-lg ${data.is_video_conseil ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-200 dark:bg-dark-500'}`}>
+                                {data.is_video_conseil ? (
+                                  <VideoCameraIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
+                                ) : (
+                                  <HomeIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
+                                )}
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-800 dark:text-dark-100">
+                                  {data.is_video_conseil 
+                                    ? t('common.vet_dashboard.form.online_consultation') || 'Online Consultation'
+                                    : t('common.vet_dashboard.form.in_person_visit') || 'In-Person Visit'}
+                                </label>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {data.is_video_conseil
+                                    ? t('common.vet_dashboard.form.online_consultation_desc') || 'Video call appointment'
+                                    : t('common.vet_dashboard.form.in_person_visit_desc') || 'Physical visit to clinic'}
+                                </p>
+                              </div>
+                            </div>
+                            <Switch
+                              checked={data.is_video_conseil}
+                              onChange={(e) => setData('is_video_conseil', e.target.checked)}
+                              color="primary"
+                              variant="basic"
+                            />
+                          </div>
                         </div>
 
                         <div className="flex items-center justify-end space-x-3 pt-4">
