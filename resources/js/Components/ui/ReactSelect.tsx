@@ -8,6 +8,7 @@ interface Option {
 }
 
 interface ReactSelectProps {
+    isRequired?: boolean;
     id?: string;
     value?: Option | Option[] | null;
     onChange: (newValue: MultiValue<Option> | SingleValue<Option>, actionMeta: ActionMeta<Option>) => void;
@@ -24,6 +25,7 @@ interface ReactSelectProps {
 }
 
 const ReactSelect: React.FC<ReactSelectProps> = ({
+    isRequired = false,
     id,
     value,
     onChange,
@@ -142,8 +144,10 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
     return (
         <div className={className}>
             {label && (
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5`}>
                     {label}
+                    {isRequired && <span className="text-error mx-1">*</span>}
+
                 </label>
             )}
             <div className="relative">
