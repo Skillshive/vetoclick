@@ -83,4 +83,12 @@ class User extends Authenticatable
     {
         return $this->hasOne(Veterinary::class,'user_id');
     }
+
+    /**
+     * Get the client record associated with the user.
+     */
+    public function client()
+    {
+        return $this->hasOne(Client::class, 'user_id');
+    }
 }
