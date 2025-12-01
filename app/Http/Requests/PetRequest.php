@@ -22,20 +22,20 @@ class PetRequest extends FormRequest
      */
     public function rules(): array
     {
-    //    $pet = $this->route('pet');
+        $pet = $this->route('pet');
 
         return [
             'name' => 'required|string|max:100',
             'breed_id' => 'required|exists:breeds,id',
-            'species_id' => 'required|exists:species,id',
-            'sex' => 'nullable|integer|in:0,1',
+            'species_id' => 'nullable|exists:species,id', 
+            'sex' => 'required|integer|in:0,1',
             'neutered_status' => 'nullable|boolean',
-            'dob' => 'nullable|date',
+            'dob' => 'required|date',
             'microchip_ref' => [
                 'nullable',
                 'string',
                 'max:50',
-             //   $pet ? Rule::unique('pets', 'microchip_ref')->ignore($pet->uuid) : 'unique:pets,microchip_ref',
+                $pet ? Rule::unique('pets', 'microchip_ref')->ignore($pet->getKey()) : 'unique:pets,microchip_ref',
             ],
             'profile_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'weight_kg' => 'nullable|numeric|min:0|max:999.99',

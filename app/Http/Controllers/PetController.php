@@ -437,7 +437,13 @@ class PetController extends Controller
                 $image = $request->file('profile_img');
                 $path = $image->store('pets', 'public');
                 $validated['profile_img'] = $path;
+            } else {
+                // Preserve existing image if no new image is uploaded
+                unset($validated['profile_img']);
             }
+
+            // Remove species_id from validated data as it's not a direct column
+            unset($validated['species_id']);
 
             $pet->update($validated);
             $pet->load(['client', 'breed']);
@@ -473,9 +479,14 @@ class PetController extends Controller
                 ]);
             }
             
-            return redirect()->route('pets.show', $pet->uuid)
+            return redirect()->route('pets.index')
                 ->with('success', 'Pet updated successfully.');
         } catch (Exception $e) {
+            \Log::error('Error updating pet: ' . $e->getMessage(), [
+                'pet_uuid' => $pet->uuid,
+                'exception' => $e,
+            ]);
+            
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json(['error' => 'Error updating pet: ' . $e->getMessage()], 422);
             }
