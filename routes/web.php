@@ -17,6 +17,8 @@ use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoleManagementController;
 use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\PetController;
 use App\Models\Client;
 use App\Services\AppointmentService;
 use App\Http\Resources\AppointmentResource;
@@ -31,25 +33,34 @@ Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name(
 
 Route::redirect('/', '/dashboard');
 
+// Dashboard routes - check user role to redirect to appropriate dashboard
 Route::get('/dashboard', function (AppointmentService $appointmentService) {
-    $clients = Client::all()->mapWithKeys(function ($client) {
-        return [$client->uuid => $client->first_name];
-    });
-    
-    // Get today's appointments for the logged-in veterinary
     $user = Auth::user();
-    $veterinaryId = null;
+    
+    // Check if user is a veterinarian
     if ($user && $user->veterinary) {
+        // Redirect to vet dashboard
+        $clients = Client::all()->mapWithKeys(function ($client) {
+            return [$client->uuid => $client->first_name];
+        });
+        
         $veterinaryId = $user->veterinary->id;
+        $todayAppointments = $appointmentService->getTodayAppointments($veterinaryId);
+        
+        return Inertia::render('Dashboards/Vet/index')->with([
+            "clients" => $clients,
+            "todayAppointments" => AppointmentResource::collection($todayAppointments)->toArray(request()),
+        ]);
+    } else {
+        // Redirect to user dashboard
+        return app(UserDashboardController::class)->index();
     }
-    
-    $todayAppointments = $appointmentService->getTodayAppointments($veterinaryId);
-    
-    return Inertia::render('Dashboards/Vet/index')->with([
-        "clients" => $clients,
-        "todayAppointments" => AppointmentResource::collection($todayAppointments)->toArray(request()),
-    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// User dashboard route
+Route::get('/user/dashboard', [UserDashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('user.dashboard');
 
 // Profile routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -108,6 +119,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('{breed}/delete', 'destroy')->name('destroy');
             // Get breeds for a specific species
             Route::get('species/{speciesUuid}', 'getBySpecies')->name('by-species');
+        });
+});
+
+// Pet routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('pets.')->prefix('pets')
+        ->controller(PetController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::post('store', 'store')->name('store');
+            Route::get('{pet:uuid}/show', 'show')->name('show');
+            Route::get('{pet:uuid}/edit', 'edit')->name('edit');
+            Route::post('{pet:uuid}/update', 'update')->name('update');
+            Route::delete('{pet:uuid}/delete', 'destroy')->name('destroy');
         });
 });
 
