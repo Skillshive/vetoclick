@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Http\Requests\ClientAppointmentRequest;
 
 class AppointmentController extends Controller
 {
@@ -42,7 +43,7 @@ class AppointmentController extends Controller
     /**
      * Handle client appointment request (requires vet approval)
      */
-    public function requestAppointment(\App\Http\Requests\ClientAppointmentRequest $request)
+    public function requestAppointment(ClientAppointmentRequest $request)
     {
         try {
             $dto = AppointmentDTO::fromRequest($request);
@@ -254,6 +255,35 @@ class AppointmentController extends Controller
         } catch (Exception $e) {
             \Illuminate\Support\Facades\Log::error('Failed to join meeting: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Failed to join meeting. Please try again.']);
+        }
+    }
+
+    /**
+     * Accept an appointment request (for vets)
+     * Checks availability before accepting
+     */
+    public function accept(string $uuid)
+    {
+        try {
+            $appointment = $this->appointmentService->acceptAppointment($uuid);
+            
+            if (request()->wantsJson() || request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('common.appointment_accepted_success'),
+                    'appointment' => new AppointmentResource($appointment)
+                ]);
+            }
+            
+            return redirect()->back()->with('success', __('common.appointment_accepted_success'));
+        } catch (Exception $e) {
+            if (request()->wantsJson() || request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ], 400);
+            }
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 

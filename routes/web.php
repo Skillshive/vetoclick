@@ -204,6 +204,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             })->name('create');
             Route::post('store', 'store')->name('store');
             Route::post('request', 'requestAppointment')->name('request');
+            Route::post('{uuid}/accept', 'accept')->name('accept');
             Route::get('{uuid}/join-meeting', 'joinMeeting')->name('join-meeting');
             Route::get('{uuid}/check-meeting-access', 'checkMeetingAccess')->name('check-meeting-access');
         });

@@ -32,10 +32,13 @@ export default function Index({appointments, filters, vets, clients, statuses, o
     
     const [reportModalOpen, setReportModalOpen] = useState(false);
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [acceptModalOpen, setAcceptModalOpen] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [cancelSuccess, setCancelSuccess] = useState(false);
     const [cancelError, setCancelError] = useState<string | null>(null);
     const [confirmCancelLoading, setConfirmCancelLoading] = useState(false);
+    const [acceptLoading, setAcceptLoading] = useState(false);
+    const [acceptError, setAcceptError] = useState<string | null>(null);
 
     const handleConfirmCancel = () => {
         if (!selectedAppointment) return;
@@ -72,6 +75,38 @@ export default function Index({appointments, filters, vets, clients, statuses, o
     const handleCancel = (appointment: Appointment) => {
         setSelectedAppointment(appointment);
         setCancelModalOpen(true);
+    };
+
+    const handleAccept = (appointment: Appointment) => {
+        setSelectedAppointment(appointment);
+        setAcceptModalOpen(true);
+    };
+
+    const handleConfirmAccept = () => {
+        if (!selectedAppointment) return;
+
+        setAcceptLoading(true);
+        setAcceptError(null);
+
+        router.post(route('appointments.accept', selectedAppointment.uuid), {}, {
+            onSuccess: () => {
+                setAcceptModalOpen(false);
+                setAcceptLoading(false);
+                showToast({ 
+                    type: 'success', 
+                    message: t('common.appointment_accepted_success') || 'Appointment accepted successfully' 
+                });
+                router.visit(route('appointments.index'), { only: ['appointments'] });
+            },
+            onError: (errors: any) => {
+                setAcceptError(errors.message || errors.error || t('common.failed_to_accept_appointment') || 'Failed to accept appointment');
+                setAcceptLoading(false);
+                showToast({ 
+                    type: 'error', 
+                    message: errors.message || errors.error || t('common.failed_to_accept_appointment') || 'Failed to accept appointment' 
+                });
+            }
+        });
     };
 
     const {
@@ -122,6 +157,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
         t,
         onReport: handleReport,
         onCancel: handleCancel,
+        onAccept: handleAccept,
     });
 
     // Handle flash messages
@@ -364,6 +400,29 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                     title: t('common.confirm_cancel'),
                     description: t('common.confirm_cancel_appointment'),
                     actionText: t('common.cancel_appointment'),
+                }
+            }}
+        />
+
+        <ConfirmModal
+            show={acceptModalOpen}
+            onClose={() => {
+                setAcceptModalOpen(false);
+                setAcceptError(null);
+            }}
+            onOk={handleConfirmAccept}
+            state={acceptError ? "error" : "pending"}
+            confirmLoading={acceptLoading}
+            messages={{
+                pending: {
+                    title: t('common.accept_appointment') || 'Accept Appointment',
+                    description: t('common.confirm_accept_appointment') || 'Are you sure you want to accept this appointment? The system will check your availability first.',
+                    actionText: t('common.accept') || 'Accept',
+                },
+                error: {
+                    title: t('common.error') || 'Error',
+                    description: acceptError || t('common.failed_to_accept_appointment') || 'Failed to accept appointment',
+                    actionText: t('common.close') || 'Close',
                 }
             }}
         />

@@ -3,12 +3,13 @@ import { Appointment } from './types';
 import { Badge, Avatar } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
-import { CalendarIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, XCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { PawPrintIcon } from 'lucide-react';
 
 export function createColumns(
   onReport: (appointment: Appointment) => void,
   onCancel: (appointment: Appointment) => void,
+  onAccept: (appointment: Appointment) => void,
   t: (key: string) => string
 ): ColumnDef<Appointment>[] {
 
@@ -23,7 +24,7 @@ export function createColumns(
             <Avatar
               size={9}
               name={pet.name}
-              src={pet.avatar ? `/storage/${pet.avatar}` : "/assets/default/image-placeholder.jpg"}
+              src={pet.avatar ? `${pet.avatar}` : "/assets/default/image-placeholder.jpg"}
               classNames={{
                 display: "mask is-squircle rounded-none text-sm",
               }}
@@ -191,9 +192,24 @@ export function createColumns(
       cell: ({ row }) => {
         const appointment = row.original;
         const isCancellable = appointment.status !== 'cancelled' && appointment.status !== 'passed';
+        const isScheduled = appointment.status === 'scheduled';
 
         return (
           <div className="flex justify-center items-center gap-2"> 
+            {isScheduled && (
+              <Button
+                type="button"
+                variant="flat"
+                color="success"
+                isIcon
+                className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md hover:bg-green-50 dark:hover:bg-green-900/20"
+                title={t('common.accept_appointment') || 'Accept Appointment'}
+                onClick={() => onAccept(appointment)}
+              >
+                <CheckCircleIcon className="size-4 stroke-1.5" />
+              </Button>
+            )}
+            
             {isCancellable && (
               <Button 
                 component="a"

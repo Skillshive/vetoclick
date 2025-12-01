@@ -15,6 +15,7 @@ interface UseAppointmentTableProps {
   t: (key: string) => string;
   onReport: (appointment: Appointment) => void;
   onCancel: (appointment: Appointment) => void;
+  onAccept: (appointment: Appointment) => void;
 }
 
 export function useAppointmentTable({
@@ -26,6 +27,7 @@ export function useAppointmentTable({
   t,
   onReport,
   onCancel,
+  onAccept,
 }: UseAppointmentTableProps) {
 
   // Bulk delete state
@@ -88,9 +90,10 @@ export function useAppointmentTable({
     return createColumns(
       onReport,
       onCancel,
+      onAccept,
       t
     );
-  }, [onReport, onCancel, t]);
+  }, [onReport, onCancel, onAccept, t]);
 
   // Single delete modal functions
   const openSingleDeleteModal = (appointment: Appointment) => {

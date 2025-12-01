@@ -8,6 +8,7 @@ use App\Interfaces\ServiceInterface;
 use App\Models\Client;
 use App\Models\Pet;
 use App\Models\Veterinary;
+use App\Services\AvailabilityService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
 use Carbon\Carbon;
@@ -15,10 +16,12 @@ use Carbon\Carbon;
 class AppointmentService implements ServiceInterface
 {
     protected $jitsiMeetService;
+    protected $availabilityService;
 
-    public function __construct(JitsiMeetService $jitsiMeetService = null)
+    public function __construct(JitsiMeetService $jitsiMeetService = null, AvailabilityService $availabilityService = null)
     {
         $this->jitsiMeetService = $jitsiMeetService ?? new JitsiMeetService();
+        $this->availabilityService = $availabilityService ?? new AvailabilityService();
     }
     /**
      * Get all appointments with optional pagination
@@ -204,14 +207,14 @@ class AppointmentService implements ServiceInterface
 
             // Generate the Jitsi Meet link based on appointment date and time
             // Handle date format
-            $appointmentDate = $appointment->appointment_date instanceof \Carbon\Carbon 
+            $appointmentDate = $appointment->appointment_date instanceof Carbon 
                 ? $appointment->appointment_date->format('Y-m-d')
-                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
+                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
             
             // Handle time format (stored as time string H:i:s or H:i)
             $startTime = is_string($appointment->start_time) 
                 ? substr($appointment->start_time, 0, 5) // Get HH:MM from HH:MM:SS
-                : \Carbon\Carbon::parse($appointment->start_time)->format('H:i');
+                : Carbon::parse($appointment->start_time)->format('H:i');
             
             // Set redirect URL when user leaves the meeting (configurable via config)
             $redirectUrl = config('services.jitsi.redirect_url', '/dashboard');
@@ -381,9 +384,10 @@ class AppointmentService implements ServiceInterface
     /**
      * Check availability for appointment scheduling
      */
-    public function checkAvailability(int $veterinaryId, string $startTime, string $endTime, ?int $excludeAppointmentId = null): bool
+    public function checkAvailability(int $veterinaryId, string $appointmentDate, string $startTime, string $endTime, ?int $excludeAppointmentId = null): bool
     {
-        $query = Appointment::where('veterinary_id', $veterinaryId)
+        $query = Appointment::where('veterinarian_id', $veterinaryId)
+            ->where('appointment_date', $appointmentDate)
             ->where('status', '!=', 'cancelled')
             ->where(function($q) use ($startTime, $endTime) {
                 $q->whereBetween('start_time', [$startTime, $endTime])
@@ -488,6 +492,78 @@ class AppointmentService implements ServiceInterface
             ->orderBy('start_time', 'desc')
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Accept an appointment request (change status from scheduled to confirmed)
+     * Checks vet availability before accepting
+     *
+     * @param string $uuid Appointment UUID
+     * @return Appointment
+     * @throws Exception
+     */
+    public function acceptAppointment(string $uuid): Appointment
+    {
+        $appointment = $this->getByUuid($uuid);
+        
+        if (!$appointment) {
+            throw new Exception("Appointment not found");
+        }
+
+        if ($appointment->status !== 'scheduled') {
+            throw new Exception("Only scheduled appointments can be accepted");
+        }
+
+        // Get appointment date and time
+        $appointmentDate = $appointment->appointment_date instanceof Carbon 
+            ? $appointment->appointment_date
+            : Carbon::parse($appointment->appointment_date);
+        
+        $startTime = is_string($appointment->start_time) 
+            ? $appointment->start_time
+            : Carbon::parse($appointment->start_time)->format('H:i:s');
+        
+        $endTime = is_string($appointment->end_time) 
+            ? $appointment->end_time
+            : Carbon::parse($appointment->end_time)->format('H:i:s');
+
+        // Get day of week
+        $dayOfWeek = strtolower($appointmentDate->format('l')); // Monday, Tuesday, etc.
+
+        // Check if vet has availability for this day and time
+        $isAvailable = $this->availabilityService->isVeterinaryAvailable(
+            $appointment->veterinarian_id,
+            $dayOfWeek,
+            $startTime
+        );
+
+        if (!$isAvailable) {
+            throw new Exception("Veterinarian is not available at the requested time");
+        }
+
+        // Check if there are conflicting appointments
+        $hasConflict = !$this->checkAvailability(
+            $appointment->veterinarian_id,
+            $appointmentDate->format('Y-m-d'),
+            $startTime,
+            $endTime,
+            $appointment->id
+        );
+
+        if ($hasConflict) {
+            throw new Exception("There is a conflicting appointment at this time");
+        }
+
+        // Update appointment status to confirmed
+        $appointment->status = 'confirmed';
+        $appointment->save();
+
+        // Generate Jitsi Meet link if it's a video consultation and doesn't have one yet
+        if ($appointment->is_video_conseil && !$appointment->video_join_url) {
+            $this->generateJitsiMeetingLink($appointment);
+        }
+
+        return $appointment->fresh(['client', 'pet', 'veterinary']);
     }
 
     /**

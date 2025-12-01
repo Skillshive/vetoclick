@@ -16,11 +16,6 @@ return [
 'view_all' => 'View All',
 'profile_img' => 'Profile Image',
 'no_appointment_type' => 'No appointment type',
-'checkup' => 'Checkup',
-'new_patient' => 'New Patient',
-'vaccination' => 'Vaccination',
-'surgery_consult' => 'Surgery Consult',
-'other' => 'Other',
 'view_pets' => 'View Pets',
     // Login page specific translations
     'welcome_back' => 'Welcome Back',
@@ -1369,5 +1364,15 @@ return [
             ],
         ],
     ],
-
+    "appointment_created_success" => "Appointment created successfully",
+    "appointment_created_error" => "Error creating appointment",
+    "appointment_updated_success" => "Appointment updated successfully",
+    "appointment_updated_error" => "Error updating appointment",
+    "appointment_deleted_success" => "Appointment deleted successfully",
+    "appointment_deleted_error" => "Error deleting appointment",
+    "appointment_accepted_success" => "Appointment accepted successfully",
+    "appointment_accepted_error" => "Error accepting appointment",
+    "appointment_cancelled_success" => "Appointment cancelled successfully",
+    "appointment_cancelled_error" => "Error cancelling appointment",
+    'select_veterinarian' => "Select veterinarian",
 ];
