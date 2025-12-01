@@ -10,7 +10,18 @@ return [
     'email' => 'Email',
     'password' => 'Password',
     'avatar' => 'Avatar',
-
+"confirm_delete" => "Are you sure you want to delete this?",
+"confirm_delete_product" => "Are you sure you want to delete this product?",
+"vaccine_info"=>"Vaccin information",
+'view_all' => 'View All',
+'profile_img' => 'Profile Image',
+'no_appointment_type' => 'No appointment type',
+'checkup' => 'Checkup',
+'new_patient' => 'New Patient',
+'vaccination' => 'Vaccination',
+'surgery_consult' => 'Surgery Consult',
+'other' => 'Other',
+'view_pets' => 'View Pets',
     // Login page specific translations
     'welcome_back' => 'Welcome Back',
     'please_sign_in_to_continue' => 'Please sign in to continue',
@@ -1358,9 +1369,5 @@ return [
             ],
         ],
     ],
-"confirm_delete" => "Are you sure you want to delete this?",
-"confirm_delete_product" => "Are you sure you want to delete this product?",
-"vaccine_info"=>"Vaccin information",
-'view_all' => 'View All',
-'profile_img' => 'Profile Image',
+
 ];
