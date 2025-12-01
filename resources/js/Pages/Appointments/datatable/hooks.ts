@@ -67,6 +67,7 @@ export function useAppointmentTable({
     pageSize: filters.per_page || 10,
     total: appointments.meta?.total || 0,
     onChange: (newPagination: { pageIndex: number; pageSize: number }) => {
+      // This will be set in the component
     }
   });
 

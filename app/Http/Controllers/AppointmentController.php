@@ -72,7 +72,7 @@ class AppointmentController extends Controller
     public function index(Request $request): Response
     {
         try {
-            $filters = $request->only(['search', 'per_page', 'sort_by', 'sort_direction', 'status', 'client']);
+            $filters = $request->only(['search', 'per_page', 'sort_by', 'sort_direction', 'status', 'client', 'page']);
             $appointments = $this->appointmentService->getAll($filters);
             
             return Inertia::render('Appointments/Index', [

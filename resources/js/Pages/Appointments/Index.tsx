@@ -6,7 +6,7 @@ import { useAppointmentTable } from './datatable/hooks';
 import { Toolbar } from './datatable/Toolbar';
 import { useToast } from '@/Components/common/Toast/ToastContext';
 import { ConfirmModal } from '@/components/shared/ConfirmModal';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { 
   CheckBadgeIcon, 
@@ -186,29 +186,37 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                 id: filters.sort_by || 'created_at',
                 desc: filters.sort_direction === 'desc'
             }]);
-            setPagination({
-                pageIndex: (filters.page || 1) - 1,
-                pageSize: filters.per_page || 10,
-                total: appointments.meta?.total || 0,
-                onChange: (newPagination: { pageIndex: number; pageSize: number }) => {
-                    if (isUpdatingUrl.current) return;
-                    
-                    isUpdatingUrl.current = true;
-                    const params = new URLSearchParams(window.location.search);
-                    params.set('page', (newPagination.pageIndex + 1).toString());
-                    params.set('per_page', newPagination.pageSize.toString());
-                    router.get(`${window.location.pathname}?${params.toString()}`, {
-                        preserveState: true,
-                        replace: true,
-                        onFinish: () => {
-                            isUpdatingUrl.current = false;
-                        }
-                    });
-                }
-            });
             setFiltersInitialized(true);
         }
-    }, [filters, filtersInitialized, setGlobalFilter, setSorting, setPagination, appointments.meta?.total]);
+    }, [filters, filtersInitialized, setGlobalFilter, setSorting]);
+
+    // Define pagination with proper onChange handler - defined directly in component
+    // Use useMemo to ensure it updates when filters or appointments change
+    const paginationConfig = useMemo(() => ({
+        pageIndex: (appointments.meta?.current_page || 1) - 1,
+        pageSize: filters.per_page || 10,
+        total: appointments.meta?.total || 0,
+        onChange: (newPagination: { pageIndex: number; pageSize: number }) => {
+            if (isUpdatingUrl.current) return;
+            
+            isUpdatingUrl.current = true;
+            
+            router.visit(route('appointments.index', {
+                page: newPagination.pageIndex + 1,
+                per_page: newPagination.pageSize,
+                search: globalFilter || filters.search || '',
+                sort_by: sorting[0]?.id || filters.sort_by || 'created_at',
+                sort_direction: sorting[0]?.desc ? 'desc' : (filters.sort_direction || 'desc'),
+            }), {
+                preserveScroll: false,
+                preserveState: false,
+                replace: true,
+                onFinish: () => {
+                    isUpdatingUrl.current = false;
+                }
+            });
+        }
+    }), [appointments.meta?.current_page, appointments.meta?.total, filters.per_page, globalFilter, filters.search, sorting, filters.sort_by, filters.sort_direction]);
 
     // Handle search changes with debouncing
     useEffect(() => {
@@ -350,7 +358,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                     ref={tableRef}
                     data={appointments.data}
                     columns={columns}
-                    pagination={pagination}
+                    pagination={paginationConfig}
                     sorting={sorting}
                     onSortingChange={setSorting}
                     columnVisibility={columnVisibility}
