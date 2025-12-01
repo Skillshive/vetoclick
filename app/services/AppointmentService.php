@@ -392,4 +392,102 @@ class AppointmentService implements ServiceInterface
 
         return $query->get();
     }
+
+    /**
+     * Get upcoming appointments for a specific client
+     *
+     * @param int $clientId Client ID
+     * @param int $limit Number of appointments to return
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getUpcomingByClientId(int $clientId, int $limit = 10): \Illuminate\Database\Eloquent\Collection
+    {
+        $today = Carbon::today();
+        
+        return Appointment::with(['pet', 'veterinary'])
+            ->where('client_id', $clientId)
+            ->where('status', '!=', 'cancelled')
+            ->where(function($query) use ($today) {
+                $query->whereDate('appointment_date', '>', $today)
+                      ->orWhere(function($q) use ($today) {
+                          $q->whereDate('appointment_date', '=', $today)
+                            ->whereTime('start_time', '>=', Carbon::now()->format('H:i:s'));
+                      });
+            })
+            ->orderBy('appointment_date', 'asc')
+            ->orderBy('start_time', 'asc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get recent appointments for a specific client
+     *
+     * @param int $clientId Client ID
+     * @param int $limit Number of appointments to return
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getRecentByClientId(int $clientId, int $limit = 10): \Illuminate\Database\Eloquent\Collection
+    {
+        $today = Carbon::today();
+        
+        return Appointment::with(['pet', 'veterinary'])
+            ->where('client_id', $clientId)
+            ->where(function($query) use ($today) {
+                $query->whereDate('appointment_date', '<', $today)
+                      ->orWhere(function($q) use ($today) {
+                          $q->whereDate('appointment_date', '=', $today)
+                            ->whereTime('start_time', '<', Carbon::now()->format('H:i:s'));
+                      })
+                      ->orWhere('status', 'completed');
+            })
+            ->orderBy('appointment_date', 'desc')
+            ->orderBy('start_time', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get appointment statistics for a specific client
+     *
+     * @param int $clientId Client ID
+     * @return array
+     */
+    public function getClientStatistics(int $clientId): array
+    {
+        $today = Carbon::today();
+        
+        $totalAppointments = Appointment::where('client_id', $clientId)->count();
+        
+        $upcomingAppointments = Appointment::where('client_id', $clientId)
+            ->where('status', '!=', 'cancelled')
+            ->where(function($query) use ($today) {
+                $query->whereDate('appointment_date', '>', $today)
+                      ->orWhere(function($q) use ($today) {
+                          $q->whereDate('appointment_date', '=', $today)
+                            ->whereTime('start_time', '>=', Carbon::now()->format('H:i:s'));
+                      });
+            })
+            ->count();
+        
+        $completedAppointments = Appointment::where('client_id', $clientId)
+            ->where('status', 'completed')
+            ->count();
+        
+        $cancelledAppointments = Appointment::where('client_id', $clientId)
+            ->where('status', 'cancelled')
+            ->count();
+        
+        $videoConsultations = Appointment::where('client_id', $clientId)
+            ->where('is_video_conseil', true)
+            ->count();
+        
+        return [
+            'totalAppointments' => $totalAppointments,
+            'upcomingAppointments' => $upcomingAppointments,
+            'completedAppointments' => $completedAppointments,
+            'cancelledAppointments' => $cancelledAppointments,
+            'videoConsultations' => $videoConsultations,
+        ];
+    }
 }
