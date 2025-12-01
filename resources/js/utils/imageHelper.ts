@@ -23,6 +23,21 @@ export function getImageUrl(path: string | null, fallback: string = "/assets/def
  * @param user - User object with image property
  * @returns The avatar URL
  */
-export function getUserAvatarUrl(user) {
+export function getUserAvatarUrl(user: any) {
   return getImageUrl(user?.image?.path || null);
+}
+
+/**
+ * Get avatar URL for a pet
+ * @param pet - Pet object with image property
+ * @returns The avatar URL
+ */
+export function getPetAvatarUrl(pet: any) {
+  // If profile_img is a File object, create a blob URL
+  if (pet?.profile_img instanceof File) {
+    return URL.createObjectURL(pet.profile_img);
+  }
+  // If it's a string path, use getImageUrl
+  const path = pet?.profile_img || null;
+  return getImageUrl(path, "/assets/default/species-placeholder.png");
 }
