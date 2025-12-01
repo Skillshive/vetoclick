@@ -15,7 +15,7 @@ class PetService implements ServiceInterface
      */
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Pet::with(['client.user', 'species', 'breed'])->paginate($perPage);
+        return Pet::with(['client', 'breed'])->paginate($perPage);
     }
 
     /**
@@ -23,7 +23,7 @@ class PetService implements ServiceInterface
      */
     public function getById(int $id): ?Pet
     {
-        return Pet::with(['client.user', 'species', 'breed'])->find($id);
+        return Pet::with(['client', 'breed'])->find($id);
     }
 
     /**
@@ -31,7 +31,7 @@ class PetService implements ServiceInterface
      */
     public function getByUuid(string $uuid): ?Pet
     {
-        return Pet::with(['client.user', 'species', 'breed'])
+        return Pet::with(['client', 'breed'])
                  ->where('uuid', $uuid)
                  ->first();
     }
@@ -43,7 +43,7 @@ class PetService implements ServiceInterface
     {
         try {
             $pet = Pet::create($dto->toCreateArray());
-            return $pet->load(['client.user', 'species', 'breed']);
+            return $pet->load(['client', 'breed']);
         } catch (Exception $e) {
             throw new Exception("Failed to create pet: " . $e->getMessage());
         }
@@ -68,7 +68,7 @@ class PetService implements ServiceInterface
             }
 
             $pet->update($updateData);
-            return $pet->fresh(['client.user', 'species', 'breed']);
+            return $pet->fresh(['client', 'breed']);
         } catch (Exception $e) {
             throw new Exception("Failed to update pet: " . $e->getMessage());
         }
@@ -97,7 +97,18 @@ class PetService implements ServiceInterface
      */
     public function searchByName(string $name, int $perPage = 15): LengthAwarePaginator
     {
-        return Pet::with(['client.user', 'species', 'breed'])
+        return Pet::with(['client', 'breed'])
+            ->where('name', 'LIKE', "%{$name}%")
+            ->paginate($perPage);
+    }
+
+    /**
+     * Search pets by name for a specific client
+     */
+    public function searchByNameForClient(string $name, int $clientId, int $perPage = 15): LengthAwarePaginator
+    {
+        return Pet::with(['client', 'breed'])
+            ->where('client_id', $clientId)
             ->where('name', 'LIKE', "%{$name}%")
             ->paginate($perPage);
     }
@@ -107,7 +118,7 @@ class PetService implements ServiceInterface
      */
     public function getByClientId(int $clientId, int $perPage = 15): LengthAwarePaginator
     {
-        return Pet::with(['species', 'breed'])
+        return Pet::with(['client', 'breed'])
             ->where('client_id', $clientId)
             ->paginate($perPage);
     }
@@ -129,8 +140,10 @@ class PetService implements ServiceInterface
      */
     public function getBySpeciesId(int $speciesId, int $perPage = 15): LengthAwarePaginator
     {
-        return Pet::with(['client.user', 'breed'])
-            ->where('species_id', $speciesId)
+        return Pet::with(['client', 'breed'])
+            ->whereHas('breed', function ($query) use ($speciesId) {
+                $query->where('species_id', $speciesId);
+            })
             ->paginate($perPage);
     }
 }

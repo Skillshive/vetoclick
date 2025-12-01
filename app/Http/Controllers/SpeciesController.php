@@ -8,6 +8,7 @@ use App\Services\SpeciesService;
 use App\Http\Requests\SpeciesRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
@@ -24,7 +25,7 @@ class SpeciesController extends Controller
     /**
      * Display a listing of species
      */
-    public function index(Request $request): Response
+    public function index(Request $request): Response|JsonResponse
     {
         $perPage = $request->get('per_page');
         $search = $request->get('search');
@@ -42,6 +43,48 @@ class SpeciesController extends Controller
                 $species = $this->speciesService->getAll($perPage);
             }
 
+            // Return JSON if requested
+            if ($request->wantsJson() || $request->expectsJson()) {
+                if ($perPage === null) {
+                    return response()->json([
+                        'data' => SpeciesResource::collection($species),
+                        'meta' => [
+                            'current_page' => 1,
+                            'from' => 1,
+                            'last_page' => 1,
+                            'per_page' => $species->count(),
+                            'to' => $species->count(),
+                            'total' => $species->count(),
+                        ],
+                        'links' => [
+                            'first' => null,
+                            'last' => null,
+                            'prev' => null,
+                            'next' => null,
+                        ]
+                    ]);
+                } else {
+                    return response()->json([
+                        'data' => SpeciesResource::collection($species->items()),
+                        'meta' => [
+                            'current_page' => $species->currentPage(),
+                            'from' => $species->firstItem(),
+                            'last_page' => $species->lastPage(),
+                            'per_page' => $species->perPage(),
+                            'to' => $species->lastItem(),
+                            'total' => $species->total(),
+                        ],
+                        'links' => [
+                            'first' => $species->url(1),
+                            'last' => $species->url($species->lastPage()),
+                            'prev' => $species->previousPageUrl(),
+                            'next' => $species->nextPageUrl(),
+                        ]
+                    ]);
+                }
+            }
+
+            // Return Inertia response for regular requests
             if ($perPage === null) {
                 return Inertia::render('Species/Index', [
                     'species' => [
@@ -97,6 +140,15 @@ class SpeciesController extends Controller
                 ]);
             }
         } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'data' => [],
+                    'meta' => null,
+                    'links' => null,
+                    'error' => __('common.error') . ': ' . $e->getMessage()
+                ], 500);
+            }
+            
             return Inertia::render('Species/Index', [
                 'species' => ['data' => [], 'meta' => null, 'links' => null],
                 'filters' => [

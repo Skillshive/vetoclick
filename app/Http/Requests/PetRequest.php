@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PetRequest extends FormRequest
 {
@@ -21,26 +22,89 @@ class PetRequest extends FormRequest
      */
     public function rules(): array
     {
+    //    $pet = $this->route('pet');
+
         return [
-            'client_id' => 'required|exists:clients,id',
-            'species_id' => 'required|exists:species,id',
-            'breed_id' => 'nullable|exists:breeds,id',
             'name' => 'required|string|max:100',
-            'gender' => 'nullable|in:male,female,other',
-            'date_of_birth' => 'nullable|date',
+            'breed_id' => 'required|exists:breeds,id',
+            'species_id' => 'required|exists:species,id',
+            'sex' => 'nullable|integer|in:0,1',
+            'neutered_status' => 'nullable|boolean',
+            'dob' => 'nullable|date',
+            'microchip_ref' => [
+                'nullable',
+                'string',
+                'max:50',
+             //   $pet ? Rule::unique('pets', 'microchip_ref')->ignore($pet->uuid) : 'unique:pets,microchip_ref',
+            ],
+            'profile_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'weight_kg' => 'nullable|numeric|min:0|max:999.99',
+            'bcs' => 'nullable|integer|min:1|max:9',
             'color' => 'nullable|string|max:50',
-            'weight' => 'nullable|numeric|min:0',
-            'microchip_number' => 'nullable|string|max:50|unique:pets,microchip_number,' . $this->pet?->id,
-            'medical_history' => 'nullable|string',
-            'dietary_restrictions' => 'nullable|string',
-            'behavioral_notes' => 'nullable|string',
-            'image_url' => 'nullable|url|max:255',
-            'deworming_date' => 'nullable|date',
-            'rabies_vaccination_date' => 'nullable|date',
-            'sterilization_date' => 'nullable|date',
-            'last_vet_visit' => 'nullable|date',
-            'next_vaccination_date' => 'nullable|date|after_or_equal:today',
-            'insurance_details' => 'nullable|string|max:500',
+            'notes' => 'nullable|string',
+            'deceased_at' => 'nullable|date',
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Convert specie_id from UUID to ID if needed
+        if ($this->has('species_id')) {
+            $speciesId = $this->input('species_id');
+            if (!is_numeric($speciesId)) {
+                $species = \App\Models\Species::where('uuid', $speciesId)->first();
+                if ($species) {
+                    $this->merge(['species_id' => $species->id]);
+                } else {
+                    $this->merge(['species_id' => null]);
+                }
+            }
+        }
+
+        // Convert breed_id from UUID to ID if needed
+        if ($this->has('breed_id') && $this->input('breed_id')) {
+            $breedId = $this->input('breed_id');
+            if (!is_numeric($breedId)) {
+                $breed = \App\Models\Breed::where('uuid', $breedId)->first();
+                if ($breed) {
+                    $this->merge(['breed_id' => $breed->id]);
+                } else {
+                    $this->merge(['breed_id' => null]);
+                }
+            }
+        }
+
+        // Convert sex to integer
+        if ($this->has('sex')) {
+            $sex = $this->input('sex');
+            if (is_string($sex)) {
+                $this->merge(['sex' => $sex === '1' || $sex === 'male' ? 1 : 0]);
+            }
+        }
+
+        // Convert neutered_status to boolean
+        if ($this->has('neutered_status')) {
+            $neutered = $this->input('neutered_status');
+            if (is_string($neutered)) {
+                $this->merge(['neutered_status' => $neutered === '1' || $neutered === 'true']);
+            }
+        }
+
+        // Convert weight_kg to float
+        if ($this->has('weight_kg') && $this->input('weight_kg') !== null && $this->input('weight_kg') !== '') {
+            $this->merge(['weight_kg' => (float) $this->input('weight_kg')]);
+        } else {
+            $this->merge(['weight_kg' => null]);
+        }
+
+        // Convert bcs to integer
+        if ($this->has('bcs') && $this->input('bcs') !== null && $this->input('bcs') !== '') {
+            $this->merge(['bcs' => (int) $this->input('bcs')]);
+        } else {
+            $this->merge(['bcs' => null]);
+        }
     }
 }

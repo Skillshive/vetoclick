@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreatePetRequest;
-use App\Http\Requests\UpdatePetRequest;
+use App\Http\Requests\PetRequest;
 use App\Services\PetService;
-use App\common\PetDTO;
+use App\Models\Pet;
+use App\Models\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class PetController extends Controller
 {
@@ -25,22 +27,128 @@ class PetController extends Controller
     /**
      * Display a listing of pets
      */
-    public function index(Request $request): Response
+    public function index(Request $request)
     {
         $perPage = $request->get('per_page', 15);
+        $search = $request->get('search');
         $filters = $request->only(['search', 'client_id', 'species_id']);
 
         try {
-            $pets = $this->petService->getAll($filters, $perPage);
+            // Get authenticated user's client
+            $user = Auth::user();
+            $client = $user->client;
+            
+            if (!$client) {
+                // If user doesn't have a client, return empty results
+                $emptyPets = new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage);
+                
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json([
+                        'data' => [],
+                        'meta' => [
+                            'current_page' => 1,
+                            'last_page' => 1,
+                            'per_page' => $perPage,
+                            'total' => 0,
+                        ]
+                    ]);
+                }
+
+                return Inertia::render('Pets/Index', [
+                    'pets' => [
+                        'data' => [],
+                        'meta' => [
+                            'current_page' => 1,
+                            'last_page' => 1,
+                            'per_page' => $perPage,
+                            'total' => 0,
+                        ]
+                    ],
+                    'filters' => $filters
+                ]);
+            }
+
+            // Get pets with search if provided, filtered by client
+            if ($search) {
+                $pets = $this->petService->searchByNameForClient($search, $client->id, $perPage);
+            } else {
+                $pets = $this->petService->getByClientId($client->id, $perPage);
+            }
+
+            if ($request->wantsJson() || $request->expectsJson()) {
+                // Format for JSON response
+                $formattedPets = $pets->map(function ($pet) {
+                    return [
+                        'uuid' => $pet->uuid,
+                        'name' => $pet->name,
+                        'profile_img' => $pet->profile_img,
+                        'breed' => $pet->breed ? [
+                            'uuid' => $pet->breed->uuid,
+                            'name' => $pet->breed->breed_name ?? $pet->breed->name,
+                        ] : null,
+                        'client' => $pet->client ? [
+                            'uuid' => $pet->client->uuid,
+                            'first_name' => $pet->client->first_name,
+                            'last_name' => $pet->client->last_name,
+                        ] : null,
+                        'sex' => $pet->sex,
+                        'dob' => $pet->dob,
+                        'color' => $pet->color,
+                        'weight_kg' => $pet->weight_kg,
+                        'created_at' => $pet->created_at?->toDateTimeString(),
+                    ];
+                });
+
+                return response()->json([
+                    'data' => $formattedPets,
+                    'meta' => [
+                        'current_page' => $pets->currentPage(),
+                        'last_page' => $pets->lastPage(),
+                        'per_page' => $pets->perPage(),
+                        'total' => $pets->total(),
+                    ]
+                ]);
+            }
+
+            // Format pets data for frontend
+            $formattedPets = $pets->map(function ($pet) {
+                return [
+                    'uuid' => $pet->uuid,
+                    'name' => $pet->name,
+                    'profile_img' => $pet->profile_img,
+                    'breed' => $pet->breed ? [
+                        'uuid' => $pet->breed->uuid,
+                        'name' => $pet->breed->breed_name ?? $pet->breed->name,
+                    ] : null,
+                    'client' => $pet->client ? [
+                        'uuid' => $pet->client->uuid,
+                        'first_name' => $pet->client->first_name,
+                        'last_name' => $pet->client->last_name,
+                    ] : null,
+                    'sex' => $pet->sex,
+                    'dob' => $pet->dob,
+                    'color' => $pet->color,
+                    'weight_kg' => $pet->weight_kg,
+                    'created_at' => $pet->created_at?->toDateTimeString(),
+                ];
+            });
 
             return Inertia::render('Pets/Index', [
                 'pets' => [
-                    'data' => $pets['data'],
-                    'meta' => $pets['meta']
+                    'data' => $formattedPets,
+                    'meta' => [
+                        'current_page' => $pets->currentPage(),
+                        'last_page' => $pets->lastPage(),
+                        'per_page' => $pets->perPage(),
+                        'total' => $pets->total(),
+                    ]
                 ],
                 'filters' => $filters
             ]);
         } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => 'Error retrieving pets: ' . $e->getMessage()], 500);
+            }
             return redirect()->back()->with('error', 'Error retrieving pets: ' . $e->getMessage());
         }
     }
@@ -50,21 +158,155 @@ class PetController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Pets/Create');
+        $user = Auth::user();
+        $client = $user->client;
+        
+        $clients = Client::all()->map(function ($client) {
+            return [
+                'uuid' => $client->uuid,
+                'first_name' => $client->first_name,
+                'last_name' => $client->last_name,
+            ];
+        });
+
+        return Inertia::render('Pets/Create', [
+            'clients' => $clients,
+            'defaultClientId' => $client?->uuid,
+        ]);
     }
 
     /**
      * Store a newly created pet in storage
      */
-    public function store(CreatePetRequest $request): RedirectResponse
+    public function store(PetRequest $request)
     {
+       // dd($request->all());
         try {
-            $dto = new PetDTO(...$request->validated());
-            $this->petService->create($dto);
+            $validated = $request->validated();
+//dd($validated);
+            // Handle profile image upload
+            if ($request->hasFile('profile_img')) {
+                $image = $request->file('profile_img');
+                $path = $image->store('pets', 'public');
+                $validated['profile_img'] = $path;
+            }
+
+            // Get client_id from authenticated user
+            $user = Auth::user();
+            
+            if (!$user) {
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json(['error' => 'User not authenticated.'], 401);
+                }
+                return back()->withInput()
+                    ->withErrors(['error' => 'User not authenticated.']);
+            }
+
+            // Load client relationship
+            $client = $user->load('client')->client;
+            
+            if (!$client) {
+                // Log for debugging
+                \Log::warning('User does not have a client record', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                ]);
+                
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json([
+                        'error' => 'User does not have a client record. Please create a client profile first.',
+                        'message' => 'Your account needs to be linked to a client profile before creating pets.'
+                    ], 422);
+                }
+                return back()->withInput()
+                    ->withErrors(['error' => 'User does not have a client record. Please create a client profile first.']);
+            }
+
+            // Prepare pet data
+            $petData = [
+                'client_id' => $client->id,
+                'name' => $validated['name'],
+                'breed_id' => $validated['breed_id'],
+                'sex' => $validated['sex'] ?? 0,
+                'neutered_status' => $validated['neutered_status'] ?? false,
+                'dob' => $validated['dob'],
+                'microchip_ref' => $validated['microchip_ref'] ?? null,
+                'profile_img' => $validated['profile_img'] ?? null,
+                'weight_kg' => $validated['weight_kg'] ?? null,
+                'bcs' => $validated['bcs'] ?? null,
+                'color' => $validated['color'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'deceased_at' => $validated['deceased_at'] ?? null,
+            ];
+
+            \Log::info('Creating pet', [
+                'pet_data' => $petData,
+                'client_id' => $client->id,
+            ]);
+
+            $pet = Pet::create($petData);
+
+            $pet->load(['client', 'breed']);
+
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Pet created successfully.',
+                    'pet' => [
+                        'uuid' => $pet->uuid,
+                        'name' => $pet->name,
+                        'client_id' => $pet->client_id,
+                        'breed_id' => $pet->breed_id,
+                        'sex' => $pet->sex,
+                        'neutered_status' => $pet->neutered_status,
+                        'dob' => $pet->dob,
+                        'microchip_ref' => $pet->microchip_ref,
+                        'profile_img' => $pet->profile_img,
+                        'weight_kg' => $pet->weight_kg,
+                        'bcs' => $pet->bcs,
+                        'color' => $pet->color,
+                        'notes' => $pet->notes,
+                        'deceased_at' => $pet->deceased_at,
+                        'client' => $pet->client ? [
+                            'uuid' => $pet->client->uuid,
+                            'first_name' => $pet->client->first_name,
+                            'last_name' => $pet->client->last_name,
+                        ] : null,
+                        'breed' => $pet->breed ? [
+                            'uuid' => $pet->breed->uuid,
+                            'name' => $pet->breed->breed_name,
+                        ] : null,
+                    ]
+                ], 201);
+            }
             
             return redirect()->route('pets.index')
                 ->with('success', 'Pet created successfully.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Database error creating pet', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'sql' => $e->getSql(),
+            ]);
+            
+            $errorMessage = 'Database error: ' . $e->getMessage();
+            if (str_contains($e->getMessage(), 'foreign key constraint')) {
+                $errorMessage = 'Invalid breed or client. Please check your selections.';
+            }
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => $errorMessage], 422);
+            }
+            return back()->withInput()
+                ->withErrors(['error' => $errorMessage]);
         } catch (Exception $e) {
+            \Log::error('Error creating pet', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => 'Error creating pet: ' . $e->getMessage()], 422);
+            }
             return back()->withInput()
                 ->withErrors(['error' => 'Error creating pet: ' . $e->getMessage()]);
         }
@@ -73,20 +315,56 @@ class PetController extends Controller
     /**
      * Display the specified pet
      */
-    public function show(string $uuid): Response|RedirectResponse
+    public function show(Request $request, string $uuid): Response|JsonResponse|RedirectResponse
     {
         try {
             $pet = $this->petService->getByUuid($uuid);
             
             if (!$pet) {
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json(['error' => 'Pet not found.'], 404);
+                }
                 return redirect()->route('pets.index')
                     ->with('error', 'Pet not found.');
             }
 
+            $pet->load(['client', 'breed']);
+
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'uuid' => $pet->uuid,
+                    'name' => $pet->name,
+                    'client_id' => $pet->client_id,
+                    'breed_id' => $pet->breed_id,
+                    'sex' => $pet->sex,
+                    'neutered_status' => $pet->neutered_status,
+                    'dob' => $pet->dob,
+                    'microchip_ref' => $pet->microchip_ref,
+                    'profile_img' => $pet->profile_img,
+                    'weight_kg' => $pet->weight_kg,
+                    'bcs' => $pet->bcs,
+                    'color' => $pet->color,
+                    'notes' => $pet->notes,
+                    'deceased_at' => $pet->deceased_at,
+                    'client' => $pet->client ? [
+                        'uuid' => $pet->client->uuid,
+                        'first_name' => $pet->client->first_name,
+                        'last_name' => $pet->client->last_name,
+                    ] : null,
+                    'breed' => $pet->breed ? [
+                        'uuid' => $pet->breed->uuid,
+                        'name' => $pet->breed->breed_name,
+                    ] : null,
+                ]);
+            }
+
             return Inertia::render('Pets/Show', [
-                'pet' => $pet->load(['client', 'species', 'breed'])
+                'pet' => $pet
             ]);
         } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => 'Error retrieving pet: ' . $e->getMessage()], 500);
+            }
             return redirect()->route('pets.index')
                 ->with('error', 'Error retrieving pet: ' . $e->getMessage());
         }
@@ -105,8 +383,36 @@ class PetController extends Controller
                     ->with('error', 'Pet not found.');
             }
 
+            $pet->load(['client', 'breed.species']);
+
+            // Format pet data for frontend
+            $formattedPet = [
+                'uuid' => $pet->uuid,
+                'name' => $pet->name,
+                'profile_img' => $pet->profile_img,
+                'breed_id' => $pet->breed ? $pet->breed->uuid : null, // Use breed UUID for frontend
+                'breed' => $pet->breed ? [
+                    'uuid' => $pet->breed->uuid,
+                    'name' => $pet->breed->breed_name ?? $pet->breed->name,
+                    'species_id' => $pet->breed->species_id,
+                    'species' => $pet->breed->species ? [
+                        'uuid' => $pet->breed->species->uuid,
+                        'name' => $pet->breed->species->name,
+                    ] : null,
+                ] : null,
+                'sex' => $pet->sex,
+                'neutered_status' => $pet->neutered_status,
+                'dob' => $pet->dob,
+                'microchip_ref' => $pet->microchip_ref,
+                'weight_kg' => $pet->weight_kg,
+                'bcs' => $pet->bcs,
+                'color' => $pet->color,
+                'notes' => $pet->notes,
+                'deceased_at' => $pet->deceased_at,
+            ];
+
             return Inertia::render('Pets/Edit', [
-                'pet' => $pet->load(['client', 'species', 'breed'])
+                'pet' => $formattedPet,
             ]);
         } catch (Exception $e) {
             return redirect()->route('pets.index')
@@ -117,22 +423,62 @@ class PetController extends Controller
     /**
      * Update the specified pet in storage
      */
-    public function update(UpdatePetRequest $request, string $uuid): RedirectResponse
+    public function update(PetRequest $request, Pet $pet): RedirectResponse|JsonResponse
     {
         try {
-            $pet = $this->petService->getByUuid($uuid);
-            
-            if (!$pet) {
-                return redirect()->route('pets.index')
-                    ->with('error', 'Pet not found.');
+            $validated = $request->validated();
+
+            // Handle profile image upload
+            if ($request->hasFile('profile_img')) {
+                // Delete old image if exists
+                if ($pet->profile_img) {
+                    Storage::disk('public')->delete($pet->profile_img);
+                }
+                $image = $request->file('profile_img');
+                $path = $image->store('pets', 'public');
+                $validated['profile_img'] = $path;
             }
 
-            $dto = new PetDTO(...$request->validated());
-            $this->petService->update($pet, $dto);
+            $pet->update($validated);
+            $pet->load(['client', 'breed']);
+
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Pet updated successfully.',
+                    'pet' => [
+                        'uuid' => $pet->uuid,
+                        'name' => $pet->name,
+                        'client_id' => $pet->client_id,
+                        'breed_id' => $pet->breed_id,
+                        'sex' => $pet->sex,
+                        'neutered_status' => $pet->neutered_status,
+                        'dob' => $pet->dob,
+                        'microchip_ref' => $pet->microchip_ref,
+                        'profile_img' => $pet->profile_img,
+                        'weight_kg' => $pet->weight_kg,
+                        'bcs' => $pet->bcs,
+                        'color' => $pet->color,
+                        'notes' => $pet->notes,
+                        'deceased_at' => $pet->deceased_at,
+                        'client' => $pet->client ? [
+                            'uuid' => $pet->client->uuid,
+                            'first_name' => $pet->client->first_name,
+                            'last_name' => $pet->client->last_name,
+                        ] : null,
+                        'breed' => $pet->breed ? [
+                            'uuid' => $pet->breed->uuid,
+                            'name' => $pet->breed->breed_name,
+                        ] : null,
+                    ]
+                ]);
+            }
             
-            return redirect()->route('pets.show', $uuid)
+            return redirect()->route('pets.show', $pet->uuid)
                 ->with('success', 'Pet updated successfully.');
         } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => 'Error updating pet: ' . $e->getMessage()], 422);
+            }
             return back()->withInput()
                 ->withErrors(['error' => 'Error updating pet: ' . $e->getMessage()]);
         }
@@ -154,21 +500,26 @@ class PetController extends Controller
     /**
      * Remove the specified pet from storage
      */
-    public function destroy(string $uuid): RedirectResponse
+    public function destroy(Request $request, Pet $pet): RedirectResponse|JsonResponse
     {
         try {
-            $pet = $this->petService->getByUuid($uuid);
-            
-            if (!$pet) {
-                return redirect()->route('pets.index')
-                    ->with('error', 'Pet not found.');
+            // Delete profile image if exists
+            if ($pet->profile_img) {
+                Storage::disk('public')->delete($pet->profile_img);
             }
 
-            $this->petService->delete($pet);
+            $this->petService->delete($pet->uuid);
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['message' => 'Pet deleted successfully.']);
+            }
             
             return redirect()->route('pets.index')
                 ->with('success', 'Pet deleted successfully.');
         } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['error' => 'Error deleting pet: ' . $e->getMessage()], 500);
+            }
             return redirect()->route('pets.index')
                 ->with('error', 'Error deleting pet: ' . $e->getMessage());
         }

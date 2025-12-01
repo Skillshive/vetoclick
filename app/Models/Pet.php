@@ -36,4 +36,12 @@ class Pet extends Model
     {
         return $this->hasMany(Allergy::class);
     }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
 }

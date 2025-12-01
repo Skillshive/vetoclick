@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\DTOs\BreedDTO;
 use App\Services\BreedService;
 use App\Http\Requests\BreedRequest;
+use App\Http\Resources\BreedResource;
+use App\Models\Species;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Exception;
 
 class BreedController extends Controller
@@ -77,6 +80,34 @@ class BreedController extends Controller
         } catch (Exception $e) {
             return redirect()->back()
                 ->withErrors(['error' => __('common.error')]);
+        }
+    }
+
+    /**
+     * Get breeds by species UUID
+     */
+    public function getBySpecies(string $speciesUuid): JsonResponse
+    {
+        try {
+            $species = Species::where('uuid', $speciesUuid)->first();
+            
+            if (!$species) {
+                return response()->json([
+                    'data' => [],
+                    'message' => 'Species not found'
+                ], 404);
+            }
+
+            $breeds = $this->breedService->getBySpeciesId($species->id, 0);
+            
+            return response()->json([
+                'data' => BreedResource::collection($breeds->items())
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'data' => [],
+                'message' => 'Error fetching breeds'
+            ], 500);
         }
     }
 }
