@@ -21,7 +21,6 @@ class Availability extends Model
         'day_of_week',
         'start_time',
         'end_time',
-        'is_available',
     ];
 
     public function veterinarian()
@@ -30,7 +29,7 @@ class Availability extends Model
     }
 
     protected $casts = [
-        'is_available' => 'boolean',
+        // No casts needed for current schema
     ];
 
     protected $dates = [

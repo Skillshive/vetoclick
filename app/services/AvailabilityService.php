@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Carbon\Carbon;
 
 class AvailabilityService implements ServiceInterface
 {
@@ -60,7 +61,6 @@ class AvailabilityService implements ServiceInterface
     {
         return Availability::where('veterinarian_id', $veterinaryId)
             ->where('day_of_week', $dayOfWeek)
-            ->where('is_available', true)
             ->orderBy('start_time', 'asc')
             ->get();
     }
@@ -72,30 +72,25 @@ class AvailabilityService implements ServiceInterface
     {
         return Availability::where('veterinarian_id', $veterinaryId)
             ->where('day_of_week', $dayOfWeek)
-            ->where('is_available', true)
             ->orderBy('start_time', 'asc')
             ->get();
     }
 
     /**
      * Check if veterinary is available at specific time
+     * If a row exists for that day and time, the vet is available
      */
     public function isVeterinaryAvailable(int $veterinaryId, string $dayOfWeek, string $time): bool
     {
+        // Convert the provided time to a Carbon instance
+        $selectedTime = Carbon::parse($time)->format('H:i:s');
         return Availability::where('veterinarian_id', $veterinaryId)
             ->where('day_of_week', $dayOfWeek)
-            ->where('is_available', true)
-            ->where('start_time', '<=', $time)
-            ->where('end_time', '>=', $time)
-            ->where(function($query) use ($time) {
-                $query->whereNull('break_start_time')
-                      ->orWhereNull('break_end_time')
-                      ->orWhere('break_start_time', '>', $time)
-                      ->orWhere('break_end_time', '<', $time);
-            })
+            ->where('start_time', '<=', $selectedTime)
+            ->where('end_time', '>=', $selectedTime)
             ->exists();
     }
-
+    
     /**
      * Get weekly schedule for a veterinary
      */

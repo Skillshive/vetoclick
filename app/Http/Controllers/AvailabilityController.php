@@ -31,7 +31,6 @@ class AvailabilityController extends Controller
                 'day_of_week' => 'required|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
                 'start_time' => 'required|date_format:H:i:s',
                 'end_time' => 'required|date_format:H:i:s|after:start_time',
-                'is_available' => 'boolean',
                 'notes' => 'nullable|string|max:500'
             ]);
 
@@ -69,7 +68,6 @@ class AvailabilityController extends Controller
                     'day_of_week' => $availability->day_of_week,
                     'start_time' => $availability->start_time,
                     'end_time' => $availability->end_time,
-                    'is_available' => $availability->is_available ?? true,
                     'created_at' => $availability->created_at,
                     'updated_at' => $availability->updated_at,
                 ]
@@ -153,10 +151,8 @@ class AvailabilityController extends Controller
                         'day_of_week' => $item->day_of_week,
                         'start_time' => $item->start_time,
                         'end_time' => $item->end_time,
-                        'is_available' => $item->is_available ?? true,
                         'created_at' => $item->created_at,
                         'updated_at' => $item->updated_at,
-                        
                     ];
                 })
             ], 200);
