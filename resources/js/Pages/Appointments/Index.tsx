@@ -20,7 +20,6 @@ import clsx from 'clsx';
 import { ReportModal } from './datatable/ReportModal';
 
 export default function Index({appointments, filters, vets, clients, statuses, old, errors}: AppointmentPageProps) {
- console.log('appointments',appointments)
     const { t } = useTranslation();
     const { showToast } = useToast();
     const { props } = usePage();
@@ -53,7 +52,6 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                 setCancelSuccess(true);
                 setConfirmCancelLoading(false);
                 showToast({ type: 'success', message: t('common.appointment_cancelled_successfully') });
-                console.log('hello')
                 setTimeout(() => {
                     setCancelModalOpen(false);
                     setCancelSuccess(false); 

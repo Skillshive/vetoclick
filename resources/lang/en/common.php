@@ -1375,4 +1375,6 @@ return [
     "appointment_cancelled_success" => "Appointment cancelled successfully",
     "appointment_cancelled_error" => "Error cancelling appointment",
     'select_veterinarian' => "Select veterinarian",
+    'appointment_reported_successfully' => "Appointment reported successfully",
+    'appointment_reported_error' => "Error reporting appointment",
 ];

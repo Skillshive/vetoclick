@@ -6,6 +6,7 @@ import { DatePicker } from '@/components/shared/form/Datepicker';
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { useToast } from '@/Components/common/Toast/ToastContext';
 
 interface ReportModalProps {
   show: boolean;
@@ -16,7 +17,7 @@ interface ReportModalProps {
 export function ReportModal({ show, onClose, appointment }: ReportModalProps) {
   const { t } = useTranslation();
   const [startDate, setStartDate] = useState(new Date());
-
+  const { showToast } = useToast();
   const handleReport = () => {
     if (appointment) {
       router.post(route('appointments.report', appointment.uuid), {
@@ -25,6 +26,7 @@ export function ReportModal({ show, onClose, appointment }: ReportModalProps) {
       }, {
         onSuccess: () => {
           onClose();
+          showToast({ type: 'success', message: t('common.appointment_reported_successfully') });
         },
       });
     }
