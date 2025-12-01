@@ -39,6 +39,35 @@ class AppointmentController extends Controller
         }
     }
 
+    /**
+     * Handle client appointment request (requires vet approval)
+     */
+    public function requestAppointment(\App\Http\Requests\ClientAppointmentRequest $request)
+    {
+        try {
+            $dto = AppointmentDTO::fromRequest($request);
+            $appointment = $this->appointmentService->requestAppointment($dto);
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('common.appointment_requested_success'),
+                    'appointment' => new AppointmentResource($appointment)
+                ]);
+            }
+            
+            return redirect()->back()->with('success', __('common.appointment_requested_success'));
+        } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ], 400);
+            }
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
     public function index(Request $request): Response
     {
         try {

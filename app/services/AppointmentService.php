@@ -129,6 +129,49 @@ class AppointmentService implements ServiceInterface
         return $appointment->load(['client', 'pet', 'veterinary']);
     }
 
+    /**
+     * Create appointment request from client (requires vet approval)
+     * Status is set to 'scheduled' (pending) instead of 'confirmed'
+     */
+    public function requestAppointment(AppointmentDTO $dto): Appointment
+    {
+        // Calculate end_time and duration_minutes (default 30 minutes)
+        $defaultDurationMinutes = 30;
+        $startTime = Carbon::createFromFormat('H:i', $dto->start_time);
+        $endTime = $startTime->copy()->addMinutes($defaultDurationMinutes);
+        
+        // Convert is_video_conseil to boolean
+        $isVideoConseil = filter_var($dto->is_video_conseil, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($isVideoConseil === null) {
+            $isVideoConseil = false;
+        }
+        
+        // Create appointment with 'scheduled' status (pending vet approval)
+        $appointment = Appointment::create([
+            "veterinarian_id" => $this->getVet($dto->veterinarian_id),
+            "client_id" => $this->getClient($dto->client_id),
+            "pet_id" => $this->getPet($dto->pet_id),
+            "appointment_type" => $dto->appointment_type,
+            "appointment_date" => $dto->appointment_date,
+            "start_time" => $dto->start_time,
+            "end_time" => $endTime->format('H:i:s'),
+            "duration_minutes" => $defaultDurationMinutes,
+            "status" => 'scheduled', // Pending vet approval
+            "is_video_conseil" => $isVideoConseil,
+            "reason_for_visit" => $dto->reason_for_visit,
+            "appointment_notes" => $dto->appointment_notes,
+        ]);
+
+        // Only generate Jitsi Meet link if video consultation is enabled
+        // But don't generate it yet - wait for vet approval
+        if ($isVideoConseil) {
+            // We can generate the link, but it won't be accessible until appointment is confirmed
+            $this->generateJitsiMeetingLink($appointment);
+        }
+
+        return $appointment->load(['client', 'pet', 'veterinary']);
+    }
+
     
     /**
      * Generate and store Jitsi Meet link for an appointment

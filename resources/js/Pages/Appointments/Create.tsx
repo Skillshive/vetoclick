@@ -5,11 +5,12 @@ import { Button, Card, Input, Textarea, Switch } from '@/components/ui';
 import { useToast } from '@/components/common/Toast/ToastContext';
 import { appointmentSchema, AppointmentFormValues } from '@/schemas/appointmentSchema';
 import { useTranslation } from '@/hooks/useTranslation';
-import { UserIcon, PhoneArrowDownLeftIcon, CalendarIcon, ClockIcon, InformationCircleIcon, VideoCameraIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, InformationCircleIcon, VideoCameraIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { DatePicker } from '@/components/shared/form/Datepicker';
 import { Page } from '@/components/shared/Page';
 import { BreadcrumbItem, Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import ReactSelect from '@/components/ui/ReactSelect';
+import { CalendarCogIcon } from 'lucide-react';
 
 // Declare route helper
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
@@ -20,9 +21,6 @@ const CreateAppointment: React.FC = () => {
     const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof AppointmentFormValues, string>>>({});
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormValues>({
-        firstname: '',
-        lastname: '',
-        number: '',
         appointment_type: 'Check-up',
         appointment_date: '',
         start_time: '',
@@ -57,10 +55,12 @@ const CreateAppointment: React.FC = () => {
                 setValidationErrors({});
                 router.visit(route('appointments.index'));
             },
-            onError: (errors) => {
+            onError: (errors: Record<string, string>) => {
                 const newErrors: Partial<Record<keyof AppointmentFormValues, string>> = {};
                 for (const key in errors) {
-                    newErrors[key as keyof AppointmentFormValues] = t(errors[key]!);
+                    if (key in appointmentSchema.shape) {
+                        newErrors[key as keyof AppointmentFormValues] = t(errors[key]!);
+                    }
                 }
                 setValidationErrors(newErrors);
                 showToast({
@@ -104,54 +104,13 @@ const CreateAppointment: React.FC = () => {
                                 <div className="grid grid-cols-12 place-content-start gap-4 sm:gap-5 lg:gap-6">
                                   <div className="col-span-12">
                                     <Card className="p-4 sm:px-5">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Input
-                                    type="text"
-                                    placeholder={t('common.firstname')}
-                                    label={t('common.firstname')}
-                                    className="rounded-xl"
-                                    required
-                                    prefix={<UserIcon className="size-4.5" />}
-                                    value={data.firstname}
-                                    onChange={(e) => setData('firstname', e.target.value)}
-                                />
-                                {validationErrors.firstname && <p className="text-red-500 text-sm mt-1">{validationErrors.firstname}</p>}
-                            </div>
-
-                            <div>
-                                <Input
-                                    type="text"
-                                    placeholder={t('common.lastname')}
-                                    label={t('common.lastname')}
-                                    className="rounded-xl"
-                                    required
-                                    prefix={<UserIcon className="size-4.5" />}
-                                    value={data.lastname}
-                                    onChange={(e) => setData('lastname', e.target.value)}
-                                />
-                                {validationErrors.lastname && <p className="text-red-500 text-sm mt-1">{validationErrors.lastname}</p>}
-                            </div>
-
-                            <div>
-                                <Input
-                                    type="tel"
-                                    placeholder={t('common.phone_number')}
-                                    label={t('common.phone_number')}
-                                    className="rounded-xl"
-                                    required
-                                    prefix={<PhoneArrowDownLeftIcon className="size-4.5" />}
-                                    value={data.number}
-                                    onChange={(e) => setData('number', e.target.value)}
-                                />
-                                {validationErrors.number && <p className="text-red-500 text-sm mt-1">{validationErrors.number}</p>}
-                            </div>
-
-                            <div>
-                                <label htmlFor="appointment_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('common.appointment_type')}</label>
+                                <label htmlFor="appointment_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('common.appointment_type')}
+                                    <span className="text-red-500 mx-1">*</span>
+                                </label>
 <ReactSelect
                                                          id="appointment_type"
-                                    name="appointment_type"
                                             value={
                                                 data.appointment_type
                                                     ? {
@@ -161,10 +120,14 @@ const CreateAppointment: React.FC = () => {
                                                     : null
                                             }
                                             onChange={(option) => {
-                                                setData('appointment_type', option ? option.value : null);
+                                                if (option && !Array.isArray(option)) {
+                                                    setData('appointment_type', option.value);
+                                                } else {
+                                                    setData('appointment_type', '');
+                                                }
                                             }}
                                             options={[
-                                                { value: '', label: t('common.no_parent_category') },
+                                                { value: '', label: t('common.no_appointment_type') },
                                                 ...appointmentOptions?.map((appointment) => ({
                                                         value: appointment.value,
                                                         label: appointment.label
@@ -173,6 +136,8 @@ const CreateAppointment: React.FC = () => {
                                             placeholder={t('common.appointment_type')}
                                             className={errors?.appointment_type ? 'border-red-500' : ''}
                                             error={!!errors?.appointment_type}
+                                            leftIcon={<CalendarCogIcon className="size-4.5" />}
+                                            isRequired={true}
                                         />
                                         
                                 {validationErrors.appointment_type && <p className="text-red-500 text-sm mt-1">{validationErrors.appointment_type}</p>}
@@ -181,8 +146,9 @@ const CreateAppointment: React.FC = () => {
                             <div>
                                 <DatePicker
                                     selected={data.appointment_date && data.start_time ? new Date(`${data.appointment_date}T${data.start_time}`) : null}
-                                    onChange={(date: Date | null) => {
-                                        if (date) {
+                                    onChange={(dates: Date[]) => {
+                                        if (dates && dates.length > 0) {
+                                            const date = dates[0];
                                             setData('appointment_date', date.toISOString().split('T')[0]);
                                             setData('start_time', date.toTimeString().split(' ')[0].substring(0, 5));
                                         } else {
@@ -198,8 +164,9 @@ const CreateAppointment: React.FC = () => {
                                     placeholderText={t('common.select_date_and_time')}
                                     label={t('common.date_and_time')}
                                     className="rounded-xl"
-                                    required
+                                    isRequired={true}
                                     prefix={<CalendarIcon className="size-4.5" />}
+                                    min={new Date()}
                                 />
                                 {(validationErrors.appointment_date || validationErrors.start_time) && (
                                     <p className="text-red-500 text-sm mt-1">
@@ -221,21 +188,9 @@ const CreateAppointment: React.FC = () => {
                         </div>
                         </div>
 
+<div className="grid grid-cols-12 lg:grid-cols-2 gap-4 items-end">
 
-                        <div className='mt-4'>
-                            <label htmlFor="appointment_notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('common.appointment_notes')}</label>
-                            <Textarea
-                                                                        id="appointment_notes"
-                                                                        value={data.appointment_notes || ''}
-                                                                        onChange={(e) => setData('appointment_notes', e.target.value)}
-                                                                        placeholder={t('common.appointment_notes_placeholder')}
-                                                                        rows={3}
-                                                                        className={errors?.appointment_notes ? 'border-red-500' : ''}
-                                                                    />
-                            {validationErrors.appointment_notes && <p className="text-red-500 text-sm mt-1">{validationErrors.appointment_notes}</p>}
-                        </div>
-
-                        <div className="mt-4">
+<div className="mt-4">
                           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-500">
                             <div className="flex items-center gap-3">
                               <div className={`p-2 rounded-lg ${data.is_video_conseil ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-200 dark:bg-dark-500'}`}>
@@ -266,6 +221,22 @@ const CreateAppointment: React.FC = () => {
                             />
                           </div>
                         </div>
+                        <div className='mt-4'>
+                            <label htmlFor="appointment_notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('common.appointment_notes')}</label>
+                            <Textarea
+                                                                        id="appointment_notes"
+                                                                        value={data.appointment_notes || ''}
+                                                                        onChange={(e) => setData('appointment_notes', e.target.value)}
+                                                                        placeholder={t('common.appointment_notes_placeholder')}
+                                                                        rows={3}
+                                                                        className={errors?.appointment_notes ? 'border-red-500' : ''}
+                                                                    />
+                            {validationErrors.appointment_notes && <p className="text-red-500 text-sm mt-1">{validationErrors.appointment_notes}</p>}
+                        </div>
+
+
+                        </div>
+
 
                         <div className="flex items-center justify-end space-x-3 pt-4">
                             <Button

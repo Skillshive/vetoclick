@@ -51,3 +51,14 @@ Route::prefix('appointments')->controller(AppointmentController::class)->group(f
 
 Route::get('/clients', [ClientController::class, 'getAll'])->name('clients.all');
 Route::get('/clients/{uuid}/pets', [PetController::class, 'getByClient'])->name('clients.pets');
+Route::get('/veterinarians', function () {
+    $veterinarians = \App\Models\Veterinary::with('user')->get();
+    return response()->json($veterinarians->map(function ($vet) {
+        return [
+            'uuid' => $vet->uuid,
+            'name' => $vet->user ? ($vet->user->firstname . ' ' . $vet->user->lastname) : 'Unknown',
+            'clinic_name' => $vet->clinic_name,
+            'specialization' => $vet->specialization,
+        ];
+    }));
+})->name('veterinarians.all');

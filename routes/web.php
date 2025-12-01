@@ -203,6 +203,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 return Inertia::render('Appointments/Create');
             })->name('create');
             Route::post('store', 'store')->name('store');
+            Route::post('request', 'requestAppointment')->name('request');
             Route::get('{uuid}/join-meeting', 'joinMeeting')->name('join-meeting');
             Route::get('{uuid}/check-meeting-access', 'checkMeetingAccess')->name('check-meeting-access');
         });
