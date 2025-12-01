@@ -203,41 +203,39 @@ class UserDashboardController extends Controller
         // Get the client associated with the user
         $client = $user->client;
         
-        // For now, use fallback data
-        $fallbackData = $this->getFallbackData();
-        
         if (!$client) {
-            // If no client found, return dashboard with fallback data
+            // If no client found, return dashboard with empty statistics
             return Inertia::render('Dashboards/User/index', [
-                'upcomingAppointments' => $fallbackData['upcomingAppointments'],
-                'statistics' => $fallbackData['statistics'],
+                'upcomingAppointments' => [],
+                'statistics' => [
+                    'totalAppointments' => 0,
+                    'upcomingAppointments' => 0,
+                    'completedAppointments' => 0,
+                    'cancelledAppointments' => 0,
+                    'videoConsultations' => 0,
+                    'totalPets' => 0,
+                ],
             ]);
         }
 
-        // Get upcoming appointments (limit to 5)
+        // Get upcoming appointments (limit to 5) - always from database
         $upcomingAppointments = $this->appointmentService->getUpcomingByClientId($client->id, 5);
         
-        // Get statistics
+        // Get statistics from database - always use real data
         $statistics = $this->appointmentService->getClientStatistics($client->id);
         $statistics['totalPets'] = $client->pets()->count();
 
-        // Use real data if available, otherwise use fallback
-        $upcomingData = $upcomingAppointments->count() > 0 
-            ? AppointmentResource::collection($upcomingAppointments)->toArray(request())
-            : $fallbackData['upcomingAppointments'];
-            
-        $statsData = ($statistics['totalAppointments'] > 0 || $client->pets()->count() > 0)
-            ? $statistics
-            : $fallbackData['statistics'];
+        // Convert appointments to array format
+        $upcomingData = AppointmentResource::collection($upcomingAppointments)->toArray(request());
 
         return Inertia::render('Dashboards/User/index', [
             'upcomingAppointments' => $upcomingData,
-            'statistics' => $statsData,
-            'client' => $client ? [
+            'statistics' => $statistics,
+            'client' => [
                 'uuid' => $client->uuid,
                 'first_name' => $client->first_name,
                 'last_name' => $client->last_name,
-            ] : null,
+            ],
         ]);
     }
 }
