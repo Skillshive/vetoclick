@@ -14,7 +14,8 @@ use App\Http\Resources\Stock\OrderResource;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Validator;
-
+use App\Http\Resources\Product\ProductApiResource;
+use App\Models\Product;
 class OrderController extends Controller
 {
     protected OrderService $orderService;
@@ -44,6 +45,10 @@ class OrderController extends Controller
             $suppliers = Supplier::all();
 
             $suppliersResource = SupplierResource::collection($suppliers);
+            
+            // Get statistics
+            $statistics = $this->orderService->getStatistics();
+            
             return Inertia::render('Orders/Index', [
                 'orders' => [
                     'data' => OrderResource::collection($orders->items())->toArray(request()),
@@ -57,14 +62,16 @@ class OrderController extends Controller
                     ],
                     'links' => [
                         'first' => $orders->url(1),
-                                'last' => $orders->url($orders->lastPage()),
+                        'last' => $orders->url($orders->lastPage()),
                         'prev' => $orders->previousPageUrl(),
                         'next' => $orders->nextPageUrl(),
                     ]
                 ],
                 'suppliers' => $suppliersResource->toArray(request()),
+                'statistics' => $statistics,
                 'filters' => [
-                    'search' => $search
+                    'search' => $search,
+                    'per_page' => $perPage,
                 ]
             ]);
         } catch (Exception $e) {
@@ -81,10 +88,15 @@ class OrderController extends Controller
     {
         // Get suppliers for the form
         $suppliers = Supplier::all();
-
+        
+        // Get products for the form
+        $products = Product::all();
+        $productsResource = ProductApiResource::collection($products);
+        
         $suppliersResource = SupplierResource::collection($suppliers);
         return Inertia::render('Orders/Create', [
-            'suppliers' => $suppliersResource->toArray(request())
+            'suppliers' => $suppliersResource->toArray(request()),
+            'products' =>$productsResource->toArray(request())
         ]);
     }
 
@@ -128,9 +140,10 @@ class OrderController extends Controller
                 ]);
             }
 
-            // Get category blogs for the form
+            // Get suppliers for the form
             $suppliers = Supplier::all();
             $suppliersResource = SupplierResource::collection($suppliers);
+            $orderResource = new OrderResource($order);
             return Inertia::render('Orders/Edit', [
                 'order' => $orderResource->toArray(request()),
                 'suppliers' => $suppliersResource->toArray(request())
@@ -148,13 +161,17 @@ class OrderController extends Controller
     public function store(OrderRequest $request)
     {
         try {
+            \Log::info('Order store method called', ['data' => $request->all()]);
             $dto = OrderDto::fromRequest($request);
+            \Log::info('DTO created', ['dto' => $dto]);
             $order = $this->orderService->create($dto);
+            \Log::info('Order created', ['order_id' => $order->id]);
 
             return redirect()->route('orders.index')->with('success', __('common.order_created_success'));
 
         } catch (Exception $e) {
-            return back()->with('error', __('common.order_create_error'));
+            \Log::error('Order creation failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->withErrors(['error' => __('common.order_create_error') . ': ' . $e->getMessage()]);
         }
     }
 

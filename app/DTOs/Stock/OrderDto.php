@@ -3,13 +3,12 @@
 namespace App\DTOs\Stock;
 
 use App\common\DTO;
-use App\Interfaces\DTOInterface;
 use Illuminate\Http\Request;
 
 class OrderDto extends DTO 
 {
     public function __construct(
-        public string $reference = '',
+        public ?string $reference = '',
         public string $supplier_id = '',
         public string $order_type = '',
         public string $subtotal = '',
