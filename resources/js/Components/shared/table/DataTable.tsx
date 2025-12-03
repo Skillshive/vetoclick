@@ -5,10 +5,12 @@ import {
   getSortedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
+  getFilteredRowModel,
   useReactTable,
   ColumnDef,
   Table as TanstackTable,
   SortingState,
+  ColumnFiltersState,
   RowSelectionState,
   Updater,
   TableMeta,
@@ -62,6 +64,8 @@ export interface DataTableProps<TData> {
   };
   sorting: SortingState;
   onSortingChange: (updaterOrValue: SortingState | Updater<SortingState>) => void;
+  columnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: (updaterOrValue: ColumnFiltersState | Updater<ColumnFiltersState>) => void;
   columnVisibility?: Record<string, boolean>;
   onColumnVisibilityChange?: (updaterOrValue: Record<string, boolean> | Updater<Record<string, boolean>>) => void;
   columnPinning?: Record<string, boolean>;
@@ -95,6 +99,8 @@ function DataTableInner<TData>(
     pagination,
     sorting,
     onSortingChange,
+    columnFilters = [],
+    onColumnFiltersChange,
     columnVisibility = {},
     onColumnVisibilityChange,
     columnPinning = {},
@@ -124,6 +130,7 @@ function DataTableInner<TData>(
     state: {
       globalFilter,
       sorting,
+      columnFilters,
       rowSelection,
       columnVisibility,
       columnPinning,
@@ -139,16 +146,19 @@ function DataTableInner<TData>(
     enableColumnFilters: tableSettings.enableColumnFilters,
     enableRowSelection,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
     onGlobalFilterChange: onGlobalFilterChange,
     onSortingChange: onSortingChange,
+    onColumnFiltersChange: onColumnFiltersChange,
     onColumnVisibilityChange: onColumnVisibilityChange,
     onColumnPinningChange: onColumnPinningChange,
     onRowSelectionChange: onRowSelectionChange,
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     manualPagination: true,
+    manualFiltering: true,
     pageCount: Math.ceil(pagination.total / pagination.pageSize),
     onPaginationChange: (updater) => {
       if (typeof updater === 'function') {
