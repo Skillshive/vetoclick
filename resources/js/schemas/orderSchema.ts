@@ -20,7 +20,6 @@ export const orderSchema = z.object({
   payment_method: z.string().optional(),
   payment_due_date: z.string().optional(),
   confirmed_delivery_date: z.string().optional(),
-  requested_by: z.string().optional(),
   products: z.array(orderProductSchema).min(1, 'validation.products_required'),
   subtotal: z.string().optional(),
   tax_amount: z.string().optional(),

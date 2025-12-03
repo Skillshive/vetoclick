@@ -37,6 +37,10 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
 
+    const handleView = (order: Order) => {
+        router.visit(route('orders.show', order.uuid));
+    };
+
     const handleEdit = (order: Order) => {
         router.visit(route('orders.edit', order.uuid));
     };
@@ -122,6 +126,7 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
         t,
         onEdit: handleEdit,
         onDelete: handleDelete,
+        onView: handleView,
     });
 
     // Handle flash messages

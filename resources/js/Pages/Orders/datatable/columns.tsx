@@ -3,11 +3,12 @@ import { Order } from './types';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 export function createColumns(
   onEdit: (order: Order) => void,
   onDelete: (order: Order) => void,
+  onView: (order: Order) => void,
   t: (key: string) => string
 ): ColumnDef<Order>[] {
 
@@ -167,6 +168,18 @@ export function createColumns(
 
         return (
           <div className="flex justify-center items-center gap-2"> 
+            <Button
+              type="button"
+              variant="flat"
+              color="primary"
+              isIcon
+              className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
+              title={t('common.view')}
+              onClick={() => onView(order)}
+            >
+              <EyeIcon className="size-4 stroke-1.5" />
+            </Button>
+
             <Button
               type="button"
               variant="flat"

@@ -1,3 +1,13 @@
+export interface OrderProduct {
+  product_id: string;
+  product_name?: string;
+  quantity: number;
+  unit_price: number;
+  tva: number;
+  reduction_taux: number;
+  total_price: number;
+}
+
 export interface Order {
   uuid: string;
   reference: string;
@@ -18,7 +28,24 @@ export interface Order {
   order_date: string;
   confirmed_delivery_date: string;
   requested_by: string;
+  products?: OrderProduct[];
   created_at?: string;
+  approved?: boolean;
+  approved_at?: string;
+  received_at?: string;
+  received_by?: {
+    uuid: string;
+    name: string;
+  };
+  receiving_notes?: string;
+  cancellation_reason?: string;
+  cancelled_by?: {
+    uuid: string;
+    name: string;
+  };
+  cancelled_at?: string;
+  return_reason?: string;
+  returned_at?: string;
 }
 
 export interface Supplier {
