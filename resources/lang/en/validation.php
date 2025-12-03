@@ -157,7 +157,6 @@ return [
     "no_items_selected" => "No items selected for deletion",
     "too_many_items_selected" => "Cannot delete more than 50 items at once",
     "invalid_uuid" => "Invalid UUID format",
-
     // User validation messages
     "user_not_found" => "User not found",
     "user_email_unique" => "This email address is already taken",
@@ -331,4 +330,16 @@ return [
     'color_max_length' => 'The color must not exceed 50 characters.',
     'deceased_at_date' => 'The deceased date must be a valid date.',
     'deceased_at_after_dob' => 'The deceased date must be after the date of birth.',
+    'supplier_required' => 'Supplier is required',
+    'order_type_required' => 'Order type is required',
+    'order_date_required' => 'Order date is required',
+    'products_required' => 'At least one product is required',
+    'product_required' => 'Product is required',
+    'quantity_min' => 'Quantity must be at least 1',
+    'unit_price_min' => 'Unit price must be 0 or greater',
+    'tva_min' => 'TVA must be 0 or greater',
+    'tva_max' => 'TVA cannot exceed 100%',
+    'reduction_min' => 'Reduction must be 0 or greater',
+    'reduction_max' => 'Reduction cannot exceed 100%',
+    'total_price_min' => 'Total price must be 0 or greater',
 ];
