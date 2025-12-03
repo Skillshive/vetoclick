@@ -11,6 +11,7 @@ class OrderDto extends DTO
         public ?string $reference = '',
         public string $supplier_id = '',
         public string $order_type = '',
+        public ?string $status = null,
         public string $subtotal = '',
         public string $tax_amount = '',
         public string $shipping_cost = '',
@@ -21,7 +22,7 @@ class OrderDto extends DTO
         public string $payment_method = '',
         public string $order_date = '',
         public string $confirmed_delivery_date = '',
-        public string $requested_by = '',
+        public ?string $requested_by = null,
         public array $products = [],
     ) {}
 
@@ -31,6 +32,7 @@ class OrderDto extends DTO
             reference: $request->input('reference', ''),
             supplier_id: $request->input('supplier_id', ''),
             order_type: $request->input('order_type', ''),
+            status: $request->input('status'),
             subtotal: $request->input('subtotal', ''),
             tax_amount: $request->input('tax_amount', ''),
             shipping_cost: $request->input('shipping_cost', ''),
@@ -41,6 +43,7 @@ class OrderDto extends DTO
             payment_method: $request->input('payment_method', ''),
             order_date: $request->input('order_date', ''),
             confirmed_delivery_date: $request->input('confirmed_delivery_date', ''),
+            requested_by: $request->input('requested_by'),
             products: $request->input('products', []),
         );
     }

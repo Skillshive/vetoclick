@@ -148,10 +148,16 @@ class OrderController extends Controller
             // Get suppliers for the form
             $suppliers = Supplier::all();
             $suppliersResource = SupplierResource::collection($suppliers);
+            
+            // Get products for the form
+            $products = Product::all();
+            $productsResource = ProductApiResource::collection($products);
+            
             $orderResource = new OrderResource($order);
             return Inertia::render('Orders/Edit', [
                 'order' => $orderResource->toArray(request()),
-                'suppliers' => $suppliersResource->toArray(request())
+                'suppliers' => $suppliersResource->toArray(request()),
+                'products' => $productsResource->toArray(request())
             ]);
         } catch (Exception $e) {
             return Inertia::render('Orders/Edit', [

@@ -78,11 +78,11 @@ class OrderService implements ServiceInterface
     }
 
     /**
-     * Get blog by UUID
+     * Get order by UUID
         */
         public function getByUuid(string $uuid): ?Order
     {
-        return Order::with(['supplier', 'requestedBy', 'receivedBy', 'cancelledBy'])
+        return Order::with(['supplier', 'requestedBy', 'receivedBy', 'cancelledBy', 'products.product'])
                  ->where('uuid', $uuid)
                  ->first();
     }
@@ -120,8 +120,8 @@ class OrderService implements ServiceInterface
             );
 
             foreach ($dto->products as $product) {
-                // Get product by ID
-                $productModel = Product::find($product['product_id']);
+                // Get product by UUID (frontend sends UUID as product_id)
+                $productModel = Product::where('uuid', $product['product_id'])->first();
                 
                 if ($productModel) {
                     OrderProduct::create([
@@ -162,13 +162,16 @@ class OrderService implements ServiceInterface
             if (!$supplier) {
                 throw new Exception("Supplier not found");
             }
+            \Log::info('Update order products', [
+                'order_id' => $order->id,
+                'products_count' => count($dto->products),
+                'products_data' => $dto->products
+            ]);
 
             $order->update(
                 [
-                    'reference' => $dto->reference,
                     'supplier_id' => $supplier->id,
                     'order_type' => $dto->order_type,
-                    'status' => $dto->status ?? 1,
                     'subtotal' => $dto->subtotal,
                     'tax_amount' => $dto->tax_amount,
                     'shipping_cost' => $dto->shipping_cost,
@@ -179,15 +182,25 @@ class OrderService implements ServiceInterface
                     'payment_method' => $dto->payment_method,
                     'order_date' => $dto->order_date,
                     'confirmed_delivery_date' => $dto->confirmed_delivery_date,
-                    'requested_by' => $dto->requested_by,
                 ]
             );
 
+            \Log::info('Update order products', [
+                'order_id' => $order->id,
+                'products_count' => count($dto->products),
+                'products_data' => $dto->products
+            ]);
             foreach ($dto->products as $product) {
-                // Get product by ID
-                $productModel = Product::find($product['product_id']);
+                \Log::info('Processing product', [
+                    'product_id' => $product['product_id'] ?? 'missing',
+                    'product_data' => $product
+                ]);
+                
+                // Get product by UUID (frontend sends UUID as product_id)
+                $productModel = Product::where('uuid', $product['product_id'])->first();
                 
                 if ($productModel) {
+                    \Log::info('Product found', ['id' => $productModel->id]);
                     OrderProduct::create([
                         'order_id' => $order->id,
                         'product_id' => $productModel->id,
@@ -197,7 +210,7 @@ class OrderService implements ServiceInterface
                         'reduction_taux' => $product['reduction_taux'] ?? 0,
                         'total_price' => $product['total_price'],
                     ]);
-                }
+                } 
             }
             return $order->refresh()->load(['supplier', 'requestedBy', 'receivedBy', 'cancelledBy', 'products']);
         } catch (Exception $e) {

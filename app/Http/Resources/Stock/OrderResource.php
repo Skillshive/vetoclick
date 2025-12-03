@@ -37,6 +37,19 @@ class OrderResource extends JsonResource
             'order_date' => $this->order_date,
             'confirmed_delivery_date' => $this->confirmed_delivery_date,
             'requested_by' => $this->requested_by,
+            'products' => $this->relationLoaded('products') 
+                ? $this->products->map(function ($product) {
+                    return [
+                        'product_id' => (string) $product->product?->uuid,
+                        'product_name' => $product->product?->name,
+                        'quantity' => (float) $product->quantity,
+                        'unit_price' => (float) $product->unit_price,
+                        'tva' => (float) $product->tva,
+                        'reduction_taux' => (float) $product->reduction_taux,
+                        'total_price' => (float) $product->total_price,
+                    ];
+                })->toArray()
+                : [],
             'approved' => $this->approved,
             'approved_at' => $this->approved_at,
             'received_at' => $this->received_at,
@@ -53,6 +66,7 @@ class OrderResource extends JsonResource
             'cancelled_at' => $this->cancelled_at,
             'return_reason' => $this->return_reason,
             'returned_at' => $this->returned_at,
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

@@ -26,7 +26,12 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reference' => 'nullable|string|max:255|unique:orders,reference,' . $this->route('order'),
+            'reference' =>  [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('orders', 'reference')->ignore($this->uuid, 'uuid')
+            ],
             'supplier_id' => 'required|string|exists:suppliers,uuid',
             'order_type' => 'nullable|string|in:' . implode(',', array_column(OrderType::cases(), 'value')),
             'status' => 'nullable|string|in:' . implode(',', array_column(OrderStatus::cases(), 'value')),
