@@ -3,10 +3,15 @@
 namespace App\Services;
 
 use App\DTOs\Stock\OrderDto;
+use App\Enums\OrderStatus;
 use App\Models\Blog;
 use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use App\Models\Order;
+use App\Models\OrderProduct;
+use App\Models\Product;
+use App\Models\Supplier;
 use Exception;
 
 class OrderService implements ServiceInterface
@@ -44,12 +49,18 @@ class OrderService implements ServiceInterface
     public function create(OrderDto $dto): Order
     {
         try {
+            // Get supplier ID from UUID
+            $supplier = Supplier::where('uuid', $dto->supplier_id)->first();
+            if (!$supplier) {
+                throw new Exception("Supplier not found");
+            }
+
             $order = Order::create(
                 [
-                    'reference' => $dto->reference,
-                    'supplier_id' => $dto->supplier_id,
+                    'reference' => $dto->reference ?? $this->generateReference(),
+                    'supplier_id' => $supplier->id,
                     'order_type' => $dto->order_type,
-                    'status' => $dto->status,
+                    'status' => OrderStatus::PENDING->value,
                     'subtotal' => $dto->subtotal,
                     'tax_amount' => $dto->tax_amount,
                     'shipping_cost' => $dto->shipping_cost,
@@ -60,22 +71,27 @@ class OrderService implements ServiceInterface
                     'payment_method' => $dto->payment_method,
                     'order_date' => $dto->order_date ?? now(),
                     'confirmed_delivery_date' => $dto->confirmed_delivery_date,
-                    'requested_by' => $dto->requested_by ?? auth()->user()->uuid, 
+                    'requested_by' => auth()->id()
                 ] 
             );
 
             foreach ($dto->products as $product) {
-                OrderProduct::create([
-                    'order_id' => $order->id,
-                    'quantity' => $product['quantity'],
-                    'unit_price' => $product['unit_price'],
-                    'tva' => $product['tva'],
-                    'reduction_taux' => $product['reduction_taux'],
-                    'total_price' => $product['total_price'],
-                ]);
+                // Get product by ID
+                $productModel = Product::find($product['product_id']);
+                
+                if ($productModel) {
+                    OrderProduct::create([
+                        'order_id' => $order->id,
+                        'product_id' => $productModel->id,
+                        'quantity' => $product['quantity'],
+                        'unit_price' => $product['unit_price'],
+                        'tva' => $product['tva'] ?? 0,
+                        'reduction_taux' => $product['reduction_taux'] ?? 0,
+                        'total_price' => $product['total_price'],
+                    ]);
+                }
             }
-
-            return $order->load(['supplier', 'requestedBy', 'receivedBy', 'cancelledBy']);
+            return $order->load(['supplier', 'requestedBy', 'receivedBy', 'cancelledBy', 'products']);
         } catch (Exception $e) {
             throw new Exception("Failed to create order: " . $e->getMessage());
         }
@@ -97,12 +113,18 @@ class OrderService implements ServiceInterface
             $order->products()->delete();
 
            
+            // Get supplier ID from UUID
+            $supplier = Supplier::where('uuid', $dto->supplier_id)->first();
+            if (!$supplier) {
+                throw new Exception("Supplier not found");
+            }
+
             $order->update(
                 [
                     'reference' => $dto->reference,
-                    'supplier_id' => $dto->supplier_id,
+                    'supplier_id' => $supplier->id,
                     'order_type' => $dto->order_type,
-                    'status' => $dto->status,
+                    'status' => $dto->status ?? 1,
                     'subtotal' => $dto->subtotal,
                     'tax_amount' => $dto->tax_amount,
                     'shipping_cost' => $dto->shipping_cost,
@@ -118,16 +140,22 @@ class OrderService implements ServiceInterface
             );
 
             foreach ($dto->products as $product) {
-                OrderProduct::create([
-                    'order_id' => $order->id,
-                    'quantity' => $product['quantity'],
-                    'unit_price' => $product['unit_price'],
-                    'tva' => $product['tva'],
-                    'reduction_taux' => $product['reduction_taux'],
-                    'total_price' => $product['total_price'],
-                ]);
+                // Get product by ID
+                $productModel = Product::find($product['product_id']);
+                
+                if ($productModel) {
+                    OrderProduct::create([
+                        'order_id' => $order->id,
+                        'product_id' => $productModel->id,
+                        'quantity' => $product['quantity'],
+                        'unit_price' => $product['unit_price'],
+                        'tva' => $product['tva'] ?? 0,
+                        'reduction_taux' => $product['reduction_taux'] ?? 0,
+                        'total_price' => $product['total_price'],
+                    ]);
+                }
             }
-            return $order->refresh();
+            return $order->refresh()->load(['supplier', 'requestedBy', 'receivedBy', 'cancelledBy', 'products']);
         } catch (Exception $e) {
             throw new Exception("Failed to update order: " . $e->getMessage());
         }
@@ -181,5 +209,32 @@ class OrderService implements ServiceInterface
             ->latest()
             ->take($limit)
             ->get();
+    }
+
+    /**
+     * Get order statistics
+     */
+    public function getStatistics(): array
+    {
+        $totalOrders = Order::count();
+        $draftOrders = Order::where('status', 1)->count(); // Draft
+        $confirmedOrders = Order::where('status', 3)->count(); // Confirmed
+        $receivedOrders = Order::where('status', 7)->count(); // Received
+        $cancelledOrders = Order::where('status', 9)->count(); // Cancelled
+        $totalAmount = Order::sum('total_amount');
+
+        return [
+            'totalOrders' => $totalOrders,
+            'draftOrders' => $draftOrders,
+            'confirmedOrders' => $confirmedOrders,
+            'receivedOrders' => $receivedOrders,
+            'cancelledOrders' => $cancelledOrders,
+            'totalAmount' => number_format($totalAmount, 2, '.', ''),
+        ];
+    }
+
+    private function generateReference()
+    {
+        return 'ORD-' . date('Y') . '-' . str_pad(Order::count() + 1, 4, '0', STR_PAD_LEFT);
     }
 }

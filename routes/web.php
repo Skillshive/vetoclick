@@ -11,6 +11,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpeciesController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\Stock\OrderController;
 use App\Http\Controllers\BreedController;
 use App\Http\Controllers\CategoryBlogController;
 use App\Http\Controllers\UserManagment\UserController;
@@ -144,6 +145,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('export', [SupplierController::class, 'export'])->name('suppliers.export');
         Route::post('import', [SupplierController::class, 'import'])->name('suppliers.import');
     });
+});
+
+// Order routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('orders.')->prefix('orders')
+        ->controller(OrderController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::post('store', 'store')->name('store');
+            Route::get('{uuid}/edit', 'edit')->name('edit');
+            Route::put('{uuid}/update', 'update')->name('update');
+            Route::delete('{uuid}/delete', 'destroy')->name('destroy');
+            Route::get('{uuid}/show', 'show')->name('show');
+        });
 });
 
 // Category Products routes
