@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('sku')->unique();
             $table->string('barcode')->unique()->nullable();
+            $table->float('price')->nullable();
 $table->unsignedBigInteger('category_product_id')->nullable();
 $table
     ->foreign('category_product_id')
