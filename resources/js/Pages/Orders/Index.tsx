@@ -101,6 +101,8 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
         setGlobalFilter,
         sorting,
         setSorting,
+        columnFilters,
+        setColumnFilters,
         columnVisibility,
         setColumnVisibility,
         columnPinning,
@@ -148,9 +150,27 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                 id: filters.sort_by || 'created_at',
                 desc: filters.sort_direction === 'desc'
             }]);
+            
+            // Initialize column filters from URL
+            const initialColumnFilters: any[] = [];
+            
+            if (filters.status) {
+                const statuses = filters.status.split(',');
+                initialColumnFilters.push({ id: 'status', value: statuses });
+            }
+            
+            if (filters.supplier) {
+                const suppliers = filters.supplier.split(',');
+                initialColumnFilters.push({ id: 'supplier', value: suppliers });
+            }
+            
+            if (initialColumnFilters.length > 0) {
+                setColumnFilters(initialColumnFilters);
+            }
+            
             setFiltersInitialized(true);
         }
-    }, [filters, filtersInitialized, setGlobalFilter, setSorting]);
+    }, [filters, filtersInitialized, setGlobalFilter, setSorting, setColumnFilters]);
 
     // Define pagination with proper onChange handler
     const paginationConfig = useMemo(() => ({
@@ -209,6 +229,91 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
 
         return () => clearTimeout(timeoutId);
     }, [globalFilter, filtersInitialized]);
+
+    // Handle column filter changes (status, supplier)
+    useEffect(() => {
+        console.log('Column filters effect triggered:', { 
+            columnFilters, 
+            filtersInitialized, 
+            isUpdatingUrl: isUpdatingUrl.current 
+        });
+
+        if (!filtersInitialized || isUpdatingUrl.current) {
+            console.log('Skipping filter update - not initialized or already updating');
+            return;
+        }
+
+        const timeoutId = setTimeout(() => {
+            console.log('Processing column filters after debounce...');
+            const params = new URLSearchParams(window.location.search);
+            let hasChanges = false;
+
+            // Get status filters
+            const statusFilter = columnFilters.find(f => f.id === 'status');
+            const statusValues = statusFilter?.value as string[] | undefined;
+            const currentStatus = params.get('status') || '';
+            const newStatus = statusValues && statusValues.length > 0 ? statusValues.join(',') : '';
+            
+            console.log('Status filter changed:', { 
+                statusFilter, 
+                statusValues, 
+                currentStatus, 
+                newStatus,
+                hasFilter: !!statusFilter
+            });
+            
+            if (currentStatus !== newStatus) {
+                hasChanges = true;
+                if (newStatus) {
+                    params.set('status', newStatus);
+                } else {
+                    params.delete('status');
+                }
+            }
+
+            // Get supplier filters
+            const supplierFilter = columnFilters.find(f => f.id === 'supplier');
+            const supplierValues = supplierFilter?.value as string[] | undefined;
+            const currentSupplier = params.get('supplier') || '';
+            const newSupplier = supplierValues && supplierValues.length > 0 ? supplierValues.join(',') : '';
+            
+            console.log('Supplier filter changed:', { 
+                supplierFilter,
+                supplierValues, 
+                currentSupplier, 
+                newSupplier,
+                hasFilter: !!supplierFilter
+            });
+            
+            if (currentSupplier !== newSupplier) {
+                hasChanges = true;
+                if (newSupplier) {
+                    params.set('supplier', newSupplier);
+                } else {
+                    params.delete('supplier');
+                }
+            }
+
+            if (hasChanges) {
+                console.log('====> Sending filter request to backend with params:', params.toString());
+                isUpdatingUrl.current = true;
+                params.set('page', '1');
+                
+                router.get(`${window.location.pathname}?${params.toString()}`, {
+                    preserveState: true,
+                    replace: true,
+                    onFinish: () => {
+                        isUpdatingUrl.current = false;
+                        console.log('Filter request completed');
+                    }
+                });
+            } else {
+                console.log('No filter changes detected, skipping backend request');
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [columnFilters, filtersInitialized]);
 
     // Handle URL changes (browser back/forward)
     useEffect(() => {
@@ -322,6 +427,15 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                     pagination={paginationConfig}
                     sorting={sorting}
                     onSortingChange={setSorting}
+                    columnFilters={columnFilters}
+                    onColumnFiltersChange={(updaterOrValue) => {
+                        console.log('onColumnFiltersChange called with:', updaterOrValue);
+                        if (typeof updaterOrValue === 'function') {
+                            setColumnFilters(updaterOrValue);
+                        } else {
+                            setColumnFilters(updaterOrValue);
+                        }
+                    }}
                     columnVisibility={columnVisibility}
                     onColumnVisibilityChange={(updaterOrValue) => {
                         if (typeof updaterOrValue === 'function') {

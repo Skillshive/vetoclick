@@ -1,11 +1,13 @@
 import { Table } from '@tanstack/react-table';
 import { Order, Supplier } from './types';
 import { Button, Input } from '@/components/ui';
-import {  HiSearch } from 'react-icons/hi';
+import { HiSearch } from 'react-icons/hi';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useBreakpointsContext } from '@/contexts/breakpoint/context';
 import { TableSettings } from '@/components/shared/table/TableSettings';
 import { ResponsiveFilter } from '@/components/shared/table/ResponsiveFilter';
+import { FacedtedFilter } from '@/components/shared/table/FacedtedFilter';
+import { CheckCircleIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { CSSProperties } from 'react';
 
@@ -82,6 +84,45 @@ export function Toolbar({
         >
           <div className="flex shrink-0 space-x-2">
             <SearchInput table={table} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+            
+            {table.getColumn('status') && (
+              <FacedtedFilter
+                column={table.getColumn('status')!}
+                title={t('common.status') || 'Status'}
+                options={[
+                  { value: 'draft', label: t('common.draft') || 'Draft' },
+                  { value: 'pending', label: t('common.pending') || 'Pending' },
+                  { value: 'confirmed', label: t('common.confirmed') || 'Confirmed' },
+                  { value: 'shipped', label: t('common.shipped') || 'Shipped' },
+                  { value: 'received', label: t('common.received') || 'Received' },
+                  { value: 'cancelled', label: t('common.cancelled') || 'Cancelled' },
+                  { value: 'returned', label: t('common.returned') || 'Returned' },
+                ]}
+                Icon={CheckCircleIcon}
+              />
+            )}
+
+            {table.getColumn('supplier') && (
+              <FacedtedFilter
+                column={table.getColumn('supplier')!}
+                title={t('common.supplier') || 'Supplier'}
+                options={suppliers.map(supplier => ({
+                  value: supplier.name,
+                  label: supplier.name,
+                }))}
+                Icon={BuildingStorefrontIcon}
+              />
+            )}
+            
+            {table.getState().columnFilters.length > 0 && (
+              <Button
+                onClick={() => table.resetColumnFilters()}
+                variant="outlined"
+                className="h-8 px-2.5 text-xs whitespace-nowrap"
+              >
+                {t('common.reset_filters') || 'Reset Filters'}
+              </Button>
+            )}
           </div>
 
           <div className="flex shrink-0 space-x-2">

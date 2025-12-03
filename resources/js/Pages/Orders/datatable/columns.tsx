@@ -34,6 +34,10 @@ export function createColumns(
           </span>
         );
       },
+      accessorFn: (row) => row.supplier?.name || '',
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
     },
     {
       accessorKey: 'order_type',
@@ -76,6 +80,10 @@ export function createColumns(
             'cancelled': 'error',
             'completed': 'info',
             'received': 'success',
+            'draft': 'neutral',
+            'confirmed': 'info',
+            'shipped': 'info',
+            'returned': 'warning',
           } as const;
           
           type StatusMapKey = keyof typeof statusMap;
@@ -91,6 +99,9 @@ export function createColumns(
             {t('common.no_data')}
           </Badge>
         );
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
       },
     },
     {

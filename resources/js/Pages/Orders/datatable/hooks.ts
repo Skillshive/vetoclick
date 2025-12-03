@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { SortingState } from '@tanstack/react-table';
+import { SortingState, ColumnFiltersState } from '@tanstack/react-table';
 import { Order, OrderPageProps } from './types';
 import { createColumns } from './columns';
 import { router } from '@inertiajs/react';
@@ -49,6 +49,7 @@ export function useOrderTable({
       desc: filters.sort_direction === 'desc'
     }
   ]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     payment_due_date: false,
   });
@@ -137,6 +138,8 @@ export function useOrderTable({
     setGlobalFilter,
     sorting,
     setSorting,
+    columnFilters,
+    setColumnFilters,
     columnVisibility,
     setColumnVisibility,
     columnPinning,

@@ -50,6 +50,8 @@ export interface OrderPageProps {
     sort_by?: string;
     sort_direction?: string;
     page?: number;
+    status?: string;
+    supplier?: string;
   };
   suppliers: Supplier[];
   statistics?: {
