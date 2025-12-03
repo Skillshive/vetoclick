@@ -33,13 +33,16 @@ class OrderController extends Controller
         try {
             $perPage = $request->input('per_page', 8);
             $search = $request->input('search');
+            $status = $request->input('status');
+            $supplier = $request->input('supplier');
 
-            // Get orders with search if provided
-            if ($search) {
-                $orders = $this->orderService->searchByReference($search, $perPage);
-            } else {
-                $orders = $this->orderService->getAll($perPage);
-            }
+            // Get orders with filters
+            $orders = $this->orderService->getFiltered([
+                'search' => $search,
+                'status' => $status,
+                'supplier' => $supplier,
+                'per_page' => $perPage,
+            ]);
 
             // Get suppliers for filters
             $suppliers = Supplier::all();
@@ -72,6 +75,8 @@ class OrderController extends Controller
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
+                    'status' => $status,
+                    'supplier' => $supplier,
                 ]
             ]);
         } catch (Exception $e) {

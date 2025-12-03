@@ -26,6 +26,50 @@ class OrderService implements ServiceInterface
     }
 
     /**
+     * Get filtered orders with search, status, and supplier filters
+     */
+    public function getFiltered(array $filters): LengthAwarePaginator
+    {
+        $query = Order::with(['supplier', 'requestedBy', 'receivedBy', 'cancelledBy', 'products']);
+
+        // Apply search filter
+        if (!empty($filters['search'])) {
+            $query->where('reference', 'like', '%' . $filters['search'] . '%');
+        }
+
+        // Apply status filter
+        if (!empty($filters['status'])) {
+            $statusNames = explode(',', $filters['status']);
+            $statusValues = [];
+            
+            foreach ($statusNames as $statusName) {
+                $statusName = trim($statusName);
+                foreach (OrderStatus::cases() as $case) {
+                    if ($case->text() === $statusName) {
+                        $statusValues[] = $case->value;
+                        break;
+                    }
+                }
+            }
+            
+            if (!empty($statusValues)) {
+                $query->whereIn('status', $statusValues);
+            }
+        }
+
+        // Apply supplier filter
+        if (!empty($filters['supplier'])) {
+            $suppliers = explode(',', $filters['supplier']);
+            $query->whereHas('supplier', function ($q) use ($suppliers) {
+                $q->whereIn('name', $suppliers);
+            });
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->paginate($filters['per_page'] ?? 10);
+    }
+
+    /**
      * Get order by ID
      */
     public function getById(int $id): ?Order
