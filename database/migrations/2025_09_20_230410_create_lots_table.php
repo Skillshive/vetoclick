@@ -22,13 +22,13 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             
             $table->string('reference')->unique(); 
-            $table->date('expiry_date');
+            $table->date('expiry_date')->nullable();
             $table->integer('shelf_life_unit')->default(ShelfLifeUnit::DAYS->value);
             $table->string('shelf_life')->nullable();
               
             $table->integer('initial_quantity'); 
             $table->integer('current_quantity');             
-            $table->decimal('selling_price', 10, 2); 
+            $table->decimal('selling_price', 10, 2)->nullable(); 
             $table->integer('status')->default(LotStatus::ACTIVE->value);
             $table->json('notes')->nullable();
             $table->timestamps();
