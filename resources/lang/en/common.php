@@ -516,6 +516,10 @@ return [
             "create_user" => "Create User",
             "appointments_management" => "Appointments Management",
             "appointments" => "Appointments",
+            "orders" => "Orders",
+            "orders_list" => "Orders List",
+            "create_order" => "Create Order",
+            "orders_management" => "Orders Management",
     ],
 
     // Category Blogs specific translations
@@ -1480,4 +1484,5 @@ return [
     'receiving_notes' => 'Receiving Notes',
     'receiving_notes_description' => 'The notes for receiving the order',
     'receiving_information' => 'Receiving Information',
+    'pending_orders' => 'Pending',
 ];

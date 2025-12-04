@@ -50,10 +50,23 @@ const menuConfig: MenuConfig[] = [
     type: 'group',
     children: [
       {
-        id: 'suppliers',
-        title: 'common.menu.suppliers',
-        path: route('suppliers.index'),
-        type: 'item',
+        id: 'orders',
+        title: 'common.menu.orders',
+        type: 'collapse', 
+        children: [
+          {
+            id: 'ordersIndex',
+            title: 'common.menu.orders_list',
+            path: route('orders.index'),
+            type: 'item',
+          },
+          {
+            id: 'ordersCreate',
+            title: 'common.menu.create_order',
+            path: route('orders.create'),
+            type: 'item',
+          },
+        ],
       },
       {
         id: 'products',
@@ -78,6 +91,12 @@ const menuConfig: MenuConfig[] = [
         id: 'categories',
         title: 'common.menu.categories',
         path: route('category-products.index'),
+        type: 'item',
+      },
+      {
+        id: 'suppliers',
+        title: 'common.menu.suppliers',
+        path: route('suppliers.index'),
         type: 'item',
       },
     ],

@@ -257,7 +257,7 @@ class OrderService implements ServiceInterface
     public function getStatistics(): array
     {
         $totalOrders = Order::count();
-        $draftOrders = Order::where('status', 1)->count(); // Draft
+        $draftOrders = Order::where('status', 2)->count(); // Pending
         $confirmedOrders = Order::where('status', 3)->count(); // Confirmed
         $receivedOrders = Order::where('status', 7)->count(); // Received
         $cancelledOrders = Order::where('status', 9)->count(); // Cancelled

@@ -464,7 +464,7 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                         </p>
                         <ClockIcon className="text-warning size-5" />
                     </div>
-                    <p className="text-xs-plus mt-1">{t('common.draft_orders') || 'Draft'}</p>
+                    <p className="text-xs-plus mt-1">{t('common.pending_orders') || 'Pending'}</p>
                 </div>
 
                 <div className="bg-gray-150 dark:bg-dark-700 rounded-lg p-3 2xl:p-4">
