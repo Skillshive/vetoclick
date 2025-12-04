@@ -191,8 +191,8 @@ export function createColumns(
       cell: ({ row }) => {
         const order = row.original;
         const canModify = order.status === 'draft' || order.status === 'pending';
-        const canReceive = order.status === 'confirmed' || order.status === 'shipped';
-        const canCancel = order.status === 'draft' || order.status === 'pending' || order.status === 'confirmed';
+        const canReceive = order.status !== 'cancelled' && order.status !== 'received';
+        const canCancel = order.status === 'draft' || order.status === 'pending';
 
         return (
           <div className="flex justify-center items-center gap-1"> 

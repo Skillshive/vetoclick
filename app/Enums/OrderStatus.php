@@ -80,8 +80,8 @@ enum OrderStatus: int
     public function canBeReceived()
     {
         return match ($this) {
-            self::DRAFT => false,
-            self::PENDING => false,
+            self::DRAFT => true,
+            self::PENDING => true,
             self::CONFIRMED => true,
             self::SHIPPED => true,
             self::RECEIVED => false,

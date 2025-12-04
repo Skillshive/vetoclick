@@ -1405,7 +1405,7 @@ return [
     'order_cancelled_successfully' => 'Order cancelled successfully',
     'failed_to_receive_order' => 'Failed to receive order',
     'failed_to_cancel_order' => 'Failed to cancel order',
-    'order_cannot_be_received' => 'Order cannot be received. It must be in confirmed or shipped status.',
+    'order_cannot_be_received' => 'Order cannot be received. It has already been received or cancelled.',
     'order_cannot_be_cancelled' => 'Order cannot be cancelled at this stage.',
     'confirm_receive' => 'Confirm Receive Order',
     'confirm_receive_order' => 'Are you sure you want to mark this order as received?',
@@ -1475,4 +1475,9 @@ return [
     'cancelled_reason' => 'Cancelled Reason',
     'cancelled_reason_description' => 'The reason for cancelling the order',
     'cancellation_information' => 'Cancellation Information',
+    'received_by' => 'Received By',
+    'received_at' => 'Received At',
+    'receiving_notes' => 'Receiving Notes',
+    'receiving_notes_description' => 'The notes for receiving the order',
+    'receiving_information' => 'Receiving Information',
 ];
