@@ -245,8 +245,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('store', 'store')->name('store');
             Route::get('{uuid}/edit', 'edit')->name('edit');
             Route::put('{uuid}/update', 'update')->name('update');
+            Route::get('{uuid}/lots', 'lots')->name('lots');
             Route::delete('{uuid}/delete', 'destroy')->name('destroy');
         });
+
+    // Lot routes
+    Route::put('lots/{id}', [\App\Http\Controllers\LotController::class, 'update'])->name('lots.update');
 });
 
 // Role routes
