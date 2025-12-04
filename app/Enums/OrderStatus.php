@@ -89,4 +89,17 @@ enum OrderStatus: int
             self::RETURNED => false,
         };
     }
+
+    public function canBeConfirmed()
+    {
+        return match ($this) {
+            self::DRAFT => false,
+            self::PENDING => true,
+            self::CONFIRMED => false,
+            self::SHIPPED => false,
+            self::RECEIVED => false,
+            self::CANCELLED => false,
+            self::RETURNED => false,
+        };
+    }
 }

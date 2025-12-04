@@ -3,7 +3,7 @@ import { Order } from './types';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
-import { PencilIcon, TrashIcon, EyeIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, EyeIcon, CheckCircleIcon, XCircleIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 export function createColumns(
   onEdit: (order: Order) => void,
@@ -11,6 +11,7 @@ export function createColumns(
   onView: (order: Order) => void,
   onReceive: (order: Order) => void,
   onCancel: (order: Order) => void,
+  onConfirm: (order: Order) => void,
   t: (key: string) => string
 ): ColumnDef<Order>[] {
 
@@ -193,6 +194,7 @@ export function createColumns(
         const canModify = order.status === 'draft' || order.status === 'pending';
         const canReceive = order.status !== 'cancelled' && order.status !== 'received';
         const canCancel = order.status === 'draft' || order.status === 'pending';
+        const canConfirm = order.status === 'pending';
 
         return (
           <div className="flex justify-center items-center gap-1"> 
@@ -219,6 +221,20 @@ export function createColumns(
                 onClick={() => onEdit(order)}
               >
                 <PencilIcon className="size-4 stroke-1.5" />
+              </Button>
+            )}
+
+            {canConfirm && (
+              <Button
+                type="button"
+                variant="flat"
+                color="info"
+                isIcon
+                className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
+                title={t('common.confirm')}
+                onClick={() => onConfirm(order)}
+              >
+                <CheckIcon className="size-4 stroke-1.5" />
               </Button>
             )}
 

@@ -286,6 +286,35 @@ class OrderController extends Controller
     }
 
     /**
+     * Confirm order
+     */
+    public function confirm(string $uuid)
+    {
+        try {
+            $order = $this->orderService->getByUuid($uuid);
+
+            if (!$order) {
+                return back()->with('error', __('common.order_not_found'));
+            }
+
+            // Check if order can be confirmed
+            $orderStatus = OrderStatus::from($order->status);
+            if (!$orderStatus->canBeConfirmed()) {
+                return back()->with('error', __('common.order_cannot_be_confirmed'));
+            }
+
+            $order->update([
+                'status' => OrderStatus::CONFIRMED->value,
+            ]);
+
+            return redirect()->route('orders.index')->with('success', __('common.order_confirmed_successfully'));
+
+        } catch (Exception $e) {
+            return back()->with('error', __('common.failed_to_confirm_order'));
+        }
+    }
+
+    /**
      * Mark order as received
      */
     public function receive(string $uuid)

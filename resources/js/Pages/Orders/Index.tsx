@@ -49,6 +49,12 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
     const [cancelError, setCancelError] = useState<string | null>(null);
     const [confirmCancelLoading, setConfirmCancelLoading] = useState(false);
 
+    // Confirm modal state
+    const [confirmOrderModalOpen, setConfirmOrderModalOpen] = useState(false);
+    const [confirmOrderSuccess, setConfirmOrderSuccess] = useState(false);
+    const [confirmOrderError, setConfirmOrderError] = useState<string | null>(null);
+    const [confirmOrderLoading, setConfirmOrderLoading] = useState(false);
+
     const handleView = (order: Order) => {
         router.visit(route('orders.show', order.uuid));
     };
@@ -70,6 +76,11 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
     const handleCancel = (order: Order) => {
         setSelectedOrder(order);
         setCancelModalOpen(true);
+    };
+
+    const handleConfirm = (order: Order) => {
+        setSelectedOrder(order);
+        setConfirmOrderModalOpen(true);
     };
 
     const handleConfirmDelete = () => {
@@ -158,6 +169,35 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
         });
     };
 
+    const handleConfirmOrder = () => {
+        if (!selectedOrder) return;
+
+        setConfirmOrderLoading(true);
+        setConfirmOrderError(null);
+        setConfirmOrderSuccess(false);
+
+        router.post(route('orders.confirm', selectedOrder.uuid), {}, {
+            preserveState: false,
+            preserveScroll: false,
+            onStart: () => {
+                setConfirmOrderLoading(true);
+            },
+            onSuccess: () => {
+                setConfirmOrderLoading(false);
+                setConfirmOrderSuccess(true);
+                showToast({ type: 'success', message: t('common.order_confirmed_successfully') || 'Order confirmed successfully' });
+                setTimeout(() => {
+                    setConfirmOrderModalOpen(false);
+                    setConfirmOrderSuccess(false);
+                }, 1000);
+            },
+            onError: (errors: any) => {
+                setConfirmOrderError(errors.message || t('common.failed_to_confirm_order') || 'Failed to confirm order');
+                setConfirmOrderLoading(false);
+            }
+        });
+    };
+
     const {
         orders: tableData,
         bulkDeleteModalOpen,
@@ -211,6 +251,7 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
         onView: handleView,
         onReceive: handleReceive,
         onCancel: handleCancel,
+        onConfirm: handleConfirm,
     });
 
     // Handle flash messages
@@ -630,6 +671,56 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                 success: {
                     title: t('common.success') || 'Success',
                     description: t('common.order_cancelled_successfully') || 'Order cancelled successfully',
+                    actionText: t('common.close') || 'Close',
+                }
+            }}
+        />
+
+        <ConfirmModal
+            show={confirmOrderModalOpen}
+            onClose={() => setConfirmOrderModalOpen(false)}
+            onOk={handleConfirmOrder}
+            state={confirmOrderError ? "error" : confirmOrderSuccess ? "success" : "pending"}
+            confirmLoading={confirmOrderLoading}
+            messages={{
+                pending: {
+                    title: t('common.confirm_order') || 'Confirm Order',
+                    description: t('common.confirm_order_description') || 'Are you sure you want to confirm this order?',
+                    actionText: t('common.confirm') || 'Confirm',
+                },
+                error: {
+                    title: t('common.error') || 'Error',
+                    description: confirmOrderError || t('common.failed_to_confirm_order') || 'Failed to confirm order',
+                    actionText: t('common.close') || 'Close',
+                },
+                success: {
+                    title: t('common.success') || 'Success',
+                    description: t('common.order_confirmed_successfully') || 'Order confirmed successfully',
+                    actionText: t('common.close') || 'Close',
+                }
+            }}
+        />
+
+        <ConfirmModal
+            show={confirmOrderModalOpen}
+            onClose={() => setConfirmOrderModalOpen(false)}
+            onOk={handleConfirmOrder}
+            state={confirmOrderError ? "error" : confirmOrderSuccess ? "success" : "pending"}
+            confirmLoading={confirmOrderLoading}
+            messages={{
+                pending: {
+                    title: t('common.confirm_order') || 'Confirm Order',
+                    description: t('common.confirm_order_description') || 'Are you sure you want to confirm this order?',
+                    actionText: t('common.confirm') || 'Confirm',
+                },
+                error: {
+                    title: t('common.error') || 'Error',
+                    description: confirmOrderError || t('common.failed_to_confirm_order') || 'Failed to confirm order',
+                    actionText: t('common.close') || 'Close',
+                },
+                success: {
+                    title: t('common.success') || 'Success',
+                    description: t('common.order_confirmed_successfully') || 'Order confirmed successfully',
                     actionText: t('common.close') || 'Close',
                 }
             }}
