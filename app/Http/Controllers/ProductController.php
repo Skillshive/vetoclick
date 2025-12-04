@@ -426,4 +426,41 @@ class ProductController extends Controller
                 ->withErrors(['error' => __('common.export_error')]);
         }
     }
+
+    /**
+     * Get lots for a specific product
+     */
+    public function lots(string $uuid): JsonResponse
+    {
+        try {
+            $product = $this->productService->getByUuid($uuid);
+
+            if (!$product) {
+                return response()->json(['error' => 'Product not found'], 404);
+            }
+
+            // Get lots for the product, ordered by created_at desc (latest first)
+            $lots = \App\Models\Lot::where('product_id', $product->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'lots' => $lots->map(function ($lot) {
+                    return [
+                        'id' => $lot->id,
+                        'uuid' => $lot->uuid,
+                        'reference' => $lot->reference,
+                        'status' => $lot->status,
+                        'initial_quantity' => $lot->initial_quantity,
+                        'current_quantity' => $lot->current_quantity,
+                        'selling_price' => $lot->selling_price,
+                        'expiry_date' => $lot->expiry_date,
+                        'created_at' => $lot->created_at,
+                    ];
+                })
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to load lots'], 500);
+        }
+    }
 }

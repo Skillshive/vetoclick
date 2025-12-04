@@ -14,6 +14,7 @@ interface UseProductTableProps {
   setRowSelection: (selection: any) => void;
   showToast: (toast: { type: 'success' | 'error' | 'info'; message: string }) => void;
   t: (key: string) => string;
+  onViewLots: (product: Product) => void;
 }
 
 export function useProductTable({
@@ -24,6 +25,7 @@ export function useProductTable({
   setRowSelection,
   showToast,
   t,
+  onViewLots,
 }: UseProductTableProps) {
 
   // Bulk delete state
@@ -99,9 +101,10 @@ export function useProductTable({
         setSelectedRowForDelete(product);
         setSingleDeleteModalOpen(true);
       },
+      onViewLots,
       t
     );
-  }, [setSelectedRowForDelete, setSingleDeleteModalOpen, t]);
+  }, [setSelectedRowForDelete, setSingleDeleteModalOpen, onViewLots, t]);
 
   // Single delete modal functions
   const openSingleDeleteModal = (product: Product) => {

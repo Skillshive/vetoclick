@@ -6,19 +6,23 @@ import { useProductTable } from './datatable/hooks';
 import { Toolbar } from './datatable/Toolbar';
 import { useToast } from '@/Components/common/Toast/ToastContext';
 import { ConfirmModal } from '@/components/shared/ConfirmModal';
+import { RTLModal } from '@/components/ui/RTLModal';
+import { DatePicker } from '@/components/shared/form/Datepicker';
 import { useEffect, useState, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { Button } from '@/components/ui';
+import { Button, Card, Badge } from '@/components/ui';
 import { 
   CheckBadgeIcon, 
   ClockIcon, 
   XCircleIcon, 
   CubeIcon,
   CurrencyDollarIcon,
-  PlusIcon
+  PlusIcon,
+  CalendarIcon
 } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
-import { PlusSmallIcon } from '@heroicons/react/24/outline';
+import { PlusSmallIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PencilIcon } from 'lucide-react';
 
 export default function Index({products, categories, filters, old, errors}: ProductManagementPageProps) {
     const { t } = useTranslation();
@@ -30,6 +34,115 @@ export default function Index({products, categories, filters, old, errors}: Prod
     const [currentUrl, setCurrentUrl] = useState(window.location.href);
     const isUpdatingUrl = useRef(false);
     
+    // Lots modal state
+    const [lotsModalOpen, setLotsModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [productLots, setProductLots] = useState<any[]>([]);
+    const [lotsLoading, setLotsLoading] = useState(false);
+    
+    // Edit lot state
+    const [editingLotId, setEditingLotId] = useState<number | null>(null);
+    const [editLotData, setEditLotData] = useState<any>({});
+    const [lotValidationError, setLotValidationError] = useState<string>('');
+    
+
+    const handleViewLots = async (product: Product) => {
+        setSelectedProduct(product);
+        setLotsModalOpen(true);
+        setLotsLoading(true);
+        setProductLots([]);
+
+        try {
+            const response = await fetch(route('products.lots', product.uuid));
+            const data = await response.json();
+            setProductLots(data.lots || []);
+        } catch (error) {
+            showToast({
+                type: 'error',
+                message: t('common.failed_to_load_lots') || 'Failed to load lots',
+                duration: 3000,
+            });
+        } finally {
+            setLotsLoading(false);
+        }
+    };
+
+    const handleEditLot = (lot: any) => {
+        setEditingLotId(lot.id);
+        setEditLotData({
+            expiry_date: lot.expiry_date,
+            selling_price: lot.selling_price,
+            current_quantity: lot.current_quantity,
+        });
+    };
+
+    const handleCancelEditLot = () => {
+        setEditingLotId(null);
+        setEditLotData({});
+        setLotValidationError('');
+    };
+
+    const handleSaveLot = async (lotId: number) => {
+        // Find the lot being edited
+        const lot = productLots.find((l: any) => l.id === lotId);
+        
+        // Frontend validation
+        if (lot && editLotData.current_quantity > lot.initial_quantity) {
+            setLotValidationError(t('common.current_quantity_cannot_exceed_initial') || 'Current quantity cannot exceed initial quantity');
+            showToast({
+                type: 'error',
+                message: t('common.current_quantity_cannot_exceed_initial') || 'Current quantity cannot exceed initial quantity',
+                duration: 3000,
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(route('lots.update', lotId), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(editLotData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast({
+                    type: 'success',
+                    message: t('common.lot_updated_successfully') || 'Lot updated successfully',
+                    duration: 3000,
+                });
+                
+                // Refresh lots
+                if (selectedProduct) {
+                    const lotsResponse = await fetch(route('products.lots', selectedProduct.uuid));
+                    const lotsData = await lotsResponse.json();
+                    setProductLots(lotsData.lots || []);
+                }
+                
+                setEditingLotId(null);
+                setEditLotData({});
+                setLotValidationError('');
+            } else {
+                const errorMessage = data.message || data.error || t('common.failed_to_update_lot') || 'Failed to update lot';
+                setLotValidationError(errorMessage);
+                showToast({
+                    type: 'error',
+                    message: errorMessage,
+                    duration: 3000,
+                });
+            }
+        } catch (error) {
+            showToast({
+                type: 'error',
+                message: t('common.failed_to_update_lot') || 'Failed to update lot',
+                duration: 3000,
+            });
+        }
+    };
 
     const {
         products: tableData,
@@ -78,6 +191,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
         setRowSelection,
         showToast,
         t,
+        onViewLots: handleViewLots,
     });
 
     // Handle flash messages
@@ -362,6 +476,198 @@ export default function Index({products, categories, filters, old, errors}: Prod
                 />
             </div>
         </div>
+
+        {/* Lots Modal */}
+        <RTLModal
+            isOpen={lotsModalOpen}
+            onClose={() => setLotsModalOpen(false)}
+            title={
+                <div>
+                    <div className="text-lg font-semibold">{t('common.product_lots') || 'Product Lots'}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 font-normal">
+                        {selectedProduct?.name}
+                    </div>
+                </div>
+            }
+            size="5xl"
+        >
+            <div className="min-h-[300px]">
+                            {lotsLoading ? (
+                                <div className="text-center py-12">
+                                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                                    <p className="mt-4 text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+                                </div>
+                            ) : productLots.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                    <p className="mt-4 text-gray-600 dark:text-gray-400">
+                                        {t('common.no_lots_found') || 'No lots found for this product'}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50 dark:bg-dark-700">
+                                            <tr>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    {t('common.reference')}
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    {t('common.status')}
+                                                </th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    {t('common.initial_quantity')}
+                                                </th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    {t('common.current_quantity')}
+                                                </th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    {t('common.selling_price')}
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    {t('common.expiry_date')}
+                                                </th>
+                                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                    {t('common.actions')}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                            {productLots.map((lot, index) => {
+                                                const isEditing = editingLotId === lot.id;
+                                                return (
+                                                <tr key={lot.id || index} className="hover:bg-gray-50 dark:hover:bg-dark-700">
+                                                    <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                        {lot.reference}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm">
+                                                        {lot.status === 1 ? (
+                                                            <Badge color="success">{t('common.active')}</Badge>
+                                                        ) : lot.status === 2 ? (
+                                                            <Badge color="error">{t('common.expired')}</Badge>
+                                                        ) : (
+                                                            <Badge color="warning">{t('common.depleted')}</Badge>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200 text-right">
+                                                        {lot.initial_quantity}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200 text-right">
+                                                        {isEditing ? (
+                                                            <div className="w-full">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    max={lot.initial_quantity}
+                                                                    value={editLotData.current_quantity}
+                                                                    onChange={(e) => {
+                                                                        const value = parseInt(e.target.value) || 0;
+                                                                        if (value > lot.initial_quantity) {
+                                                                            setLotValidationError(t('common.current_quantity_cannot_exceed_initial') || 'Current quantity cannot exceed initial quantity');
+                                                                        } else {
+                                                                            setLotValidationError('');
+                                                                        }
+                                                                        setEditLotData({...editLotData, current_quantity: value});
+                                                                    }}
+                                                                    className={clsx(
+                                                                        "w-full px-2 py-1 border rounded dark:bg-dark-600 dark:border-gray-600 text-right",
+                                                                        lotValidationError && editingLotId === lot.id && "border-error"
+                                                                    )}
+                                                                />
+                                                                {lotValidationError && editingLotId === lot.id && (
+                                                                    <p className="text-xs text-error mt-1">{lotValidationError}</p>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            lot.current_quantity
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200 text-right">
+                                                        {isEditing ? (
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                value={editLotData.selling_price}
+                                                                onChange={(e) => setEditLotData({...editLotData, selling_price: e.target.value})}
+                                                                className="w-full px-2 py-1 border rounded dark:bg-dark-600 dark:border-gray-600 text-right"
+                                                            />
+                                                        ) : (
+                                                            parseFloat(lot.selling_price).toFixed(2)+ ' MAD'
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+                                                        {isEditing ? (
+                                                            <DatePicker
+                                                                value={editLotData.expiry_date || ''}
+                                                                onChange={(dates: Date[]) => {
+                                                                    if (dates && dates.length > 0) {
+                                                                        const date = dates[0];
+                                                                        const year = date.getFullYear();
+                                                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                                        const day = String(date.getDate()).padStart(2, '0');
+                                                                        setEditLotData({...editLotData, expiry_date: `${year}-${month}-${day}`});
+                                                                    }
+                                                                }}
+                                                                options={{
+                                                                    dateFormat: 'Y-m-d',
+                                                                }}
+                                                                className="w-full"
+                                                            />
+                                                        ) : (
+                                                            lot.expiry_date
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm">
+                                                        <div className="flex justify-center gap-2">
+                                                            {lot.status === 1 && (
+                                                                isEditing ? (
+                                                                    <>
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="flat"
+                                                                            color="success"
+                                                                            className="px-3 py-1 text-sm"
+                                                                            onClick={() => handleSaveLot(lot.id)}
+                                                                        >
+                                                                            {t('common.save')}
+                                                                        </Button>
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="flat"
+                                                                            color="error"
+                                                                            className="px-3 py-1 text-sm"
+                                                                            onClick={handleCancelEditLot}
+                                                                        >
+                                                                            {t('common.cancel')}
+                                                                        </Button>
+                                                                    </>
+                                                                ) : (
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="flat"
+                                                                        color="info"
+                                                                        isIcon
+                                                                        className="size-8"
+                                                                        onClick={() => handleEditLot(lot)}
+                                                                    >
+                                                                        <PencilIcon className="size-4 stroke-1.5" />
+                                                                    </Button>
+                                                                )
+                                                            )}
+                                                            {lot.status !== 1 && (
+                                                                <span className="text-gray-400 text-xs">-</span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+            </div>
+        </RTLModal>
 
         <ConfirmModal
             show={bulkDeleteModalOpen}
