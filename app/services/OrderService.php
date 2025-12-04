@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\DTOs\Stock\OrderDto;
 use App\Enums\OrderStatus;
-use App\Models\Blog;
 use App\Interfaces\ServiceInterface;
+use App\Models\Lot;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use App\Models\Order;
@@ -93,7 +93,6 @@ class OrderService implements ServiceInterface
     public function create(OrderDto $dto): Order
     {
         try {
-            // Get supplier ID from UUID
             $supplier = Supplier::where('uuid', $dto->supplier_id)->first();
             if (!$supplier) {
                 throw new Exception("Supplier not found");
@@ -120,9 +119,8 @@ class OrderService implements ServiceInterface
             );
 
             foreach ($dto->products as $product) {
-                // Get product by UUID (frontend sends UUID as product_id)
                 $productModel = Product::where('uuid', $product['product_id'])->first();
-                
+
                 if ($productModel) {
                     OrderProduct::create([
                         'order_id' => $order->id,
@@ -162,11 +160,6 @@ class OrderService implements ServiceInterface
             if (!$supplier) {
                 throw new Exception("Supplier not found");
             }
-            \Log::info('Update order products', [
-                'order_id' => $order->id,
-                'products_count' => count($dto->products),
-                'products_data' => $dto->products
-            ]);
 
             $order->update(
                 [
@@ -185,22 +178,12 @@ class OrderService implements ServiceInterface
                 ]
             );
 
-            \Log::info('Update order products', [
-                'order_id' => $order->id,
-                'products_count' => count($dto->products),
-                'products_data' => $dto->products
-            ]);
             foreach ($dto->products as $product) {
-                \Log::info('Processing product', [
-                    'product_id' => $product['product_id'] ?? 'missing',
-                    'product_data' => $product
-                ]);
-                
+               
                 // Get product by UUID (frontend sends UUID as product_id)
                 $productModel = Product::where('uuid', $product['product_id'])->first();
                 
                 if ($productModel) {
-                    \Log::info('Product found', ['id' => $productModel->id]);
                     OrderProduct::create([
                         'order_id' => $order->id,
                         'product_id' => $productModel->id,
@@ -293,5 +276,10 @@ class OrderService implements ServiceInterface
     private function generateReference()
     {
         return 'ORD-' . date('Y') . '-' . str_pad(Order::count() + 1, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function generateLotReference()
+    {
+        return 'LOT-' . date('Y') . '-' . str_pad(Lot::count() + 1, 4, '0', STR_PAD_LEFT);
     }
 }

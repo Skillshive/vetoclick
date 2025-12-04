@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Stock;
 use App\Http\Controllers\Controller;
 use App\Services\OrderService;
 use App\DTOs\Stock\OrderDto;
+use App\Enums\LotStatus;
+use App\Enums\OrderStatus;
 use App\Http\Requests\Stock\OrderRequest;
 use Illuminate\Http\Request;
 use Exception;
@@ -15,6 +17,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\Product\ProductApiResource;
+use App\Models\Lot;
 use App\Models\Product;
 class OrderController extends Controller
 {
@@ -288,37 +291,53 @@ class OrderController extends Controller
     public function receive(string $uuid)
     {
         try {
-            \Log::info('Receive order called', ['uuid' => $uuid]);
             $order = $this->orderService->getByUuid($uuid);
 
             if (!$order) {
-                \Log::error('Order not found', ['uuid' => $uuid]);
                 return back()->with('error', __('common.order_not_found'));
             }
 
-            \Log::info('Order found', ['id' => $order->id, 'status' => $order->status]);
-
             // Check if order can be received
-            $orderStatus = \App\Enums\OrderStatus::from($order->status);
+            $orderStatus = OrderStatus::from($order->status);
             if (!$orderStatus->canBeReceived()) {
-                \Log::warning('Order cannot be received', ['status' => $order->status]);
                 return back()->with('error', __('common.order_cannot_be_received'));
             }
 
-            \Log::info('Updating order to received');
-            $updated = $order->update([
-                'status' => \App\Enums\OrderStatus::RECEIVED->value,
+            $order->update([
+                'status' => OrderStatus::RECEIVED->value,
                 'received_at' => now(),
                 'received_by' => auth()->id(),
             ]);
 
-            \Log::info('Order updated', ['success' => $updated, 'new_status' => $order->fresh()->status]);
+            // Create lots for each product in the order
+            foreach ($order->products as $orderProduct) {
+                $productModel = Product::find($orderProduct->product_id);
+                
+                if ($productModel) {
+                    // Update product price
+                    $productModel->price = $orderProduct->unit_price;
+                    $productModel->save();
+                    
+                    // Create lot
+                    $lot = Lot::create([
+                        'product_id' => $productModel->id,
+                        'order_id' => $order->id,
+                        'reference' => $this->orderService->generateLotReference(),
+                        'initial_quantity' => $orderProduct->quantity,
+                        'current_quantity' => $orderProduct->quantity,
+                        'selling_price' => $orderProduct->unit_price,
+                        'status' => LotStatus::ACTIVE->value,
+                    ]);
+                    
+                } else {
+                    return back()->with('error', __('common.product_not_found'));
+                }
+            }
 
             return redirect()->route('orders.index')->with('success', __('common.order_received_successfully'));
 
         } catch (Exception $e) {
-            \Log::error('Failed to receive order', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return back()->with('error', __('common.failed_to_receive_order') . ': ' . $e->getMessage());
+            return back()->with('error', __('common.failed_to_receive_order'));
         }
     }
 
