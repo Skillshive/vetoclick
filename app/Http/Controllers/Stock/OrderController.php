@@ -354,7 +354,6 @@ class OrderController extends Controller
                         'reference' => $this->orderService->generateLotReference(),
                         'initial_quantity' => $orderProduct->quantity,
                         'current_quantity' => $orderProduct->quantity,
-                        'selling_price' => $orderProduct->unit_price,
                         'status' => LotStatus::ACTIVE->value,
                     ]);
                     
