@@ -119,6 +119,7 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                     setReceiveModalOpen(false);
                     setReceiveSuccess(false);
                 }, 1000);
+                showToast({ type: 'success', message: t('common.order_received_successfully') || 'Order received successfully' });
             },
             onError: (errors: any) => {
                 setReceiveError(errors.message || t('common.failed_to_receive_order') || 'Failed to receive order');
