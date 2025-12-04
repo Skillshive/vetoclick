@@ -3,12 +3,14 @@ import { Order } from './types';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
-import { PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, EyeIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export function createColumns(
   onEdit: (order: Order) => void,
   onDelete: (order: Order) => void,
   onView: (order: Order) => void,
+  onReceive: (order: Order) => void,
+  onCancel: (order: Order) => void,
   t: (key: string) => string
 ): ColumnDef<Order>[] {
 
@@ -161,13 +163,39 @@ export function createColumns(
       },
     },
     {
+      accessorKey: 'created_at',
+      header: t('common.created_at'),
+      cell: ({ row }) => {
+        const { locale } = useTranslation();
+        const date = row.getValue('created_at') as string;
+        if (!date) return <span className="text-gray-400">{t('common.no_data')}</span>;
+        
+        const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
+        const formattedDate = new Date(date).toLocaleDateString(dateLocale, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        return (
+          <span className="dark:text-dark-100 font-medium text-gray-700">
+            {formattedDate}
+          </span>
+        );
+      },
+    },
+    {
       id: 'actions',
       header: "",
       cell: ({ row }) => {
         const order = row.original;
+        const canModify = order.status === 'draft' || order.status === 'pending';
+        const canReceive = order.status === 'confirmed' || order.status === 'shipped';
+        const canCancel = order.status === 'draft' || order.status === 'pending' || order.status === 'confirmed';
 
         return (
-          <div className="flex justify-center items-center gap-2"> 
+          <div className="flex justify-center items-center gap-1"> 
             <Button
               type="button"
               variant="flat"
@@ -180,29 +208,61 @@ export function createColumns(
               <EyeIcon className="size-4 stroke-1.5" />
             </Button>
 
-            <Button
-              type="button"
-              variant="flat"
-              color="info"
-              isIcon
-              className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
-              title={t('common.edit')}
-              onClick={() => onEdit(order)}
-            >
-              <PencilIcon className="size-4 stroke-1.5" />
-            </Button>
+            {canModify && (
+              <Button
+                type="button"
+                variant="flat"
+                color="info"
+                isIcon
+                className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
+                title={t('common.edit')}
+                onClick={() => onEdit(order)}
+              >
+                <PencilIcon className="size-4 stroke-1.5" />
+              </Button>
+            )}
+
+            {canReceive && (
+              <Button
+                type="button"
+                variant="flat"
+                color="success"
+                isIcon
+                className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
+                title={t('common.receive')}
+                onClick={() => onReceive(order)}
+              >
+                <CheckCircleIcon className="size-4 stroke-1.5" />
+              </Button>
+            )}
+
+            {canCancel && (
+              <Button
+                type="button"
+                variant="flat"
+                color="warning"
+                isIcon
+                className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md"
+                title={t('common.cancel')}
+                onClick={() => onCancel(order)}
+              >
+                <XCircleIcon className="size-4 stroke-1.5" />
+              </Button>
+            )}
             
-            <Button
-              type="button"
-              variant="flat"
-              color="error"
-              isIcon
-              className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md hover:bg-red-50 dark:hover:bg-red-900/20"
-              title={t('common.delete')}
-              onClick={() => onDelete(order)}
-            >
-              <TrashIcon className="size-4 stroke-1.5" />
-            </Button>
+            {canModify && (
+              <Button
+                type="button"
+                variant="flat"
+                color="error"
+                isIcon
+                className="size-8 rounded-sm hover:scale-105 transition-all duration-200 hover:shadow-md hover:bg-red-50 dark:hover:bg-red-900/20"
+                title={t('common.delete')}
+                onClick={() => onDelete(order)}
+              >
+                <TrashIcon className="size-4 stroke-1.5" />
+              </Button>
+            )}
           </div>
         );
       },

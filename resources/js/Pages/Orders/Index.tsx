@@ -37,6 +37,18 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
 
+    // Receive modal state
+    const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+    const [receiveSuccess, setReceiveSuccess] = useState(false);
+    const [receiveError, setReceiveError] = useState<string | null>(null);
+    const [confirmReceiveLoading, setConfirmReceiveLoading] = useState(false);
+
+    // Cancel modal state
+    const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [cancelSuccess, setCancelSuccess] = useState(false);
+    const [cancelError, setCancelError] = useState<string | null>(null);
+    const [confirmCancelLoading, setConfirmCancelLoading] = useState(false);
+
     const handleView = (order: Order) => {
         router.visit(route('orders.show', order.uuid));
     };
@@ -48,6 +60,16 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
     const handleDelete = (order: Order) => {
         setSelectedOrder(order);
         setDeleteModalOpen(true);
+    };
+
+    const handleReceive = (order: Order) => {
+        setSelectedOrder(order);
+        setReceiveModalOpen(true);
+    };
+
+    const handleCancel = (order: Order) => {
+        setSelectedOrder(order);
+        setCancelModalOpen(true);
     };
 
     const handleConfirmDelete = () => {
@@ -72,6 +94,65 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                 setDeleteError(errors.message || t('common.failed_to_delete_order') || 'Failed to delete order');
                 setConfirmDeleteLoading(false);
                 showToast({ type: 'error', message: t('common.failed_to_delete_order') || 'Failed to delete order' });
+            }
+        });
+    };
+
+    const handleConfirmReceive = () => {
+        if (!selectedOrder) return;
+
+        setConfirmReceiveLoading(true);
+        setReceiveError(null);
+        setReceiveSuccess(false);
+
+        router.post(route('orders.receive', selectedOrder.uuid), {}, {
+            preserveState: false,
+            preserveScroll: false,
+            onStart: () => {
+                setConfirmReceiveLoading(true);
+            },
+            onSuccess: () => {
+                setConfirmReceiveLoading(false);
+                setReceiveSuccess(true);
+                // Close modal after showing success
+                setTimeout(() => {
+                    setReceiveModalOpen(false);
+                    setReceiveSuccess(false);
+                }, 1000);
+            },
+            onError: (errors: any) => {
+                setReceiveError(errors.message || t('common.failed_to_receive_order') || 'Failed to receive order');
+                setConfirmReceiveLoading(false);
+            }
+        });
+    };
+
+    const handleConfirmCancel = () => {
+        if (!selectedOrder) return;
+
+        setConfirmCancelLoading(true);
+        setCancelError(null);
+        setCancelSuccess(false);
+
+        router.post(route('orders.cancel', selectedOrder.uuid), {}, {
+            preserveState: false,
+            preserveScroll: false,
+            onStart: () => {
+                setConfirmCancelLoading(true);
+            },
+            onSuccess: () => {
+                setConfirmCancelLoading(false);
+                setCancelSuccess(true);
+                // Close modal after showing success
+                setTimeout(() => {
+                    setCancelModalOpen(false);
+                    setCancelSuccess(false);
+                }, 1000);
+                showToast({ type: 'success', message: t('common.order_cancelled_successfully') || 'Order cancelled successfully' });
+            },
+            onError: (errors: any) => {
+                setCancelError(errors.message || t('common.failed_to_cancel_order') || 'Failed to cancel order');
+                setConfirmCancelLoading(false);
             }
         });
     };
@@ -127,6 +208,8 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
         onEdit: handleEdit,
         onDelete: handleDelete,
         onView: handleView,
+        onReceive: handleReceive,
+        onCancel: handleCancel,
     });
 
     // Handle flash messages
@@ -495,7 +578,57 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                 },
                 success: {
                     title: t('common.success') || 'Success',
-                    description: t('common.order_deleted_success') || 'Order deleted successfully',
+                    description: t('common.order_deleted_successfully') || 'Order deleted successfully',
+                    actionText: t('common.close') || 'Close',
+                }
+            }}
+        />
+
+        <ConfirmModal
+            show={receiveModalOpen}
+            onClose={() => setReceiveModalOpen(false)}
+            onOk={handleConfirmReceive}
+            state={receiveError ? "error" : receiveSuccess ? "success" : "pending"}
+            confirmLoading={confirmReceiveLoading}
+            messages={{
+                pending: {
+                    title: t('common.confirm_receive') || 'Confirm Receive Order',
+                    description: t('common.confirm_receive_order') || 'Are you sure you want to mark this order as received?',
+                    actionText: t('common.receive') || 'Receive',
+                },
+                error: {
+                    title: t('common.error') || 'Error',
+                    description: receiveError || t('common.failed_to_receive_order') || 'Failed to receive order',
+                    actionText: t('common.close') || 'Close',
+                },
+                success: {
+                    title: t('common.success') || 'Success',
+                    description: t('common.order_received_successfully') || 'Order received successfully',
+                    actionText: t('common.close') || 'Close',
+                }
+            }}
+        />
+
+        <ConfirmModal
+            show={cancelModalOpen}
+            onClose={() => setCancelModalOpen(false)}
+            onOk={handleConfirmCancel}
+            state={cancelError ? "error" : cancelSuccess ? "success" : "pending"}
+            confirmLoading={confirmCancelLoading}
+            messages={{
+                pending: {
+                    title: t('common.confirm_cancel') || 'Confirm Cancel Order',
+                    description: t('common.confirm_cancel_order') || 'Are you sure you want to cancel this order?',
+                    actionText: t('common.cancel_order') || 'Cancel Order',
+                },
+                error: {
+                    title: t('common.error') || 'Error',
+                    description: cancelError || t('common.failed_to_cancel_order') || 'Failed to cancel order',
+                    actionText: t('common.close') || 'Close',
+                },
+                success: {
+                    title: t('common.success') || 'Success',
+                    description: t('common.order_cancelled_successfully') || 'Order cancelled successfully',
                     actionText: t('common.close') || 'Close',
                 }
             }}

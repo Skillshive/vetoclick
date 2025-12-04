@@ -281,4 +281,66 @@ class OrderController extends Controller
             ]);
         }
     }
+
+    /**
+     * Mark order as received
+     */
+    public function receive(string $uuid)
+    {
+        try {
+            $order = $this->orderService->getByUuid($uuid);
+
+            if (!$order) {
+                return back()->with('error', __('common.order_not_found'));
+            }
+
+            // Check if order can be received
+            $orderStatus = \App\Enums\OrderStatus::from($order->status);
+            if (!$orderStatus->canBeReceived()) {
+                return back()->with('error', __('common.order_cannot_be_received'));
+            }
+
+            $order->update([
+                'status' => \App\Enums\OrderStatus::RECEIVED->value,
+                'received_at' => now(),
+                'received_by' => auth()->id(),
+            ]);
+
+            return redirect()->route('orders.index')->with('success', __('common.order_received_successfully'));
+
+        } catch (Exception $e) {
+            return back()->with('error', __('common.failed_to_receive_order'));
+        }
+    }
+
+    /**
+     * Cancel order
+     */
+    public function cancel(string $uuid)
+    {
+        try {
+            $order = $this->orderService->getByUuid($uuid);
+
+            if (!$order) {
+                return back()->with('error', __('common.order_not_found'));
+            }
+
+            // Check if order can be cancelled
+            $orderStatus = \App\Enums\OrderStatus::from($order->status);
+            if (!$orderStatus->canBeCancelled()) {
+                return back()->with('error', __('common.order_cannot_be_cancelled'));
+            }
+
+            $order->update([
+                'status' => \App\Enums\OrderStatus::CANCELLED->value,
+                'cancelled_at' => now(),
+                'cancelled_by' => auth()->id(),
+            ]);
+
+            return redirect()->route('orders.index')->with('success', __('common.order_cancelled_successfully'));
+
+        } catch (Exception $e) {
+            return back()->with('error', __('common.failed_to_cancel_order'));
+        }
+    }
 }

@@ -16,6 +16,8 @@ interface UseOrderTableProps {
   onEdit: (order: Order) => void;
   onDelete: (order: Order) => void;
   onView: (order: Order) => void;
+  onReceive: (order: Order) => void;
+  onCancel: (order: Order) => void;
 }
 
 export function useOrderTable({
@@ -28,6 +30,8 @@ export function useOrderTable({
   onEdit,
   onDelete,
   onView,
+  onReceive,
+  onCancel,
 }: UseOrderTableProps) {
 
   // Bulk delete state
@@ -92,9 +96,11 @@ export function useOrderTable({
       onEdit,
       onDelete,
       onView,
+      onReceive,
+      onCancel,
       t
     );
-  }, [onEdit, onDelete, onView, t]);
+  }, [onEdit, onDelete, onView, onReceive, onCancel, t]);
 
   // Single delete modal functions
   const openSingleDeleteModal = (order: Order) => {

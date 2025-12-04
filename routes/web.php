@@ -159,6 +159,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('{uuid}/update', 'update')->name('update');
             Route::delete('{uuid}/delete', 'destroy')->name('destroy');
             Route::get('{uuid}/show', 'show')->name('show');
+            Route::post('{uuid}/receive', 'receive')->name('receive');
+            Route::post('{uuid}/cancel', 'cancel')->name('cancel');
         });
 });
 
