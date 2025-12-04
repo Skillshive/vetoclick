@@ -45,7 +45,7 @@ class OrderController extends Controller
             ]);
 
             // Get suppliers for filters
-            $suppliers = Supplier::all();
+            $suppliers = Supplier::orderBy('created_at', 'desc')->get();
 
             $suppliersResource = SupplierResource::collection($suppliers);
             

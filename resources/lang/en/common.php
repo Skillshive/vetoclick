@@ -1470,4 +1470,9 @@ return [
     'order_status' => 'Order Status',
     'order_status_description' => 'The status of the order',
     'order_status' => 'The status of the order',
+    'cancelled_by' => 'Cancelled By',
+    'cancelled_at' => 'Cancelled At',
+    'cancelled_reason' => 'Cancelled Reason',
+    'cancelled_reason_description' => 'The reason for cancelling the order',
+    'cancellation_information' => 'Cancellation Information',
 ];

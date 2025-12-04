@@ -1,10 +1,12 @@
 import MainLayout from '@/layouts/MainLayout';
-import React from 'react';
+import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Button, Card, Badge } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/components/common/Toast/ToastContext';
 import { Page } from '@/components/shared/Page';
 import { BreadcrumbItem, Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { ConfirmModal } from '@/components/shared/ConfirmModal';
 import { 
     CalendarIcon, 
     BuildingStorefrontIcon, 
@@ -16,7 +18,9 @@ import {
     PencilIcon,
     ArrowLeftIcon,
     CalculatorIcon,
-    ShoppingCartIcon
+    ShoppingCartIcon,
+    CheckCircleIcon,
+    XCircleIcon
 } from '@heroicons/react/24/outline';
 import { ListOrderedIcon } from 'lucide-react';
 
@@ -79,6 +83,19 @@ interface ShowOrderProps {
 
 const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
     const { t } = useTranslation();
+    const { showToast } = useToast();
+    
+    // Receive modal state
+    const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+    const [receiveSuccess, setReceiveSuccess] = useState(false);
+    const [receiveError, setReceiveError] = useState<string | null>(null);
+    const [confirmReceiveLoading, setConfirmReceiveLoading] = useState(false);
+
+    // Cancel modal state
+    const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [cancelSuccess, setCancelSuccess] = useState(false);
+    const [cancelError, setCancelError] = useState<string | null>(null);
+    const [confirmCancelLoading, setConfirmCancelLoading] = useState(false);
 
     if (error || !order) {
         return (
@@ -119,6 +136,62 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
     };
 
     const canModify = order.status === 'draft' || order.status === 'pending';
+    const canReceive = order.status != 'cancelled';
+    const canCancel = order.status === 'draft' || order.status === 'pending' ;
+
+    const handleConfirmReceive = () => {
+        setConfirmReceiveLoading(true);
+        setReceiveError(null);
+        setReceiveSuccess(false);
+
+        router.post(route('orders.receive', order.uuid), {}, {
+            preserveState: false,
+            preserveScroll: false,
+            onStart: () => {
+                setConfirmReceiveLoading(true);
+            },
+            onSuccess: () => {
+                setConfirmReceiveLoading(false);
+                setReceiveSuccess(true);
+                showToast({ type: 'success', message: t('common.order_received_successfully') || 'Order received successfully' });
+                setTimeout(() => {
+                    setReceiveModalOpen(false);
+                    setReceiveSuccess(false);
+                }, 1000);
+            },
+            onError: (errors: any) => {
+                setReceiveError(errors.message || t('common.failed_to_receive_order') || 'Failed to receive order');
+                setConfirmReceiveLoading(false);
+            }
+        });
+    };
+
+    const handleConfirmCancel = () => {
+        setConfirmCancelLoading(true);
+        setCancelError(null);
+        setCancelSuccess(false);
+
+        router.post(route('orders.cancel', order.uuid), {}, {
+            preserveState: false,
+            preserveScroll: false,
+            onStart: () => {
+                setConfirmCancelLoading(true);
+            },
+            onSuccess: () => {
+                setConfirmCancelLoading(false);
+                setCancelSuccess(true);
+                showToast({ type: 'success', message: t('common.order_cancelled_successfully') || 'Order cancelled successfully' });
+                setTimeout(() => {
+                    setCancelModalOpen(false);
+                    setCancelSuccess(false);
+                }, 1000);
+            },
+            onError: (errors: any) => {
+                setCancelError(errors.message || t('common.failed_to_cancel_order') || 'Failed to cancel order');
+                setConfirmCancelLoading(false);
+            }
+        });
+    };
 
     return (
        <MainLayout>
@@ -151,6 +224,28 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
                         >
                             <PencilIcon className="size-4" />
                             {t('common.edit')}
+                        </Button>
+                     )}
+                     {canReceive && (
+                        <Button
+                            variant="filled"
+                            color="success"
+                            onClick={() => setReceiveModalOpen(true)}
+                            className="flex items-center gap-2"
+                        >
+                            <CheckCircleIcon className="size-4" />
+                            {t('common.receive')}
+                        </Button>
+                     )}
+                     {canCancel && (
+                        <Button
+                            variant="filled"
+                            color="warning"
+                            onClick={() => setCancelModalOpen(true)}
+                            className="flex items-center gap-2"
+                        >
+                            <XCircleIcon className="size-4" />
+                            {t('common.cancel_order')}
                         </Button>
                      )}
                    </div>
@@ -471,6 +566,56 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
                     </div>
                  </div>
                </div>
+
+               <ConfirmModal
+                    show={receiveModalOpen}
+                    onClose={() => setReceiveModalOpen(false)}
+                    onOk={handleConfirmReceive}
+                    state={receiveError ? "error" : receiveSuccess ? "success" : "pending"}
+                    confirmLoading={confirmReceiveLoading}
+                    messages={{
+                        pending: {
+                            title: t('common.confirm_receive') || 'Confirm Receive Order',
+                            description: t('common.confirm_receive_order') || 'Are you sure you want to mark this order as received?',
+                            actionText: t('common.receive') || 'Receive',
+                        },
+                        error: {
+                            title: t('common.error') || 'Error',
+                            description: receiveError || t('common.failed_to_receive_order') || 'Failed to receive order',
+                            actionText: t('common.close') || 'Close',
+                        },
+                        success: {
+                            title: t('common.success') || 'Success',
+                            description: t('common.order_received_successfully') || 'Order received successfully',
+                            actionText: t('common.close') || 'Close',
+                        }
+                    }}
+                />
+
+                <ConfirmModal
+                    show={cancelModalOpen}
+                    onClose={() => setCancelModalOpen(false)}
+                    onOk={handleConfirmCancel}
+                    state={cancelError ? "error" : cancelSuccess ? "success" : "pending"}
+                    confirmLoading={confirmCancelLoading}
+                    messages={{
+                        pending: {
+                            title: t('common.confirm_cancel') || 'Confirm Cancel Order',
+                            description: t('common.confirm_cancel_order') || 'Are you sure you want to cancel this order?',
+                            actionText: t('common.cancel_order') || 'Cancel Order',
+                        },
+                        error: {
+                            title: t('common.error') || 'Error',
+                            description: cancelError || t('common.failed_to_cancel_order') || 'Failed to cancel order',
+                            actionText: t('common.close') || 'Close',
+                        },
+                        success: {
+                            title: t('common.success') || 'Success',
+                            description: t('common.order_cancelled_successfully') || 'Order cancelled successfully',
+                            actionText: t('common.close') || 'Close',
+                        }
+                    }}
+                />
             </Page>
         </MainLayout>
     );
