@@ -4,22 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Allergy extends Model
 {
-    use HasFactory;
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($user) {
-            $user->uuid = Str::uuid();
-        });
-    }
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'medical_record_id',
+        'uuid',
+        'pet_id',
+        'consultation_id',
+        'veterinarian_id',
         'allergen_type',
         'allergen_detail',
         'start_date',
@@ -30,13 +27,35 @@ class Allergy extends Model
         'treatment_given',
     ];
 
-    public function pet()
+    protected $casts = [
+        'start_date' => 'date',
+        'resolution_date' => 'date',
+        'resolved_status' => 'boolean',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($allergy) {
+            if (empty($allergy->uuid)) {
+                $allergy->uuid = (string) Str::uuid();
+            }
+        });
+    }
+
+    public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);
     }
 
-    public function medicalRecord()
+    public function consultation(): BelongsTo
     {
-        return $this->belongsTo(MedicalRecord::class);
+        return $this->belongsTo(Consultation::class);
+    }
+
+    public function veterinarian(): BelongsTo
+    {
+        return $this->belongsTo(Veterinary::class, 'veterinarian_id');
     }
 }
