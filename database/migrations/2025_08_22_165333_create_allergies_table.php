@@ -9,7 +9,9 @@ return new class extends Migration {
         Schema::create('allergies', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('medical_record_id')->constrained('medical_records')->onDelete('cascade');
+            $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
+            $table->foreignId('consultation_id')->nullable()->constrained('consultations')->onDelete('cascade');
+            $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
             $table->string('allergen_type'); // Food, Environmental, Medication
             $table->text('allergen_detail')->nullable(); 
             $table->date('start_date')->nullable();
