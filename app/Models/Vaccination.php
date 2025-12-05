@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+
 class Vaccination extends Model
 {
     use HasFactory;
@@ -33,5 +34,15 @@ class Vaccination extends Model
     public function vaccin()
     {
         return $this->belongsTo(Vaccin::class);
+    }
+
+    public function vaccine()
+    {
+        return $this->belongsTo(\App\Models\Product::class, 'vaccine_id');
+    }
+
+    public function administeredByUser()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'administered_by');
     }
 }
