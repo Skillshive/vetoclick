@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
+            $table->foreignId('consultation_id')->nullable()->constrained('consultations')->onDelete('cascade');
+            $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
+            $table->date('date');
+            $table->string('visit_type');
+            $table->text('notes');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
