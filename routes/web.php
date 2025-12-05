@@ -48,6 +48,9 @@ Route::get('/dashboard', function (AppointmentService $appointmentService) {
         $veterinaryId = $user->veterinary->id;
         $todayAppointments = $appointmentService->getTodayAppointments($veterinaryId);
         
+        // Eager load consultation relationship
+        $todayAppointments->load('consultation');
+        
         return Inertia::render('Dashboards/Vet/index')->with([
             "clients" => $clients,
             "todayAppointments" => AppointmentResource::collection($todayAppointments)->toArray(request()),
@@ -135,6 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('{pet:uuid}/edit', 'edit')->name('edit');
             Route::post('{pet:uuid}/update', 'update')->name('update');
             Route::delete('{pet:uuid}/delete', 'destroy')->name('destroy');
+            Route::get('{uuid}/medical-history', 'getMedicalHistory')->name('medical-history');
         });
 });
 
@@ -216,7 +220,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->controller(AppointmentController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::delete('{uuid}/cancel', 'cancel')->name('cancel');
+            Route::post('{uuid}/create-consultation', 'createConsultation')->name('create-consultation');
+            Route::post('{uuid}/cancel', 'cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->name('report');
             Route::get('create', function () {
                 return Inertia::render('Appointments/Create');
@@ -251,6 +256,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Lot routes
     Route::put('lots/{id}', [\App\Http\Controllers\LotController::class, 'update'])->name('lots.update');
+
+    // Vaccin routes (available vaccines list)
+    Route::get('vaccins', [\App\Http\Controllers\VaccinController::class, 'index'])->name('vaccins.index');
+    
+    // Vaccine products (from products table where type = VACCINE)
+    Route::get('vaccine-products', [\App\Http\Controllers\VaccineProductController::class, 'index'])->name('vaccine-products.index');
+
+    // Vaccination routes
+    Route::post('vaccinations', [\App\Http\Controllers\VaccinationController::class, 'store'])->name('vaccinations.store');
+    Route::put('vaccinations/{uuid}', [\App\Http\Controllers\VaccinationController::class, 'update'])->name('vaccinations.update');
+    Route::delete('vaccinations/{uuid}', [\App\Http\Controllers\VaccinationController::class, 'destroy'])->name('vaccinations.destroy');
+
+    // Allergy routes
+    Route::post('allergies', [\App\Http\Controllers\AllergyController::class, 'store'])->name('allergies.store');
+    Route::put('allergies/{uuid}', [\App\Http\Controllers\AllergyController::class, 'update'])->name('allergies.update');
+    Route::delete('allergies/{uuid}', [\App\Http\Controllers\AllergyController::class, 'destroy'])->name('allergies.destroy');
+
+    // Note routes
+    Route::post('notes', [\App\Http\Controllers\NoteController::class, 'store'])->name('notes.store');
+    Route::put('notes/{uuid}', [\App\Http\Controllers\NoteController::class, 'update'])->name('notes.update');
+    Route::delete('notes/{uuid}', [\App\Http\Controllers\NoteController::class, 'destroy'])->name('notes.destroy');
+
+    // Prescription routes
+    Route::post('prescriptions', [\App\Http\Controllers\PrescriptionController::class, 'store'])->name('prescriptions.store');
+    Route::put('prescriptions/{uuid}', [\App\Http\Controllers\PrescriptionController::class, 'update'])->name('prescriptions.update');
+    Route::delete('prescriptions/{uuid}', [\App\Http\Controllers\PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
+
+    // Consultation note routes
+    Route::post('consultation-notes', [\App\Http\Controllers\ConsultationNoteController::class, 'store'])->name('consultation-notes.store');
+    Route::put('consultation-notes/{uuid}', [\App\Http\Controllers\ConsultationNoteController::class, 'update'])->name('consultation-notes.update');
+    Route::delete('consultation-notes/{uuid}', [\App\Http\Controllers\ConsultationNoteController::class, 'destroy'])->name('consultation-notes.destroy');
+
+    // Consultation routes
+    Route::post('consultations/{uuid}/close', [\App\Http\Controllers\ConsultationController::class, 'close'])->name('consultations.close');
 });
 
 // Role routes
