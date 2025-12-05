@@ -428,7 +428,7 @@ class AppointmentService implements ServiceInterface
      */
     public function getTodayAppointments(?int $veterinaryId = null): \Illuminate\Database\Eloquent\Collection
     {
-        $query = Appointment::with(['client', 'pet.breed.species', 'veterinary'])
+        $query = Appointment::with(['client', 'pet.breed.species', 'veterinary', 'consultation'])
             ->whereDate('appointment_date', Carbon::today())
             ->where('status', '!=', 'cancelled')
             ->orderBy('start_time', 'asc');

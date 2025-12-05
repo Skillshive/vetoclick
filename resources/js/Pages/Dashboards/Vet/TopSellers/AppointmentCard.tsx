@@ -6,7 +6,10 @@ import {
   ClockIcon,
   CheckBadgeIcon,
   XCircleIcon,
+  PlayIcon,
+  StopIcon,
 } from "@heroicons/react/24/outline";
+import { PencilSquareIcon } from "@heroicons/react/24/solid";
 
 // Local Imports
 import { Avatar, Button, Card, Modal } from "@/components/ui";
@@ -32,7 +35,12 @@ export function AppointmentCard({
   const { rtlClasses } = useRTL();
   const { showToast } = useToast();
   const [isCheckingAccess, setIsCheckingAccess] = useState(false);
+  const [creatingConsultation, setCreatingConsultation] = useState(false);
+  const [consultationId, setConsultationId] = useState<string | null>(
+    appointment.consultation?.uuid || null
+  );
 
+  console.log("consultation",appointment.consultation);
   const StatusIcon = () => {
     switch (appointment.status) {
       case "confirmed":
@@ -56,6 +64,119 @@ export function AppointmentCard({
   
     const handleCloseModal = () => {
       setIsModalOpen(false);
+    };
+
+    const handleCreateConsultation = async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent card click
+      setCreatingConsultation(true);
+
+      try {
+        const response = await fetch(route('appointments.create-consultation', { uuid: appointment.uuid }), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setConsultationId(data.consultation_uuid);
+          showToast({
+            type: 'success',
+            message: t('common.consultation_created') || 'Consultation created successfully',
+            duration: 3000,
+          });
+          // Reload page to refresh appointment status
+          window.location.reload();
+        } else {
+          throw new Error(data.message || 'Failed to create consultation');
+        }
+      } catch (error: any) {
+        showToast({
+          type: 'error',
+          message: error.message || t('common.failed_to_create_consultation') || 'Failed to create consultation',
+          duration: 3000,
+        });
+      } finally {
+        setCreatingConsultation(false);
+      }
+    };
+
+    const handleCancelAppointment = async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent card click
+
+      if (!confirm(t('common.confirm_cancel_appointment') || 'Are you sure you want to cancel this appointment?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(route('appointments.cancel', { uuid: appointment.uuid }), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast({
+            type: 'success',
+            message: t('common.appointment_cancelled') || 'Appointment cancelled successfully',
+            duration: 3000,
+          });
+          window.location.reload();
+        } else {
+          throw new Error(data.message || 'Failed to cancel appointment');
+        }
+      } catch (error: any) {
+        showToast({
+          type: 'error',
+          message: error.message || t('common.failed_to_cancel_appointment') || 'Failed to cancel appointment',
+          duration: 3000,
+        });
+      }
+    };
+
+    const handleCloseConsultation = async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent card click
+
+      if (!confirm(t('common.confirm_close_consultation') || 'Are you sure you want to close this consultation?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(route('consultations.close', { uuid: appointment.consultation?.uuid }), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast({
+            type: 'success',
+            message: t('common.consultation_closed') || 'Consultation closed successfully',
+            duration: 3000,
+          });
+          setConsultationId(null);
+          window.location.reload();
+        } else {
+          throw new Error(data.message || 'Failed to close consultation');
+        }
+      } catch (error: any) {
+        showToast({
+          type: 'error',
+          message: error.message || t('common.failed_to_close_consultation') || 'Failed to close consultation',
+          duration: 3000,
+        });
+      }
     };
 
     const handleJoinMeeting = async (e: React.MouseEvent) => {
@@ -163,12 +284,59 @@ export function AppointmentCard({
               </Button>
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div className="mt-4 flex justify-center gap-2">
+            {!consultationId && appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
+              <>
+                <Button
+                  color="primary"
+                  isIcon
+                  className="size-9"
+                  onClick={handleCreateConsultation}
+                  disabled={creatingConsultation}
+                  title={t("common.create_consultation") || "Start Consultation"}>
+                  <PlayIcon className="size-5" />
+                </Button>
+                <Button
+                  color="error"
+                  isIcon
+                  className="size-9"
+                  onClick={handleCancelAppointment}
+                  title={t("common.cancel_appointment") || "Cancel"}>
+                  <XCircleIcon className="size-5" />
+                </Button>
+              </>
+            )}
+            
+            {consultationId && (
+              <>
+                <Button
+                  color="success"
+                  isIcon
+                  className="size-9"
+                  onClick={handleCloseConsultation}
+                  title={t("common.close_consultation") || "Close Consultation"}>
+                  <StopIcon className="size-5" />
+                </Button>
+                <Button
+                  color="info"
+                  isIcon
+                  className="size-9"
+                  onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
+                  title={t("common.view_details") || "View Details"}>
+                  <PencilSquareIcon className="size-5" />
+                </Button>
+              </>
+            )}
+          </div>
         </Card>
   
         <PetDetailModal
           isOpen={isModalOpen} 
           onClose={handleCloseModal} 
-          appointment={appointment} 
+          appointment={appointment}
+          consultationId={consultationId}
         />
       </>
     );

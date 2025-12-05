@@ -9,6 +9,8 @@ use App\Services\JitsiMeetService;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Client;
 use App\Models\Veterinary;
+use App\Models\Consultation;
+use App\Models\Appointment;
 use App\Enums\ConsultationStatus;
 use Illuminate\Http\JsonResponse;
 use Exception;
@@ -175,23 +177,6 @@ class AppointmentController extends Controller
         }
     }
 
-    public function cancel(string $uuid): \Illuminate\Http\RedirectResponse
-    {
-        try {
-            $appointment = $this->appointmentService->getByUuid($uuid);
-
-            if (!$appointment) {
-                return redirect()->back()->withErrors(['error' => __('common.appointment_not_found')]);
-            }
-
-            $this->appointmentService->cancel($uuid);
-            
-            return redirect()->route('appointments.index')->with('success', __('common.appointment_cancelled_successfully'));
-        } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => __('common.failed_to_cancel_appointment')]);
-        }
-    }
-
     public function report(Request $request, string $uuid)
     {
         try {
@@ -331,6 +316,93 @@ class AppointmentController extends Controller
             return response()->json([
                 'can_access' => false,
                 'message' => 'Failed to check meeting access'
+            ], 500);
+        }
+    }
+
+    /**
+     * Create consultation from appointment
+     */
+    public function createConsultation(string $uuid): JsonResponse
+    {
+        try {
+            $appointment = Appointment::where('uuid', $uuid)->firstOrFail();
+
+            // Check if consultation already exists
+            if ($appointment->consultation) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Consultation already exists',
+                    'consultation_id' => $appointment->consultation->id,
+                    'consultation_uuid' => $appointment->consultation->uuid,
+                ]);
+            }
+
+            // Get veterinarian_id from authenticated user
+            $user = auth()->user();
+            $veterinarian = null;
+            
+            if ($user && $user->veterinary) {
+                $veterinarian = $user->veterinary->id;
+            }
+
+            // Create consultation from appointment
+            $consultation = Consultation::create([
+                'veterinarian_id' => $veterinarian,
+                'appointment_id' => $appointment->id,
+                'client_id' => $appointment->client_id,
+                'pet_id' => $appointment->pet_id,
+                'conseil_date' => $appointment->appointment_date,
+                'start_time' => $appointment->start_time,
+                'end_time' => $appointment->end_time,
+                'status' => ConsultationStatus::IN_PROGRESS->value,
+            ]);
+
+            // Update appointment status to completed if needed
+            if ($appointment->status !== 'completed') {
+                $appointment->update(['status' => 'completed']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Consultation created successfully',
+                'consultation_id' => $consultation->id,
+                'consultation_uuid' => $consultation->uuid,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to create consultation',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel appointment
+     */
+    public function cancel(string $uuid): JsonResponse
+    {
+        try {
+            $appointment = Appointment::where('uuid', $uuid)->firstOrFail();
+
+            // Check if appointment can be cancelled
+            if ($appointment->status === 'completed' || $appointment->status === 'cancelled') {
+                return response()->json([
+                    'error' => 'Appointment cannot be cancelled',
+                    'message' => 'This appointment is already ' . $appointment->status
+                ], 400);
+            }
+
+            $appointment->update(['status' => 'cancelled']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Appointment cancelled successfully',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to cancel appointment',
+                'message' => $e->getMessage()
             ], 500);
         }
     }

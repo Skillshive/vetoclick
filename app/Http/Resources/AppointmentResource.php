@@ -72,6 +72,10 @@ class AppointmentResource extends JsonResource
                 "dob"=>$this->formatDate($this?->pet?->dob),
                 "wieght"=>$this?->pet?->weight_kg ?? null,
             ],
+            'consultation' => $this->consultation ? [
+                'id' => $this->consultation->id,
+                'uuid' => $this->consultation->uuid,
+            ] : null,
         ];
     }
 }
