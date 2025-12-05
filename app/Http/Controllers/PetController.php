@@ -587,11 +587,9 @@ class PetController extends Controller
                     ];
                 });
 
-            // Get allergies through medical records
-            $allergies = Allergy::whereHas('medicalRecord.consultation', function ($query) use ($pet) {
-                    $query->where('pet_id', $pet->id);
-                })
-                ->with('medicalRecord')
+            // Get allergies directly by pet_id
+            $allergies = Allergy::where('pet_id', $pet->id)
+                ->with(['veterinarian.user'])
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($allergy) {
