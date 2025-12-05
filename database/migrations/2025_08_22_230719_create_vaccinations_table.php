@@ -9,9 +9,9 @@ return new class extends Migration {
         Schema::create('vaccinations', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
+            $table->foreignId('consultation_id')->nullable()->constrained('consultations')->onDelete('cascade');
             $table->foreignId('administered_by')->constrained('users')->onDelete('cascade');
-            $table->foreignId('vaccine_id')->constrained('vaccines')->onDelete('cascade');
+            $table->foreignId('vaccine_id')->constrained('products')->onDelete('cascade');
             $table->date('vaccination_date');
             $table->date('next_due_date')->nullable();
             $table->timestamps();
