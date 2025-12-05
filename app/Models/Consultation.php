@@ -18,7 +18,7 @@ class Consultation extends Model
     }
     
     protected $fillable = [
-        'appointment_id', 'veterinary_id', 'client_id', 'pet_id',
+        'appointment_id', 'veterinarian_id', 'client_id', 'pet_id',
         'conseil_date', 'start_time', 'end_time', 'conseil_notes',
         'follow_up_required', 'follow_up_date', 'conseil_fee', 'status'
     ];
@@ -56,5 +56,10 @@ class Consultation extends Model
     public function allergies()
     {
         return $this->hasMany(Allergy::class, 'conseil_id');
+    }
+
+    public function medicalRecords()
+    {
+        return $this->hasMany(MedicalRecord::class);
     }
 }
