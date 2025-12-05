@@ -6,6 +6,12 @@ use App\Http\Requests\PetRequest;
 use App\Services\PetService;
 use App\Models\Pet;
 use App\Models\Client;
+use App\Models\Appointment;
+use App\Models\Consultation;
+use App\Models\Vaccination;
+use App\Models\Allergy;
+use App\Models\Prescription;
+use App\Models\Note;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -505,6 +511,136 @@ class PetController extends Controller
             return response()->json($pets);
         } catch (Exception $e) {
             return response()->json(['error' => 'Error retrieving pets: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get pet medical history (appointments, vaccinations, notes)
+     */
+    public function getMedicalHistory(string $uuid): JsonResponse
+    {
+        try {
+            $pet = Pet::where('uuid', $uuid)->firstOrFail();
+
+            // Get consultations/appointments with related data
+            $consultations = Appointment::where('pet_id', $pet->id)
+                ->with(['veterinary', 'consultation.medicalRecords'])
+                ->orderBy('appointment_date', 'desc')
+                ->get()
+                ->map(function ($appointment) {
+                    return [
+                        'uuid' => $appointment->uuid,
+                        'date' => $appointment->appointment_date,
+                        'reason' => $appointment->reason_for_visit,
+                        'veterinarian' => $appointment->veterinary ? 
+                            $appointment->veterinary->first_name . ' ' . $appointment->veterinary->last_name : 
+                            'Unknown',
+                        'notes' => $appointment->appointment_notes,
+                        'status' => $appointment->status,
+                        'medical_record' => $appointment->consultation && $appointment->consultation->medicalRecords->isNotEmpty() ? 
+                            $appointment->consultation->medicalRecords->first() : 
+                            null,
+                    ];
+                });
+
+            // Get all vaccinations for this pet through consultations
+            $vaccinations = Vaccination::whereHas('consultation', function ($query) use ($pet) {
+                    $query->where('pet_id', $pet->id);
+                })
+                ->with(['consultation', 'vaccine', 'administeredByUser'])
+                ->orderBy('vaccination_date', 'desc')
+                ->get();
+
+            \Log::info('Vaccinations query for pet ' . $pet->id . ':', [
+                'count' => $vaccinations->count(),
+                'pet_id' => $pet->id,
+                'vaccinations' => $vaccinations->toArray()
+            ]);
+
+            $vaccinations = $vaccinations->map(function ($vaccination) {
+                return [
+                    'uuid' => $vaccination->uuid,
+                    'vaccine_name' => $vaccination->vaccine ? $vaccination->vaccine->name : 'Unknown',
+                    'vaccination_date' => $vaccination->vaccination_date,
+                    'next_due_date' => $vaccination->next_due_date,
+                    'status' => $vaccination->next_due_date && now()->gt($vaccination->next_due_date) ? 'overdue' : 'active',
+                    'administered_by' => $vaccination->administeredByUser ? 
+                        ($vaccination->administeredByUser->firstname . ' ' . $vaccination->administeredByUser->lastname) : 
+                        'Unknown',
+                ];
+            });
+
+            // Get notes directly by pet_id from the notes table
+            $notes = Note::where('pet_id', $pet->id)
+                ->with(['veterinarian.user'])
+                ->orderBy('date', 'desc')
+                ->get()
+                ->map(function ($note) {
+                    return [
+                        'uuid' => $note->uuid,
+                        'date' => $note->date,
+                        'veterinarian' => $note->veterinarian && $note->veterinarian->user ?
+                            $note->veterinarian->user->firstname . ' ' . $note->veterinarian->user->lastname :
+                            'Unknown',
+                        'notes' => $note->notes,
+                        'visit_type' => $note->visit_type,
+                    ];
+                });
+
+            // Get allergies through medical records
+            $allergies = Allergy::whereHas('medicalRecord.consultation', function ($query) use ($pet) {
+                    $query->where('pet_id', $pet->id);
+                })
+                ->with('medicalRecord')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($allergy) {
+                    return [
+                        'uuid' => $allergy->uuid,
+                        'allergen_type' => $allergy->allergen_type,
+                        'allergen_detail' => $allergy->allergen_detail,
+                        'start_date' => $allergy->start_date,
+                        'reaction_description' => $allergy->reaction_description,
+                        'severity_level' => $allergy->severity_level,
+                        'resolved_status' => $allergy->resolved_status,
+                        'resolution_date' => $allergy->resolution_date,
+                        'treatment_given' => $allergy->treatment_given,
+                    ];
+                });
+
+            // Get prescriptions directly by pet_id
+            $prescriptions = Prescription::where('pet_id', $pet->id)
+                ->with(['product', 'veterinarian.user'])
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($prescription) {
+                    return [
+                        'uuid' => $prescription->uuid,
+                        'medication' => $prescription->medication,
+                        'product' => $prescription->product ? [
+                            'uuid' => $prescription->product->uuid,
+                            'name' => $prescription->product->name,
+                        ] : null,
+                        'dosage' => $prescription->dosage,
+                        'frequency' => $prescription->frequency,
+                        'duration' => $prescription->duration,
+                        'instructions' => $prescription->instructions,
+                        'prescribed_date' => $prescription->prescribed_date,
+                    ];
+                });
+
+            return response()->json([
+                'consultations' => $consultations,
+                'vaccinations' => $vaccinations,
+                'notes' => $notes,
+                'allergies' => $allergies,
+                'prescriptions' => $prescriptions,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load medical history',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
