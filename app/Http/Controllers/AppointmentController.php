@@ -38,7 +38,7 @@ class AppointmentController extends Controller
             $this->appointmentService->create($dto);
             return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
         } catch (Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' =>  __('common.error')]);
         }
     }
 
@@ -64,10 +64,10 @@ class AppointmentController extends Controller
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'error' => $e->getMessage()
+                    'error' =>  __('common.error')
                 ], 400);
             }
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' =>  __('common.error')]);
         }
     }
 
@@ -101,7 +101,6 @@ class AppointmentController extends Controller
                 'statuses' => ConsultationStatus::toArray(),
             ]);
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error($e->getMessage());
             return Inertia::render('Appointments/Index', [
                 'error' => __('common.error'),
                 'appointments' => [
@@ -210,12 +209,12 @@ class AppointmentController extends Controller
 
             // Check if this is a video consultation
             if (!$appointment->is_video_conseil) {
-                return back()->withErrors(['error' => 'This appointment does not have video consultation enabled']);
+                return back()->withErrors(['error' => __('common.this_appointment_does_not_have_video_consultation_enabled')]);
             }
 
             // Check if meeting link exists
             if (!$appointment->video_join_url) {
-                return back()->withErrors(['error' => 'Meeting link not available']);
+                return back()->withErrors(['error' => __('common.meeting_link_not_available')]);
             }
 
             // Get appointment date and time
@@ -238,8 +237,7 @@ class AppointmentController extends Controller
             // Redirect to Jitsi Meet
             return redirect($appointment->video_join_url);
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to join meeting: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Failed to join meeting. Please try again.']);
+            return back()->withErrors(['error' => __('common.failed_to_join_meeting')]);
         }
     }
 
@@ -265,10 +263,10 @@ class AppointmentController extends Controller
             if (request()->wantsJson() || request()->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'error' => $e->getMessage()
+                    'error' =>  __('common.error')
                 ], 400);
             }
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => __('common.error')]);
         }
     }
 
@@ -290,7 +288,7 @@ class AppointmentController extends Controller
             if (!$appointment->is_video_conseil) {
                 return response()->json([
                     'can_access' => false,
-                    'message' => 'This appointment does not have video consultation enabled'
+                    'message' => __('common.this_appointment_does_not_have_video_consultation_enabled')
                 ], 400);
             }
 
@@ -315,7 +313,7 @@ class AppointmentController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'can_access' => false,
-                'message' => 'Failed to check meeting access'
+                'message' => __('common.failed_to_check_meeting_access')
             ], 500);
         }
     }
@@ -332,7 +330,7 @@ class AppointmentController extends Controller
             if ($appointment->consultation) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Consultation already exists',
+                    'message' => __('common.consultation_already_exists'),
                     'consultation_id' => $appointment->consultation->id,
                     'consultation_uuid' => $appointment->consultation->uuid,
                 ]);
@@ -365,14 +363,14 @@ class AppointmentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Consultation created successfully',
+                'message' => __('common.consultation_created_successfully'),
                 'consultation_id' => $consultation->id,
                 'consultation_uuid' => $consultation->uuid,
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'Failed to create consultation',
-                'message' => $e->getMessage()
+                'message' =>  __('common.error')
             ], 500);
         }
     }
@@ -397,12 +395,12 @@ class AppointmentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Appointment cancelled successfully',
+                'message' => __('common.appointment_cancelled_successfully'),
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'Failed to cancel appointment',
-                'message' => $e->getMessage()
+                'message' => __('common.error')
             ], 500);
         }
     }
