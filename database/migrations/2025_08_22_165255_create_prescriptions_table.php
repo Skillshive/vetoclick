@@ -9,13 +9,16 @@ return new class extends Migration {
         Schema::create('prescriptions', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('medical_record_id')->constrained('medical_records')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade')->nullable();
-            $table->string('medication')->nullable();
+            $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
+            $table->foreignId('consultation_id')->nullable()->constrained('consultations')->onDelete('cascade');
+            $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
+            $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('set null');
+            $table->string('medication'); // Can be from product or custom text
             $table->string('dosage');
             $table->string('frequency');
-            $table->integer('duration')->comment('Duration in days');
+            $table->integer('duration'); // Duration in days
             $table->text('instructions')->nullable();
+            $table->date('prescribed_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

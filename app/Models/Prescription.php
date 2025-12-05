@@ -4,33 +4,61 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str; 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+
 class Prescription extends Model
 {
-    use HasFactory;
-protected static function boot(){
-    parent::boot();
-    static::creating(function ($prescription) {
-        $prescription->uuid = Str::uuid();
-    });
-}
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
-        'medical_record_id',
+        'uuid',
+        'pet_id',
+    'consultation_id',
+        'veterinarian_id',
         'product_id',
-        'medication_name',
+        'medication',
         'dosage',
         'frequency',
+        'duration',
         'instructions',
-        'start_date',
-        'end_date',
+        'prescribed_date',
     ];
 
-    public function medicalRecord()
+    protected $casts = [
+        'prescribed_date' => 'date',
+        'duration' => 'integer',
+    ];
+
+    protected static function boot()
     {
-        return $this->belongsTo(MedicalRecord::class);
+        parent::boot();
+        
+        static::creating(function ($prescription) {
+            if (empty($prescription->uuid)) {
+                $prescription->uuid = (string) Str::uuid();
+            }
+        });
     }
 
-    public function product(){
+    public function pet(): BelongsTo
+    {
+        return $this->belongsTo(Pet::class);
+    }
+
+    public function consultation(): BelongsTo
+    {
+        return $this->belongsTo(Consultation::class);
+    }
+
+    public function veterinarian(): BelongsTo
+    {
+        return $this->belongsTo(Veterinary::class);
+    }
+
+    public function product(): BelongsTo
+    {
         return $this->belongsTo(Product::class);
     }
 }
