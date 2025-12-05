@@ -37,6 +37,21 @@ class Pet extends Model
         return $this->hasMany(Allergy::class);
     }
 
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    public function consultations()
+    {
+        return $this->hasMany(Consultation::class);
+    }
+
+    public function medicalRecords()
+    {
+        return $this->hasManyThrough(MedicalRecord::class, Consultation::class);
+    }
+
     /**
      * Get the route key for the model.
      */
