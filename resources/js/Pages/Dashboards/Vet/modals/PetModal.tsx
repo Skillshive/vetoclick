@@ -158,9 +158,9 @@ const Vaccinations = ({
                                 options={vaccines
                                     .filter(v => v && v.id && v.full_name)
                                     .map(v => ({
-                                        value: v.id.toString(),
-                                        label: v.full_name
-                                    }))}
+                                    value: v.id.toString(),
+                                    label: v.full_name
+                                }))}
                                 placeholder={t('common.select_vaccine')}
                                 isRequired={true}
                             />
@@ -376,9 +376,11 @@ const Notes = ({
             notes.map((note, index) => (
                 <div key={note.uuid || index} className="bg-white p-4 rounded-lg border shadow-sm">
                     <div className="flex justify-between items-center text-sm border-b pb-2 mb-2">
-                        <p className="text-gray-800 font-medium">{note.veterinarian}</p>
                         <p className="text-gray-500">
-                            {new Date(note.date).toLocaleDateString()} - {note.visit_type}
+                            {t('common.locale') === 'ar' 
+                                ? new Date(note.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
+                                : new Date(note.date).toLocaleDateString()}
+                            - {note.visit_type}
                         </p>
                     </div>
                     <p className="text-sm text-gray-700">{note.notes}</p>
@@ -394,14 +396,20 @@ const Allergies = ({
     t, 
     onAdd,
     showForm,
-    onToggleForm 
+    onToggleForm,
+    allergyForm,
+    setAllergyForm,
+    savingAllergy
 }: { 
     allergies?: any[], 
     loading: boolean, 
     t: TranslateFn, 
     onAdd?: () => void,
     showForm?: boolean,
-    onToggleForm?: () => void
+    onToggleForm?: () => void,
+    allergyForm?: any,
+    setAllergyForm?: any,
+    savingAllergy?: boolean
 }) => (
     <div className="bg-white rounded-lg border shadow-sm">
         <div className="flex justify-between items-center p-4 border-b">
@@ -419,60 +427,101 @@ const Allergies = ({
         
         {/* Add Allergy Form */}
         {showForm && (
-            <div className="p-4 bg-gray-50 border-b">
-                <h5 className="font-medium text-gray-900 mb-3">{t('common.add_allergy')}</h5>
+            <div className="p-4 bg-gray-50 dark:bg-dark-600 border-b border-gray-200 dark:border-dark-500">
+                <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-3">{t('common.add_allergy')}</h5>
                 <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="allergen_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                                 {t('common.allergen_type')}
+                                <span className="text-red-500 mx-1">*</span>
                             </label>
-                            <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
-                                <option value="">Select type</option>
-                                <option value="Food">{t('common.food')}</option>
-                                <option value="Environmental">{t('common.environmental')}</option>
-                                <option value="Medication">{t('common.medication_allergy')}</option>
-                            </select>
+                            <ReactSelect
+                                id="allergen_type"
+                                value={
+                                    allergyForm.allergen_type
+                                        ? { value: allergyForm.allergen_type, label: allergyForm.allergen_type }
+                                        : null
+                                }
+                                onChange={(option: any) => {
+                                    if (option && !Array.isArray(option)) {
+                                        setAllergyForm((prev: any) => ({ ...prev, allergen_type: option.value }));
+                                    } else {
+                                        setAllergyForm((prev: any) => ({ ...prev, allergen_type: '' }));
+                                    }
+                                }}
+                                options={[
+                                    { value: 'Food', label: t('common.food') || 'Food' },
+                                    { value: 'Environmental', label: t('common.environmental') || 'Environmental' },
+                                    { value: 'Medication', label: t('common.medication_allergy') || 'Medication' },
+                                ]}
+                                placeholder={t('common.select_type') || 'Select type'}
+                                isRequired={true}
+                            />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="severity_level" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                                 {t('common.severity_level')}
+                                <span className="text-red-500 mx-1">*</span>
                             </label>
-                            <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
-                                <option value="">Select severity</option>
-                                <option value="Mild">{t('common.mild')}</option>
-                                <option value="Moderate">{t('common.moderate')}</option>
-                                <option value="Severe">{t('common.severe')}</option>
-                                <option value="Life-threatening">{t('common.life_threatening')}</option>
-                            </select>
+                            <ReactSelect
+                                id="severity_level"
+                                value={
+                                    allergyForm.severity_level
+                                        ? { value: allergyForm.severity_level, label: allergyForm.severity_level }
+                                        : null
+                                }
+                                onChange={(option: any) => {
+                                    if (option && !Array.isArray(option)) {
+                                        setAllergyForm((prev: any) => ({ ...prev, severity_level: option.value }));
+                                    } else {
+                                        setAllergyForm((prev: any) => ({ ...prev, severity_level: '' }));
+                                    }
+                                }}
+                                options={[
+                                    { value: 'Mild', label: t('common.mild') || 'Mild' },
+                                    { value: 'Moderate', label: t('common.moderate') || 'Moderate' },
+                                    { value: 'Severe', label: t('common.severe') || 'Severe' },
+                                    { value: 'Life-threatening', label: t('common.life_threatening') || 'Life-threatening' },
+                                ]}
+                                placeholder={t('common.select_severity') || 'Select severity'}
+                                isRequired={true}
+                            />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="allergen_detail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                             {t('common.allergen_detail')}
+                            <span className="text-red-500 mx-1">*</span>
                         </label>
-                        <input 
+                        <Input
+                            id="allergen_detail"
                             type="text"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                            value={allergyForm.allergen_detail}
+                            onChange={(e) => setAllergyForm((prev: any) => ({ ...prev, allergen_detail: e.target.value }))}
                             placeholder="e.g., Chicken, Pollen, Penicillin"
+                            className="w-full"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="reaction_description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                             {t('common.reaction_description')}
                         </label>
                         <textarea 
+                            id="reaction_description"
                             rows={3}
+                            value={allergyForm.reaction_description}
+                            onChange={(e) => setAllergyForm((prev: any) => ({ ...prev, reaction_description: e.target.value }))}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                             placeholder="Describe the allergic reaction..."
                         />
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="outlined" onClick={onToggleForm}>
+                        <Button variant="outlined" onClick={onToggleForm} disabled={savingAllergy}>
                             {t('common.cancel')}
                         </Button>
-                        <Button color="primary" onClick={onAdd}>
-                            {t('common.save')}
+                        <Button color="primary" onClick={onAdd} disabled={savingAllergy}>
+                            {savingAllergy ? <Spinner /> : t('common.save')}
                         </Button>
                     </div>
                 </div>
@@ -641,7 +690,7 @@ const Prescriptions = ({
                         ) : (
                             <Input
                                 id="medication"
-                                type="text"
+                            type="text"
                                 value={prescriptionForm.medication}
                                 onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, medication: e.target.value }))}
                                 placeholder="Enter medication name"
@@ -800,6 +849,13 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
     const [savingPrescription, setSavingPrescription] = useState(false);
     const [medications, setMedications] = useState<any[]>([]);
     const [useExistingMedication, setUseExistingMedication] = useState(false);
+    const [allergyForm, setAllergyForm] = useState({
+        allergen_type: '',
+        severity_level: '',
+        allergen_detail: '',
+        reaction_description: '',
+    });
+    const [savingAllergy, setSavingAllergy] = useState(false);
     
     const { t } = useTranslation();
     const { showToast } = useToast();
@@ -979,8 +1035,77 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
         }
     };
     
-    const handleSaveAllergy = () => {
-        showToast({ type: 'info', message: 'Allergy save functionality will be implemented', duration: 3000 });
+    const handleSaveAllergy = async () => {
+        // Basic validation
+        if (!allergyForm.allergen_type || !allergyForm.severity_level || !allergyForm.allergen_detail) {
+            showToast({ 
+                type: 'error', 
+                message: t('common.please_fill_required_fields') || 'Please fill all required fields', 
+                duration: 3000 
+            });
+            return;
+        }
+
+        setSavingAllergy(true);
+        
+        try {
+            const response = await fetch(route('allergies.store'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    pet_uuid: pet.uuid,
+                    consultation_id: consultationId || null,
+                    allergen_type: allergyForm.allergen_type,
+                    severity_level: allergyForm.severity_level,
+                    allergen_detail: allergyForm.allergen_detail,
+                    reaction_description: allergyForm.reaction_description || null,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Add new allergy to the list immediately (optimistic update)
+                if (data.allergy) {
+                    setMedicalHistory(prev => ({
+                        ...prev,
+                        allergies: [data.allergy, ...(prev.allergies || [])]
+                    }));
+                }
+                
+                showToast({ 
+                    type: 'success', 
+                    message: t('common.allergy_created') || 'Allergy created successfully', 
+                    duration: 3000 
+                });
+                
+                // Reset form and close
+                setAllergyForm({
+                    allergen_type: '',
+                    severity_level: '',
+                    allergen_detail: '',
+                    reaction_description: '',
+                });
+                setShowForms(prev => ({ ...prev, allergy: false }));
+                
+                // Refresh data from server to ensure sync
+                handleRefreshData();
+            } else {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to save allergy');
+            }
+        } catch (error: any) {
+            showToast({ 
+                type: 'error', 
+                message: error.message || t('common.failed_to_save') || 'Failed to save', 
+                duration: 3000 
+            });
+        } finally {
+            setSavingAllergy(false);
+        }
     };
     
     const handleSavePrescription = async () => {
@@ -1061,7 +1186,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
         }
     };
 
-    const petImage = appointment.pet.avatar || "https://images.unsplash.com/photo-1583512603805-3d6b6e582a24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%D%D&auto=format&fit=crop&w=200&q=80"; // Fallback image
+    const petImage = appointment.pet.avatar ||  "/assets/default/species-placeholder.png"; 
 
     const tabs = [
         { id: 'consultations', label: t('common.vet_dashboard.pet_modal.tabs.consultations'), icon: History },
@@ -1124,6 +1249,11 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
         }
     }, [isOpen]);
 
+
+    const getGenderLabel = (sex: number | string, t: TranslateFn): string => {
+        const sexValue = typeof sex === 'string' ? parseInt(sex) : sex;
+        return sexValue === 1 ? t('common.female') || 'Female' : t('common.male') || 'Male';
+    };
     return (
      <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -1178,7 +1308,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                                 {/* Pet Info */}
                                 <div className="flex items-start gap-4">
                                     <img 
-                                        src={petImage} 
+                                        src={petImage ||  "/assets/default/species-placeholder.png"} 
                                         alt={pet.name} 
                                         className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-dark-500 flex-shrink-0"
                                     />
@@ -1188,7 +1318,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                                         <dl className="mt-3 grid grid-cols-2 gap-3">
                                             <DetailItem label={t('common.vet_dashboard.pet_modal.species')} value={pet.species} />
                                             <DetailItem label={t('common.vet_dashboard.pet_modal.breed')} value={pet.breed} />
-                                            <DetailItem label={t('common.vet_dashboard.pet_modal.gender')} value={pet.gender} />
+                                            <DetailItem label={t('common.vet_dashboard.pet_modal.gender')} value={getGenderLabel(pet.gender, t)} />
                                             <DetailItem label={t('common.vet_dashboard.pet_modal.dob')} value={pet.dob.toLocaleDateString()} />
                                             <DetailItem label={t('common.vet_dashboard.pet_modal.weight')} value={`${pet.wieght} kg`} />
                                         </dl>
@@ -1283,6 +1413,9 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                                         onAdd={handleSaveAllergy}
                                         showForm={showForms.allergy}
                                         onToggleForm={handleToggleAllergyForm}
+                                        allergyForm={allergyForm}
+                                        setAllergyForm={setAllergyForm}
+                                        savingAllergy={savingAllergy}
                                     />
                                 )}
                                 {activeTab === 'prescriptions' && (
