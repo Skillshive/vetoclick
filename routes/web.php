@@ -14,6 +14,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Stock\OrderController;
 use App\Http\Controllers\BreedController;
 use App\Http\Controllers\CategoryBlogController;
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoleManagementController;
@@ -274,9 +275,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('allergies/{uuid}', [\App\Http\Controllers\AllergyController::class, 'destroy'])->name('allergies.destroy');
 
     // Note routes
-    Route::post('notes', [\App\Http\Controllers\NoteController::class, 'store'])->name('notes.store');
-    Route::put('notes/{uuid}', [\App\Http\Controllers\NoteController::class, 'update'])->name('notes.update');
-    Route::delete('notes/{uuid}', [\App\Http\Controllers\NoteController::class, 'destroy'])->name('notes.destroy');
+    Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::put('notes/{uuid}', [NoteController::class, 'update'])->name('notes.update');
+    Route::delete('notes/{uuid}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
     // Prescription routes
     Route::post('prescriptions', [\App\Http\Controllers\PrescriptionController::class, 'store'])->name('prescriptions.store');
