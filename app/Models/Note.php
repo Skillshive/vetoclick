@@ -49,6 +49,6 @@ class Note extends Model
 
     public function veterinarian(): BelongsTo
     {
-        return $this->belongsTo(Veterinarian::class);
+        return $this->belongsTo(Veterinary::class);
     }
 }
