@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Vaccination;
 use App\Models\Pet;
 use App\Models\Consultation;
-use App\Models\Veterinary;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Exception;
@@ -21,23 +22,20 @@ class VaccinationController extends Controller
         try {
             $validated = $request->validate([
                 'pet_uuid' => 'required|string',
-                'consultation_id' => 'nullable|integer|exists:consultations,id',
+                'consultation_id' => 'nullable|string|exists:consultations,uuid',
                 'vaccine_id' => 'required|integer',
                 'vaccination_date' => 'required|date',
                 'next_due_date' => 'nullable|date',
             ]);
 
             $pet = Pet::where('uuid', $validated['pet_uuid'])->firstOrFail();
+            $consultation = Consultation::where('uuid', $validated['consultation_id'])->firstOrFail();
 
-            // If no consultation_id provided, we need consultation to be nullable
-            // The consultation_id will be passed from the appointment if it has been converted to consultation
-            
-            // Set administered_by to current user's ID (foreign key to users table)
             $user = Auth::user();
             if (!$user) {
                 return response()->json([
-                    'error' => 'User not authenticated',
-                    'message' => 'You must be logged in to administer vaccinations'
+                    'error' => __('common.user_not_authenticated'),
+                    'message' => __('common.you_must_be_logged_in_to_administer_vaccinations')
                 ], 401);
             }
             
@@ -46,27 +44,21 @@ class VaccinationController extends Controller
             // Remove pet_uuid from validated data as it's not a column
             unset($validated['pet_uuid']);
 
-            \Log::info('Creating vaccination:', [
-                'data' => $validated,
-                'pet_id' => $pet->id,
-                'consultation_id' => $validated['consultation_id'] ?? 'null'
-            ]);
-
-            $vaccination = Vaccination::create($validated);
-
-            \Log::info('Vaccination created:', [
-                'id' => $vaccination->id,
-                'uuid' => $vaccination->uuid,
-                'consultation_id' => $vaccination->consultation_id
+            $vaccination = Vaccination::create([
+                'consultation_id' => $consultation->id,
+                'administered_by' => $user->id,
+                'vaccine_id' => $validated['vaccine_id'],
+                'vaccination_date' => $validated['vaccination_date'],
+                'next_due_date' => $validated['next_due_date'],
             ]);
 
             // Load relationships - vaccine from products table
-            $vaccine = \App\Models\Product::find($validated['vaccine_id']);
-            $administeredByUser = \App\Models\User::find($validated['administered_by']);
+            $vaccine = Product::find($validated['vaccine_id']);
+            $administeredByUser = User::find($validated['administered_by']);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Vaccination created successfully',
+                'message' => __('common.vaccination_created_successfully'),
                 'vaccination' => [
                     'uuid' => $vaccination->uuid,
                     'vaccine_name' => $vaccine ? $vaccine->name : 'Unknown',
@@ -78,8 +70,8 @@ class VaccinationController extends Controller
             ], 201);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to create vaccination',
-                'message' => $e->getMessage()
+                'error' => __('common.failed_to_create_vaccination'),
+                'message' => __('common.error')
             ], 500);
         }
     }
@@ -104,7 +96,7 @@ class VaccinationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Vaccination updated successfully',
+                'message' => __('common.vaccination_updated_successfully'),
                 'vaccination' => [
                     'uuid' => $vaccination->uuid,
                     'vaccine_name' => $vaccination->vaccin ? $vaccination->vaccin->vaccin_name : 'Unknown',
@@ -116,8 +108,8 @@ class VaccinationController extends Controller
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to update vaccination',
-                'message' => $e->getMessage()
+                'error' => __('common.failed_to_update_vaccination'),
+                'message' =>  __('common.error')
             ], 500);
         }
     }
@@ -133,12 +125,12 @@ class VaccinationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Vaccination deleted successfully'
+                'message' => __('common.vaccination_deleted_successfully')
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to delete vaccination',
-                'message' => $e->getMessage()
+                'error' => __('common.failed_to_delete_vaccination'),
+                'message' => __('common.error')
             ], 500);
         }
     }
