@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Consultation;
 use App\Models\Note;
 use App\Models\Pet;
 use App\Models\Veterinary;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Exception;
@@ -32,7 +34,7 @@ class NoteController extends Controller
             // Convert consultation UUID to ID if provided
             $consultationId = null;
             if (!empty($validated['consultation_id'])) {
-                $consultation = \App\Models\Consultation::where('uuid', $validated['consultation_id'])->first();
+                $consultation = Consultation::where('uuid', $validated['consultation_id'])->first();
                 if ($consultation) {
                     $consultationId = $consultation->id;
                 }
@@ -42,8 +44,8 @@ class NoteController extends Controller
             $user = Auth::user();
             if (!$user) {
                 return response()->json([
-                    'error' => 'User not authenticated',
-                    'message' => 'You must be logged in to create notes'
+                    'error' => __('common.user_not_authenticated'),
+                    'message' => __('common.you_must_be_logged_in_to_create_notes')
                 ], 401);
             }
 
@@ -51,8 +53,8 @@ class NoteController extends Controller
             $veterinarian = Veterinary::where('user_id', $user->id)->first();
             if (!$veterinarian) {
                 return response()->json([
-                    'error' => 'Veterinarian profile not found',
-                    'message' => 'You must have a veterinarian profile to create notes'
+                    'error' => __('common.veterinarian_profile_not_found'),
+                    'message' => __('common.you_must_have_a_veterinarian_profile_to_create_notes')
                 ], 403);
             }
 
@@ -63,14 +65,21 @@ class NoteController extends Controller
             // Remove pet_uuid from validated data as it's not a column
             unset($validated['pet_uuid']);
 
-            $note = Note::create($validated);
+            $note = Note::create([
+                'pet_id' => $pet->id,
+                'veterinarian_id' => $veterinarian->id,
+                'consultation_id' => $consultationId,
+                'date' => Carbon::today()->format('Y-m-d'),
+                'visit_type' => $validated['visit_type'],
+                'notes' => $validated['notes'],
+            ]);
 
             // Load relationships for response
             $note->load('veterinarian.user');
 
             return response()->json([
                 'success' => true,
-                'message' => 'Note created successfully',
+                'message' => __('common.note_created_successfully'),
                 'note' => [
                     'uuid' => $note->uuid,
                     'date' => $note->date->format('Y-m-d'),
@@ -82,10 +91,10 @@ class NoteController extends Controller
                 ]
             ], 201);
         } catch (Exception $e) {
-            Log::error('Failed to create note: ' . $e->getMessage());
+            Log::error('Failed to create note: ' .  __('common.error'));
             return response()->json([
-                'error' => 'Failed to create note',
-                'message' => $e->getMessage()
+                'error' => __('common.failed_to_create_note'),
+                'message' => __('common.error')
             ], 500);
         }
     }
@@ -109,7 +118,7 @@ class NoteController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Note updated successfully',
+                'message' => __('common.note_updated_successfully'),
                 'note' => [
                     'uuid' => $note->uuid,
                     'date' => $note->date->format('Y-m-d'),
@@ -122,8 +131,8 @@ class NoteController extends Controller
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to update note',
-                'message' => $e->getMessage()
+                'error' => __('common.failed_to_update_note'),
+                'message' => __('common.error')
             ], 500);
         }
     }
@@ -139,12 +148,12 @@ class NoteController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Note deleted successfully'
+                'message' => __('common.note_deleted_successfully')
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to delete note',
-                'message' => $e->getMessage()
+                'error' => __('common.failed_to_delete_note'),
+                'message' => __('common.error')
             ], 500);
         }
     }
