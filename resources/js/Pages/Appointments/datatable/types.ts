@@ -29,6 +29,10 @@ export interface Appointment {
   reason_for_visit: string;
   appointment_notes: string;
   created_at: string;
+  consultation?: {
+    id: string;
+    uuid: string;
+  } | null;
 }
 
 export interface Vet {
