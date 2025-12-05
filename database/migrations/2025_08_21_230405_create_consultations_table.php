@@ -15,8 +15,8 @@ return new class extends Migration
     Schema::create('consultations', function (Blueprint $table) {
     $table->id();
     $table->uuid('uuid')->unique();
-    $table->foreignId('appointment_id')->constrained('appointments')->onDelete('cascade');
-    $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
+    $table->foreignId('appointment_id')->constrained('appointments')->onDelete('cascade')->nullable();
+    $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade')->nullable();
     $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
     $table->foreignId('pet_id')->constrained('pets')->onDelete('cascade');
     $table->date('conseil_date');
