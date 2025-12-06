@@ -174,8 +174,8 @@ console.log("Submitting data:", data);
 
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                                     {isEditing
-                                        ? `Modifiez les informations du fournisseur "${supplier.name}"`
-                                        : 'Créez un nouveau fournisseur dans le système'
+                                        ? t('common.edit_supplier_info', { name: supplier?.name })
+                                        : t('common.create_supplier_info')
                                     }
                                 </p>
 
