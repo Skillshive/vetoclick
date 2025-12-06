@@ -54,6 +54,7 @@ class ProductSeeder extends Seeder
                 'is_active' => $productData['is_active'],
                 'availability_status' => $productData['availability_status'],
                 'notes' => $productData['notes'],
+                'veterinarian_id' =>1,
             ]);
         }
 

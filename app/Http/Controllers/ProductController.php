@@ -7,6 +7,7 @@ use App\Http\Requests\Product\CreateProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Services\ProductService;
 use App\Http\Resources\Product\ProductResource;
+use App\Models\CategoryProduct;
 use App\Services\CsvService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,6 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Validation\Factory;
 
 class ProductController extends Controller
 {
@@ -120,7 +120,7 @@ class ProductController extends Controller
             ]);
         } catch (Exception $e) {
             // Get categories even in error case
-            $categories = \App\Models\CategoryProduct::all();
+            $categories =CategoryProduct::all();
 
             return Inertia::render('Products/Index', [
                 'products' => [
@@ -190,7 +190,7 @@ class ProductController extends Controller
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error')]);
         }
     }
 
@@ -219,7 +219,7 @@ class ProductController extends Controller
             ]);
         } catch (Exception $e) {
             return redirect()->route('products.index')
-                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error')]);
         }
     }
 
@@ -256,7 +256,7 @@ class ProductController extends Controller
         } catch (Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error')]);
         }
     }
 
@@ -277,7 +277,7 @@ class ProductController extends Controller
                 ->with('success', __('common.product_deleted'));
         } catch (Exception $e) {
             return redirect()->back()
-                ->withErrors(['error' => __('common.error') . ': ' . $e->getMessage()]);
+                ->withErrors(['error' => __('common.error')]);
         }
     }
 

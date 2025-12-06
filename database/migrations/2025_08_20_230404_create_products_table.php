@@ -55,6 +55,8 @@ $table
             $table->text('vaccine_instructions')->nullable();
             $table->text('notes')->nullable();
                         
+            $table->foreignId('veterinarian_id')->constrained('veterinarians')->onDelete('cascade');
+
             $table->timestamps();
             $table->softDeletes(); 
             

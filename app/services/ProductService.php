@@ -8,6 +8,7 @@ use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ProductService implements ServiceInterface
@@ -74,6 +75,7 @@ class ProductService implements ServiceInterface
                 'expiry_date' => $dto->expiry_date,
                 'dosage_ml' => $dto->dosage_ml,
                 'vaccine_instructions' => $dto->vaccine_instructions,
+                'veterinarian_id' => Auth::user()->veterinary->id,
             ]);
             
             return $product;
@@ -114,6 +116,7 @@ class ProductService implements ServiceInterface
                 'expiry_date' => $dto->expiry_date,
                 'dosage_ml' => $dto->dosage_ml,
                 'vaccine_instructions' => $dto->vaccine_instructions,
+                'veterinarian_id' => Auth::user()->veterinary->id,
             ], function($value, $key) {
                 // Keep boolean values (including false) and numeric values (including 0)
                 if (is_bool($value) || is_numeric($value)) {

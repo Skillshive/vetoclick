@@ -34,6 +34,7 @@ class Product extends Model
         'expiry_date',
         'dosage_ml',
         'vaccine_instructions',
+        'veterinarian_id',
     ];
 
     protected static function boot()
@@ -54,5 +55,9 @@ class Product extends Model
         return $this->belongsToMany(VaccinationSchedule::class, 'vaccine_schedule_products')
                     ->withPivot(['sequence_order', 'age_weeks', 'interval_weeks', 'is_required', 'notes'])
                     ->withTimestamps();
+    }
+    public function veterinarian()
+    {
+        return $this->belongsTo(Veterinary::class, 'veterinarian_id');
     }
 }
