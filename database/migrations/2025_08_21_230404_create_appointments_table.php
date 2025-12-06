@@ -24,9 +24,9 @@ return new class extends Migration
     $table->integer('duration_minutes');
     $table->enum('status', ['scheduled', 'confirmed', 'cancelled', 'no_show', 'completed'])->default('scheduled');
     $table->boolean('is_video_conseil')->default(false);
-    $table->string('video_meeting_id')->nullable();
-    $table->string('video_join_url')->nullable();
-    $table->string('reason_for_visit')->nullable();
+    $table->text('video_meeting_id')->nullable();
+    $table->text('video_join_url')->nullable();
+    $table->text('reason_for_visit')->nullable();
     $table->text('appointment_notes')->nullable();
     $table->timestamps();
 });
