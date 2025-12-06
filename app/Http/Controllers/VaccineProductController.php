@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Enums\ProductType;
 use Illuminate\Http\JsonResponse;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class VaccineProductController extends Controller
 {
@@ -15,7 +16,8 @@ class VaccineProductController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $vaccines = Product::where('type', ProductType::VACCINE->value)
+            $vaccines = Product::where('veterinarian_id', Auth::user()->veterinary->id)
+                ->where('type', ProductType::VACCINE->value)
                 ->where('is_active', true)
                 ->select('id', 'uuid', 'name', 'brand', 'description', 'sku')
                 ->orderBy('name')
@@ -34,8 +36,8 @@ class VaccineProductController extends Controller
             return response()->json(['vaccines' => $vaccines]);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Failed to load vaccines',
-                'message' => $e->getMessage()
+                'error' => __('common.failed_to_load_vaccines_products'),
+                'message' => __('common.error')
             ], 500);
         }
     }
