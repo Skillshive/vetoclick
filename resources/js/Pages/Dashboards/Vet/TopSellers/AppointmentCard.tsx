@@ -36,8 +36,11 @@ export function AppointmentCard({
   const { showToast } = useToast();
   const [isCheckingAccess, setIsCheckingAccess] = useState(false);
   const [creatingConsultation, setCreatingConsultation] = useState(false);
+  // Only set consultationId if consultation exists and is not completed
   const [consultationId, setConsultationId] = useState<string | null>(
-    appointment.consultation?.uuid || null
+    appointment.consultation?.uuid && appointment.consultation?.status !== 'completed' 
+      ? appointment.consultation.uuid 
+      : null
   );
 
   console.log("consultation",appointment.consultation);
@@ -220,6 +223,7 @@ export function AppointmentCard({
       }
     };
   
+    console.log("appointment.consultation?.status",appointment.consultation?.status);
     return (
       <>
         <Card skin="shadow" className="w-80 shrink-0 space-y-4 p-5 cursor-pointer" onClick={handleCardClick}>
@@ -309,7 +313,7 @@ export function AppointmentCard({
               </>
             )}
             
-            {consultationId && (
+            {consultationId && appointment.consultation?.status !== 'completed' && (
               <>
                 <Button
                   color="success"
