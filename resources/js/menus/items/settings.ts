@@ -132,7 +132,13 @@ const menuConfig: MenuConfig[] = [
         title: 'common.menu.users_list',
         path: route('users.index'),
         type: 'item',
-      }
+      },
+      {
+        id: 'clientsList',
+        title: 'common.menu.clients_list',
+        path: route('clients.index'),
+        type: 'item',
+      },
     ],
   },
 ];
