@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Breed;
+use App\Models\Client;
+use App\Models\Species;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,12 +28,12 @@ class PetRequest extends FormRequest
         $pet = $this->route('pet');
 
         return [
+            'client_id' => 'nullable|exists:clients,id', // UUID of client (for receptionist creating pets)
             'name' => 'required|string|max:100',
             'breed_id' => 'required|exists:breeds,id',
-            'species_id' => 'nullable|exists:species,id', 
             'sex' => 'required|integer|in:0,1',
             'neutered_status' => 'nullable|boolean',
-            'dob' => 'required|date',
+            'dob' => 'nullable|date',
             'microchip_ref' => [
                 'nullable',
                 'string',
@@ -51,11 +54,24 @@ class PetRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        // Convert client_id from UUID to ID if provided
+        if ($this->has('client_id') && $this->input('client_id')) {
+            $clientId = $this->input('client_id');
+            if (!is_numeric($clientId)) {
+                $client = Client::where('uuid', $clientId)->first();
+                if ($client) {
+                    $this->merge(['client_id' => $client->id]);
+                } else {
+                    $this->merge(['client_id' => null]);
+                }
+            }
+        }
+
         // Convert specie_id from UUID to ID if needed
         if ($this->has('species_id')) {
             $speciesId = $this->input('species_id');
             if (!is_numeric($speciesId)) {
-                $species = \App\Models\Species::where('uuid', $speciesId)->first();
+                $species = Species::where('uuid', $speciesId)->first();
                 if ($species) {
                     $this->merge(['species_id' => $species->id]);
                 } else {
@@ -68,7 +84,7 @@ class PetRequest extends FormRequest
         if ($this->has('breed_id') && $this->input('breed_id')) {
             $breedId = $this->input('breed_id');
             if (!is_numeric($breedId)) {
-                $breed = \App\Models\Breed::where('uuid', $breedId)->first();
+                $breed = Breed::where('uuid', $breedId)->first();
                 if ($breed) {
                     $this->merge(['breed_id' => $breed->id]);
                 } else {

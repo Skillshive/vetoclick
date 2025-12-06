@@ -197,40 +197,59 @@ class PetController extends Controller
                 $validated['profile_img'] = $path;
             }
 
-            // Get client_id from authenticated user
-            $user = Auth::user();
+            // Get client_id from request if provided (for receptionist), otherwise from authenticated user
+            $clientId = null;
+            $client = null;
             
-            if (!$user) {
-                if ($request->wantsJson() || $request->expectsJson()) {
-                    return response()->json(['error' => 'User not authenticated.'], 401);
+            if (!empty($validated['client_id'])) {
+                // Client ID provided in request (already converted from UUID by PetRequest)
+                $clientId = $validated['client_id'];
+                $client = Client::find($clientId);
+                if (!$client) {
+                    if ($request->wantsJson() || $request->expectsJson()) {
+                        return response()->json(['error' => 'Client not found.'], 404);
+                    }
+                    return back()->withInput()
+                        ->withErrors(['error' => 'Client not found.']);
                 }
-                return back()->withInput()
-                    ->withErrors(['error' => 'User not authenticated.']);
-            }
-
-            // Load client relationship
-            $client = $user->load('client')->client;
-            
-            if (!$client) {
-                // Log for debugging
-                \Log::warning('User does not have a client record', [
-                    'user_id' => $user->id,
-                    'user_email' => $user->email,
-                ]);
+            } else {
+                // Get client from authenticated user
+                $user = Auth::user();
                 
-                if ($request->wantsJson() || $request->expectsJson()) {
-                    return response()->json([
-                        'error' => 'User does not have a client record. Please create a client profile first.',
-                        'message' => 'Your account needs to be linked to a client profile before creating pets.'
-                    ], 422);
+                if (!$user) {
+                    if ($request->wantsJson() || $request->expectsJson()) {
+                        return response()->json(['error' => 'User not authenticated.'], 401);
+                    }
+                    return back()->withInput()
+                        ->withErrors(['error' => 'User not authenticated.']);
                 }
-                return back()->withInput()
-                    ->withErrors(['error' => 'User does not have a client record. Please create a client profile first.']);
+
+                // Load client relationship
+                $client = $user->load('client')->client;
+                
+                if (!$client) {
+                    // Log for debugging
+                    \Log::warning('User does not have a client record', [
+                        'user_id' => $user->id,
+                        'user_email' => $user->email,
+                    ]);
+                    
+                    if ($request->wantsJson() || $request->expectsJson()) {
+                        return response()->json([
+                            'error' => 'User does not have a client record. Please create a client profile first.',
+                            'message' => 'Your account needs to be linked to a client profile before creating pets.'
+                        ], 422);
+                    }
+                    return back()->withInput()
+                        ->withErrors(['error' => 'User does not have a client record. Please create a client profile first.']);
+                }
+                
+                $clientId = $client->id;
             }
 
             // Prepare pet data
             $petData = [
-                'client_id' => $client->id,
+                'client_id' => $clientId,
                 'name' => $validated['name'],
                 'breed_id' => $validated['breed_id'],
                 'sex' => $validated['sex'] ?? 0,
@@ -247,7 +266,7 @@ class PetController extends Controller
 
             \Log::info('Creating pet', [
                 'pet_data' => $petData,
-                'client_id' => $client->id,
+                'client_id' => $clientId,
             ]);
 
             $pet = Pet::create($petData);
