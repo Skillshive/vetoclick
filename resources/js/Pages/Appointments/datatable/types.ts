@@ -32,6 +32,7 @@ export interface Appointment {
   consultation?: {
     id: string;
     uuid: string;
+    status: string;
   } | null;
 }
 

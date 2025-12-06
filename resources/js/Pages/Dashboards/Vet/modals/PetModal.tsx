@@ -66,24 +66,60 @@ const RecentConsultations = ({ consultations, loading, t }: { consultations?: an
                 <thead className="bg-gray-50">
                     <tr>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.date')}</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.reason_for_visit')}</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.vet_dashboard.pet_modal.veterinarian')}</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.type')}</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.status')}</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('common.consultation_type')}</th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {consultations.map((consultation, index) => (
-                        <tr key={consultation.uuid || index}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                {new Date(consultation.date).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {consultation.reason || 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                {consultation.veterinarian}
-                            </td>
-                        </tr>
-                    ))}
+                    {consultations.map((consultation, index) => {
+                        const getStatusBadge = () => {
+                            if (consultation.is_canceled) {
+                                return (
+                                    <Badge color="error" className="text-xs">
+                                        {t('common.canceled') || 'Canceled'}
+                                    </Badge>
+                                );
+                            }
+                            if (consultation.has_consultation) {
+                                return (
+                                    <Badge color="success" className="text-xs">
+                                        {t('common.completed') || 'Completed'}
+                                    </Badge>
+                                );
+                            }
+                            return (
+                                <Badge color="warning" className="text-xs">
+                                    {t('common.scheduled') || 'Scheduled'}
+                                </Badge>
+                            );
+                        };
+
+                        return (
+                            <tr key={consultation.uuid || index} className={consultation.is_canceled ? 'opacity-60' : ''}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {new Date(consultation.date).toLocaleDateString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {consultation.appointment_type || 'N/A'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {getStatusBadge()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {consultation.is_video_conseil ? (
+                                        <Badge color="primary" className="text-xs">
+                                            {t('common.video') || 'Video'}
+                                        </Badge>
+                                    ) : (
+                                        <Badge color="info" className="text-xs">
+                                            {t('common.in_person') || 'In-Person'}
+                                        </Badge>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         )}
