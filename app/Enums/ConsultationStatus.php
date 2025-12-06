@@ -25,4 +25,17 @@ enum ConsultationStatus: int
             self::CANCELLED->value => self::CANCELLED->text(),
         ];
     }
+
+    /**
+     * Get text value from numeric status
+     */
+    public static function getTextFromValue(int $value): string
+    {
+        return match ($value) {
+            self::COMPLETED->value => self::COMPLETED->text(),
+            self::IN_PROGRESS->value => self::IN_PROGRESS->text(),
+            self::CANCELLED->value => self::CANCELLED->text(),
+            default => 'unknown',
+        };
+    }
 }
