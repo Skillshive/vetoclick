@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\ConsultationStatus;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
 
@@ -75,6 +76,7 @@ class AppointmentResource extends JsonResource
             'consultation' => $this->consultation ? [
                 'id' => $this->consultation->id,
                 'uuid' => $this->consultation->uuid,
+                'status' =>ConsultationStatus::getTextFromValue($this->consultation->status),
             ] : null,
         ];
     }

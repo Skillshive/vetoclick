@@ -111,7 +111,6 @@ class AppointmentService implements ServiceInterface
         if ($isVideoConseil === null) {
             $isVideoConseil = false; // Default to false if not provided or invalid
         }
-        
         $appointment= Appointment::create([
             "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
             "client_id"=>$this->getClient($dto->client_id),
@@ -124,6 +123,7 @@ class AppointmentService implements ServiceInterface
             "is_video_conseil"=>$isVideoConseil,
             "reason_for_visit"=>$dto->reason_for_visit,
             "appointment_notes"=>$dto->appointment_notes,
+            "status"=>auth()->user()->hasRole('veterinarian') ? 'scheduled' : 'confirmed',
         ]);
 
         // Generate Jitsi Meet link for the appointment
@@ -537,6 +537,7 @@ class AppointmentService implements ServiceInterface
             $startTime
         );
 
+
         if (!$isAvailable) {
             throw new Exception("Veterinarian is not available at the requested time");
         }
@@ -549,7 +550,6 @@ class AppointmentService implements ServiceInterface
             $endTime,
             $appointment->id
         );
-
         if ($hasConflict) {
             throw new Exception("There is a conflicting appointment at this time");
         }
