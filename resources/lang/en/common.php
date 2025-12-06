@@ -1635,5 +1635,15 @@ return [
     'failed_to_update_vaccination' => 'Failed to update vaccination',
     'vaccination_deleted_successfully' => 'Vaccination deleted successfully',
     'failed_to_delete_vaccination' => 'Failed to delete vaccination',
-  
+    'failed_to_load_vaccines_products' => 'Failed to load vaccines products',
+    'upcoming' => 'Upcoming',
+    'completed' => 'Completed',
+    'scheduled' => 'Scheduled',
+    'in_person' => 'In-Person',
+    'video' => 'Video',
+    'consultation_type' => 'Consultation Type',
+    'vaccination' => 'Vaccination',
+    'allergy' => 'Allergy',
+    'prescription' => 'Prescription',
+    'new_patient' => 'New Patient',
 ];
