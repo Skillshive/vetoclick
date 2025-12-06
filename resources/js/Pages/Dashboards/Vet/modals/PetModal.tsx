@@ -317,9 +317,10 @@ const Notes = ({
     setNoteForm?: any,
     savingNote?: boolean
 }) => (
-    <div className="space-y-4">
-        {onToggleForm && (
-            <div className="flex justify-end mb-4">
+    <div className="bg-white rounded-lg border shadow-sm">
+        <div className="flex justify-between items-center p-4 border-b">
+            <h4 className="text-lg font-semibold text-gray-800">{t('common.notes')}</h4>
+            {onToggleForm && (
                 <button 
                     onClick={onToggleForm}
                     className="flex items-center gap-1.5 text-sm bg-primary-600 text-white py-1.5 px-3 rounded-md hover:bg-primary-700 transition"
@@ -327,13 +328,13 @@ const Notes = ({
                     {showForm ? <XMarkIcon className="w-4 h-4" /> : <Plus size={16} />}
                     {showForm ? t('common.cancel') : t('common.add_note')}
                 </button>
-            </div>
-        )}
+            )}
+        </div>
         
         {/* Add Note Form */}
         {showForm && (
-            <div className="bg-white p-4 rounded-lg border shadow-sm">
-                <h5 className="font-medium text-gray-900 mb-3">{t('common.add_note')}</h5>
+            <div className="p-4 bg-gray-50 dark:bg-dark-600 border-b border-gray-200 dark:border-dark-500">
+                <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-3">{t('common.add_note')}</h5>
                 <div className="space-y-3">
                     <div>
                         <label htmlFor="note_date" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -405,23 +406,25 @@ const Notes = ({
                 <Spinner />
             </div>
         ) : !notes || notes.length === 0 ? (
-            <div className="p-6 text-center text-gray-500 bg-white rounded-lg border">
+            <div className="p-6 text-center text-gray-500">
                 {t('common.no_notes_found') || 'No notes found'}
             </div>
         ) : (
-            notes.map((note, index) => (
-                <div key={note.uuid || index} className="bg-white p-4 rounded-lg border shadow-sm">
-                    <div className="flex justify-between items-center text-sm border-b pb-2 mb-2">
-                        <p className="text-gray-500">
-                            {t('common.locale') === 'ar' 
-                                ? new Date(note.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
-                                : new Date(note.date).toLocaleDateString()}
-                            - {note.visit_type}
-                        </p>
+            <div className="divide-y divide-gray-200 p-4">
+                {notes.map((note, index) => (
+                    <div key={note.uuid || index} className="py-3 first:pt-0">
+                        <div className="flex justify-between items-start text-sm mb-1">
+                            <p className="text-gray-800 font-medium">{note.visit_type}</p>
+                            <p className="text-gray-500 text-xs">
+                                {t('common.locale') === 'ar' 
+                                    ? new Date(note.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
+                                    : new Date(note.date).toLocaleDateString()}
+                            </p>
+                        </div>
+                        <p className="text-sm text-gray-700">{note.notes}</p>
                     </div>
-                    <p className="text-sm text-gray-700">{note.notes}</p>
-                </div>
-            ))
+                ))}
+            </div>
         )}
     </div>
 );
