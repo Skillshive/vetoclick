@@ -20,6 +20,8 @@ use App\Http\Controllers\LotController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ReceptionistDashboardController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\RoleManagementController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\UserDashboardController;
@@ -61,7 +63,12 @@ Route::get('/dashboard', function (AppointmentService $appointmentService) {
             "clients" => $clients,
             "todayAppointments" => AppointmentResource::collection($todayAppointments)->toArray(request()),
         ]);
-    } else {
+    } 
+    // Check if user is a receptionist
+    else if ($user && $user->hasRole('receptionist')) {
+        return app(ReceptionistDashboardController::class)->index();
+    } 
+    else {
         // Redirect to user dashboard
         return app(UserDashboardController::class)->index();
     }
@@ -71,6 +78,11 @@ Route::get('/dashboard', function (AppointmentService $appointmentService) {
 Route::get('/user/dashboard', [UserDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('user.dashboard');
+
+// Receptionist dashboard route
+Route::get('/receptionist/dashboard', [App\Http\Controllers\ReceptionistDashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('receptionist.dashboard');
 
 // Profile routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -129,6 +141,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('{breed}/delete', 'destroy')->name('destroy');
             // Get breeds for a specific species
             Route::get('species/{speciesUuid}', 'getBySpecies')->name('by-species');
+        });
+});
+
+// Client routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::name('clients.')->prefix('clients')
+        ->controller(ClientController::class)
+        ->group(function () {
+            Route::get('', 'index')->name('index');
+            Route::post('store', 'store')->name('store');
+            Route::put('{uuid}/update', 'update')->name('update');
+            Route::delete('{uuid}/delete', 'destroy')->name('destroy');
         });
 });
 
