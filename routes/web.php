@@ -14,6 +14,9 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Stock\OrderController;
 use App\Http\Controllers\BreedController;
 use App\Http\Controllers\CategoryBlogController;
+use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\ConsultationNoteController;
+use App\Http\Controllers\LotController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
@@ -21,6 +24,8 @@ use App\Http\Controllers\RoleManagementController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\PetController;
+use App\Http\Controllers\VaccinationController;
+use App\Http\Controllers\VaccineProductController;
 use App\Models\Client;
 use App\Services\AppointmentService;
 use App\Http\Resources\AppointmentResource;
@@ -256,18 +261,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
     // Lot routes
-    Route::put('lots/{id}', [\App\Http\Controllers\LotController::class, 'update'])->name('lots.update');
+    Route::put('lots/{id}', [LotController::class, 'update'])->name('lots.update');
 
     // Vaccin routes (available vaccines list)
-    Route::get('vaccins', [\App\Http\Controllers\VaccinController::class, 'index'])->name('vaccins.index');
+    Route::get('vaccins', [VaccinController::class, 'index'])->name('vaccins.index');
     
     // Vaccine products (from products table where type = VACCINE)
-    Route::get('vaccine-products', [\App\Http\Controllers\VaccineProductController::class, 'index'])->name('vaccine-products.index');
+    Route::get('vaccine-products', [VaccineProductController::class, 'index'])->name('vaccine-products.index');
 
     // Vaccination routes
-    Route::post('vaccinations', [\App\Http\Controllers\VaccinationController::class, 'store'])->name('vaccinations.store');
-    Route::put('vaccinations/{uuid}', [\App\Http\Controllers\VaccinationController::class, 'update'])->name('vaccinations.update');
-    Route::delete('vaccinations/{uuid}', [\App\Http\Controllers\VaccinationController::class, 'destroy'])->name('vaccinations.destroy');
+    Route::post('vaccinations', [VaccinationController::class, 'store'])->name('vaccinations.store');
+    Route::put('vaccinations/{uuid}', [VaccinationController::class, 'update'])->name('vaccinations.update');
+    Route::delete('vaccinations/{uuid}', [VaccinationController::class, 'destroy'])->name('vaccinations.destroy');
 
     // Allergy routes
     Route::post('allergies', [\App\Http\Controllers\AllergyController::class, 'store'])->name('allergies.store');
@@ -285,12 +290,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('prescriptions/{uuid}', [\App\Http\Controllers\PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
 
     // Consultation note routes
-    Route::post('consultation-notes', [\App\Http\Controllers\ConsultationNoteController::class, 'store'])->name('consultation-notes.store');
-    Route::put('consultation-notes/{uuid}', [\App\Http\Controllers\ConsultationNoteController::class, 'update'])->name('consultation-notes.update');
-    Route::delete('consultation-notes/{uuid}', [\App\Http\Controllers\ConsultationNoteController::class, 'destroy'])->name('consultation-notes.destroy');
+    Route::post('consultation-notes', [ConsultationNoteController::class, 'store'])->name('consultation-notes.store');
+    Route::put('consultation-notes/{uuid}', [ConsultationNoteController::class, 'update'])->name('consultation-notes.update');
+    Route::delete('consultation-notes/{uuid}', [ConsultationNoteController::class, 'destroy'])->name('consultation-notes.destroy');
 
     // Consultation routes
-    Route::post('consultations/{uuid}/close', [\App\Http\Controllers\ConsultationController::class, 'close'])->name('consultations.close');
+    Route::post('consultations/{uuid}/close', [ConsultationController::class, 'close'])->name('consultations.close');
 });
 
 // Role routes
