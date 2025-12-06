@@ -522,34 +522,57 @@ class PetController extends Controller
         try {
             $pet = Pet::where('uuid', $uuid)->firstOrFail();
 
-            // Get consultations/appointments with related data
-            $consultations = Appointment::where('pet_id', $pet->id)
-                ->with(['veterinary', 'consultation.medicalRecords'])
-                ->orderBy('appointment_date', 'desc')
-                ->get()
+            // Get current logged-in veterinarian
+            $user = Auth::user();
+            $veterinarianId = null;
+            if ($user && $user->veterinary) {
+                $veterinarianId = $user->veterinary->id;
+            }
+
+            // Get appointments with related data - filtered by current vet
+            // Include: completed consultations, canceled appointments, and appointments without consultations
+            $consultationsQuery = Appointment::where('pet_id', $pet->id)
+                ->with(['veterinary.user', 'consultation.medicalRecords'])
+                ->orderBy('appointment_date', 'desc');
+            
+            // Filter by current veterinarian if available
+            if ($veterinarianId) {
+                $consultationsQuery->where('veterinarian_id', $veterinarianId);
+            }
+
+            $consultations = $consultationsQuery->get()
                 ->map(function ($appointment) {
+                    $hasConsultation = $appointment->consultation !== null;
+                    $isCanceled = $appointment->status === 'canceled' || $appointment->status === 'cancelled';
+                    
                     return [
                         'uuid' => $appointment->uuid,
                         'date' => $appointment->appointment_date,
+                        'appointment_type' => $appointment->appointment_type,
                         'reason' => $appointment->reason_for_visit,
-                        'veterinarian' => $appointment->veterinary ? 
-                            $appointment->veterinary->first_name . ' ' . $appointment->veterinary->last_name : 
-                            'Unknown',
                         'notes' => $appointment->appointment_notes,
                         'status' => $appointment->status,
-                        'medical_record' => $appointment->consultation && $appointment->consultation->medicalRecords->isNotEmpty() ? 
+                        'is_video_conseil' => $appointment->is_video_conseil,
+                        'has_consultation' => $hasConsultation,
+                        'is_canceled' => $isCanceled,
+                        'consultation_uuid' => $hasConsultation ? $appointment->consultation->uuid : null,
+                        'medical_record' => $hasConsultation && $appointment->consultation->medicalRecords->isNotEmpty() ? 
                             $appointment->consultation->medicalRecords->first() : 
                             null,
                     ];
                 });
-
-            // Get all vaccinations for this pet through consultations
-            $vaccinations = Vaccination::whereHas('consultation', function ($query) use ($pet) {
+            // Get vaccinations for this pet - filtered by current vet through consultations
+            $vaccinationsQuery = Vaccination::whereHas('consultation', function ($query) use ($pet, $veterinarianId) {
                     $query->where('pet_id', $pet->id);
+                    // Filter by current veterinarian if available
+                    if ($veterinarianId) {
+                        $query->where('veterinarian_id', $veterinarianId);
+                    }
                 })
                 ->with(['consultation', 'vaccine', 'administeredByUser'])
-                ->orderBy('vaccination_date', 'desc')
-                ->get();
+                ->orderBy('vaccination_date', 'desc');
+            
+            $vaccinations = $vaccinationsQuery->get();
 
             \Log::info('Vaccinations query for pet ' . $pet->id . ':', [
                 'count' => $vaccinations->count(),
@@ -570,11 +593,17 @@ class PetController extends Controller
                 ];
             });
 
-            // Get notes directly by pet_id from the notes table
-            $notes = Note::where('pet_id', $pet->id)
+            // Get notes directly by pet_id from the notes table - filtered by current vet
+            $notesQuery = Note::where('pet_id', $pet->id)
                 ->with(['veterinarian.user'])
-                ->orderBy('date', 'desc')
-                ->get()
+                ->orderBy('date', 'desc');
+            
+            // Filter by current veterinarian if available
+            if ($veterinarianId) {
+                $notesQuery->where('veterinarian_id', $veterinarianId);
+            }
+            
+            $notes = $notesQuery->get()
                 ->map(function ($note) {
                     return [
                         'uuid' => $note->uuid,
@@ -587,11 +616,17 @@ class PetController extends Controller
                     ];
                 });
 
-            // Get allergies directly by pet_id
-            $allergies = Allergy::where('pet_id', $pet->id)
+            // Get allergies directly by pet_id - filtered by current vet
+            $allergiesQuery = Allergy::where('pet_id', $pet->id)
                 ->with(['veterinarian.user'])
-                ->orderBy('created_at', 'desc')
-                ->get()
+                ->orderBy('created_at', 'desc');
+            
+            // Filter by current veterinarian if available
+            if ($veterinarianId) {
+                $allergiesQuery->where('veterinarian_id', $veterinarianId);
+            }
+            
+            $allergies = $allergiesQuery->get()
                 ->map(function ($allergy) {
                     return [
                         'uuid' => $allergy->uuid,
@@ -606,11 +641,17 @@ class PetController extends Controller
                     ];
                 });
 
-            // Get prescriptions directly by pet_id
-            $prescriptions = Prescription::where('pet_id', $pet->id)
+            // Get prescriptions directly by pet_id - filtered by current vet
+            $prescriptionsQuery = Prescription::where('pet_id', $pet->id)
                 ->with(['product', 'veterinarian.user'])
-                ->orderBy('created_at', 'desc')
-                ->get()
+                ->orderBy('created_at', 'desc');
+            
+            // Filter by current veterinarian if available
+            if ($veterinarianId) {
+                $prescriptionsQuery->where('veterinarian_id', $veterinarianId);
+            }
+            
+            $prescriptions = $prescriptionsQuery->get()
                 ->map(function ($prescription) {
                     return [
                         'uuid' => $prescription->uuid,
