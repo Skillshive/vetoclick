@@ -42,7 +42,6 @@ class AppointmentRequest extends FormRequest
         $now = now()->format('Y-m-d H:i:s');
         
         return [
-            'veterinary_id' => 'required|string|exists:veterinarians,uuid',
             'client_id' => 'required|string|exists:clients,uuid',
             'pet_id' => 'nullable|string|exists:pets,uuid',
             'appointment_date' => 'required|date',
@@ -61,9 +60,6 @@ class AppointmentRequest extends FormRequest
 
             'pet_id.required' => __('validation.pet_id_required'),
             'pet_id.exists' => __('validation.pet_id_exists'),
-
-            'veterinary_id.required' => __('validation.veterinary_id_required'),
-            'veterinary_id.exists' => __('validation.veterinary_id_exists'),
 
             'appointment_date.required' => __('validation.appointment_date_required'),
             'appointment_date.date' => __('validation.appointment_date_date'),

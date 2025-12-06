@@ -35,9 +35,26 @@ class AppointmentController extends Controller
     {
         try {
             $dto = AppointmentDTO::fromRequest($request);
-            $this->appointmentService->create($dto);
+            $appointment = $this->appointmentService->create($dto);
+            
+            // Check if request is from API/JSON
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('common.appointment_created_success'),
+                    'appointment' => new AppointmentResource($appointment),
+                ], 201);
+            }
+            
             return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
         } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('common.error'),
+                    'message' => $e->getMessage(),
+                ], 400);
+            }
             return back()->withErrors(['error' =>  __('common.error')]);
         }
     }

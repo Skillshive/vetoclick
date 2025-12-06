@@ -112,7 +112,7 @@ class AppointmentService implements ServiceInterface
             $isVideoConseil = false; // Default to false if not provided or invalid
         }
         $appointment= Appointment::create([
-            "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
+            "veterinarian_id"=>auth()->user()->veterinary->id,
             "client_id"=>$this->getClient($dto->client_id),
             "pet_id"=>$this->getPet($dto->pet_id),
             "appointment_type"=>$dto->appointment_type,
