@@ -1731,4 +1731,6 @@ return [
     'account_already_exists' => 'An account with this phone number or email already exists. Please use login instead.',
     'verified_successfully' => 'Phone number verified successfully. You have been automatically signed in.',
 ],
+'login_successful' => 'Login successful.',
+'invalid_credentials' => 'Invalid credentials.',
 ];
