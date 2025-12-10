@@ -1,8 +1,14 @@
 <?php
 
+use App\Http\Middleware\CheckSubscriptionFeature;
+use App\Http\Middleware\CheckSubscriptionPermission;
+use App\Http\Middleware\CorsMiddleware;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,21 +18,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+        $middleware->use([
+            CorsMiddleware::class,
         ]);
 
-        // Add CORS middleware to API routes
-        $middleware->api(append: [
-            \App\Http\Middleware\CorsMiddleware::class,
+        $middleware->web(append: [
+            SetLocale::class,
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         // Register subscription middleware
         $middleware->alias([
-            'subscription.feature' => \App\Http\Middleware\CheckSubscriptionFeature::class,
-            'subscription.permission' => \App\Http\Middleware\CheckSubscriptionPermission::class,
+            'subscription.feature' => CheckSubscriptionFeature::class,
+            'subscription.permission' => CheckSubscriptionPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
