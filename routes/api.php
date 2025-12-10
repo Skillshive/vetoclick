@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\Auth\OtpVerificationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PetController;
@@ -9,6 +10,12 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TwilioController;
+
+Route::post('otp/send', [OtpVerificationController::class, 'sendOtp'])
+    ->name('api.otp.send');
+
+Route::post('otp/verify', [OtpVerificationController::class, 'verifyOtp'])
+    ->name('api.otp.verify');
 
 Route::prefix('email')->controller(EmailController::class)->group(function () {
     Route::post('/send', 'sendEmail');

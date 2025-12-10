@@ -21,17 +21,21 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ReceptionistDashboardController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\RoleManagementController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\VaccinationController;
+use App\Http\Controllers\VaccinController;
 use App\Http\Controllers\VaccineProductController;
 use App\Models\Client;
 use App\Services\AppointmentService;
 use App\Http\Resources\AppointmentResource;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 require_once 'common.php';
 
@@ -43,11 +47,32 @@ Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name(
 Route::redirect('/', '/dashboard');
 
 // Dashboard routes - check user role to redirect to appropriate dashboard
-Route::get('/dashboard', function (AppointmentService $appointmentService) {
+Route::get('/dashboard', function (AppointmentService $appointmentService, Request $request) {
+    // Check for login token from OTP verification
+    if ($request->has('login_token')) {
+        $token = $request->get('login_token');
+        $userId = Cache::get('login_token_' . $token);
+        
+        if ($userId) {
+            $user =User::find($userId);
+            if ($user) {
+                Auth::login($user);
+                // Clear the token
+                Cache::forget('login_token_' . $token);
+                // Redirect to remove token from URL
+                return redirect('/dashboard');
+            }
+        }
+    }
+    
     $user = Auth::user();
     
+    // Check if user is an admin (highest priority)
+    if ($user && $user->hasRole('admin')) {
+        return app(AdminDashboardController::class)->index();
+    }
     // Check if user is a veterinarian
-    if ($user && $user->veterinary) {
+    else if ($user && $user->veterinary) {
         // Redirect to vet dashboard
         $clients = Client::all()->mapWithKeys(function ($client) {
             return [$client->uuid => $client->first_name];
@@ -69,10 +94,14 @@ Route::get('/dashboard', function (AppointmentService $appointmentService) {
         return app(ReceptionistDashboardController::class)->index();
     } 
     else {
+        // If no user is authenticated, redirect to login
+        if (!$user) {
+            return redirect('/login');
+        }
         // Redirect to user dashboard
         return app(UserDashboardController::class)->index();
     }
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->name('dashboard'); // Removed auth middleware to allow token-based login
 
 // User dashboard route
 Route::get('/user/dashboard', [UserDashboardController::class, 'index'])
@@ -83,6 +112,11 @@ Route::get('/user/dashboard', [UserDashboardController::class, 'index'])
 Route::get('/receptionist/dashboard', [App\Http\Controllers\ReceptionistDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('receptionist.dashboard');
+
+// Admin dashboard route
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.dashboard');
 
 // Profile routes
 Route::middleware(['auth', 'verified'])->group(function () {
