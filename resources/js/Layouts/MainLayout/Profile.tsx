@@ -29,10 +29,9 @@ export function Profile() {
   const { auth } = usePage().props;
   const { t } = useTranslation();
   const user = auth?.user;
-
   const avatarUrl = getUserAvatarUrl(user)?getUserAvatarUrl(user):"/assets/default/person-placeholder.jpg";
   
-  const fullName = user ? `${user.firstname} ${user.lastname}` : t('common.user');
+  const fullName = user.firstname && user.lastname ? `${user.firstname} ${user.lastname}` : t('common.user');
   // const role = user?.roles[0]?.name || t('common.user');
   
   const links: LinkItem[] = [
