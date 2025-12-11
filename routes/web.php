@@ -43,27 +43,34 @@ require_once 'common.php';
 Route::get('/language/switch/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name('language.get');
 
+// Auth check endpoint - using controller method for proper session access
+Route::get('/api/auth/check', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'check'])
+    ->name('api.auth.check');
+
+// OTP routes for registration - need web middleware for session support
+// Exclude from CSRF since these are public registration endpoints
+Route::post('/api/otp/send', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'sendOtp'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+    ->name('api.otp.send');
+
+Route::post('/api/otp/verify', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'verifyOtp'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+    ->name('api.otp.verify');
+
+// OTP routes for phone update (requires authentication)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/api/otp/phone-update/send', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'sendPhoneUpdateOtp'])
+        ->name('api.otp.phone-update.send');
+    
+    Route::post('/api/otp/phone-update/verify', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'verifyPhoneUpdateOtp'])
+        ->name('api.otp.phone-update.verify');
+});
 
 Route::redirect('/', '/dashboard');
 
 // Dashboard routes - check user role to redirect to appropriate dashboard
 Route::get('/dashboard', function (AppointmentService $appointmentService, Request $request) {
-    // Check for login token from OTP verification
-    if ($request->has('login_token')) {
-        $token = $request->get('login_token');
-        $userId = Cache::get('login_token_' . $token);
-        
-        if ($userId) {
-            $user =User::find($userId);
-            if ($user) {
-                Auth::login($user);
-                // Clear the token
-                Cache::forget('login_token_' . $token);
-                // Redirect to remove token from URL
-                return redirect('/dashboard');
-            }
-        }
-    }
+
     
     $user = Auth::user();
     
