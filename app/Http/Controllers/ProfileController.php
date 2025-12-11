@@ -41,6 +41,7 @@ class ProfileController extends Controller
             'user' => $user,
             'isVeterinarian' => $isVeterinarian,
             'veterinaryInfo' => $veterinaryInfo,
+            'phoneVerified' => $user->phone_verified_at !== null,
         ]);
     }
 
@@ -72,7 +73,9 @@ class ProfileController extends Controller
                 }
 
                 $image = $this->imageService->saveImage($request->file('image'), 'profile-images/');
-                $validated['image_id'] = $image->id;
+                if ($image) {
+                    $validated['image_id'] = $image->id;
+                }
             } catch (\Exception $e) {
                 Log::error('Image upload failed: ' . $e->getMessage());
                 return back()->withErrors(['image' => 'Image upload failed.']);
@@ -86,6 +89,21 @@ class ProfileController extends Controller
         $userData = array_intersect_key($validated, array_flip($userFields));
         $veterinaryData = array_intersect_key($validated, array_flip($veterinaryFields));
 
+        // Check if phone is being changed
+        $phoneChanged = false;
+        if (isset($userData['phone']) && $userData['phone'] !== $user->phone) {
+            $phoneChanged = true;
+            // Normalize phone number for comparison
+            $newPhone = $userData['phone'];
+            if (strpos($newPhone, '0') === 0) {
+                $newPhone = '+212' . substr($newPhone, 1);
+            } elseif (strpos($newPhone, '+212') !== 0) {
+                $newPhone = '+212' . $newPhone;
+            }
+            
+            $userData['phone'] = $newPhone;
+        }
+
         // Update user data
         $user->fill($userData);
 
@@ -93,12 +111,18 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
+        // If phone changed, reset phone_verified_at (will be set when OTP is verified)
+        if ($phoneChanged) {
+            $user->phone_verified_at = null;
+        }
+
         $user->save();
 
         // Update veterinary information if user has veterinarian role
         if ($user->hasRole('veterinarian') && !empty($veterinaryData)) {
-            if ($user->veterinary) {
-                $user->veterinary->update($veterinaryData);
+            $veterinary = $user->veterinary;
+            if ($veterinary) {
+                $veterinary->update($veterinaryData);
             } else {
                 // Create veterinary record if it doesn't exist
                 $user->veterinary()->create($veterinaryData);
@@ -122,7 +146,7 @@ class ProfileController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return redirect()->back()->with('success', 'Password updated successfully.');
+        return redirect()->back()->with('success', __('common.password_updated_successfully'));
     }
 
     /**
