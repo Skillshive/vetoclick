@@ -44,10 +44,11 @@ interface ProfilePageProps {
   user: User;
   isVeterinarian: boolean;
   veterinaryInfo?: VeterinaryInfo;
+  phoneVerified: boolean;
 }
 
 
-export default function General({ user, isVeterinarian, veterinaryInfo }: ProfilePageProps) {
+export default function General({ user, isVeterinarian, veterinaryInfo, phoneVerified: initialPhoneVerified }: ProfilePageProps) {
    const { t } = useTranslation();
    const { showToast } = useToast();
    const [avatar, setAvatar] = useState<File | null>(null);
@@ -89,8 +90,52 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
 
   const [isWaitingForValidation, setIsWaitingForValidation] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  
+  // Phone OTP verification state
+  const [phoneChanged, setPhoneChanged] = useState(false);
+  const [phoneOtp, setPhoneOtp] = useState('');
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [sendingPhoneOtp, setSendingPhoneOtp] = useState(false);
+  const [verifyingPhoneOtp, setVerifyingPhoneOtp] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneOtpError, setPhoneOtpError] = useState('');
 
-    const avatarUrl = getUserAvatarUrl(user);
+  const avatarUrl = getUserAvatarUrl(user);
+  
+  // Get CSRF token
+  const getCsrfToken = () => {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (token) return token;
+    
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'XSRF-TOKEN') {
+        return decodeURIComponent(value);
+      }
+    }
+    return '';
+  };
+  
+  // Check if phone has changed from original
+  useEffect(() => {
+    const originalPhone = user?.phone || '';
+    const normalizedOriginal = originalPhone.startsWith('+212') ? originalPhone : 
+                              originalPhone.startsWith('0') ? '+212' + originalPhone.substring(1) : '+212' + originalPhone;
+    const normalizedCurrent = data.phone.startsWith('+212') ? data.phone : 
+                             data.phone.startsWith('0') ? '+212' + data.phone.substring(1) : '+212' + data.phone;
+    
+    if (normalizedCurrent !== normalizedOriginal && normalizedCurrent !== '+212' && data.phone.trim() !== '') {
+      setPhoneChanged(true);
+      setPhoneVerified(false);
+      setPhoneOtpSent(false);
+      setPhoneOtp('');
+    } else {
+      setPhoneChanged(false);
+      // Use the initialPhoneVerified prop from backend if phone hasn't changed
+      setPhoneVerified(initialPhoneVerified);
+    }
+  }, [data.phone, user?.phone, initialPhoneVerified]);
 
   useEffect(() => {
     if (!isVeterinarian || !data.address) {
@@ -136,8 +181,122 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
     // This will be handled by the map component's reverse geocoding
   };
 
+  // Send OTP for phone update or verification
+  const sendPhoneUpdateOtp = async () => {
+    if (!data.phone || data.phone.trim() === '') {
+      setPhoneOtpError('Phone number is required');
+      return;
+    }
+
+    setSendingPhoneOtp(true);
+    setPhoneOtpError('');
+    
+    try {
+      const response = await fetch('/api/otp/phone-update/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': getCsrfToken(),
+        },
+        body: JSON.stringify({ phone: data.phone }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setPhoneOtpSent(true);
+        showToast({
+          type: 'success',
+          message: result.message || 'OTP sent successfully to your phone number.',
+        });
+      } else {
+        setPhoneOtpError(result.message || 'Failed to send OTP');
+        showToast({
+          type: 'error',
+          message: result.message || 'Failed to send OTP',
+        });
+      }
+    } catch (err) {
+      setPhoneOtpError('Failed to send OTP. Please try again.');
+      showToast({
+        type: 'error',
+        message: 'Failed to send OTP. Please try again.',
+      });
+    } finally {
+      setSendingPhoneOtp(false);
+    }
+  };
+
+  // Verify OTP for phone update
+  const verifyPhoneUpdateOtp = async () => {
+    if (phoneOtp.length !== 6) {
+      setPhoneOtpError('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    setVerifyingPhoneOtp(true);
+    setPhoneOtpError('');
+
+    try {
+      const response = await fetch('/api/otp/phone-update/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          phone: data.phone,
+          otp: phoneOtp,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setPhoneVerified(true);
+        setPhoneOtpSent(false);
+        setPhoneOtp('');
+        showToast({
+          type: 'success',
+          message: result.message || t('common.phone_verified_successfully'),
+        });
+        // Use Inertia router to reload props from backend (no full page refresh)
+        router.visit(window.location.pathname, {
+          only: ['phoneVerified', 'user'],
+          preserveScroll: true,
+          preserveState: false,
+        });
+      } else {
+        setPhoneOtpError(result.message || t('common.invalid_otp'));
+        showToast({
+          type: 'error',
+          message: result.message || t('common.invalid_otp'),
+        });
+      }
+    } catch (err) {
+      setPhoneOtpError(t('common.verification_failed'));
+      showToast({
+        type: 'error',
+        message: t('common.verification_failed'),
+      });
+    } finally {
+      setVerifyingPhoneOtp(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if phone changed but not verified
+    if (phoneChanged && !phoneVerified) {
+      showToast({
+        type: 'warning',
+        message: t('common.please_verify_new_phone_number_with_otp_before_saving'),
+      });
+      return;
+    }
 
     // Check if address validation is in progress or waiting
     if (isValidating || isWaitingForValidation) {
@@ -395,34 +554,156 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
                                     required={true}
                   error={errors.email || profileValidationErrors.email}
                 />
-                <Input
-                  placeholder={t('common.enter_phone_number')}
-                  label={t('common.phone')}
-                  className="rounded-xl"
-                  prefix={<PhoneIcon className="size-4.5" />}
-                  value={data.phone}
-                  onChange={(e) => {
-                    setData('phone', e.target.value);
-                    const result = profileFormSchema.safeParse({
-                      ...data,
-                      phone: e.target.value,
-                    });
-                    if (!result.success) {
-                      const errors = result.error.flatten().fieldErrors;
-                      setProfileValidationErrors(prev => ({
-                        ...prev,
-                        phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
-                      }));
-                    } else {
-                      setProfileValidationErrors(prev => ({
-                        ...prev,
-                        phone: undefined,
-                      }));
-                    }
-                  }}
-                                    required={true}
-                  error={errors.phone || profileValidationErrors.phone}
-                />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-dark-200">
+                      {t('common.phone')}
+                      {user?.phone && (
+                        <span className="ml-2">
+                          {phoneVerified && !phoneChanged ? (
+                            <span className="inline-flex items-center text-xs font-medium text-green-600 dark:text-green-400">
+                              <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              Verified
+                            </span>
+                          ) : !phoneChanged && !phoneVerified ? (
+                            <span className="inline-flex items-center text-xs font-medium text-yellow-600 dark:text-yellow-400">
+                              <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                              Not Verified
+                            </span>
+                          ) : null}
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                  <Input
+                    placeholder={t('common.enter_phone_number')}
+                    className="rounded-xl"
+                    prefix={<PhoneIcon className="size-4.5" />}
+                    value={data.phone}
+                    onChange={(e) => {
+                      setData('phone', e.target.value);
+                      setPhoneOtpError('');
+                      const result = profileFormSchema.safeParse({
+                        ...data,
+                        phone: e.target.value,
+                      });
+                      if (!result.success) {
+                        const errors = result.error.flatten().fieldErrors;
+                        setProfileValidationErrors(prev => ({
+                          ...prev,
+                          phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
+                        }));
+                      } else {
+                        setProfileValidationErrors(prev => ({
+                          ...prev,
+                          phone: undefined,
+                        }));
+                      }
+                    }}
+                    required={true}
+                    error={errors.phone || profileValidationErrors.phone || phoneOtpError}
+                    disabled={verifyingPhoneOtp}
+                  />
+                  
+                  {/* Show verification prompt for existing unverified phone */}
+                  {!phoneChanged && !phoneVerified && user?.phone && !phoneOtpSent && (
+                    <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2">
+                        Your phone number is not verified. Verify it to ensure account security.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={sendPhoneUpdateOtp}
+                        disabled={sendingPhoneOtp}
+                        color="primary"
+                        className="text-sm"
+                      >
+                        {sendingPhoneOtp ? 'Sending OTP...' : 'Verify Phone Number'}
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Phone OTP Verification UI - for both changed phone and unverified phone */}
+                  {((phoneChanged && !phoneVerified) || (!phoneChanged && !phoneVerified && phoneOtpSent)) && (
+                    <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-3">
+                        Phone number changed. Please verify your new phone number with OTP.
+                      </p>
+                      
+                      {!phoneOtpSent ? (
+                        <Button
+                          type="button"
+                          onClick={sendPhoneUpdateOtp}
+                          disabled={sendingPhoneOtp || !data.phone}
+                          color="primary"
+                          className="w-full sm:w-auto"
+                        >
+                          {sendingPhoneOtp ? 'Sending OTP...' : 'Send OTP to Verify'}
+                        </Button>
+                      ) : (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-dark-200 mb-2">
+                              Enter OTP sent to {data.phone}
+                            </label>
+                            <Input
+                              placeholder="000000"
+                              type="text"
+                              value={phoneOtp}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                setPhoneOtp(value);
+                                setPhoneOtpError('');
+                              }}
+                              maxLength={6}
+                              disabled={verifyingPhoneOtp}
+                              className="text-center text-2xl tracking-widest"
+                            />
+                            {phoneOtpError && (
+                              <p className="mt-1 text-sm text-red-600">{phoneOtpError}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              onClick={verifyPhoneUpdateOtp}
+                              disabled={verifyingPhoneOtp || phoneOtp.length !== 6}
+                              color="primary"
+                              className="flex-1"
+                            >
+                              {verifyingPhoneOtp ? 'Verifying...' : 'Verify OTP'}
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                setPhoneOtpSent(false);
+                                setPhoneOtp('');
+                                setPhoneOtpError('');
+                              }}
+                              disabled={verifyingPhoneOtp}
+                              variant="outlined"
+                            >
+                              Resend
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {phoneChanged && phoneVerified && (
+                    <p className="mt-2 text-sm text-green-600 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Phone number verified
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Veterinary Information Section */}
@@ -596,7 +877,8 @@ export default function General({ user, isVeterinarian, veterinaryInfo }: Profil
                     !data?.email?.trim() ||
                     Boolean(isValidating) ||
                     Boolean(isWaitingForValidation) ||
-                    Boolean(isVeterinarian && data.address && validationResult && !validationResult.valid)
+                    Boolean(isVeterinarian && data.address && validationResult && !validationResult.valid) ||
+                    Boolean(phoneChanged && !phoneVerified)
                   }
                 >
                   {processing ? t('common.saving') : t('common.save')}
