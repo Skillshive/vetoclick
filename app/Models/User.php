@@ -38,6 +38,8 @@ class User extends Authenticatable
         'password',
         'google_id',
         'email_verified_at',
+        'phone_verified_at',
+        'phone_verified',
     ];
 
     /**

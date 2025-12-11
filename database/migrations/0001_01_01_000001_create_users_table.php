@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('firstname')->nullable();
             $table->string('lastname')->nullable();
             $table->string('phone')->nullable();
+            $table->timestamp('phone_verified_at')->nullable();
+            $table->boolean('phone_verified')->default(false);
  $table->foreignId('image_id')
         ->nullable()
         ->constrained('images')
