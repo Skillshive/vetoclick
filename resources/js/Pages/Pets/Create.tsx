@@ -420,7 +420,7 @@ console.log('breedOptions',breedOptions);
                       />
                     </div>
                     <div>
-                      <span className="dark:text-dark-100 text-base font-medium text-gray-800">
+                      <span className="input-label">
                 {t('common.date_of_birth')}
                 <span className="text-error mx-1">*</span>
 
