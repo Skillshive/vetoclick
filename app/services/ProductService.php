@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\DTOs\ProductDto;
+use App\Enums\ProductType;
 use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -25,7 +26,7 @@ class ProductService implements ServiceInterface
 
     public function getAllAsCollection(): Collection
     {
-        return Product::with('category')->orderBy('created_at', 'desc')->get();
+        return Product::with('category')->where('type',ProductType::MEDICATION->value)->where('is_active', true)->orderBy('created_at', 'desc')->get();
     }
 
     public function getAllForExport(): Collection
