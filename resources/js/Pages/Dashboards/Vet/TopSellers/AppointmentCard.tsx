@@ -43,7 +43,6 @@ export function AppointmentCard({
       : null
   );
 
-  console.log("consultation",appointment.consultation);
   const StatusIcon = () => {
     switch (appointment.status) {
       case "confirmed":
@@ -63,6 +62,7 @@ export function AppointmentCard({
   
     const handleCardClick = () => {
       setIsModalOpen(true);
+      setConsultationId(appointment.consultation?.uuid);
     };
   
     const handleCloseModal = () => {
@@ -223,7 +223,6 @@ export function AppointmentCard({
       }
     };
   
-    console.log("appointment.consultation?.status",appointment.consultation?.status);
     return (
       <>
         <Card skin="shadow" className="w-80 shrink-0 space-y-4 p-5 cursor-pointer" onClick={handleCardClick}>
@@ -272,7 +271,7 @@ export function AppointmentCard({
             </div>
           </div>
   
-          {appointment.is_video_conseil && (
+          {appointment.is_video_conseil  ? (
             <div className="mt-4">
               <Button
                 color="primary"
@@ -287,11 +286,11 @@ export function AppointmentCard({
                   : t("common.vet_dashboard.appointment_card.join_video_call")}
               </Button>
             </div>
-          )}
+          ) : null}
 
           {/* Action Buttons */}
           <div className="mt-4 flex justify-center gap-2">
-            {!consultationId && appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
+            {!consultationId && appointment.status !== 'cancelled' && appointment.status !== 'completed'  && !appointment.is_video_conseil  ? (
               <>
                 <Button
                   color="primary"
@@ -311,9 +310,9 @@ export function AppointmentCard({
                   <XCircleIcon className="size-5" />
                 </Button>
               </>
-            )}
+            ) : null    }
             
-            {consultationId && appointment.consultation?.status !== 'completed' && (
+            {consultationId && appointment.consultation?.status !== 'completed'  ? (
               <>
                 <Button
                   color="success"
@@ -332,7 +331,7 @@ export function AppointmentCard({
                   <PencilSquareIcon className="size-5" />
                 </Button>
               </>
-            )}
+            ) : null}
           </div>
         </Card>
   
