@@ -13,11 +13,14 @@ use App\Models\Consultation;
 use App\Models\Appointment;
 use App\Enums\ConsultationStatus;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Http\Requests\ClientAppointmentRequest;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class AppointmentController extends Controller
 {
@@ -404,7 +407,7 @@ class AppointmentController extends Controller
             if ($appointment->status === 'completed' || $appointment->status === 'cancelled') {
                 return response()->json([
                     'error' => 'Appointment cannot be cancelled',
-                    'message' => 'This appointment is already ' . $appointment->status
+                    'message' => __('common.this_appointment_is_already') . ' ' . $appointment->status
                 ], 400);
             }
 
@@ -419,6 +422,128 @@ class AppointmentController extends Controller
                 'error' => 'Failed to cancel appointment',
                 'message' => __('common.error')
             ], 500);
+        }
+    }
+
+    /**
+     * Get appointments for calendar view (filtered by veterinarian)
+     */
+    public function calendar(Request $request): Response|JsonResponse|RedirectResponse
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json(['error' => __('common.unauthorized')], 401);
+                }
+                return redirect()->route('login');
+            }
+
+            if (!$user->veterinary) {
+                if ($request->wantsJson() || $request->expectsJson()) {
+                    return response()->json(['error' => __('common.veterinary_profile_not_found')], 404);
+                }
+                return redirect()->route('dashboard')->with('error', __('common.veterinary_profile_not_found'));
+            }
+
+            $veterinarianId = $user->veterinary->id;
+            
+            // Get date range from request or default to current month
+            $startDate = $request->input('start', Carbon::now()->startOfMonth()->toDateString());
+            $endDate = $request->input('end', Carbon::now()->endOfMonth()->toDateString());
+
+            // Fetch appointments for the veterinarian within the date range
+            $appointments = Appointment::where('veterinarian_id', $veterinarianId)
+                ->whereBetween('appointment_date', [$startDate, $endDate])
+                ->with(['client', 'pet.breed.species', 'consultation'])
+                ->orderBy('appointment_date', 'asc')
+                ->orderBy('start_time', 'asc')
+                ->get();
+
+            // Format appointments for FullCalendar
+            $events = $appointments->map(function ($appointment) {
+                $date = Carbon::parse($appointment->appointment_date);
+                $startTime = Carbon::parse($appointment->start_time);
+                $endTime = Carbon::parse($appointment->end_time);
+                
+                // Combine date and time
+                $start = $date->copy()->setTimeFromTimeString($appointment->start_time);
+                $end = $date->copy()->setTimeFromTimeString($appointment->end_time);
+
+                // Determine color based on status
+                $color = match($appointment->status) {
+                    'scheduled', 'confirmed' => '#4DB9AD',
+                    'completed' => '#10b981',
+                    'cancelled', 'canceled' => '#ef4444',
+                    'pending' => '#f59e0b',
+                    default => '#6b7280',
+                };
+
+                return [
+                    'id' => $appointment->uuid,
+                    'title' => $appointment->pet ? $appointment->pet->name : 'Unknown Pet',
+                    'start' => $start->toIso8601String(),
+                    'end' => $end->toIso8601String(),
+                    'backgroundColor' => $color,
+                    'borderColor' => $color,
+                    'textColor' => '#ffffff',
+                    'extendedProps' => [
+                        'appointment_type' => $appointment->appointment_type,
+                        'reason' => $appointment->reason_for_visit,
+                        'appointment_notes' => $appointment->appointment_notes,
+                        'status' => $appointment->status,
+                        'is_video' => $appointment->is_video_conseil,
+                        'duration_minutes' => $appointment->duration_minutes ?: null,
+                        'video_meeting_id' => $appointment->video_meeting_id,
+                        'video_join_url' => $appointment->video_join_url,
+                        'appointment_date' => $appointment->appointment_date,
+                        'start_time' => $appointment->start_time,
+                        'end_time' => $appointment->end_time,
+                        'client' => $appointment->client ? [
+                            'name' => $appointment->client->first_name . ' ' . $appointment->client->last_name,
+                            'first_name' => $appointment->client->first_name,
+                            'last_name' => $appointment->client->last_name,
+                            'uuid' => $appointment->client->uuid,
+                        ] : null,
+                        'pet' => $appointment->pet ? [
+                            'name' => $appointment->pet->name,
+                            'uuid' => $appointment->pet->uuid,
+                            'breed' => $appointment->pet->breed?->breed_name,
+                            'species' => $appointment->pet->breed?->species?->name,
+                            'microchip' => $appointment->pet->microchip_ref,
+                            'color' => $appointment->pet->color,
+                            'weight_kg' => $appointment->pet->weight_kg ?: null,
+                            'dob' => $appointment->pet->dob,
+                        ] : null,
+                        'consultation' => $appointment->consultation ? [
+                            'uuid' => $appointment->consultation->uuid,
+                            'status' => $appointment->consultation->status,
+                        ] : null,
+                    ],
+                ];
+            });
+
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'events' => $events,
+                ]);
+            }
+
+            return Inertia::render('Dashboards/Vet/Calendar', [
+                'events' => $events,
+            ]);
+        } catch (Exception $e) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'error' => __('common.error'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            return Inertia::render('Dashboards/Vet/Calendar', [
+                'events' => [],
+                'error' => __('common.error'),
+            ]);
         }
     }
 }

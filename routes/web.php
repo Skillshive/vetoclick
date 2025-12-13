@@ -291,6 +291,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->controller(AppointmentController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
+            Route::get('calendar', 'calendar')->name('calendar');
             Route::post('{uuid}/create-consultation', 'createConsultation')->name('create-consultation');
             Route::post('{uuid}/cancel', 'cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->name('report');

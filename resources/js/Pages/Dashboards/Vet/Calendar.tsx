@@ -263,6 +263,19 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
     return statusStr.charAt(0).toUpperCase() + statusStr.slice(1).toLowerCase();
   };
 
+  const getStatusBadge = (status: string | null | undefined) => {
+    switch (status) {
+      case 2:
+        return <Badge variant="warning">{t('common.in_progress')}</Badge>;
+      case 1:
+        return <Badge variant="success">{t('common.completed')}</Badge>;
+      case 3:
+        return <Badge variant="error">{t('common.cancelled')}</Badge>;
+      default:
+        return null;
+    }
+  };
+
   const formatDateRange = () => {
     if (!calendarRef.current) return '';
     const api = calendarRef.current.getApi();
@@ -745,17 +758,17 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
                     </div>
                   ) : null}
 
-                  {/* Consultation Status */}
+                  {/* Consultation Status
                   {selectedEvent.extendedProps.consultation && (
                     <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                       <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t('common.consultation') || 'Consultation'}</p>
                       <p className="text-sm text-blue-600 dark:text-blue-400">
                         {t('common.status') || 'Status'}: <span className="font-medium">
-                          {translateStatus(selectedEvent.extendedProps.consultation.status)}
+                          {getStatusBadge(selectedEvent.extendedProps.consultation.status)}
                         </span>
                       </p>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Video Meeting Link */}
                   {selectedEvent.extendedProps.is_video && selectedEvent.extendedProps.video_join_url  ? (
