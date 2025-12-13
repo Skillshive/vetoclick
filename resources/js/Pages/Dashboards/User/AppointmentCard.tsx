@@ -99,11 +99,11 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
         <p className="dark:text-dark-100 text-sm font-semibold text-gray-800 mb-1">
           {appointment.appointment_type}
         </p>
-        {appointment.reason_for_visit && (
+        {appointment.reason_for_visit ?  (
           <p className="dark:text-dark-300 text-xs text-gray-400 mb-3 line-clamp-2">
             {appointment.reason_for_visit}
           </p>
-        )}
+        ) :null}
         
         <Badge color={statusColor} variant="outlined" className="mt-2">
           {appointment.status}
@@ -125,7 +125,7 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
         </div>
       </div>
 
-      {appointment.is_video_conseil && appointment.video_join_url && (
+      {(appointment.is_video_conseil && appointment.video_join_url) ? (
         <div className="mt-6">
           <Button
             color="primary"
@@ -139,7 +139,7 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
             {t("common.vet_dashboard.appointment_card.join_video_call") || "Join Video Call"}
           </Button>
         </div>
-      )}
+      ) : null}
     </Box>
   );
 }
