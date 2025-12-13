@@ -643,201 +643,203 @@ const Prescriptions = ({
     medications?: any[],
     useExistingMedication?: boolean,
     setUseExistingMedication?: any
-}) => (
-    <div className="bg-white rounded-lg border shadow-sm">
-        <div className="flex justify-between items-center p-4 border-b">
-            <h4 className="text-lg font-semibold text-gray-800">{t('common.prescriptions') || 'Prescriptions'}</h4>
-            {onToggleForm && (
-                <button 
-                    onClick={onToggleForm}
-                    className="flex items-center gap-1.5 text-sm bg-primary-600 text-white py-1.5 px-3 rounded-md hover:bg-primary-700 transition"
-                >
-                    {showForm ? <XMarkIcon className="w-4 h-4" /> : <Plus size={16} />}
-                    {showForm ? t('common.cancel') : t('common.add_prescription')}
-                </button>
-            )}
-        </div>
-        
-        {/* Add Prescription Form */}
-        {showForm && (
-            <div className="p-4 bg-gray-50 dark:bg-dark-600 border-b border-gray-200 dark:border-dark-500">
-                <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-3">{t('common.add_prescription')}</h5>
-                <div className="space-y-3">
-                    {/* Toggle between existing medication or custom */}
-                    <div className="flex items-center gap-2 p-3 bg-white dark:bg-dark-700 rounded-lg border border-gray-200 dark:border-dark-500">
-                        <input
-                            type="checkbox"
-                            id="use-existing-medication"
-                            checked={useExistingMedication}
-                            onChange={(e) => {
-                                setUseExistingMedication(e.target.checked);
-                                // Clear medication field when switching
-                                setPrescriptionForm((prev: any) => ({ 
-                                    ...prev, 
-                                    medication: '',
-                                    product_id: '' 
-                                }));
-                            }}
-                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                        />
-                        <label htmlFor="use-existing-medication" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                            {t('common.select_from_database') || 'Select medication from database'}
-                        </label>
-                    </div>
-
-                    <div>
-                        <label htmlFor="medication" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                            {t('common.medication')}
-                            <span className="text-red-500 mx-1">*</span>
-                        </label>
-                        {useExistingMedication ? (
-                            <ReactSelect
-                                id="medication"
-                                value={
-                                    prescriptionForm.product_id
-                                        ? {
-                                            value: prescriptionForm.product_id,
-                                            label: medications.find((m: any) => m && m.id === parseInt(prescriptionForm.product_id))?.name || ''
-                                        }
-                                        : null
-                                }
-                                onChange={(option: any) => {
-                                    if (option && !Array.isArray(option)) {
-                                        const selectedMed = medications.find((m: any) => m && m.id === parseInt(option.value));
-                                        setPrescriptionForm((prev: any) => ({ 
-                                            ...prev, 
-                                            product_id: option.value,
-                                            medication: selectedMed?.name || ''
-                                        }));
-                                    } else {
-                                        setPrescriptionForm((prev: any) => ({ 
-                                            ...prev, 
-                                            product_id: '',
-                                            medication: '' 
-                                        }));
-                                    }
+}) => {
+    return (
+        <div className="bg-white rounded-lg border shadow-sm">
+            <div className="flex justify-between items-center p-4 border-b">
+                <h4 className="text-lg font-semibold text-gray-800">{t('common.prescriptions') || 'Prescriptions'}</h4>
+                {onToggleForm && (
+                    <button 
+                        onClick={onToggleForm}
+                        className="flex items-center gap-1.5 text-sm bg-primary-600 text-white py-1.5 px-3 rounded-md hover:bg-primary-700 transition"
+                    >
+                        {showForm ? <XMarkIcon className="w-4 h-4" /> : <Plus size={16} />}
+                        {showForm ? t('common.cancel') : t('common.add_prescription')}
+                    </button>
+                )}
+            </div>
+            
+            {/* Add Prescription Form */}
+            {showForm && (
+                <div className="p-4 bg-gray-50 dark:bg-dark-600 border-b border-gray-200 dark:border-dark-500">
+                    <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-3">{t('common.add_prescription')}</h5>
+                    <div className="space-y-3">
+                        {/* Toggle between existing medication or custom */}
+                        <div className="flex items-center gap-2 p-3 bg-white dark:bg-dark-700 rounded-lg border border-gray-200 dark:border-dark-500">
+                            <input
+                                type="checkbox"
+                                id="use-existing-medication"
+                                checked={useExistingMedication}
+                                onChange={(e) => {
+                                    setUseExistingMedication(e.target.checked);
+                                    // Clear medication field when switching
+                                    setPrescriptionForm((prev: any) => ({ 
+                                        ...prev, 
+                                        medication: '',
+                                        product_id: '' 
+                                    }));
                                 }}
-                                options={medications
-                                    .filter(m => m && m.id && m.name)
-                                    .map(m => ({
-                                        value: m.id.toString(),
-                                        label: m.name
-                                    }))}
-                                placeholder={t('common.select_medication') || 'Select medication'}
-                                isRequired={true}
+                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                             />
-                        ) : (
-                            <Input
-                                id="medication"
-                            type="text"
-                                value={prescriptionForm.medication}
-                                onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, medication: e.target.value }))}
-                                placeholder="Enter medication name"
-                                className="w-full"
-                            />
-                        )}
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
+                            <label htmlFor="use-existing-medication" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                                {t('common.select_from_database') || 'Select medication from database'}
+                            </label>
+                        </div>
+
                         <div>
-                            <label htmlFor="dosage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                {t('common.dosage')}
+                            <label htmlFor="medication" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                {t('common.medication')}
                                 <span className="text-red-500 mx-1">*</span>
                             </label>
-                            <Input
-                                id="dosage"
-                                type="text"
-                                value={prescriptionForm.dosage}
-                                onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, dosage: e.target.value }))}
-                                placeholder="10mg"
-                                className="w-full"
-                            />
+                            {useExistingMedication ? (
+                                <ReactSelect
+                                    id="medication"
+                                    value={
+                                        prescriptionForm.product_id
+                                            ? {
+                                                value: prescriptionForm.product_id,
+                                                label: medications.find((m: any) => m && m.uuid === prescriptionForm.product_id)?.name || ''
+                                            }
+                                            : null
+                                    }
+                                    onChange={(option: any) => {
+                                        if (option && !Array.isArray(option)) {
+                                            const selectedMed = medications.find((m: any) => m && m.uuid === option.value);
+                                            setPrescriptionForm((prev: any) => ({ 
+                                                ...prev, 
+                                                product_id: option.value,
+                                                medication: selectedMed?.name || ''
+                                            }));
+                                        } else {
+                                            setPrescriptionForm((prev: any) => ({ 
+                                                ...prev, 
+                                                product_id: '',
+                                                medication: '' 
+                                            }));
+                                        }
+                                    }}
+                                    options={medications
+                                        .filter(m => m && m.uuid && m.name)
+                                        .map(m => ({
+                                            value: m.uuid,
+                                            label: m.name
+                                        }))}
+                                    placeholder={t('common.select_medication') || 'Select medication'}
+                                    isRequired={true}
+                                />
+                            ) : (
+                                <Input
+                                    id="medication"
+                                    type="text"
+                                    value={prescriptionForm.medication}
+                                    onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, medication: e.target.value }))}
+                                    placeholder="Enter medication name"
+                                    className="w-full"
+                                />
+                            )}
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <label htmlFor="dosage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    {t('common.dosage')}
+                                    <span className="text-red-500 mx-1">*</span>
+                                </label>
+                                <Input
+                                    id="dosage"
+                                    type="text"
+                                    value={prescriptionForm.dosage}
+                                    onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, dosage: e.target.value }))}
+                                    placeholder="10mg"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    {t('common.frequency')}
+                                    <span className="text-red-500 mx-1">*</span>
+                                </label>
+                                <Input
+                                    id="frequency"
+                                    type="text"
+                                    value={prescriptionForm.frequency}
+                                    onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, frequency: e.target.value }))}
+                                    placeholder="Twice daily"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    {t('common.duration')}
+                                    <span className="text-red-500 mx-1">*</span>
+                                </label>
+                                <Input
+                                    id="duration"
+                                    type="number"
+                                    value={prescriptionForm.duration}
+                                    onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, duration: e.target.value }))}
+                                    placeholder="7"
+                                    className="w-full"
+                                />
+                            </div>
                         </div>
                         <div>
-                            <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                {t('common.frequency')}
-                                <span className="text-red-500 mx-1">*</span>
+                            <label htmlFor="instructions" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                {t('common.instructions')}
                             </label>
-                            <Input
-                                id="frequency"
-                                type="text"
-                                value={prescriptionForm.frequency}
-                                onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, frequency: e.target.value }))}
-                                placeholder="Twice daily"
-                                className="w-full"
+                            <textarea 
+                                id="instructions"
+                                rows={2}
+                                value={prescriptionForm.instructions}
+                                onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, instructions: e.target.value }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                                placeholder="Special instructions..."
                             />
                         </div>
-                        <div>
-                            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                {t('common.duration')}
-                                <span className="text-red-500 mx-1">*</span>
-                            </label>
-                            <Input
-                                id="duration"
-                                type="number"
-                                value={prescriptionForm.duration}
-                                onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, duration: e.target.value }))}
-                                placeholder="7"
-                                className="w-full"
-                            />
+                        <div className="flex justify-end gap-2 pt-2">
+                            <Button variant="outlined" onClick={onToggleForm} disabled={savingPrescription}>
+                                {t('common.cancel')}
+                            </Button>
+                            <Button color="primary" onClick={onAdd} disabled={savingPrescription}>
+                                {savingPrescription ? <Spinner /> : t('common.save')}
+                            </Button>
                         </div>
-                    </div>
-                    <div>
-                        <label htmlFor="instructions" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                            {t('common.instructions')}
-                        </label>
-                        <textarea 
-                            id="instructions"
-                            rows={2}
-                            value={prescriptionForm.instructions}
-                            onChange={(e) => setPrescriptionForm((prev: any) => ({ ...prev, instructions: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                            placeholder="Special instructions..."
-                        />
-                    </div>
-                    <div className="flex justify-end gap-2 pt-2">
-                        <Button variant="outlined" onClick={onToggleForm} disabled={savingPrescription}>
-                            {t('common.cancel')}
-                        </Button>
-                        <Button color="primary" onClick={onAdd} disabled={savingPrescription}>
-                            {savingPrescription ? <Spinner /> : t('common.save')}
-                        </Button>
                     </div>
                 </div>
-            </div>
-        )}
-        {loading ? (
-            <div className="flex justify-center items-center p-8">
-                <Spinner />
-            </div>
-        ) : !prescriptions || prescriptions.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-                {t('common.no_prescriptions_found') || 'No prescriptions found'}
-            </div>
-        ) : (
-            <div className="divide-y divide-gray-200">
-                {prescriptions.map((prescription, index) => (
-                    <div key={prescription.uuid || index} className="p-4">
-                        <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                                <h5 className="font-medium text-gray-900">
-                                    {prescription.medication || prescription.product?.name}
-                                </h5>
-                                <div className="mt-2 space-y-1 text-sm text-gray-600">
-                                    <p><span className="font-medium">{t('common.dosage')}:</span> {prescription.dosage}</p>
-                                    <p><span className="font-medium">{t('common.frequency')}:</span> {prescription.frequency}</p>
-                                    <p><span className="font-medium">{t('common.duration')}:</span> {prescription.duration} {t('common.days')}</p>
-                                    {prescription.instructions && (
-                                        <p><span className="font-medium">{t('common.instructions')}:</span> {prescription.instructions}</p>
-                                    )}
+            )}
+            {loading ? (
+                <div className="flex justify-center items-center p-8">
+                    <Spinner />
+                </div>
+            ) : !prescriptions || prescriptions.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">
+                    {t('common.no_prescriptions_found') || 'No prescriptions found'}
+                </div>
+            ) : (
+                <div className="divide-y divide-gray-200">
+                    {prescriptions.map((prescription, index) => (
+                        <div key={prescription.uuid || index} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <h5 className="font-medium text-gray-900">
+                                        {prescription.medication || prescription.product?.name}
+                                    </h5>
+                                    <div className="mt-2 space-y-1 text-sm text-gray-600">
+                                        <p><span className="font-medium">{t('common.dosage')}:</span> {prescription.dosage}</p>
+                                        <p><span className="font-medium">{t('common.frequency')}:</span> {prescription.frequency}</p>
+                                        <p><span className="font-medium">{t('common.duration')}:</span> {prescription.duration} {t('common.days')}</p>
+                                        {prescription.instructions && (
+                                            <p><span className="font-medium">{t('common.instructions')}:</span> {prescription.instructions}</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-        )}
-    </div>
-);
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 interface PetDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -848,7 +850,6 @@ interface PetDetailModalProps {
 // --- The Main Modal Component ---
 
 const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appointment, consultationId }) => {
-    console.log("consultationId",consultationId);
     const [activeTab, setActiveTab] = useState('consultations');
     const [medicalHistory, setMedicalHistory] = useState<MedicalHistoryData>({
         consultations: [],
@@ -909,18 +910,14 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
     
     const handleRefreshData = () => {
         if (pet.uuid) {
-            console.log('Refreshing medical history...');
             setLoading(true);
             fetch(route('pets.medical-history', { uuid: pet.uuid }))
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Refreshed medical history:', data);
-                    console.log('Vaccinations count:', data.vaccinations?.length);
                     setMedicalHistory(data);
                     setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching medical history:', error);
                     setLoading(false);
                 });
         }
@@ -1157,7 +1154,6 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
             });
             return;
         }
-
         setSavingPrescription(true);
         
         try {
@@ -1170,7 +1166,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                 body: JSON.stringify({
                     pet_uuid: pet.uuid,
                     consultation_id: consultationId || null,
-                    product_id: prescriptionForm.product_id ? parseInt(prescriptionForm.product_id) : null,
+                    product_id: prescriptionForm.product_id ? prescriptionForm.product_id : null,
                     medication: prescriptionForm.medication,
                     dosage: prescriptionForm.dosage,
                     frequency: prescriptionForm.frequency,
@@ -1238,18 +1234,14 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
     // Fetch medical history when modal opens
     useEffect(() => {
         if (isOpen && pet.uuid) {
-            console.log('Fetching medical history for pet:', pet.uuid);
             setLoading(true);
             fetch(route('pets.medical-history', { uuid: pet.uuid }))
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Medical history data received:', data);
-                    console.log('Vaccinations:', data.vaccinations);
                     setMedicalHistory(data);
                     setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching medical history:', error);
                     setLoading(false);
                 });
         }
@@ -1264,7 +1256,6 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                     setVaccines(data.vaccines || []);
                 })
                 .catch(error => {
-                    console.error('Error fetching vaccines:', error);
                 });
         }
     }, [isOpen]);
@@ -1282,7 +1273,6 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                     }
                 })
                 .catch(error => {
-                    console.error('Error fetching medications:', error);
                     setMedications([]);
                 });
         }
