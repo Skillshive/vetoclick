@@ -20,6 +20,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PetController extends Controller
 {
@@ -229,7 +230,7 @@ class PetController extends Controller
                 
                 if (!$client) {
                     // Log for debugging
-                    \Log::warning('User does not have a client record', [
+                    Log::warning('User does not have a client record', [
                         'user_id' => $user->id,
                         'user_email' => $user->email,
                     ]);
@@ -264,7 +265,7 @@ class PetController extends Controller
                 'deceased_at' => $validated['deceased_at'] ?? null,
             ];
 
-            \Log::info('Creating pet', [
+            Log::info('Creating pet', [
                 'pet_data' => $petData,
                 'client_id' => $clientId,
             ]);
@@ -307,7 +308,7 @@ class PetController extends Controller
             return redirect()->route('pets.index')
                 ->with('success', 'Pet created successfully.');
         } catch (\Illuminate\Database\QueryException $e) {
-            \Log::error('Database error creating pet', [
+            Log::error('Database error creating pet', [
                 'error' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'sql' => $e->getSql(),
@@ -324,7 +325,7 @@ class PetController extends Controller
             return back()->withInput()
                 ->withErrors(['error' => $errorMessage]);
         } catch (Exception $e) {
-            \Log::error('Error creating pet', [
+            Log::error('Error creating pet', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -353,38 +354,56 @@ class PetController extends Controller
                     ->with('error', 'Pet not found.');
             }
 
-            $pet->load(['client', 'breed']);
+            $pet->load(['client', 'breed.species']);
+
+            // Format pet data for frontend
+            $formattedPet = [
+                'uuid' => $pet->uuid,
+                'name' => $pet->name,
+                'client_id' => $pet->client_id,
+                'breed_id' => $pet->breed_id,
+                'sex' => $pet->sex,
+                'neutered_status' => $pet->neutered_status,
+                'dob' => $pet->dob,
+                'microchip_ref' => $pet->microchip_ref,
+                'profile_img' => $pet->profile_img,
+                'weight_kg' => $pet->weight_kg,
+                'bcs' => $pet->bcs,
+                'color' => $pet->color,
+                'notes' => $pet->notes,
+                'deceased_at' => $pet->deceased_at,
+                'client' => $pet->client ? [
+                    'uuid' => $pet->client->uuid,
+                    'first_name' => $pet->client->first_name,
+                    'last_name' => $pet->client->last_name,
+                ] : null,
+                'breed' => $pet->breed ? [
+                    'uuid' => $pet->breed->uuid,
+                    'name' => $pet->breed->breed_name ?? $pet->breed->name,
+                    'species' => $pet->breed->species ? [
+                        'uuid' => $pet->breed->species->uuid,
+                        'name' => $pet->breed->species->name,
+                    ] : null,
+                ] : null,
+            ];
+
+            // Get medical history
+            $medicalHistory = $this->getPetMedicalHistory($pet);
 
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
-                    'uuid' => $pet->uuid,
-                    'name' => $pet->name,
-                    'client_id' => $pet->client_id,
-                    'breed_id' => $pet->breed_id,
-                    'sex' => $pet->sex,
-                    'neutered_status' => $pet->neutered_status,
-                    'dob' => $pet->dob,
-                    'microchip_ref' => $pet->microchip_ref,
-                    'profile_img' => $pet->profile_img,
-                    'weight_kg' => $pet->weight_kg,
-                    'bcs' => $pet->bcs,
-                    'color' => $pet->color,
-                    'notes' => $pet->notes,
-                    'deceased_at' => $pet->deceased_at,
-                    'client' => $pet->client ? [
-                        'uuid' => $pet->client->uuid,
-                        'first_name' => $pet->client->first_name,
-                        'last_name' => $pet->client->last_name,
-                    ] : null,
-                    'breed' => $pet->breed ? [
-                        'uuid' => $pet->breed->uuid,
-                        'name' => $pet->breed->breed_name,
-                    ] : null,
+                    'pet' => $formattedPet,
+                    'consultations' => $medicalHistory['consultations'],
+                    'vaccinations' => $medicalHistory['vaccinations'],
+                    'allergies' => $medicalHistory['allergies'],
                 ]);
             }
 
             return Inertia::render('Pets/Show', [
-                'pet' => $pet
+                'pet' => $formattedPet,
+                'consultations' => $medicalHistory['consultations'],
+                'vaccinations' => $medicalHistory['vaccinations'],
+                'allergies' => $medicalHistory['allergies'],
             ]);
         } catch (Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
@@ -393,6 +412,112 @@ class PetController extends Controller
             return redirect()->route('pets.index')
                 ->with('error', 'Error retrieving pet: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Get pet medical history (helper method)
+     * For clients: shows all medical history
+     * For veterinarians: shows only their records
+     */
+    private function getPetMedicalHistory(Pet $pet): array
+    {
+        // Get current logged-in user
+        $user = Auth::user();
+        $veterinarianId = null;
+        
+        // Only filter by veterinarian if user is a veterinarian
+        // Clients should see all medical history for their pets
+        if ($user && $user->veterinary) {
+            $veterinarianId = $user->veterinary->id;
+        }
+
+        // Get appointments/consultations
+        $consultationsQuery = Appointment::where('pet_id', $pet->id)
+            ->with(['veterinary.user', 'consultation.medicalRecords'])
+            ->orderBy('appointment_date', 'desc');
+        
+        // Filter by current veterinarian if available (for vet view)
+        if ($veterinarianId) {
+            $consultationsQuery->where('veterinarian_id', $veterinarianId);
+        }
+
+        $consultations = $consultationsQuery->get()
+            ->map(function ($appointment) {
+                $hasConsultation = $appointment->consultation !== null;
+                $isCanceled = $appointment->status === 'canceled' || $appointment->status === 'cancelled';
+                
+                return [
+                    'uuid' => $appointment->uuid,
+                    'date' => $appointment->appointment_date,
+                    'appointment_type' => $appointment->appointment_type,
+                    'reason' => $appointment->reason_for_visit,
+                    'notes' => $appointment->appointment_notes,
+                    'status' => $appointment->status,
+                    'is_video_conseil' => $appointment->is_video_conseil,
+                    'has_consultation' => $hasConsultation,
+                    'is_canceled' => $isCanceled,
+                    'consultation_uuid' => $hasConsultation ? $appointment->consultation->uuid : null,
+                    'medical_record' => $hasConsultation && $appointment->consultation->medicalRecords->isNotEmpty() ? 
+                        $appointment->consultation->medicalRecords->first() : 
+                        null,
+                ];
+            });
+
+        // Get vaccinations
+        $vaccinationsQuery = Vaccination::whereHas('consultation', function ($query) use ($pet, $veterinarianId) {
+                $query->where('pet_id', $pet->id);
+                // Filter by current veterinarian if available
+                if ($veterinarianId) {
+                    $query->where('veterinarian_id', $veterinarianId);
+                }
+            })
+            ->with(['consultation', 'vaccine', 'administeredByUser'])
+            ->orderBy('vaccination_date', 'desc');
+        
+        $vaccinations = $vaccinationsQuery->get()
+            ->map(function ($vaccination) {
+                return [
+                    'uuid' => $vaccination->uuid,
+                    'vaccine_name' => $vaccination->vaccine ? $vaccination->vaccine->name : 'Unknown',
+                    'vaccination_date' => $vaccination->vaccination_date,
+                    'next_due_date' => $vaccination->next_due_date,
+                    'status' => $vaccination->next_due_date && now()->gt($vaccination->next_due_date) ? 'overdue' : 'active',
+                    'administered_by' => $vaccination->administeredByUser ? 
+                        ($vaccination->administeredByUser->firstname . ' ' . $vaccination->administeredByUser->lastname) : 
+                        'Unknown',
+                ];
+            });
+
+        // Get allergies
+        $allergiesQuery = Allergy::where('pet_id', $pet->id)
+            ->with(['veterinarian.user'])
+            ->orderBy('created_at', 'desc');
+        
+        // Filter by current veterinarian if available
+        if ($veterinarianId) {
+            $allergiesQuery->where('veterinarian_id', $veterinarianId);
+        }
+        
+        $allergies = $allergiesQuery->get()
+            ->map(function ($allergy) {
+                return [
+                    'uuid' => $allergy->uuid,
+                    'allergen_type' => $allergy->allergen_type,
+                    'allergen_detail' => $allergy->allergen_detail,
+                    'start_date' => $allergy->start_date,
+                    'reaction_description' => $allergy->reaction_description,
+                    'severity_level' => $allergy->severity_level,
+                    'resolved_status' => $allergy->resolved_status,
+                    'resolution_date' => $allergy->resolution_date,
+                    'treatment_given' => $allergy->treatment_given,
+                ];
+            });
+
+        return [
+            'consultations' => $consultations,
+            'vaccinations' => $vaccinations,
+            'allergies' => $allergies,
+        ];
     }
 
     /**
@@ -507,7 +632,7 @@ class PetController extends Controller
             return redirect()->route('pets.index')
                 ->with('success', 'Pet updated successfully.');
         } catch (Exception $e) {
-            \Log::error('Error updating pet: ' . $e->getMessage(), [
+            Log::error('Error updating pet: ' . $e->getMessage(), [
                 'pet_uuid' => $pet->uuid,
                 'exception' => $e,
             ]);
@@ -535,89 +660,26 @@ class PetController extends Controller
 
     /**
      * Get pet medical history (appointments, vaccinations, notes)
+     * API endpoint for fetching medical history separately
      */
     public function getMedicalHistory(string $uuid): JsonResponse
     {
         try {
             $pet = Pet::where('uuid', $uuid)->firstOrFail();
+            $medicalHistory = $this->getPetMedicalHistory($pet);
 
-            // Get current logged-in veterinarian
+            // Also get notes and prescriptions for the API endpoint
             $user = Auth::user();
             $veterinarianId = null;
             if ($user && $user->veterinary) {
                 $veterinarianId = $user->veterinary->id;
             }
 
-            // Get appointments with related data - filtered by current vet
-            // Include: completed consultations, canceled appointments, and appointments without consultations
-            $consultationsQuery = Appointment::where('pet_id', $pet->id)
-                ->with(['veterinary.user', 'consultation.medicalRecords'])
-                ->orderBy('appointment_date', 'desc');
-            
-            // Filter by current veterinarian if available
-            if ($veterinarianId) {
-                $consultationsQuery->where('veterinarian_id', $veterinarianId);
-            }
-
-            $consultations = $consultationsQuery->get()
-                ->map(function ($appointment) {
-                    $hasConsultation = $appointment->consultation !== null;
-                    $isCanceled = $appointment->status === 'canceled' || $appointment->status === 'cancelled';
-                    
-                    return [
-                        'uuid' => $appointment->uuid,
-                        'date' => $appointment->appointment_date,
-                        'appointment_type' => $appointment->appointment_type,
-                        'reason' => $appointment->reason_for_visit,
-                        'notes' => $appointment->appointment_notes,
-                        'status' => $appointment->status,
-                        'is_video_conseil' => $appointment->is_video_conseil,
-                        'has_consultation' => $hasConsultation,
-                        'is_canceled' => $isCanceled,
-                        'consultation_uuid' => $hasConsultation ? $appointment->consultation->uuid : null,
-                        'medical_record' => $hasConsultation && $appointment->consultation->medicalRecords->isNotEmpty() ? 
-                            $appointment->consultation->medicalRecords->first() : 
-                            null,
-                    ];
-                });
-            // Get vaccinations for this pet - filtered by current vet through consultations
-            $vaccinationsQuery = Vaccination::whereHas('consultation', function ($query) use ($pet, $veterinarianId) {
-                    $query->where('pet_id', $pet->id);
-                    // Filter by current veterinarian if available
-                    if ($veterinarianId) {
-                        $query->where('veterinarian_id', $veterinarianId);
-                    }
-                })
-                ->with(['consultation', 'vaccine', 'administeredByUser'])
-                ->orderBy('vaccination_date', 'desc');
-            
-            $vaccinations = $vaccinationsQuery->get();
-
-            \Log::info('Vaccinations query for pet ' . $pet->id . ':', [
-                'count' => $vaccinations->count(),
-                'pet_id' => $pet->id,
-                'vaccinations' => $vaccinations->toArray()
-            ]);
-
-            $vaccinations = $vaccinations->map(function ($vaccination) {
-                return [
-                    'uuid' => $vaccination->uuid,
-                    'vaccine_name' => $vaccination->vaccine ? $vaccination->vaccine->name : 'Unknown',
-                    'vaccination_date' => $vaccination->vaccination_date,
-                    'next_due_date' => $vaccination->next_due_date,
-                    'status' => $vaccination->next_due_date && now()->gt($vaccination->next_due_date) ? 'overdue' : 'active',
-                    'administered_by' => $vaccination->administeredByUser ? 
-                        ($vaccination->administeredByUser->firstname . ' ' . $vaccination->administeredByUser->lastname) : 
-                        'Unknown',
-                ];
-            });
-
-            // Get notes directly by pet_id from the notes table - filtered by current vet
+            // Get notes
             $notesQuery = Note::where('pet_id', $pet->id)
                 ->with(['veterinarian.user'])
                 ->orderBy('date', 'desc');
             
-            // Filter by current veterinarian if available
             if ($veterinarianId) {
                 $notesQuery->where('veterinarian_id', $veterinarianId);
             }
@@ -635,37 +697,11 @@ class PetController extends Controller
                     ];
                 });
 
-            // Get allergies directly by pet_id - filtered by current vet
-            $allergiesQuery = Allergy::where('pet_id', $pet->id)
-                ->with(['veterinarian.user'])
-                ->orderBy('created_at', 'desc');
-            
-            // Filter by current veterinarian if available
-            if ($veterinarianId) {
-                $allergiesQuery->where('veterinarian_id', $veterinarianId);
-            }
-            
-            $allergies = $allergiesQuery->get()
-                ->map(function ($allergy) {
-                    return [
-                        'uuid' => $allergy->uuid,
-                        'allergen_type' => $allergy->allergen_type,
-                        'allergen_detail' => $allergy->allergen_detail,
-                        'start_date' => $allergy->start_date,
-                        'reaction_description' => $allergy->reaction_description,
-                        'severity_level' => $allergy->severity_level,
-                        'resolved_status' => $allergy->resolved_status,
-                        'resolution_date' => $allergy->resolution_date,
-                        'treatment_given' => $allergy->treatment_given,
-                    ];
-                });
-
-            // Get prescriptions directly by pet_id - filtered by current vet
+            // Get prescriptions
             $prescriptionsQuery = Prescription::where('pet_id', $pet->id)
                 ->with(['product', 'veterinarian.user'])
                 ->orderBy('created_at', 'desc');
             
-            // Filter by current veterinarian if available
             if ($veterinarianId) {
                 $prescriptionsQuery->where('veterinarian_id', $veterinarianId);
             }
@@ -688,10 +724,10 @@ class PetController extends Controller
                 });
 
             return response()->json([
-                'consultations' => $consultations,
-                'vaccinations' => $vaccinations,
+                'consultations' => $medicalHistory['consultations'],
+                'vaccinations' => $medicalHistory['vaccinations'],
                 'notes' => $notes,
-                'allergies' => $allergies,
+                'allergies' => $medicalHistory['allergies'],
                 'prescriptions' => $prescriptions,
             ]);
         } catch (Exception $e) {

@@ -123,6 +123,9 @@ export default function Index({
                   <PetCard
                     key={pet.uuid}
                     pet={pet}
+                    onView={() => {
+                      router.visit(route('pets.show', pet.uuid));
+                    }}
                     onEdit={() => {
                       router.visit(route('pets.edit', pet.uuid));
                     }}

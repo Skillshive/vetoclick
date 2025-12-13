@@ -1,5 +1,5 @@
 // Import Dependencies
-import { PencilSquareIcon, TrashIcon, HeartIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, TrashIcon, HeartIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { PawPrint } from "lucide-react";
 
 // Local Imports
@@ -11,10 +11,12 @@ import { Pet } from "../types";
 
 export function PetCard({
   pet,
+  onView,
   onEdit,
   onDelete
 }: {
   pet: Pet;
+  onView?: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -102,6 +104,16 @@ export function PetCard({
       </div>
       
       <div className="mt-3 flex justify-center space-x-1">
+        {onView && (
+          <Button
+            className="size-7 rounded-full"
+            isIcon
+            onClick={onView}
+            aria-label={t('common.view_pet') || 'View pet'}
+          >
+            <EyeIcon className="size-4 stroke-2 text-blue-500" />
+          </Button>
+        )}
         <Button
           className="size-7 rounded-full"
           isIcon
