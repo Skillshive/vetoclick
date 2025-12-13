@@ -23,7 +23,7 @@ class PrescriptionController extends Controller
             $validated = $request->validate([
                 'pet_uuid' => 'required|string',
                 'consultation_id' => 'nullable|string',
-                'product_id' => 'nullable|integer',
+                'product_id' => 'nullable|string|exists:products,uuid',
                 'medication' => 'required|string|max:255',
                 'dosage' => 'required|string|max:255',
                 'frequency' => 'required|string|max:255',
@@ -38,7 +38,26 @@ class PrescriptionController extends Controller
             if (!empty($validated['consultation_id'])) {
                 $consultation = \App\Models\Consultation::where('uuid', $validated['consultation_id'])->first();
                 if ($consultation) {
-                    $consultationId = $consultation->id;
+                    $consultationId = $consultation->getKey();
+                }
+            }
+
+            // Get product if product_id is provided
+            $product = null;
+            $productId = null;
+            if (!empty($validated['product_id'])) {
+                $product = Product::where('uuid', $validated['product_id'])->first();
+                if (!$product) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Product not found',
+                        'message' => 'The selected product does not exist'
+                    ], 404);
+                }
+                $productId = $product->getKey();
+                // Use product name as medication if not already set
+                if (empty($validated['medication'])) {
+                    $validated['medication'] = $product->name;
                 }
             }
 
@@ -52,7 +71,7 @@ class PrescriptionController extends Controller
             }
 
             // Get veterinarian_id from user
-            $veterinarian = Veterinary::where('user_id', $user->id)->first();
+            $veterinarian = Veterinary::where('user_id', $user->getKey())->first();
             if (!$veterinarian) {
                 return response()->json([
                     'error' => 'Veterinarian profile not found',
@@ -60,23 +79,19 @@ class PrescriptionController extends Controller
                 ], 403);
             }
 
-            $validated['pet_id'] = $pet->id;
-            $validated['veterinarian_id'] = $veterinarian->id;
-            $validated['consultation_id'] = $consultationId;
-            $validated['prescribed_date'] = now()->toDateString();
-
-            // If product_id is provided, get medication name from product
-            if (!empty($validated['product_id'])) {
-                $product = Product::find($validated['product_id']);
-                if ($product) {
-                    $validated['medication'] = $product->name;
-                }
-            }
-
             // Remove pet_uuid from validated data as it's not a column
             unset($validated['pet_uuid']);
 
-            $prescription = Prescription::create($validated);
+            $prescription = Prescription::create([
+                'pet_id' => $pet->getKey(),
+                'veterinarian_id' => $veterinarian->getKey(),
+                'consultation_id' => $consultationId,
+                'product_id' => $productId,
+                'medication' => $validated['medication'],
+                'dosage' => $validated['dosage'],
+                'frequency' => $validated['frequency'],
+                'duration' => $validated['duration'],
+            ]);
 
             // Load relationships for response
             $prescription->load(['product', 'veterinarian.user']);
@@ -89,7 +104,7 @@ class PrescriptionController extends Controller
                     'medication' => $prescription->medication,
                     'product' => $prescription->product ? [
                         'name' => $prescription->product->name,
-                        'id' => $prescription->product->id,
+                        'id' => $prescription->product->getKey(),
                     ] : null,
                     'dosage' => $prescription->dosage,
                     'frequency' => $prescription->frequency,
@@ -146,7 +161,7 @@ class PrescriptionController extends Controller
                     'medication' => $prescription->medication,
                     'product' => $prescription->product ? [
                         'name' => $prescription->product->name,
-                        'id' => $prescription->product->id,
+                        'id' => $prescription->product->getKey(),
                     ] : null,
                     'dosage' => $prescription->dosage,
                     'frequency' => $prescription->frequency,
