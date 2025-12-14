@@ -12,6 +12,7 @@ class AvaibilityDto extends DTO
     public string $day_of_week;
     public string $start_time;
     public string $end_time;
+    public bool $is_break;
     public ?string $created_at;
     public ?string $updated_at;
     public ?string $deleted_at;
@@ -22,6 +23,7 @@ class AvaibilityDto extends DTO
         string $day_of_week = '',
         string $start_time = '',
         string $end_time = '',
+        bool $is_break = false,
         ?string $created_at = null,
         ?string $updated_at = null,
         ?string $deleted_at = null
@@ -31,6 +33,7 @@ class AvaibilityDto extends DTO
         $this->day_of_week = $day_of_week;
         $this->start_time = $start_time;
         $this->end_time = $end_time;
+        $this->is_break = $is_break;
         $this->created_at = $created_at;
         $this->updated_at = $updated_at;
         $this->deleted_at = $deleted_at;
@@ -42,7 +45,8 @@ class AvaibilityDto extends DTO
             'veterinarian_id'  => $this->veterinarian_id,
             'day_of_week'      => $this->day_of_week,
             'start_time'       => $this->start_time,
-            'end_time'         => $this->end_time
+            'end_time'         => $this->end_time,
+            'is_break'         => $this->is_break
         ];
     }
 
