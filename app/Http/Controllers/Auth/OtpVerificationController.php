@@ -64,11 +64,11 @@ class OtpVerificationController extends Controller
             if (app()->environment('local') || env('APP_DEBUG', false)) {
                 // Development mode: Log OTP to server logs only (NOT in response for security)
                 Log::info('Twilio SMS failed in development mode. OTP logged for testing.', [
-                    'phone' => $phone,
+                'phone' => $phone,
                     'otp' => $otp,
-                    'error' => $result['error'] ?? 'Unknown error'
-                ]);
-                
+                'error' => $result['error'] ?? 'Unknown error'
+            ]);
+
                 return response()->json([
                     'success' => true,
                     'message' => __('common.otp.sent_successfully') . ' (Development mode - SMS service unavailable. Check server logs for OTP.)',
