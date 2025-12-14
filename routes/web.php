@@ -22,6 +22,7 @@ use App\Http\Controllers\UserManagment\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ReceptionistDashboardController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\VetDashboardController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\UserDashboardController;
@@ -80,21 +81,7 @@ Route::get('/dashboard', function (AppointmentService $appointmentService, Reque
     }
     // Check if user is a veterinarian
     else if ($user && $user->veterinary) {
-        // Redirect to vet dashboard
-        $clients = Client::all()->mapWithKeys(function ($client) {
-            return [$client->uuid => $client->first_name];
-        });
-        
-        $veterinaryId = $user->veterinary->id;
-        $todayAppointments = $appointmentService->getTodayAppointments($veterinaryId);
-        
-        // Eager load consultation relationship
-        $todayAppointments->load('consultation');
-        
-        return Inertia::render('Dashboards/Vet/index')->with([
-            "clients" => $clients,
-            "todayAppointments" => AppointmentResource::collection($todayAppointments)->toArray(request()),
-        ]);
+        return app(VetDashboardController::class)->index($appointmentService);
     } 
     // Check if user is a receptionist
     else if ($user && $user->hasRole('receptionist')) {

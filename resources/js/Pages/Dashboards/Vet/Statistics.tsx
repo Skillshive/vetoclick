@@ -14,8 +14,29 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
 
-export function Statistics() {
+interface StatisticsProps {
+  statistics?: {
+    appointments: number;
+    pending: number;
+    cancelled: number;
+    pets: number;
+    clients: number;
+    new_clients: number;
+  };
+}
+
+export function Statistics({ statistics }: StatisticsProps) {
   const { t } = useTranslation();
+  
+  // Default values if statistics are not provided
+  const stats = statistics || {
+    appointments: 0,
+    pending: 0,
+    cancelled: 0,
+    pets: 0,
+    clients: 0,
+    new_clients: 0,
+  };
 
   return (
     <div className="col-span-12 lg:col-span-6">
@@ -23,7 +44,7 @@ export function Statistics() {
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
             <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              30
+              {stats.appointments}
             </p>
             <ClockIcon className="this:primary size-5 text-this dark:text-this-light" />
           </div>
@@ -34,7 +55,7 @@ export function Statistics() {
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
             <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              25
+              {stats.pending}
             </p>
             <CheckBadgeIcon className="this:success size-5 text-this dark:text-this-light" />
           </div>
@@ -45,7 +66,7 @@ export function Statistics() {
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
             <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              5
+              {stats.cancelled}
             </p>
             <ClockIcon className="this:warning size-5 text-this dark:text-this-light" />
           </div>
@@ -56,7 +77,7 @@ export function Statistics() {
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
             <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              150
+              {stats.pets}
             </p>
             <UsersIcon className="this:info size-5 text-this dark:text-this-light" />
           </div>
@@ -67,7 +88,7 @@ export function Statistics() {
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
             <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              100
+              {stats.clients}
             </p>
             <UsersIcon className="this:secondary size-5 text-this dark:text-this-light" />
           </div>
@@ -78,7 +99,7 @@ export function Statistics() {
         <Card className="p-3 lg:p-4">
           <div className="flex justify-between gap-1">
             <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
-              10
+              {stats.new_clients}
             </p>
             <UsersIcon className="this:error size-5 text-this dark:text-this-light" />
           </div>

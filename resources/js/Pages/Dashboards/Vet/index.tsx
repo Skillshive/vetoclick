@@ -17,6 +17,14 @@ import { Appointment } from "@/pages/Appointments/datatable/types";
 interface DashboardProps {
   todayAppointments?: Appointment[];
   clients?: Record<string, string>;
+  statistics?: {
+    appointments: number;
+    pending: number;
+    cancelled: number;
+    pets: number;
+    clients: number;
+    new_clients: number;
+  };
 }
 
 export default function CRMAnalytics() {
@@ -40,7 +48,7 @@ export default function CRMAnalytics() {
           <div className="transition-content grid grid-cols-12 gap-4 px-(--margin-x) sm:mt-4 sm:gap-5">
             <div className="col-span-12 grid grid-cols-12 gap-4 sm:gap-5 lg:col-span-8 lg:gap-6">
               <Overview />
-              <Statistics />
+              <Statistics statistics={props.statistics} />
               <Projects todayAppointments={todayAppointments} />
             </div>
             <div className="col-span-12 lg:col-span-4 gap-4 sm:gap-5 lg:gap-6">
