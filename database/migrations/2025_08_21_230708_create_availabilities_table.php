@@ -19,6 +19,7 @@ return new class extends Migration
     $table->string('day_of_week');
     $table->time('start_time');
     $table->time('end_time');
+    $table->boolean('is_break')->default(false);
     $table->timestamps();
     $table->softDeletes();
 });
