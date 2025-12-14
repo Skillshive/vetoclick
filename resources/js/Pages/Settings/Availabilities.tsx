@@ -1,27 +1,48 @@
 // Import Dependencies
 import { useEffect, useState } from "react";
 import axios from "axios";
-import FullCalendar from '@fullcalendar/react'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
 
 // Local Imports
 import { Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useRTL } from "@/hooks/useRTL";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
 import MainLayout from "@/layouts/MainLayout";
-import { CalendarIcon, CheckBadgeIcon, ClockIcon, CubeIcon, CurrencyDollarIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { AlertCircle, BarChartIcon, Clock, TrendingUp, XCircleIcon, Zap } from "lucide-react";
+import { PlusIcon, TrashIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { Timepicker } from "@/components/shared/form/Timepicker";
+
+// Declare route helper
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
+
+interface AvailabilitySlot {
+  uuid?: string;
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+  is_break?: boolean;
+}
+
+const DAYS = [
+  { value: 'monday', labelKey: 'common.days.monday' },
+  { value: 'tuesday', labelKey: 'common.days.tuesday' },
+  { value: 'wednesday', labelKey: 'common.days.wednesday' },
+  { value: 'thursday', labelKey: 'common.days.thursday' },
+  { value: 'friday', labelKey: 'common.days.friday' },
+  { value: 'saturday', labelKey: 'common.days.saturday' },
+];
 
 export default function Availabilities() {
   const { t } = useTranslation();
+  const { isRtl, rtlClasses } = useRTL();
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   
-  const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([]);
+  const [availabilities, setAvailabilities] = useState<Record<string, AvailabilitySlot[]>>({});
   const [isLoading, setIsLoading] = useState(true);
 const [statistics, setStatistics] = useState<any>(null);
+  const [selectedDay, setSelectedDay] = useState<string>('monday');
+  const [newSlot, setNewSlot] = useState({ start_time: '09:00', end_time: '17:00', is_break: false });
 
   useEffect(() => {
     fetchAvailability();
@@ -32,19 +53,26 @@ const [statistics, setStatistics] = useState<any>(null);
       const response = await axios.get(route('availability.getCurrentWeek'));
       if (response.data.success) {
         setStatistics(response.data);
-        const formattedSlots = response.data.data.map((slot: any) => ({
-          id: slot.uuid,
-          title: t('common.available'),
-          daysOfWeek: [getDayNumber(slot.day_of_week)],
-          startTime: slot.start_time,
-          endTime: slot.end_time,
-          startRecur: getStartOfWeek(),
-          endRecur: getEndOfWeek(),
-          backgroundColor: slot.is_available ? '#4DB9AD' : '#9e9e9e',
-          borderColor: slot.is_available ? '#15A093' : '#9e9e9e',
-          textColor: slot.is_available ? '#ffffff' : '#6b7280',
-        }));
-        setAvailabilitySlots(formattedSlots);
+        
+        // Group availabilities by day
+        const grouped: Record<string, AvailabilitySlot[]> = {};
+        DAYS.forEach(day => {
+          grouped[day.value] = [];
+        });
+
+        response.data.data.forEach((slot: any) => {
+          if (grouped[slot.day_of_week]) {
+            grouped[slot.day_of_week].push({
+              uuid: slot.uuid,
+              day_of_week: slot.day_of_week,
+              start_time: slot.start_time.substring(0, 5), // Remove seconds
+              end_time: slot.end_time.substring(0, 5),
+              is_break: slot.is_break || false // Read from response if available
+            });
+          }
+        });
+
+        setAvailabilities(grouped);
       }
     } catch (error) {
       console.error('Failed to fetch availability:', error);
@@ -57,76 +85,119 @@ const [statistics, setStatistics] = useState<any>(null);
     }
   };
 
-  const handleDateSelect = async (selectInfo: any) => {
-    const title = t('common.available');
-    const startTime = new Date(selectInfo.start).toTimeString().split(' ')[0];
-    const endTime = new Date(selectInfo.end).toTimeString().split(' ')[0];
-    const dayOfWeek = getDayName(selectInfo.start.getDay());
-    const selectedDay = selectInfo.start.getDay();
+  const handleAddSlot = async (day: string) => {
+    // Validate times
+    if (newSlot.start_time >= newSlot.end_time) {
+      showToast({
+        type: 'error',
+        message: t('common.end_time_after_start'),
+      });
+      return;
+    }
 
-    // Check for overlapping slots on the same day
-    const hasOverlap = availabilitySlots.some(slot => {
-      // Check if it's the same day
-      if (!slot.daysOfWeek.includes(selectedDay)) return false;
-
-      // Convert time strings to minutes for easier comparison
-      const slotStart = timeToMinutes(slot.startTime);
-      const slotEnd = timeToMinutes(slot.endTime);
-      const newStart = timeToMinutes(startTime);
-      const newEnd = timeToMinutes(endTime);
-
-      // Check if there's any overlap
-      return (newStart < slotEnd && newEnd > slotStart);
+    // Check for overlaps
+    // Breaks can overlap with availability slots, but:
+    // - Availability slots cannot overlap with other availability slots
+    // - Breaks cannot overlap with other breaks
+    const daySlots = availabilities[day] || [];
+    const hasOverlap = daySlots.some(slot => {
+      const slotStart = timeToMinutes(slot.start_time);
+      const slotEnd = timeToMinutes(slot.end_time);
+      const newStart = timeToMinutes(newSlot.start_time);
+      const newEnd = timeToMinutes(newSlot.end_time);
+      
+      // Check if times overlap
+      const timesOverlap = (newStart < slotEnd && newEnd > slotStart);
+      
+      if (!timesOverlap) {
+        return false; // No time overlap, so no conflict
+      }
+      
+      // If both are breaks, they cannot overlap
+      if (newSlot.is_break && slot.is_break) {
+        return true; // Breaks cannot overlap with each other
+      }
+      
+      // If both are availability slots, they cannot overlap
+      if (!newSlot.is_break && !slot.is_break) {
+        return true; // Availability slots cannot overlap with each other
+      }
+      
+      // If one is a break and one is availability, allow overlap
+      return false;
     });
 
     if (hasOverlap) {
+      const errorMessage = newSlot.is_break 
+        ? t('common.break_slot_overlap')
+        : t('common.availability_slot_overlap_error');
       showToast({
         type: 'error',
-        message: t('common.availability_slot_overlap'),
+        message: errorMessage,
       });
-      selectInfo.view.calendar.unselect();
       return;
     }
 
     try {
-      const response = await axios.post(route('availability.store'), {
-        day_of_week: dayOfWeek,
-        start_time: startTime,
-        end_time: endTime,
-      });
+      const payload = {
+        day_of_week: day,
+        start_time: newSlot.start_time + ':00',
+        end_time: newSlot.end_time + ':00',
+        is_break: newSlot.is_break || false,
+      };
+      
+      console.log('Sending availability request:', payload);
+      
+      const response = await axios.post(route('availability.store'), payload);
 
       if (response.data.success) {
+        const newAvailability: AvailabilitySlot = {
+          uuid: response.data.data.uuid,
+          day_of_week: day,
+          start_time: newSlot.start_time,
+          end_time: newSlot.end_time,
+          is_break: newSlot.is_break
+        };
 
-        setAvailabilitySlots(prev => [...prev, {
-          id: response.data.data.uuid,
-          title,
-          daysOfWeek: [selectInfo.start.getDay()],
-          startTime,
-          endTime,
-          startRecur: getStartOfWeek(),
-          endRecur: getEndOfWeek(),
-          backgroundColor: '#4DB9AD',
-          borderColor: '#15A093',
-          textColor: '#ffffff'
-        }]);
+        setAvailabilities(prev => ({
+          ...prev,
+          [day]: [...(prev[day] || []), newAvailability].sort((a, b) => 
+            timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
+          )
+        }));
         
         showToast({
           type: 'success',
           message: t('common.availability_saved'),
         });
+
+        // Reset form
+        setNewSlot({ start_time: '09:00', end_time: '17:00', is_break: false });
+        
+        // Refresh statistics
+        fetchAvailability();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save availability:', error);
+      let errorMessage = t('common.error_saving_availability');
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        errorMessage = Object.values(errors).flat().join(', ');
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       showToast({
         type: 'error',
-        message: t('common.error_saving_availability'),
+        message: errorMessage,
       });
     }
-    
-    selectInfo.view.calendar.unselect();
   };
 
-  const handleEventClick = async (clickInfo: any) => {
+  const handleDeleteSlot = async (uuid: string, day: string) => {
     const confirmed = await confirm({
       title: t('common.are_you_sure'),
       message: t('common.confirm_delete_availability'),
@@ -137,14 +208,18 @@ const [statistics, setStatistics] = useState<any>(null);
 
     if (confirmed) {
       try {
-        await axios.delete(route('availability.destroy', { uuid: clickInfo.event.id }));
-        setAvailabilitySlots(prev =>
-          prev.filter(slot => slot.id !== clickInfo.event.id)
-        );
+        await axios.delete(route('availability.destroy', { uuid }));
+        setAvailabilities(prev => ({
+          ...prev,
+          [day]: (prev[day] || []).filter(slot => slot.uuid !== uuid)
+        }));
         showToast({
           type: 'success',
           message: t('common.availability_deleted'),
         });
+        
+        // Refresh statistics
+        fetchAvailability();
       } catch (error) {
         console.error('Failed to delete availability:', error);
         showToast({
@@ -155,143 +230,28 @@ const [statistics, setStatistics] = useState<any>(null);
     }
   };
 
-  // Helper functions
   const timeToMinutes = (timeString: string): number => {
     const [hours, minutes] = timeString.split(':').map(Number);
     return hours * 60 + minutes;
   };
 
-  const getDayNumber = (dayName: string): number => {
-    const days: Record<string, number> = { monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 0 };
-    return days[dayName.toLowerCase()] ?? 0;
+  const formatTime = (time: string): string => {
+    return time.substring(0, 5);
   };
 
-  const getDayName = (dayNumber: number): string => {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    return days[dayNumber];
-  };
-
-  const getStartOfWeek = () => {
-    const now = new Date();
-    const firstDay = new Date(now.setDate(now.getDate() - now.getDay() + 1));
-    return firstDay.toISOString().split('T')[0];
-  };
-
-  const getEndOfWeek = () => {
-    const now = new Date();
-    const lastDay = new Date(now.setDate(now.getDate() - now.getDay() + 7));
-    return lastDay.toISOString().split('T')[0];
-  };
-
-  const StatisticsCards = () => {
-  if (!statistics) return null;
-
-  const cards = [
-    {
-      id: 1,
-      title: 'Total Availability',
-      value: statistics.total_slots,
-      subtitle: '15-min slots',
-      icon: Clock,
-      color: 'from-[#4DB9AD] to-[#3A9E90]',
-      textColor: 'text-[#1B2441]',
-      bgColor: 'bg-[#4DB9AD]/10',
-      trend: `${statistics.total_hours}h per week`,
-      trendUp: true
-    },
-    {
-      id: 2,
-      title: 'Total Hours',
-      value: statistics.total_hours,
-      subtitle: 'hours per week',
-      icon: CalendarIcon,
-      color: 'from-[#1B2441] to-[#2D3E5F]',
-      textColor: 'text-[#4DB9AD]',
-      bgColor: 'bg-[#1B2441]/10',
-      trend: 'Weekly schedule',
-      trendUp: true
-    },
-    {
-      id: 3,
-      title: 'Week Coverage',
-      value: `${statistics.week_coverage}%`,
-      subtitle: 'of available time',
-      icon: BarChartIcon,
-      color: 'from-[#4DB9AD] to-[#3A9E90]',
-      textColor: 'text-[#1B2441]',
-      bgColor: 'bg-[#4DB9AD]/10',
-      trend: statistics.week_coverage > 50 ? 'Above average' : 'Below average',
-      trendUp: statistics.week_coverage > 50
-    },
-    {
-      id: 4,
-      title: 'Peak Hours',
-      value: statistics.peak_hours.slots,
-      subtitle: statistics.peak_hours.label,
-      icon: TrendingUp,
-      color: 'from-[#1B2441] to-[#2D3E5F]',
-      textColor: 'text-[#4DB9AD]',
-      bgColor: 'bg-[#1B2441]/10',
-      trend: 'Most booked time',
-      trendUp: true
-    },
-    {
-      id: 5,
-      title: 'Least Busy',
-      value: statistics.least_busy_hours.slots,
-      subtitle: statistics.least_busy_hours.label,
-      icon: AlertCircle,
-      color: 'from-orange-400 to-orange-500',
-      textColor: 'text-[#1B2441]',
-      bgColor: 'bg-orange-100/50',
-      trend: 'Available slots',
-      trendUp: false
-    },
-    {
-      id: 6,
-      title: 'Daily Average',
-      value: `${statistics.daily_average}h`,
-      subtitle: 'per working day',
-      icon: Zap,
-      color: 'from-[#4DB9AD] to-[#3A9E90]',
-      textColor: 'text-[#1B2441]',
-      bgColor: 'bg-[#4DB9AD]/10',
-      trend: 'Consistent schedule',
-      trendUp: true
-    }
-  ];
-
-  return (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6 2xl:gap-6 mb-4">
-             {cards.map(card => {
-        const IconComponent = card.icon;
-        return (
-<div className="bg-gray-150 dark:bg-dark-700 rounded-lg p-3 2xl:p-4">
-                    <div className="flex justify-between space-x-1">
-                        <p className="dark:text-dark-100 text-xl font-semibold text-gray-800">
-                           {card.value}
-                        </p>
-                        <IconComponent className="text-primary-500 size-5" />
-                    </div>
-                    <p className="text-xs-plus mt-1">{card.subtitle}</p>
-                </div>
-
-            ) })}
-    </div>
-        );
-};
   return (
     <MainLayout>
-      <div className="transition-content px-(--margin-x) pb-6 my-5">
-           {!isLoading && statistics && <StatisticsCards />}
-        <Card className="p-3 sm:px-4 hover:shadow-lg  transition-all duration-200">
-          <h5 className="dark:text-dark-50 text-lg font-medium text-gray-800">
+      <div className="transition-content px-(--margin-x) pb-6 my-5" dir={isRtl ? 'rtl' : 'ltr'}>
+        
+        <Card className="p-4 sm:p-6">
+          <div className="mb-6">
+            <h5 className="dark:text-dark-50 text-lg font-medium text-gray-800 mb-1">
             {t('common.availability_management')}
           </h5>
-          <p className="dark:text-dark-200 mt-0.5 text-sm text-balance text-gray-500">
+            <p className="dark:text-dark-200 text-sm text-gray-500">
             {t('common.set_weekly_availability')}
           </p>
-          <div className="dark:bg-dark-500 my-5 h-px bg-gray-200" />
+          </div>
 
           {isLoading ? (
             <div className="p-8 text-center">
@@ -300,156 +260,142 @@ const [statistics, setStatistics] = useState<any>(null);
               </p>
             </div>
           ) : (
-            <div className="calendar-container" style={{ height: 'auto', overflow: 'hidden' }}>
+            <div className="space-y-6">
+              {/* Day Selector */}
+              <div className={`flex flex-wrap gap-2 ${isRtl ? 'flex-row-reverse' : 'flex-row'} ${rtlClasses.justifyStart}`}>
+                {(isRtl ? [...DAYS].reverse() : DAYS).map(day => (
+                  <button
+                    key={day.value}
+                    onClick={() => setSelectedDay(day.value)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${rtlClasses.textStart} ${
+                      selectedDay === day.value
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+                    }`}
+                  >
+                    {t(day.labelKey)}
+                  </button>
+                ))}
+              </div>
 
-              <style>{`
-  /* General Calendar Borders */
-  .calendar-container .fc {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden; /* Ensures rounded corners are applied */
-  }
-  .calendar-container .fc th,
-  .calendar-container .fc td,
-  .calendar-container .fc-scrollgrid {
-    border-color: #e2e8f0; /* Light gray for all internal lines */
-  }
+              {/* Current Day Availabilities */}
+              <div className="space-y-4">
+                <div className={`flex items-center justify-between ${rtlClasses.flexRow}`}>
+                  {isRtl ? (
+                    <>
+                      <span className={`text-sm text-gray-500 dark:text-gray-400 ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                        {(availabilities[selectedDay] || []).length} {t('common.slots')}
+                      </span>
+                      <h6 className={`text-base font-medium text-gray-800 dark:text-dark-100 ${rtlClasses.textEnd}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                        {t(DAYS.find(d => d.value === selectedDay)?.labelKey || 'common.days.monday')} {t('common.availability')}
+                      </h6>
+                    </>
+                  ) : (
+                    <>
+                      <h6 className={`text-base font-medium text-gray-800 dark:text-dark-100 ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                        {t(DAYS.find(d => d.value === selectedDay)?.labelKey || 'common.days.monday')} {t('common.availability')}
+                      </h6>
+                      <span className={`text-sm text-gray-500 dark:text-gray-400 ${rtlClasses.textEnd}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                        {(availabilities[selectedDay] || []).length} {t('common.slots')}
+                      </span>
+                    </>
+                  )}
+                </div>
 
-  /* --- Day Headers --- */
-  .calendar-container .fc-col-header-cell {
-    background-color: #f8fafc; /* Very light bg for headers */
-  }
-  .calendar-container .fc-col-header-cell-cushion {
-    color: #1B2441; /* Your Dark Blue */
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-decoration: none !important;
-    padding: 10px 4px;
-  }
-  
-  /* --- Time Labels (Sidebar) --- */
-  .calendar-container .fc-timegrid-slot-label-cushion {
-    color: #374151; /* Dark Gray, less harsh than blue */
-  }
-  .calendar-container .fc-timegrid-slot-label {
-     border-color: #e2e8f0;
-  }
+                {/* Existing Slots */}
+                <div className={`space-y-2 ${rtlClasses.textStart}`}>
+                  {(availabilities[selectedDay] || []).length === 0 ? (
+                    <div className={`flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-dark-600 rounded-lg ${rtlClasses.textStart}`}>
+                      <ClockIcon className="size-12 mb-3 opacity-50" />
+                      <p className={rtlClasses.textStart} dir={isRtl ? 'rtl' : 'ltr'}>
+                        {t('common.no_availability_slots')}
+                      </p>
+                    </div>
+                  ) : (
+                    (availabilities[selectedDay] || []).map((slot) => (
+                      <div
+                        key={slot.uuid}
+                        className={`flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-600 ${rtlClasses.flexRow}`}
+                      >
+                        {/* Left side: Time with icon and badge */}
+                        <div className={`flex items-center gap-4 ${rtlClasses.flexRow}`}>
+                          <div className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+                            <ClockIcon className="size-5 text-primary-600 flex-shrink-0" />
+                            <span className={`font-medium text-gray-800 dark:text-dark-100 ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                              {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                            </span>
+                          </div>
+                          <span className={`px-3 py-1 text-xs font-medium rounded ${rtlClasses.textStart} ${
+                            slot.is_break 
+                              ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' 
+                              : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                          }`} dir={isRtl ? 'rtl' : 'ltr'}>
+                            {slot.is_break ? t('common.break') : t('common.available')}
+                          </span>
+                        </div>
+                        
+                        {/* Right side: Delete button */}
+                        <button
+                          onClick={() => handleDeleteSlot(slot.uuid!, selectedDay)}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
+                          title={t('common.delete')}
+                        >
+                          <TrashIcon className="size-5" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
 
-  /* --- Today Column --- */
-  .calendar-container .fc-day-today {
-    background-color: rgba(77, 185, 173, 0.05); /* Faint #4DB9AD */
-  }
-
-  /* --- Event Blocks (MODIFIED) --- */
-  .calendar-container .fc-event {
-    border-radius: 4px;
-    font-weight: 500;
-    
-    /* --- THESE ARE THE CHANGES --- */
-    min-height: 20px;       /* Ensures event is never too short */
-    overflow: hidden;         /* Hides text that overflows */
-    padding: 2px 4px;         /* Adjust padding for new height */
-    font-size: 0.75rem;       /* Make text slightly smaller */
-    line-height: 1.4;         /* Adjust line height */
-    /* --- END OF CHANGES --- */
-  }
-
-  /* --- Selection Highlight --- */
-  .calendar-container .fc-highlight {
-     background-color: #4DB9AD;
-     opacity: 0.2; /* More visible selection */
-  }
-
-  /* --- Hide default borders now that we have a container border --- */
-  .calendar-container .fc-header-toolbar,
-  .calendar-container .fc-view-harness {
-    border: none;
-  }
-
-  /* --- DARK MODE STYLES (Assumes <html class="dark">) --- */
-  html.dark .calendar-container .fc {
-    border-color: #374151; /* Dark border */
-  }
-  html.dark .calendar-container .fc th,
-  html.dark .calendar-container .fc td,
-  html.dark .calendar-container .fc-scrollgrid {
-    border-color: #374151; /* Darker internal lines */
-  }
-
-  html.dark .calendar-container .fc-col-header-cell {
-    background-color: #1B2441; /* Your Dark Blue for header bg */
-  }
-  html.dark .calendar-container .fc-col-header-cell-cushion {
-    color: #f1f5f9; /* Light text for dark header */
-  }
-  
-  html.dark .calendar-container .fc-timegrid-slot-label-cushion {
-    color: #9ca3af; /* Lighter gray for dark mode time */
-  }
-  html.dark .calendar-container .fc-timegrid-slot-label {
-     border-color: #374151;
-  }
-
-  html.dark .calendar-container .fc-day-today {
-    background-color: rgba(77, 185, 173, 0.1); /* Dark mode 'today' bg */
-  }
-
-  .calendar-container .fc{
-        border:none !important;
-          margin-top: -1em !important;
-  }
-.fc *{
-  border-radius: 10px !important;
-}
-
-
-`}</style>
-
-              <FullCalendar
-                plugins={[timeGridPlugin, interactionPlugin]}
-                initialView="timeGridWeek"
-                firstDay={1}
-                allDaySlot={false}
-                slotMinTime="08:00:00"
-                slotMaxTime="24:00:00"
-                
-                // --- 15 Minute Slot ---
-                slotDuration="00:15:00"
-                
-                height="auto"
-                selectMirror={true}
-                selectable={true}
-                editable={false}
-                events={availabilitySlots}
-                select={(selectInfo) => {
-                  handleDateSelect(selectInfo);
-                }}
-                eventClick={(clickInfo) => {
-                  handleEventClick(clickInfo);
-                }}
-                headerToolbar={{
-                  left: '',
-                  center: '',
-                  right: ''
-                }}
-                slotLabelFormat={{
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                }}
-                selectAllow={(selectInfo) => {
-                  return selectInfo.start >= new Date(); 
-                }}
-                hiddenDays={[0]} 
-                initialDate={(function () {
-                  const today = new Date();
-                  // if today is Sunday (0), jump to next Monday
-                  if (today.getDay() === 0) {
-                    today.setDate(today.getDate() + 1); // move to Monday
-                  }
-                  return today;
-                })()}
-              />
+                {/* Add New Slot Form */}
+                <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-200 dark:border-primary-800">
+                  <h6 className={`text-sm font-medium text-gray-800 dark:text-dark-100 mb-4 ${rtlClasses.textStart}`}>
+                    {t('common.add_availability_slot')}
+                  </h6>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className={`block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 ${rtlClasses.textStart}`}>
+                        {t('common.start_time')}
+                      </label>
+                      <Timepicker
+                        value={newSlot.start_time}
+                        onChange={(dates, dateStr) => setNewSlot({ ...newSlot, start_time: dateStr })}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 ${rtlClasses.textStart}`}>
+                        {t('common.end_time')}
+                      </label>
+                      <Timepicker
+                        value={newSlot.end_time}
+                        onChange={(dates, dateStr) => setNewSlot({ ...newSlot, end_time: dateStr })}
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <label className={`flex items-center gap-2 cursor-pointer ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <input
+                          type="checkbox"
+                          checked={newSlot.is_break}
+                          onChange={(e) => setNewSlot({ ...newSlot, is_break: e.target.checked })}
+                          className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                        />
+                        <span className={`text-sm text-gray-700 dark:text-gray-300 ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                          {t('common.mark_as_break')}
+                        </span>
+                      </label>
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        onClick={() => handleAddSlot(selectedDay)}
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium ${rtlClasses.flexRow}`}
+                      >
+                        <PlusIcon className="size-5" />
+                        {t('common.add_slot')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </Card>
@@ -457,4 +403,3 @@ const [statistics, setStatistics] = useState<any>(null);
     </MainLayout>
   );
 }
-
