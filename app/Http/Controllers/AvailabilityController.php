@@ -7,7 +7,6 @@ use App\Services\AvailabilityService;
 use App\common\AvaibilityDto;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -31,13 +30,14 @@ class AvailabilityController extends Controller
                 'day_of_week' => 'required|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
                 'start_time' => 'required|date_format:H:i:s',
                 'end_time' => 'required|date_format:H:i:s|after:start_time',
+                'is_break' => 'nullable|boolean',
                 'notes' => 'nullable|string|max:500'
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
+                    'message' => __('common.validation_failed'),
                     'errors' => $validator->errors()
                 ], 422);
             }
@@ -46,28 +46,30 @@ class AvailabilityController extends Controller
             if (!$user->veterinary) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Veterinary profile not found'
+                    'message' => __('common.veterinary_profile_not_found')
                 ], 404);
             }
 
             $dto = new AvaibilityDto(
-                veterinarian_id: $user->veterinary->id,
+                veterinarian_id: $user->veterinary->getKey(),
                 day_of_week: strtolower($request->day_of_week),
                 start_time: $request->start_time,
-                end_time: $request->end_time
+                end_time: $request->end_time,
+                is_break: $request->boolean('is_break', false)
             );
 
             $availability = $this->availabilityService->create($dto);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Availability created successfully',
+                'message' => __('common.availability_created_successfully'),
                 'data' => [
                     'uuid' => $availability->uuid,
                     'veterinary_id' => $availability->veterinary_id,
                     'day_of_week' => $availability->day_of_week,
                     'start_time' => $availability->start_time,
                     'end_time' => $availability->end_time,
+                    'is_break' => $availability->is_break ?? false,
                     'created_at' => $availability->created_at,
                     'updated_at' => $availability->updated_at,
                 ]
@@ -76,7 +78,8 @@ class AvailabilityController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create availability',
+                'message' => __('common.failed_to_create_availability'),
+                'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
@@ -91,7 +94,7 @@ class AvailabilityController extends Controller
             if (!$availability) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Availability not found'
+                    'message' => __('common.availability_not_found')
                 ], 404);
             }
 
@@ -99,7 +102,7 @@ class AvailabilityController extends Controller
             if ($availability->veterinarian_id !== Auth::id()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unauthorized access to availability'
+                    'message' => __('common.unauthorized_access_to_availability')
                 ], 403);
             }
 
@@ -107,13 +110,13 @@ class AvailabilityController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Availability deleted successfully'
+                'message' => __('common.availability_deleted_successfully')
             ], 200);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete availability',
+                'message' => __('common.failed_to_delete_availability'),
             ], 500);
         }
     }
@@ -129,7 +132,7 @@ class AvailabilityController extends Controller
             if (!$user->veterinary) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Veterinary profile not found'
+                    'message' => __('common.veterinary_profile_not_found')
                 ], 404);
             }
             $availability = $this->availabilityService->getCurrentWeekAvailability($user->veterinary->id);
@@ -151,18 +154,16 @@ class AvailabilityController extends Controller
                         'day_of_week' => $item->day_of_week,
                         'start_time' => $item->start_time,
                         'end_time' => $item->end_time,
+                        'is_break' => $item->is_break ?? false,
                         'created_at' => $item->created_at,
                         'updated_at' => $item->updated_at,
                     ];
                 })
             ], 200);
         } catch (Exception $e) {
-            \Log::error('Failed to retrieve current week availability: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve current week availability',
+                'message' => __('common.failed_to_retrieve_current_week_availability'),
                 'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
@@ -184,7 +185,7 @@ class AvailabilityController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
+                    'message' => __('common.validation_failed'),
                 ], 422);
             }
 
@@ -210,7 +211,7 @@ class AvailabilityController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to check availability',
+                'message' => __('common.failed_to_check_availability'),
             ], 500);
         }
     }
@@ -223,6 +224,10 @@ class AvailabilityController extends Controller
         $totalSlots = 0;
 
         foreach ($availabilityData as $slot) {
+            // Skip breaks when calculating total slots
+            if (isset($slot->is_break) && $slot->is_break) {
+                continue;
+            }
             $startTime = strtotime($slot->start_time);
             $endTime = strtotime($slot->end_time);
             $diffMinutes = ($endTime - $startTime) / 60;
@@ -241,6 +246,10 @@ class AvailabilityController extends Controller
         $totalMinutes = 0;
 
         foreach ($availabilityData as $slot) {
+            // Skip breaks when calculating total hours
+            if (isset($slot->is_break) && $slot->is_break) {
+                continue;
+            }
             $startTime = strtotime($slot->start_time);
             $endTime = strtotime($slot->end_time);
             $diffMinutes = ($endTime - $startTime) / 60;
@@ -262,6 +271,10 @@ class AvailabilityController extends Controller
 
         $availableMinutes = 0;
         foreach ($availabilityData as $slot) {
+            // Skip breaks when calculating week coverage
+            if (isset($slot->is_break) && $slot->is_break) {
+                continue;
+            }
             $startTime = strtotime($slot->start_time);
             $endTime = strtotime($slot->end_time);
             $diffMinutes = ($endTime - $startTime) / 60;
@@ -280,6 +293,10 @@ class AvailabilityController extends Controller
         $hourCounts = [];
 
         foreach ($availabilityData as $slot) {
+            // Skip breaks when calculating peak hours
+            if (isset($slot->is_break) && $slot->is_break) {
+                continue;
+            }
             $startHour = date('H', strtotime($slot->start_time));
             $hourCounts[$startHour] = ($hourCounts[$startHour] ?? 0) + 1;
         }
@@ -315,15 +332,21 @@ class AvailabilityController extends Controller
     {
         $hourCounts = [];
 
-        // Initialize all hours with 0
-        for ($i = 8; $i < 24; $i++) {
+        // Initialize all hours with 0 (0-23)
+        for ($i = 0; $i < 24; $i++) {
             $hourCounts[str_pad($i, 2, '0', STR_PAD_LEFT)] = 0;
         }
 
-        // Count available slots per hour
+        // Count available slots per hour (only count non-break slots)
         foreach ($availabilityData as $slot) {
+            // Skip breaks when calculating least busy hours
+            if (isset($slot->is_break) && $slot->is_break) {
+                continue;
+            }
             $startHour = date('H', strtotime($slot->start_time));
-            $hourCounts[$startHour]++;
+            if (isset($hourCounts[$startHour])) {
+                $hourCounts[$startHour]++;
+            }
         }
 
         // Handle empty data
@@ -397,6 +420,10 @@ class AvailabilityController extends Controller
         }
 
         foreach ($availabilityData as $slot) {
+            // Skip breaks when calculating most available day
+            if (isset($slot->is_break) && $slot->is_break) {
+                continue;
+            }
             $day = $slot->day_of_week;
             if (!isset($dayMinutes[$day])) {
                 $dayMinutes[$day] = 0;
@@ -424,59 +451,5 @@ class AvailabilityController extends Controller
             'hours' => round($hours, 1),
             'minutes' => (int)(reset($dayMinutes) % 60)
         ];
-    }
-
-    /**
-     * Get detailed availability breakdown by day
-     */
-    private function getDetailedBreakdown(): JsonResponse
-    {
-        try {
-            $user = Auth::user();
-            if (!$user->veterinary) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Veterinary profile not found'
-                ], 404);
-            }
-
-            $veterinaryId = $user->veterinary->id;
-            $availabilityData = $this->availabilityService->getCurrentWeekAvailability($veterinaryId);
-
-            $breakdown = [];
-            $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-            $dayMap = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-
-            foreach ($dayMap as $index => $day) {
-                $daySlots = $availabilityData->where('day_of_week', $day);
-                $totalMinutes = 0;
-
-                foreach ($daySlots as $slot) {
-                    $startTime = strtotime($slot->start_time);
-                    $endTime = strtotime($slot->end_time);
-                    $totalMinutes += ($endTime - $startTime) / 60;
-                }
-
-                $breakdown[] = [
-                    'day' => $dayNames[$index],
-                    'day_short' => strtoupper(substr($day, 0, 3)),
-                    'hours' => round($totalMinutes / 60, 1),
-                    'slots' => $totalMinutes / 15,
-                    'is_available' => $totalMinutes > 0
-                ];
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => $breakdown
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve breakdown',
-                'error' => $e->getMessage()
-            ], 500);
-        }
     }
 }
