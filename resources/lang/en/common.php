@@ -504,6 +504,15 @@ return [
     'availability_deleted' => 'Availability deleted successfully',
     'availability_slot_overlap' => 'This time slot overlaps with an existing availability. Please select a different time.',
     'confirm_delete_availability' => 'Are you sure you want to delete this availability slot?',
+    'break' => 'Break',
+    'add_availability_slot' => 'Add Availability Slot',
+    'mark_as_break' => 'Mark as Break',
+    'add_slot' => 'Add Slot',
+    'no_availability_slots' => 'No availability slots for this day',
+    'end_time_after_start' => 'End time must be after start time',
+    'break_slot_overlap' => 'This break slot overlaps with an existing break slot. Please select a different time.',
+    'availability_slot_overlap_error' => 'This availability slot overlaps with an existing availability slot. Please select a different time.',
+    'slots' => 'slot(s)',
 
         "menu" => [
             "dashboard" => "Dashboard",
@@ -1326,6 +1335,7 @@ return [
         ],
         'projects' => [
             'today_appointments' => "Today's Appointments",
+            'no_appointments_today' => 'No appointments today',
         ],
         'top_sellers' => [
             'title' => 'Top Sellers',
@@ -1592,7 +1602,6 @@ return [
     'resolved' => 'Resolved',
     'reaction' => 'Reaction',
     'start_date' => 'Start Date',
-    'days' => 'days',
     'please_fill_required_fields' => 'Please fill all required fields',
     'failed_to_save' => 'Failed to save',
     'vaccine_required' => 'Vaccine is required',
@@ -1796,4 +1805,16 @@ return [
 'recent_consultations' => 'Recent Consultations',
 'vaccinations' => 'Vaccinations',
 'pet_details' => 'Pet Details',
+'failed_to_retrieve_breakdown' => 'Failed to retrieve breakdown',
+'failed_to_check_availability' => 'Failed to check availability',
+'failed_to_retrieve_current_week_availability' => 'Failed to retrieve current week availability',
+'availability_deleted_successfully' => 'Availability deleted successfully',
+'failed_to_delete_availability' => 'Failed to delete availability',
+'unauthorized_access_to_availability' => 'Unauthorized access to availability',
+'availability_not_found' => 'Availability not found',
+'failed_to_create_availability' => 'Failed to create availability',
+'availability_created_successfully' => 'Availability created successfully',
+'choose_time' => 'Choose time...',
+//////////////////////////////////////////////////////////
+
 ];
