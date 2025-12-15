@@ -30,7 +30,7 @@ class AppointmentFactory extends Factory
       'client_id' => rand(1, 10),
 'pet_id' => rand(1, 10),
             'appointment_type' => $this->faker->randomElement(['consultation', 'vaccination', 'checkup']),
-            'appointment_date' => $this->faker->dateTimeBetween('now', '+1 year')->format('Y-m-d'),
+            'appointment_date' => $this->faker->dateTimeBetween('now', '+1 week')->format('Y-m-d'),
             'start_time' => $startTime,
             'end_time' => $endTime,
             'duration_minutes' => $duration,
