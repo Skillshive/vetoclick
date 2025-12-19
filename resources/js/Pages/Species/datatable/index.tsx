@@ -188,6 +188,8 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
 
   const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
   
+
+  
   const handleBulkDeleteRows = () => {
     setConfirmBulkDeleteLoading(true);
     const selectedRows = table.getSelectedRowModel().rows;
@@ -196,18 +198,16 @@ export default function SpeciesDatatable({ species: speciesData, filters }: Spec
 
     setTimeout(() => {
       table.options.meta?.deleteRows?.(selectedRows);
-      setBulkDeleteSuccess(true);
       setConfirmBulkDeleteLoading(false);
+      closeBulkModal();
+      // Show success toast
       showToast({
         type: 'success',
         message: t('common.species_deleted_success', { count: deleteCount }),
       });
-      setTimeout(() => {
-        setBulkDeleteSuccess(false);
-        setBulkDeleteCount(0);
-      }, 3000);
     }, 1000);
   };
+
 
   const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
 
