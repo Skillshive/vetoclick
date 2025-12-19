@@ -39,7 +39,7 @@ export function MenuItem({ data }: { data: NavigationTree }) {
         className="flex min-w-0 items-center justify-between"
         style={{ height: "34px" }}
       >
-        <div className="flex min-w-0 items-center space-x-2 rtl:space-x-reverse">
+        <div className="flex min-w-0 items-center space-x-2 rtl:space-x-reverse  gap-2">
           <div
             className={clsx(
               "opacity-50 transition-all",

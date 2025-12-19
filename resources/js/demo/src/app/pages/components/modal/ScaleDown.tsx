@@ -132,7 +132,7 @@ const SuggestionItem = ({ title, Icon }: Suggestion) => (
     href="##"
     className="group flex items-center justify-between space-x-2 rounded-lg bg-gray-100 px-2.5 py-2 tracking-wide text-gray-800 outline-hidden transition-all focus:ring-3 focus:ring-primary-500/50 dark:bg-dark-600 dark:text-dark-100 rtl:space-x-reverse"
   >
-    <div className="flex min-w-0 items-center space-x-2 rtl:space-x-reverse">
+    <div className="flex min-w-0 items-center space-x-2 rtl:space-x-reverse  gap-2">
       <Icon className="size-4.5 shrink-0 text-gray-400 transition-colors group-hover:text-gray-500 group-focus:text-gray-500 dark:text-dark-300 dark:group-hover:text-dark-200 dark:group-focus:text-dark-200" />
       <span className="truncate">{title}</span>
     </div>
