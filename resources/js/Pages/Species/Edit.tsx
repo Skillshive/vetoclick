@@ -92,7 +92,7 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
   });
   
   // Breed form
-  const { data: breedData, setData: setBreedData, post: postBreed, processing: breedProcessing, errors: breedErrors, reset: resetBreed } = useForm({
+  const { data: breedData, setData: setBreedData, post: postBreed, processing: breedProcessing, errors: breedErrors, reset: resetBreed ,clearErrors: clearBreedErrors} = useForm({
     breed_name: "",
     avg_weight_kg: null,
     life_span_years: null,
@@ -114,7 +114,6 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
       });
       return;
     }
-console.log('specie',specie)
     post(route('species.update', specie.uuid), {
       onSuccess: () => {
         setValidationErrors({});
@@ -222,7 +221,7 @@ console.log('specie',specie)
 
   const handleEditBreed = (breed: Breed) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
+    handleResetBreedForm ()
     setEditingBreed(breed);    
     setIsEditingBreed(true);
     setBreedData('breed_name', breed.breed_name);
@@ -247,6 +246,7 @@ console.log('specie',specie)
     setIsEditingBreed(false);
     setBreedsValidationErrors({});
     setBreedImage(null);
+    clearBreedErrors();
   };
 
   return (
@@ -475,28 +475,34 @@ console.log('specie',specie)
                               name="breed_image"
                               onChange={(files: FileList | null) => {
                                   const file = files?.[0] || null;
+setBreedImage(file);
+setBreedData('image', file);
 
-                                  setBreedImage(file);
-                                setBreedData('image', file);
+const result = breedsSchema.safeParse({
+  ...breedData,
+  image: file,
+});
 
-                                  // validate with zod schema
-                                  const result = breedsSchema.safeParse({
-                                    ...breedData,
-                                    image: file,
-                                  });
+setBreedsValidationErrors((prev) => {
+                                    if (!result.success) {
+                                      const fieldErrors = result.error.flatten().fieldErrors;
+                                      
+                                      if (fieldErrors.image && fieldErrors.image[0]) {
+                                        return {
+                                          ...prev,
+                                          image: t(fieldErrors.image[0]), 
+                                        };
+                                      }
+                                    }
+                                
+                                    clearBreedErrors('image');
 
-                                  if (!result.success) {
-                                    const errors = result.error.flatten().fieldErrors;
-                                    setBreedsValidationErrors(prev => ({
-                                      ...prev,
-                                      image: errors.image?.[0] ? t(errors.image[0]) : undefined,
-                                    }));
-                                  } else {
-                                    setBreedsValidationErrors(prev => ({
+                                    return {
                                       ...prev,
                                       image: undefined,
-                                    }));
-                                  }
+                                    };
+                                  });
+
                                 }}
                               accept="image/*"
                             >
@@ -508,14 +514,17 @@ console.log('specie',specie)
                             </Upload>
                           )}
 
-                          {
-                                        (breedErrors?.image || breedsValidationErrors.image) && (
-                                            <p className="text-red-500 text-sm mt-1">{breedErrors?.image || breedsValidationErrors.image}</p>
-                                        )
-                                        }
                         </div>
+                      
                       }
-                    />
+                        
+                    /><div>
+                        {
+                            (breedErrors?.image || breedsValidationErrors.image) && (
+                                <p className="text-red-500 text-sm mt-1">{breedErrors?.image || breedsValidationErrors.image}</p>
+                            )
+                            }
+                        </div>
                   </div>
 
                   <div className="space-y-3">
