@@ -44,7 +44,7 @@ export function SpeciesNameCell({ getValue, row }: CellProps) {
 
   console.log("Final imageUrl:", imageUrl);
   return (
-    <div className="flex max-w-xs items-center space-x-4 rtl:space-x-reverse 2xl:max-w-sm">
+    <div className="flex max-w-xs items-center space-x-4 rtl:space-x-reverse 2xl:max-w-sm gap-2">
       <div className="avatar relative inline-flex shrink-0" style={{ height: "2.25rem", width: "2.25rem" }}>
        <img
         src={imageUrl}
@@ -58,13 +58,8 @@ export function SpeciesNameCell({ getValue, row }: CellProps) {
       />
       </div>
       <div className="min-w-0">
-        <p className="truncate">
-          <a
-            href="##"
-            className="hover:text-primary-600 dark:hover:text-primary-400  transition-colors font-medium text-gray-800 dark:text-dark-100"
-          >
+        <p   className="hover:text-primary-600 dark:hover:text-primary-400  transition-colors font-medium text-gray-800 dark:text-dark-100">
             {speciesName}
-          </a>
         </p>
       </div>
     </div>
