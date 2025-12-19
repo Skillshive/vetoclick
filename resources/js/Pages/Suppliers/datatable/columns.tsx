@@ -29,31 +29,31 @@ export const createColumns = ({ setSelectedSupplier, setIsModalOpen, onDeleteRow
     {
       id: "name",
       accessorKey: "name",
-      header: "Supplier Name",
+      header:t('common.supplier_name'),
       cell: SupplierNameCell,
     },
     {
       id: "email",
       accessorKey: "email",
-      header: "Email",
+      header: t('common.email'),
       cell: EmailCell,
     },
     {
       id: "phone",
       accessorKey: "phone",
-      header: "Phone",
+      header: t('common.phone'),
       cell: PhoneCell,
     },
     {
       id: "address",
       accessorKey: "address",
-      header: "Address",
+      header: t('common.address'),
       cell: AddressCell,
     },
     {
       id: "created_at",
       accessorKey: "created_at",
-      header: "Created Date",
+      header: t('common.created_date'),
       cell: CreatedAtCell,
     },
   {

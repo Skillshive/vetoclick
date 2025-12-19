@@ -68,8 +68,6 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, errors }:
         }
 
         if (isEditing) {
-console.log('supplier',supplier)
-console.log("Submitting data:", data);
             put(route('suppliers.update', supplier.uuid), {
                 onSuccess: () => {
                     showToast({
@@ -162,7 +160,7 @@ console.log("Submitting data:", data);
                         >
 <DialogPanel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-8 text-left align-middle shadow-xl transition-all">                                <div className="flex items-center justify-between mb-4">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        {isEditing ? 'Modifier le fournisseur' : 'Nouveau fournisseur'}
+                                        {isEditing ? t('common.edit_supplier') : t('common.create_supplier')}
                                     </DialogTitle>
                                     <button
                                         onClick={handleClose}
@@ -235,10 +233,6 @@ console.log("Submitting data:", data);
                         email: e.target.value,
                     });
 
-                    console.log('result',result);
-                    console.log('isValid',isValid);
-                    console.log('data',data);
-                    
                     if (!result.success) {
                         const errors = result.error.flatten().fieldErrors;
                         setValidationErrors(prev => ({
@@ -342,7 +336,7 @@ console.log("Submitting data:", data);
             onClick={handleClose}
             disabled={processing}
         >
-            Annuler
+            {t('common.cancel')}
         </Button>
         <Button
             type="submit"
