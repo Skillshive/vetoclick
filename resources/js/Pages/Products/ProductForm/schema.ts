@@ -2,8 +2,8 @@ import * as z from "zod";
 
 // Basic Info Schema
 export const basicInfoSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
-  sku: z.string().min(1, "SKU is required"),
+  name: z.string().min(1, "validation.product_name_required"),
+  sku: z.string().min(1, "validation.product_sku_required"),
   brand: z.string().optional(),
   description: z.string().optional(),
   barcode: z.string().optional(),
@@ -11,11 +11,11 @@ export const basicInfoSchema = z.object({
     .instanceof(File)
     .refine(
       (file) => !file || file.size <= 5000000,
-      "Image must be less than 5MB"
+      "validation.product_image_size"
     )
     .refine(
       (file) => !file || ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"].includes(file.type),
-      "Only .jpg, .jpeg, .png, .gif, and .webp formats are supported"
+      "validation.product_image_format"
     )
     .optional()
     .nullable(),
@@ -24,8 +24,8 @@ export const basicInfoSchema = z.object({
 
 // Category & Type Schema
 export const categoryTypeSchema = z.object({
-  category_product_id: z.string().min(1, "Category is required"),
-  type: z.number().min(1).max(4, "Invalid product type"),
+  category_product_id: z.string().min(1, "validation.product_category_required"),
+  type: z.number().min(1).max(4, "validation.product_type_invalid"),
 });
 
 // Medical Details Schema
@@ -37,30 +37,43 @@ export const medicalDetailsSchema = z.object({
 
 // Vaccine Info Schema
 export const vaccineInfoSchema = z.object({
-  manufacturer: z.string().min(1, "Manufacturer is required"),
-  batch_number: z.string().min(1, "Batch number is required"),
+  manufacturer: z.string().min(1, "validation.vaccine_manufacturer_required"),
+  batch_number: z.string().min(1, "validation.vaccine_batch_number_required"),
   expiry_date: z.string().optional(),
-  dosage_ml: z.number().positive("Dosage must be positive").optional().nullable(),
+  dosage_ml: z.number().positive("validation.vaccine_dosage_positive").optional().nullable(),
   vaccine_instructions: z.string().optional(),
 });
 
 // Stock & Status Schema
 export const stockStatusSchema = z.object({
-  minimum_stock_level: z.number().min(0, "Must be 0 or greater"),
-  maximum_stock_level: z.number().min(0, "Must be 0 or greater"),
-  availability_status: z.number().min(1).max(4, "Invalid availability status"),
+  minimum_stock_level: z.number().min(1, "validation.stock_level_min"), // min 1
+  maximum_stock_level: z.number().min(1, "validation.stock_level_min"),
+  availability_status: z.number().min(1).max(4, "validation.availability_status_invalid"),
   prescription_required: z.boolean(),
   is_active: z.boolean(),
   notes: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Validate that maximum_stock_level is greater than minimum_stock_level
+  if (
+    typeof data.minimum_stock_level === "number" &&
+    typeof data.maximum_stock_level === "number" &&
+    data.maximum_stock_level <= data.minimum_stock_level
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.stock_level_max_gt_min",
+      path: ["maximum_stock_level"],
+    });
+  }
 });
 
 // Vaccination Schedule Schema
 export const vaccinationScheduleSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "Schedule name is required"),
+  name: z.string().min(1, "validation.vaccination_schedule_name_required"),
   description: z.string().optional(),
-  sequence_order: z.number().min(1, "Sequence order must be at least 1"),
-  age_weeks: z.number().min(0, "Age must be 0 or greater").optional().nullable(),
+  sequence_order: z.number().min(1, "validation.vaccination_sequence_order_min"),
+  age_weeks: z.number().min(0, "validation.vaccination_age_weeks_min").optional().nullable(),
   is_required: z.boolean().default(true),
   notes: z.string().optional(),
 });
