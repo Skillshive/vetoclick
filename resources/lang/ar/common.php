@@ -1774,4 +1774,6 @@ return [
 'notes' => 'الملاحظات',
 'vaccinations' => 'اللقاحات',
 'order_details' => 'تفاصيل الطلب',
+'permissions_breadcrumb' => 'الصلاحيات',
+
 ];

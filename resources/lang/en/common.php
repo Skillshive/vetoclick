@@ -854,7 +854,7 @@ return [
         'assistant' => 'Assistant',
     ],
     
-    "permissions" => "Permissions",
+    "permissions_breadcrumb" => "Permissions",
     "roles_management" => "Roles Management",
     "search_users" => "Search users...",
     "search_roles" => "Search roles...",

@@ -623,7 +623,7 @@ return [
     // Role Management
     'roles' => 'Rôles',
     'role' => 'Rôle',
-    'permissions' => 'Permissions',
+    'permissions_breadcrumb' => 'Permissions',
     'role_permission_management' => 'Gestion des Rôles et Permissions',
     'manage_roles' => 'Gérer les rôles des utilisateurs et leurs permissions',
     'manage_permissions' => 'Gérer les permissions du système',
