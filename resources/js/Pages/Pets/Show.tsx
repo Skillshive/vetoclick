@@ -17,9 +17,6 @@ import {
   HeartIcon,
   DocumentTextIcon,
   BeakerIcon,
-  ExclamationTriangleIcon,
-  ClockIcon,
-  CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { PawPrint, Syringe, AlertTriangle } from 'lucide-react';
@@ -427,7 +424,8 @@ export default function Show({ pet, consultations: initialConsultations, vaccina
                   </div>
                 ) : consultations.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">{t('common.no_consultations_found') || 'No consultations found'}</p>
+                    <BeakerIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">{t('common.no_consultations_found') || 'No consultations found'}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -487,7 +485,8 @@ export default function Show({ pet, consultations: initialConsultations, vaccina
                   </div>
                 ) : vaccinations.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">{t('common.no_vaccinations_found') || 'No vaccinations found'}</p>
+                    <Syringe className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">{t('common.no_vaccinations_found') || 'No vaccinations found'}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -540,7 +539,8 @@ export default function Show({ pet, consultations: initialConsultations, vaccina
                   </div>
                 ) : allergies.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">{t('common.no_allergies_found') || 'No allergies recorded'}</p>
+                    <AlertTriangle className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">{t('common.no_allergies_found') || 'No allergies recorded'}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
