@@ -5,6 +5,7 @@ import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
 
 // Local Imports
 import { useBreakpointsContext } from "@/contexts/breakpoint/context";
+import { useLocaleContext } from "@/contexts/locale/context";
 import { createScopedKeydownHandler } from "@/utils/dom/createScopedKeydownHandler";
 import {
   StepKey,
@@ -22,6 +23,7 @@ interface StepperProps {
 
 export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
   const { smAndUp } = useBreakpointsContext();
+  const { isRtl } = useLocaleContext();
   const productFormCtx = useProductFormContext();
   const stepStatus = productFormCtx.state.stepStatus;
   const stepKeys = Object.keys(productFormCtx.state.formData) as StepKey[];
@@ -29,13 +31,16 @@ export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
   return (
     <ol
       className={clsx(
-        "steps line-space text-center text-xs sm:text-start sm:text-sm",
+        "steps line-space text-xs sm:text-sm",
         smAndUp && "is-vertical",
+        isRtl ? "text-right sm:text-end" : "text-center sm:text-start",
       )}
+      dir={isRtl ? 'rtl' : 'ltr'}
     >
       {steps.map((step, i) => {
-        const currentStepActualStatus = stepStatus[step.key as StepKey];
-        const leftSiblingStepKey = getLeftSiblingStep(step.key, stepKeys);
+        const stepKey = step.key as StepKey;
+        const currentStepActualStatus = stepStatus[stepKey];
+        const leftSiblingStepKey = getLeftSiblingStep(stepKey, stepKeys);
 
         const isClickable =
           currentStepActualStatus.isDone ||
@@ -56,9 +61,9 @@ export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
                 "step-header rounded-full outline-hidden dark:text-white relative",
                 isClickable && "cursor-pointer",
                 currentStep === i && "ring-2",
-                stepStatus[step.key as StepKey].hasErrors
+                currentStepActualStatus.hasErrors
                   ? "bg-error dark:bg-error-light text-white ring-error dark:ring-error-light ring-offset-[3px] ring-offset-gray-100 dark:ring-offset-dark-900"
-                  : stepStatus[step.key as StepKey].isDone
+                  : currentStepActualStatus.isDone
                   ? "bg-primary-600 dark:bg-primary-500 dark:ring-offset-dark-900 text-white ring-offset-[3px] ring-offset-gray-100 ring-primary-500"
                   : "dark:bg-dark-500 bg-gray-200 text-gray-950 ring-primary-500",
               )}
@@ -76,9 +81,9 @@ export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
               })}
               disabled={!isClickable}
             >
-              {stepStatus[step.key as StepKey].hasErrors ? (
+              {currentStepActualStatus.hasErrors ? (
                 <ExclamationCircleIcon className="size-4.5" />
-              ) : stepStatus[step.key as StepKey].isDone ? (
+              ) : currentStepActualStatus.isDone ? (
                 <HiCheck className="size-4.5" />
               ) : (
                 i + 1
@@ -86,9 +91,10 @@ export function Stepper({ steps, currentStep, setCurrentStep }: StepperProps) {
             </button>
             <h3
               className={clsx(
-                "dark:text-dark-100 text-gray-800 sm:text-start",
-                smAndUp && "ltr:ml-4 rtl:mr-4",
-                stepStatus[step.key as StepKey].hasErrors && "text-error dark:text-error-light font-medium",
+                "dark:text-dark-100 text-gray-800",
+                smAndUp && (isRtl ? "ml-4" : "ml-4"),
+                isRtl ? "text-right" : "text-left",
+                currentStepActualStatus.hasErrors && "text-error dark:text-error-light font-medium",
               )}
             >
               {step.label}

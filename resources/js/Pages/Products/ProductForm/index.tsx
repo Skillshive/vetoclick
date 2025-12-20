@@ -16,6 +16,7 @@ import { VaccineInfo } from "./steps/VaccineInfo.tsx";
 import { StockStatus } from "./steps/StockStatus.tsx";
 import { FormState } from "./ProductFormContext.ts";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLocaleContext } from "@/contexts/locale/context";
 import { Product, Category } from "../datatable/types";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs.tsx";
 
@@ -28,38 +29,7 @@ export interface Step {
   description: string;
 }
 
-const steps: Step[] = [
-  {
-    key: "basicInfo",
-    component: BasicInfo,
-    label: "Basic Information",
-    description: "Product name, SKU, brand, description, and image"
-  },
-  {
-    key: "categoryType",
-    component: CategoryType,
-    label: "Category & Type",
-    description: "Product category and type selection"
-  },
-  {
-    key: "medicalDetails",
-    component: MedicalDetails,
-    label: "Medical Details",
-    description: "Dosage form, administration route, and target species"
-  },
-  {
-    key: "vaccineInfo",
-    component: VaccineInfo,
-    label: "Vaccine Information",
-    description: "Vaccine-specific details and schedules"
-  },
-  {
-    key: "stockStatus",
-    component: StockStatus,
-    label: "Stock & Status",
-    description: "Stock levels, availability, and settings"
-  }
-];
+// This will be defined inside the component to access translations
 
 interface ProductFormPageProps {
   product?: Product;
@@ -68,15 +38,49 @@ interface ProductFormPageProps {
 
 const ProductForm = ({ product, categories }: ProductFormPageProps) => {
   const { t } = useTranslation();
+  const { isRtl } = useLocaleContext();
   const [currentStep, setCurrentStep] = useState(0);
   const [finished, setFinished] = useState(false);
   const isEditing = !!product;
+
+  const steps: Step[] = [
+    {
+      key: "basicInfo",
+      component: BasicInfo,
+      label: t('common.products.form.steps.basic_info.label'),
+      description: t('common.products.form.steps.basic_info.description')
+    },
+    {
+      key: "categoryType",
+      component: CategoryType,
+      label: t('common.products.form.steps.category_type.label'),
+      description: t('common.products.form.steps.category_type.description')
+    },
+    {
+      key: "medicalDetails",
+      component: MedicalDetails,
+      label: t('common.products.form.steps.medical_details.label'),
+      description: t('common.products.form.steps.medical_details.description')
+    },
+    {
+      key: "vaccineInfo",
+      component: VaccineInfo,
+      label: t('common.products.form.steps.vaccine_info.label'),
+      description: t('common.products.form.steps.vaccine_info.description')
+    },
+    {
+      key: "stockStatus",
+      component: StockStatus,
+      label: t('common.products.form.steps.stock_status.label'),
+      description: t('common.products.form.steps.stock_status.description')
+    }
+  ];
 
   const ActiveForm = steps[currentStep].component;
 
   const stepsNode = (
     <>
-      <div className="col-span-12 sm:order-last sm:col-span-4 lg:col-span-3">
+      <div className={clsx("col-span-12 sm:order-last sm:col-span-4 lg:col-span-3", isRtl && "sm:order-first")}>
         <div className="sticky top-24 sm:mt-3">
           <Stepper
             steps={steps}
@@ -87,10 +91,10 @@ const ProductForm = ({ product, categories }: ProductFormPageProps) => {
       </div>
       <div className="col-span-12 sm:col-span-8 lg:col-span-9">
         <Card className="h-full p-4 sm:p-5">
-          <h5 className="dark:text-dark-100 text-lg font-medium text-gray-800">
+          <h5 className={clsx("dark:text-dark-100 text-lg font-medium text-gray-800", isRtl ? "text-right" : "text-left")}>
             {steps[currentStep].label}
           </h5>
-          <p className="dark:text-dark-200 text-sm text-gray-500">
+          <p className={clsx("dark:text-dark-200 text-sm text-gray-500", isRtl ? "text-right" : "text-left")}>
             {steps[currentStep].description}
           </p>
           {!finished && (
@@ -107,23 +111,20 @@ const ProductForm = ({ product, categories }: ProductFormPageProps) => {
   
 
   const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('common.products'), path: route('products.index') },
+    { title: t('common.products_breadcrumb), path: route('products.index') },
     { title: isEditing ? t('common.edit_product') : t('common.create_product')},
   ];
   return (
-    <Page title={isEditing ? "Edit Product" : "Create Product"}>
-      <div className="transition-content grid w-full grid-rows-[auto_1fr] px-(--margin-x) pb-8">
-        {/* <h2 className="dark:text-dark-50 py-5 text-xl font-medium tracking-wide text-gray-800 lg:py-6 lg:text-2xl">
-          {isEditing ? "Edit Product" : "Create New Product"}
-        </h2> */}
- <div className="flex items-center gap-1">
-              <div>
-          <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('common.edit_blog_description')}
-          </p>
+    <Page title={isEditing ? t('common.edit_product') : t('common.create_product')}>
+      <div className={clsx("transition-content grid w-full grid-rows-[auto_1fr] px-(--margin-x) pb-8", isRtl && "rtl")} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={clsx("flex items-center gap-1", isRtl ? "flex-row-reverse" : "")}>
+          <div className={isRtl ? "text-right" : "text-left"}>
+            <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {isEditing ? t('common.products.form.edit_description') : t('common.products.form.create_description')}
+            </p>
+          </div>
         </div>
-            </div>
         <ProductFormProvider product={product} categories={categories}>
           <div
             className={clsx(
