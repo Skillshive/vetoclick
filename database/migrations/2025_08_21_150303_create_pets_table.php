@@ -26,7 +26,7 @@ return new class extends Migration
     $table->decimal('weight_kg', 5, 2)->nullable();
     $table->tinyInteger('bcs')->nullable(); // Body Condition Score
     $table->string('color')->nullable();
-    $table->json('notes')->nullable();
+    $table->text('notes')->nullable();
     $table->date('deceased_at')->nullable();
     $table->timestamps();
     $table->softDeletes();
