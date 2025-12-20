@@ -10,6 +10,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { TagIcon } from 'lucide-react';
 import { categoryBlogFormSchema } from '@/schemas/blogSchema';
+import { BiCategory } from 'react-icons/bi';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
@@ -266,6 +267,7 @@ axios.post(route('category-blogs.update', categoryBlog.uuid), {
                                             placeholder={t('common.no_parent_category')}
                                             className={errors?.parent_category_id ? 'border-red-500' : ''}
                                             error={!!errors?.parent_category_id}
+                                            leftIcon={<BiCategory className="size-5" />}
                                         />
                                        {errors?.parent_category_id && (
                                             <p className="text-red-500 text-sm mt-1">{errors.parent_category_id}</p>

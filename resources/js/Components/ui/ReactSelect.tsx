@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import Select, { MultiValue, SingleValue, ActionMeta } from 'react-select';
 import { useThemeContext } from '@/contexts/theme/context';
+import { useLocaleContext } from '@/contexts/locale/context';
 
 interface Option {
     value: string | number;
@@ -41,6 +42,7 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
     rightIcon,
 }) => {
     const { themeMode } = useThemeContext();
+    const { isRtl } = useLocaleContext();
     const isDark = themeMode === 'dark';
 
     const customStyles = {
@@ -48,8 +50,14 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
             ...provided,
             minHeight: '2.5rem',
             borderRadius: '0.375rem',
-            paddingLeft: leftIcon ? '2rem' : provided.paddingLeft,
-            paddingRight: rightIcon ? '2rem' : provided.paddingRight,
+            paddingLeft: isRtl 
+                ? (rightIcon ? '2rem' : provided.paddingLeft)
+                : (leftIcon ? '2rem' : provided.paddingLeft),
+            paddingRight: isRtl
+                ? (leftIcon ? '2rem' : provided.paddingRight)
+                : (rightIcon ? '2rem' : provided.paddingRight),
+            direction: isRtl ? 'rtl' : 'ltr',
+            textAlign: isRtl ? 'right' : 'left',
             border: error
                 ? '1px solid #ef4444'
                 : state.isFocused
@@ -68,14 +76,19 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
         input: (provided: any) => ({
             ...provided,
             color: isDark ? '#FFFFFF' : '#000000',
+            direction: isRtl ? 'rtl' : 'ltr',
         }),
         placeholder: (provided: any) => ({
             ...provided,
             color: isDark ? '#9CA3AF' : '#6B7280',
+            direction: isRtl ? 'rtl' : 'ltr',
+            textAlign: isRtl ? 'right' : 'left',
         }),
         singleValue: (provided: any) => ({
             ...provided,
             color: isDark ? '#FFFFFF' : '#000000',
+            direction: isRtl ? 'rtl' : 'ltr',
+            textAlign: isRtl ? 'right' : 'left',
         }),
         multiValue: (provided: any) => ({
             ...provided,
@@ -105,6 +118,7 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
             borderRadius: '0.375rem',
             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
             zIndex: 9999,
+            direction: isRtl ? 'rtl' : 'ltr',
         }),
         option: (provided: any, state: any) => ({
             ...provided,
@@ -117,6 +131,8 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
                 ? '#FFFFFF'
                 : isDark ? '#FFFFFF' : '#000000',
             cursor: 'pointer',
+            direction: isRtl ? 'rtl' : 'ltr',
+            textAlign: isRtl ? 'right' : 'left',
             '&:active': {
                 backgroundColor: '#4DB9AD',
                 color: '#FFFFFF',
@@ -142,17 +158,16 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
     };
 
     return (
-        <div className={className}>
+        <div className={className} dir={isRtl ? 'rtl' : 'ltr'}>
             {label && (
-                        <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5`}>
+                <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ${isRtl ? 'text-right' : 'text-left'}`}>
                     {label}
                     {isRequired && <span className="text-error mx-1">*</span>}
-
                 </label>
             )}
             <div className="relative">
                 {leftIcon && (
-                    <div className="absolute left-0 top-0 flex h-full w-9 items-center justify-center pointer-events-none z-10 text-gray-400 dark:text-gray-500">
+                    <div className={`absolute ${isRtl ? 'right-0' : 'left-0'} top-0 flex h-full w-9 items-center justify-center pointer-events-none z-10 text-gray-400 dark:text-gray-500`}>
                         {leftIcon}
                     </div>
                 )}
@@ -166,6 +181,7 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
                     isClearable={isClearable}
                     isMulti={isMulti}
                     styles={customStyles}
+                    isRtl={isRtl}
                     theme={(theme) => ({
                         ...theme,
                         colors: {
@@ -178,7 +194,7 @@ const ReactSelect: React.FC<ReactSelectProps> = ({
                     })}
                 />
                 {rightIcon && (
-                    <div className="absolute right-0 top-0 flex h-full w-9 items-center justify-center pointer-events-none z-10 text-gray-400 dark:text-gray-500">
+                    <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} top-0 flex h-full w-9 items-center justify-center pointer-events-none z-10 text-gray-400 dark:text-gray-500`}>
                         {rightIcon}
                     </div>
                 )}
