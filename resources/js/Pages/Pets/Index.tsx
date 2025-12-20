@@ -9,7 +9,7 @@ import { Page } from "@/components/shared/Page";
 import { Pet, PetsProps } from "./types";
 import { useState } from "react";
 import { useToast } from "@/Components/common/Toast/ToastContext";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, InboxIcon } from "@heroicons/react/24/outline";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
@@ -114,7 +114,8 @@ export default function Index({
           {/* Pets Grid */}
           {petsList.length === 0 ? (
             <Card className="p-6 text-center">
-              <p className="text-gray-500">{t('common.no_pets_found') || 'No pets found'}</p>
+              <InboxIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">{t('common.no_pets_found') || 'No pets found'}</p>
             </Card>
           ) : (
             <>
