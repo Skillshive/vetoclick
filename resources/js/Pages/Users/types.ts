@@ -46,7 +46,32 @@ export interface UserData {
   };
 }
 
+export interface UserApiResponse {
+  data: UserData;
+  meta: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    per_page: number;
+    to: number;
+    total: number;
+  };
+}
+
 export interface UsersProps {
-  users?: UserData;
+  users?: {
+    data: User[];
+    meta: {
+      current_page: number;
+      from: number;
+      last_page: number;
+      per_page: number;
+      to: number;
+      total: number;
+    };
+  };
   roles?: Role[];
+  filters?: {
+    search?: string;
+  };
 }

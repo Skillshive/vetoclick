@@ -43,7 +43,7 @@ export function UserCard({
   };
   
   return (
-    <Card className="flex grow flex-col items-center p-4 text-center sm:p-5 hover:shadow-lg hover:scale-105 transition-all duration-300 min-h-[200px]">
+    <Card className="flex grow flex-col items-center p-4 text-center sm:p-5 hover:shadow-lg hover:scale-105 transition-all duration-300 min-h-[200px]"  style={{ margin:'auto' }}>
       <Avatar
         size={18}
         src={user.image ? getImageUrl(user.image, "/assets/default/person-placeholder.jpg") : "/assets/default/person-placeholder.jpg"}
@@ -52,10 +52,11 @@ export function UserCard({
         initialColor="auto"
       />
 
-      <div className="my-2 grow w-full">
-        <h3 className="dark:text-dark-100 text-base font-medium text-gray-800 mb-3">
-          {user.name}
-        </h3>
+      <div className="my-2 grow w-full flex flex-col items-center text-center">
+  <h3 className="dark:text-dark-100 text-base font-medium text-gray-800 mb-3">
+    {user.name}
+  </h3>
+
         
         <div className="space-y-2 w-full">
           {user.phone && (
