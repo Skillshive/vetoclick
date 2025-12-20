@@ -79,8 +79,12 @@ export function AddressCell({ getValue }: CellProps) {
 }
 
 export function CreatedAtCell({ getValue }: CellProps) {
+  const { locale } = useTranslation();
   const createdAt = getValue();
-  const formattedDate = new Date(createdAt).toLocaleDateString('fr-FR', {
+  
+  const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
+  
+  const formattedDate = new Date(createdAt).toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

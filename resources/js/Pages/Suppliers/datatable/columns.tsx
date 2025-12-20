@@ -25,6 +25,7 @@ export const createColumns = ({ setSelectedSupplier, setIsModalOpen, onDeleteRow
       id: "select",
       header: SelectHeader,
       cell: SelectCell,
+      enableHiding: false,
     },
     {
       id: "name",
@@ -68,5 +69,6 @@ export const createColumns = ({ setSelectedSupplier, setIsModalOpen, onDeleteRow
         onDeleteRow={onDeleteRow}
       />
     ),
+    enableHiding: false,
   },
 ];
