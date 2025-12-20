@@ -140,7 +140,6 @@ return [
     "password_confirmation_mismatch" => "Passwords do not match",
 
     // Category Product validation messages
-    "category_name_required" => "Category name is required",
     "category_name_min_length" => "Category name must be at least 2 characters",
     "category_name_max_length" => "Category name must be less than 100 characters",
     "category_name_invalid_chars" => "Category name can only contain letters, spaces, hyphens and apostrophes",
@@ -185,10 +184,7 @@ return [
     "lastname_min_length" => "The last name must be at least 2 characters.",
     "lastname_max_length" => "The last name must be less than 100 characters.",
     "lastname_invalid_chars" => "The last name can only contain letters and spaces.",
-    "email_required" => "The email address is required.",
-    "email_invalid" => "The email address is invalid.",
     "phone_required" => "The phone number is required.",
-    "phone_invalid" => "The phone number is invalid.",
     "role_required" => "The role is required.",
 
     // Subscription Plan validation messages
@@ -342,4 +338,11 @@ return [
     'reduction_min' => 'Reduction must be 0 or greater',
     'reduction_max' => 'Reduction cannot exceed 100%',
     'total_price_min' => 'Total price must be 0 or greater',
+
+'specie_name_required' => 'Species name is required.',
+'specie_name_min_length' => 'Species name must be at least 3 characters.',
+'specie_name_invalid_chars' => 'Species name contains invalid characters.',
+
+'breed_name_min_length' => 'Breed name must be at least 3 characters.',
+'breed_name_invalid_chars' => 'Breed name contains invalid characters.',
 ];
