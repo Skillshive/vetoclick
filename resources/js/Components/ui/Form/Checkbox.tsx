@@ -61,20 +61,25 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     }, [indeterminate]);
 
     return (
-      <ApplyWrapper
+        <ApplyWrapper
         when={!!label}
-        wrapper={(children) => (
-          <label
-            className={clsx(
-              "input-label inline-flex items-center gap-2",
-              classNames?.label,
-            )}
-            {...labelProps}
-          >
-            {children}
-            <span className={clsx("label", classNames?.labelText)}>{label}</span>
-          </label>
-        )}
+        wrapper={(children) => {
+          const isRtl = classNames?.label?.includes('flex-row-reverse') || classNames?.label?.includes('rtl');
+          return (
+            <label
+              className={clsx(
+                "input-label inline-flex items-center gap-2",
+                isRtl && "flex-row-reverse",
+                classNames?.label,
+              )}
+              dir={isRtl ? 'rtl' : 'ltr'}
+              {...labelProps}
+            >
+              {children}
+              <span className={clsx("label", classNames?.labelText)}>{label}</span>
+            </label>
+          );
+        }}
       >
         <input
           className={clsx(
