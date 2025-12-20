@@ -2,12 +2,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { useEffect, useCallback } from "react";
+import clsx from "clsx";
 
 // Local Imports
 import { Button } from "@/components/ui";
 import ReactSelect from "@/components/ui/ReactSelect";
 import { useProductFormContext } from "../ProductFormContext";
 import { CategoryTypeType, categoryTypeSchema } from "../schema";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLocaleContext } from "@/contexts/locale/context";
 import { 
   FolderIcon,
   Squares2X2Icon
@@ -21,7 +24,18 @@ export function CategoryType({
 }: {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
+  const { t } = useTranslation();
+  const { isRtl } = useLocaleContext();
   const productFormCtx = useProductFormContext();
+
+  // Helper function to translate validation messages
+  const translateError = (message: string | undefined): string | undefined => {
+    if (!message) return undefined;
+    if (message.startsWith('validation.')) {
+      return t(message as any) || message;
+    }
+    return message;
+  };
 
   const {
     control,
@@ -41,10 +55,10 @@ export function CategoryType({
   }, [productFormCtx.state.formData.categoryType, reset]);
 
   const productTypeOptions = [
-    { value: 1, label: 'Medication' },
-    { value: 2, label: 'Vaccine' },
-    { value: 3, label: 'Supplement' },
-    { value: 4, label: 'Equipment' },
+    { value: 1, label: t('common.products.form.category_type.medication') },
+    { value: 2, label: t('common.products.form.category_type.vaccine') },
+    { value: 3, label: t('common.products.form.category_type.supplement') },
+    { value: 4, label: t('common.products.form.category_type.equipment') },
   ];
 
   // Get categories from database via context
@@ -104,7 +118,7 @@ export function CategoryType({
             render={({ field }) => (
               <ReactSelect
                 id="category_product_id"
-                label="Product Category"
+                label={t('common.products.form.category_type.category')}
                 leftIcon={<FolderIcon className="h-5 w-5" />}
                 options={categoryOptions}
                 value={selectedCategory}
@@ -112,9 +126,10 @@ export function CategoryType({
                   const option = selected as { value: string; label: string } | null;
                   field.onChange(option?.value || "");
                 }}
-                placeholder="Select Category"
+                placeholder={t('common.products.form.category_type.category_placeholder')}
                 error={!!errors?.category_product_id}
                 isClearable
+                isRequired={true}
               />
             )}
           />
@@ -125,7 +140,7 @@ export function CategoryType({
             render={({ field }) => (
               <ReactSelect
                 id="type"
-                label="Product Type"
+                label={t('common.products.form.category_type.type')}
                 leftIcon={<Squares2X2Icon className="h-5 w-5" />}
                 options={productTypeOptions}
                 value={selectedType}
@@ -133,30 +148,31 @@ export function CategoryType({
                   const option = selected as { value: number; label: string } | null;
                   field.onChange(option?.value || 1);
                 }}
-                placeholder="Select Type"
+                placeholder={t('common.products.form.category_type.type_placeholder')}
                 error={!!errors?.type}
+                isRequired={true}
               />
             )}
           />
         </div>
         {errors?.category_product_id && (
-          <p className="text-sm text-red-600 dark:text-red-400">{errors.category_product_id.message}</p>
+          <p className={clsx("text-sm text-red-600 dark:text-red-400", isRtl ? "text-right" : "text-left")}>{translateError(errors.category_product_id.message)}</p>
         )}
         {errors?.type && (
-          <p className="text-sm text-red-600 dark:text-red-400">{errors.type.message}</p>
+          <p className={clsx("text-sm text-red-600 dark:text-red-400", isRtl ? "text-right" : "text-left")}>{translateError(errors.type.message)}</p>
         )}
       </div>
       
-      <div className="mt-8 flex justify-between">
+      <div className={clsx("mt-8 flex gap-3", isRtl ? "justify-start" : "justify-end")}>
         <Button
           type="button"
           variant="outlined"
           onClick={onPrevious}
         >
-          Previous
+          {t('common.previous')}
         </Button>
         <Button type="submit" color="primary">
-          Next
+          {t('common.next')}
         </Button>
       </div>
     </form>

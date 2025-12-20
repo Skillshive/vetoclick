@@ -2,6 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { useState, useEffect } from "react";
+import clsx from "clsx";
 
 // Local Imports
 import { Button, Input } from "@/components/ui";
@@ -9,6 +10,7 @@ import { DatePicker } from "@/components/shared/form/Datepicker";
 import { useProductFormContext } from "../ProductFormContext";
 import { VaccineInfoType, vaccineInfoSchema } from "../schema";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLocaleContext } from "@/contexts/locale/context";
 import { VaccinationScheduleModal } from "../components/VaccinationScheduleModal";
 import { 
   BuildingOfficeIcon,
@@ -25,8 +27,18 @@ export function VaccineInfo({
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
   const { t } = useTranslation();
+  const { isRtl } = useLocaleContext();
   const productFormCtx = useProductFormContext();
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+
+  // Helper function to translate validation messages
+  const translateError = (message: string | undefined): string | undefined => {
+    if (!message) return undefined;
+    if (message.startsWith('validation.')) {
+      return t(message as any) || message;
+    }
+    return message;
+  };
 
   const {
     register,
@@ -89,18 +101,18 @@ export function VaccineInfo({
         <div className="grid gap-4 sm:grid-cols-2">
           <Input
             {...register("manufacturer")}
-            label="Manufacturer"
+            label={t('common.products.form.vaccine_info.manufacturer')}
             leftIcon={<BuildingOfficeIcon className="h-5 w-5" />}
-            error={errors?.manufacturer?.message}
-            placeholder="Vaccine manufacturer"
+            error={translateError(errors?.manufacturer?.message)}
+            placeholder={t('common.products.form.vaccine_info.manufacturer_placeholder')}
             required
           />
           <Input
             {...register("batch_number")}
-            label="Batch Number"
+            label={t('common.products.form.vaccine_info.batch_number')}
             leftIcon={<HashtagIcon className="h-5 w-5" />}
-            error={errors?.batch_number?.message}
-            placeholder="Batch number"
+            error={translateError(errors?.batch_number?.message)}
+            placeholder={t('common.products.form.vaccine_info.batch_number_placeholder')}
             required
           />
         </div>
@@ -112,9 +124,9 @@ export function VaccineInfo({
             render={({ field }) => (
               <DatePicker
                 value={field.value || ""}
-                label="Expiry Date"
+                label={t('common.products.form.vaccine_info.expiry_date')}
                 leftIcon={<CalendarIcon className="h-5 w-5" />}
-                error={errors?.expiry_date?.message}
+                error={translateError(errors?.expiry_date?.message)}
                 onChange={(date: Date[]) => {
                   // DatePicker returns Date[] even for single dates
                   if (date && date.length > 0 && date[0]) {
@@ -136,34 +148,35 @@ export function VaccineInfo({
           <Input
             {...register("dosage_ml", { valueAsNumber: true })}
             type="number"
-            label="Dosage (ml)"
+            label={t('common.products.form.vaccine_info.dosage_ml')}
             leftIcon={<BeakerIcon className="h-5 w-5" />}
-            error={errors?.dosage_ml?.message}
-            placeholder="Dosage in ml"
+            error={translateError(errors?.dosage_ml?.message)}
+            placeholder={t('common.products.form.vaccine_info.dosage_ml_placeholder')}
             step="0.1"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Vaccine Instructions
+          <label className={clsx("block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2", isRtl ? "text-right" : "text-left")}>
+            {t('common.products.form.vaccine_info.instructions')}
           </label>
           <textarea
             {...register("vaccine_instructions")}
             rows={3}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Storage instructions, administration notes, etc."
+            className={clsx("w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500", isRtl && "text-right")}
+            placeholder={t('common.products.form.vaccine_info.instructions_placeholder')}
+            dir={isRtl ? 'rtl' : 'ltr'}
           />
-          {errors?.vaccine_instructions && (
-            <p className="mt-1 text-sm text-red-600">{errors.vaccine_instructions.message}</p>
+            {errors?.vaccine_instructions && (
+            <p className={clsx("mt-1 text-sm text-red-600", isRtl ? "text-right" : "text-left")}>{translateError(errors.vaccine_instructions.message)}</p>
           )}
         </div>
 
         {/* Vaccination Schedules Section */}
         <div className="mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-md font-medium text-gray-900 dark:text-white">
-              Vaccination Schedules
+          <div className={clsx("flex items-center justify-between mb-4", isRtl && "flex-row-reverse")}>
+            <h4 className={clsx("text-md font-medium text-gray-900 dark:text-white", isRtl ? "text-right" : "text-left")}>
+              {t('common.products.form.vaccine_info.schedules')}
             </h4>
             <Button
               type="button"
@@ -171,7 +184,7 @@ export function VaccineInfo({
               size="sm"
               onClick={() => setIsScheduleModalOpen(true)}
             >
-              Manage Schedules
+              {t('common.products.form.vaccine_info.manage_schedules')}
             </Button>
           </div>
           
@@ -179,15 +192,15 @@ export function VaccineInfo({
             <div className="space-y-2">
               {productFormCtx.state.formData.vaccinationSchedules.map((schedule, index) => (
                 <div key={index} className="bg-gray-50 dark:bg-gray-600 rounded-lg p-3">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className={clsx("flex items-center justify-between", isRtl && "flex-row-reverse")}>
+                    <div className={isRtl ? "text-right" : "text-left"}>
                       <h5 className="font-medium text-gray-900 dark:text-white">
                         {schedule.name}
                       </h5>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Sequence: {schedule.sequence_order}
-                        {schedule.age_weeks && ` • Age: ${schedule.age_weeks} weeks`}
-                        {schedule.is_required && ' • Required'}
+                        {t('common.products.form.vaccine_info.sequence')}: {schedule.sequence_order}
+                        {schedule.age_weeks && ` • ${t('common.products.form.vaccine_info.age')}: ${schedule.age_weeks} ${t('common.products.form.vaccine_info.weeks')}`}
+                        {schedule.is_required && ` • ${t('common.products.form.vaccine_info.required')}`}
                       </p>
                     </div>
                   </div>
@@ -195,25 +208,25 @@ export function VaccineInfo({
               ))}
             </div>
           ) : (
-            <div className="bg-gray-50 dark:bg-gray-600 rounded-lg p-4">
+            <div className={clsx("bg-gray-50 dark:bg-gray-600 rounded-lg p-4", isRtl && "text-right")}>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                No vaccination schedules configured. Click "Manage Schedules" to add them.
+                {t('common.products.form.vaccine_info.no_schedules')}
               </p>
             </div>
           )}
         </div>
       </div>
       
-      <div className="mt-8 flex justify-between">
+      <div className={clsx("mt-8 flex gap-3", isRtl ? "justify-start" : "justify-end")}>
         <Button
           type="button"
           variant="outlined"
           onClick={onPrevious}
         >
-          Previous
+          {t('common.previous')}
         </Button>
         <Button type="submit" color="primary">
-          Next
+          {t('common.next')}
         </Button>
       </div>
     </form>

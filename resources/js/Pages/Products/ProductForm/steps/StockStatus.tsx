@@ -1,13 +1,17 @@
 // Import Dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useEffect } from "react";
+import clsx from "clsx";
+import { SingleValue } from "react-select";
 
 // Local Imports
 import { Button, Input, Checkbox } from "@/components/ui";
+import ReactSelect from "@/components/ui/ReactSelect";
 import { useProductFormContext } from "../ProductFormContext";
 import { StockStatusType, stockStatusSchema } from "../schema";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLocaleContext } from "@/contexts/locale/context";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { router, usePage } from "@inertiajs/react";
 import { 
@@ -26,13 +30,24 @@ export function StockStatus({
   setFinished: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { t } = useTranslation();
+  const { isRtl } = useLocaleContext();
   const { showToast } = useToast();
   const productFormCtx = useProductFormContext();
   const isEditing = productFormCtx.isEditing || false;
 
+  // Helper function to translate validation messages
+  const translateError = (message: string | undefined): string | undefined => {
+    if (!message) return undefined;
+    if (message.startsWith('validation.')) {
+      return t(message as any) || message;
+    }
+    return message;
+  };
+
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isValid },
     reset,
     watch,
@@ -66,10 +81,10 @@ export function StockStatus({
   const productType = productFormCtx.state.formData.categoryType.type;
 
   const availabilityStatusOptions = [
-    { value: 1, label: 'Available' },
-    { value: 2, label: 'Out of Stock' },
-    { value: 3, label: 'Discontinued' },
-    { value: 4, label: 'On Order' },
+    { value: 1, label: t('common.products.form.stock_status.available') },
+    { value: 2, label: t('common.products.form.stock_status.out_of_stock') },
+    { value: 3, label: t('common.products.form.stock_status.discontinued') },
+    { value: 4, label: t('common.products.form.stock_status.on_order') },
   ];
 
   const onSubmit = (data: StockStatusType) => {
@@ -163,6 +178,7 @@ export function StockStatus({
     // Submit with proper file handling
     if (isEditing) {
       // Use POST with _method spoofing for file uploads (Laravel limitation with PUT)
+      // @ts-ignore - Inertia router.post accepts 3 arguments
       router.post(submitRoute, {
         ...submitData,
         _method: 'PUT',
@@ -171,7 +187,7 @@ export function StockStatus({
         onSuccess: () => {
           showToast({
             type: 'success',
-            message: 'Product updated successfully!',
+            message: t('common.products.form.stock_status.update_success'),
             duration: 3000,
           });
           setFinished(true);
@@ -211,18 +227,19 @@ export function StockStatus({
 
           showToast({
             type: 'error',
-            message: 'Failed to save product. Please check the form for errors.',
+            message: t('common.products.form.stock_status.save_error'),
             duration: 5000,
           });
         }
       });
     } else {
+      // @ts-ignore - Inertia router.post accepts 3 arguments
       router.post(submitRoute, submitData, {
         forceFormData: true,
         onSuccess: () => {
           showToast({
             type: 'success',
-            message: 'Product created successfully!',
+            message: t('common.products.form.stock_status.create_success'),
             duration: 3000,
           });
           setFinished(true);
@@ -262,7 +279,7 @@ export function StockStatus({
 
           showToast({
             type: 'error',
-            message: 'Failed to save product. Please check the form for errors.',
+            message: t('common.products.form.stock_status.save_error'),
             duration: 5000,
           });
         }
@@ -286,81 +303,92 @@ export function StockStatus({
           <Input
             {...register("minimum_stock_level", { valueAsNumber: true })}
             type="number"
-            label="Minimum Stock Level"
+            label={t('common.products.form.stock_status.minimum_stock')}
             leftIcon={<ChartBarIcon className="h-5 w-5" />}
-            error={errors?.minimum_stock_level?.message}
+            error={translateError(errors?.minimum_stock_level?.message)}
             min="0"
           />
           <Input
             {...register("maximum_stock_level", { valueAsNumber: true })}
             type="number"
-            label="Maximum Stock Level"
+            label={t('common.products.form.stock_status.maximum_stock')}
             leftIcon={<ChartBarIcon className="h-5 w-5" />}
-            error={errors?.maximum_stock_level?.message}
+            error={translateError(errors?.maximum_stock_level?.message)}
             min="0"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Availability Status
-          </label>
-          <select
-            {...register("availability_status", { valueAsNumber: true })}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            required
-          >
-            {availabilityStatusOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="availability_status"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <ReactSelect
+                id="availability_status"
+                label={t('common.products.form.stock_status.availability_status')}
+                options={availabilityStatusOptions}
+                value={availabilityStatusOptions.find(opt => opt.value === field.value) || null}
+                onChange={(selected: SingleValue<{ value: number; label: string }>) => {
+                  field.onChange(selected ? selected.value : null);
+                }}
+                error={!!errors?.availability_status}
+                isRequired
+              />
+            )}
+          />
           {errors?.availability_status && (
-            <p className="mt-1 text-sm text-red-600">{errors.availability_status.message}</p>
+            <p className={clsx("mt-1 text-sm text-red-600", isRtl ? "text-right" : "text-left")}>{translateError(errors.availability_status.message)}</p>
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className={clsx("flex items-center gap-4")}>
           {/* Only show prescription required for non-equipment products */}
           {productType !== 4 && (
             <Checkbox
               {...register("prescription_required")}
-              label="Prescription Required"
+              label={t('common.products.form.stock_status.prescription_required')}
+              classNames={{
+                label: isRtl ? "flex-row-reverse" : ""
+              }}
             />
           )}
           <Checkbox
             {...register("is_active")}
-            label="Active"
+            label={t('common.products.form.stock_status.active')}
+            classNames={{
+              label: isRtl ? "flex-row-reverse" : ""
+            }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Notes
+          <label className={clsx("block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2", isRtl ? "text-right" : "text-left")}>
+            {t('common.products.form.stock_status.notes')}
           </label>
           <textarea
             {...register("notes")}
             rows={3}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Additional notes about the product..."
+            className={clsx("w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500", isRtl && "text-right")}
+            placeholder={t('common.products.form.stock_status.notes_placeholder')}
+            dir={isRtl ? 'rtl' : 'ltr'}
           />
-          {errors?.notes && (
-            <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>
+            {errors?.notes && (
+            <p className={clsx("mt-1 text-sm text-red-600", isRtl ? "text-right" : "text-left")}>{translateError(errors.notes.message)}</p>
           )}
         </div>
       </div>
       
-      <div className="mt-8 flex justify-between">
+      <div className={clsx("mt-8 flex gap-3", isRtl ? "justify-start" : "justify-end")}>
         <Button
           type="button"
           variant="outlined"
           onClick={onPrevious}
         >
-          Previous
+          {t('common.previous')}
         </Button>
         <Button type="submit" color="primary">
-          {isEditing ? 'Update Product' : 'Create Product'}
+          {isEditing ? t('common.products.form.stock_status.update_product') : t('common.products.form.stock_status.create_product')}
         </Button>
       </div>
     </form>

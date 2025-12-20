@@ -2,6 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
+import clsx from "clsx";
 
 // Local Imports
 import { Button, Input, Upload, Avatar, Textarea } from "@/components/ui";
@@ -9,6 +10,7 @@ import { useProductFormContext } from "../ProductFormContext";
 import { BasicInfoType, basicInfoSchema } from "../schema";
 import { PreviewImg } from "@/components/shared/PreviewImg";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLocaleContext } from "@/contexts/locale/context";
 import { HiPencil } from "react-icons/hi";
 import { 
   TagIcon,
@@ -25,8 +27,18 @@ export function BasicInfo({
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
   const { t } = useTranslation();
+  const { isRtl } = useLocaleContext();
   const productFormCtx = useProductFormContext();
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Helper function to translate validation messages
+  const translateError = (message: string | undefined): string | undefined => {
+    if (!message) return undefined;
+    if (message.startsWith('validation.')) {
+      return t(message as any) || message;
+    }
+    return message;
+  };
 
   const {
     register,
@@ -96,8 +108,8 @@ export function BasicInfo({
       <div className="mt-6 space-y-4">
         {/* Image Upload */}
         <div className="mt-4 flex flex-col space-y-1.5">
-          <span className="dark:text-dark-100 text-base font-medium text-gray-800">
-            {t('common.avatar')}
+          <span className={clsx("dark:text-dark-100 text-base font-medium text-gray-800", isRtl ? "text-right" : "text-left")}>
+            {t('common.products.form.basic_info.image')}
           </span>
           <div className="flex">
           <Upload
@@ -123,7 +135,7 @@ export function BasicInfo({
                     }}
                     indicator={
                       <div
-                        className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg ring-2 ring-white dark:ring-gray-800"
+                        className={clsx("absolute flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg ring-2 ring-white dark:ring-gray-800", isRtl ? "-bottom-1 -left-1" : "-bottom-1 -right-1")}
                       >
                         <HiPencil className="h-3 w-3" />
                       </div>
@@ -133,26 +145,26 @@ export function BasicInfo({
               )}
             </Upload>
           </div>
-          {errors?.image && (
-            <p className="mt-1 text-sm text-red-600">{errors.image.message}</p>
+            {errors?.image && (
+            <p className={clsx("mt-1 text-sm text-red-600", isRtl ? "text-right" : "text-left")}>{translateError(errors.image.message)}</p>
           )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Input
             {...register("name")}
-            label="Product Name"
+            label={t('common.products.form.basic_info.product_name')}
             leftIcon={<TagIcon className="h-5 w-5" />}
-            error={errors?.name?.message}
-            placeholder="Enter product name"
+            error={translateError(errors?.name?.message)}
+            placeholder={t('common.products.form.basic_info.product_name_placeholder')}
             required
           />
           <Input
             {...register("sku")}
-            label="SKU"
+            label={t('common.products.form.basic_info.sku')}
             leftIcon={<CubeIcon className="h-5 w-5" />}
-            error={errors?.sku?.message}
-            placeholder="Enter SKU"
+            error={translateError(errors?.sku?.message)}
+            placeholder={t('common.products.form.basic_info.sku_placeholder')}
             required
           />
         </div>
@@ -160,46 +172,47 @@ export function BasicInfo({
         <div className="grid gap-4 sm:grid-cols-2">
           <Input
             {...register("brand")}
-            label="Brand"
+            label={t('common.products.form.basic_info.brand')}
             leftIcon={<BuildingOfficeIcon className="h-5 w-5" />}
-            error={errors?.brand?.message}
-            placeholder="Enter brand name"
+            error={translateError(errors?.brand?.message)}
+            placeholder={t('common.products.form.basic_info.brand_placeholder')}
           />
           <Input
             {...register("barcode")}
-            label="Barcode"
+            label={t('common.products.form.basic_info.barcode')}
             leftIcon={<BarsArrowUpIcon className="h-5 w-5" />}
-            error={errors?.barcode?.message}
-            placeholder="Enter barcode"
+            error={translateError(errors?.barcode?.message)}
+            placeholder={t('common.products.form.basic_info.barcode_placeholder')}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Description
+          <label className={clsx("block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2", isRtl ? "text-right" : "text-left")}>
+            {t('common.products.form.basic_info.description')}
           </label>
           <Textarea
             {...register("description")}
             rows={3}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Enter product description"
+            className={clsx("w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500", isRtl && "text-right")}
+            placeholder={t('common.products.form.basic_info.description_placeholder')}
+            dir={isRtl ? 'rtl' : 'ltr'}
           />
           {errors?.description && (
-            <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+            <p className={clsx("mt-1 text-sm text-red-600", isRtl ? "text-right" : "text-left")}>{translateError(errors.description.message)}</p>
           )}
         </div>
       </div>
       
-      <div className="mt-8 flex justify-end space-x-3">
+      <div className={clsx("mt-8 flex gap-3", isRtl ? "justify-start" : "justify-end")}>
         <Button
           type="button"
           variant="outlined"
           onClick={() => window.history.back()}
         >
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button type="submit" color="primary">
-          Next
+          {t('common.next')}
         </Button>
       </div>
     </form>

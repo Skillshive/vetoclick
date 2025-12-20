@@ -2,6 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
+import clsx from "clsx";
 
 // Local Imports
 import { Button, Input, Checkbox } from "@/components/ui";
@@ -9,6 +10,7 @@ import ReactSelect from "@/components/ui/ReactSelect";
 import { useProductFormContext } from "../ProductFormContext";
 import { MedicalDetailsType, medicalDetailsSchema } from "../schema";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLocaleContext } from "@/contexts/locale/context";
 import { 
   BeakerIcon,
   ArrowPathIcon
@@ -22,7 +24,17 @@ export function MedicalDetails({
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 }) {
   const { t } = useTranslation();
+  const { isRtl } = useLocaleContext();
   const productFormCtx = useProductFormContext();
+
+  // Helper function to translate validation messages
+  const translateError = (message: string | undefined): string | undefined => {
+    if (!message) return undefined;
+    if (message.startsWith('validation.')) {
+      return t(message as any) || message;
+    }
+    return message;
+  };
 
   const {
     register,
@@ -46,12 +58,12 @@ export function MedicalDetails({
   const targetSpecies = watch("target_species") || [];
 
   const targetSpeciesOptions = [
-    { value: 'dogs', label: 'Dogs' },
-    { value: 'cats', label: 'Cats' },
-    { value: 'horses', label: 'Horses' },
-    { value: 'cattle', label: 'Cattle' },
-    { value: 'birds', label: 'Birds' },
-    { value: 'fish', label: 'Fish' },
+    { value: 'dogs', label: t('common.products.form.medical_details.species.dogs') },
+    { value: 'cats', label: t('common.products.form.medical_details.species.cats') },
+    { value: 'horses', label: t('common.products.form.medical_details.species.horses') },
+    { value: 'cattle', label: t('common.products.form.medical_details.species.cattle') },
+    { value: 'birds', label: t('common.products.form.medical_details.species.birds') },
+    { value: 'fish', label: t('common.products.form.medical_details.species.fish') },
   ];
 
   // Convert target_species array to ReactSelect format
@@ -112,57 +124,57 @@ export function MedicalDetails({
             <div className="grid gap-4 sm:grid-cols-2">
               <Input
                 {...register("dosage_form")}
-                label="Dosage Form"
+                label={t('common.products.form.medical_details.dosage_form')}
                 leftIcon={<BeakerIcon className="h-5 w-5" />}
-                error={errors?.dosage_form?.message}
-                placeholder="e.g., tablet, injection, oral solution"
+                error={translateError(errors?.dosage_form?.message)}
+                placeholder={t('common.products.form.medical_details.dosage_form_placeholder')}
               />
               <Input
                 {...register("administration_route")}
-                label="Administration Route"
+                label={t('common.products.form.medical_details.administration_route')}
                 leftIcon={<ArrowPathIcon className="h-5 w-5" />}
-                error={errors?.administration_route?.message}
-                placeholder="e.g., oral, topical, injection"
+                error={translateError(errors?.administration_route?.message)}
+                placeholder={t('common.products.form.medical_details.administration_route_placeholder')}
               />
             </div>
 
             {/* Target Species */}
             <div>
               <ReactSelect
-                label="Target Species"
+                label={t('common.products.form.medical_details.target_species')}
                 isMulti
                 options={targetSpeciesOptions}
                 value={selectedSpecies}
                 onChange={handleSpeciesChange}
                 error={!!errors?.target_species}
-                placeholder="Select target species..."
+                placeholder={t('common.products.form.medical_details.target_species_placeholder')}
               />
-              {errors?.target_species && (
-                <p className="mt-1 text-sm text-red-600">{errors.target_species.message}</p>
+                {errors?.target_species && (
+                <p className={clsx("mt-1 text-sm text-red-600", isRtl ? "text-right" : "text-left")}>{translateError(errors.target_species.message)}</p>
               )}
             </div>
           </>
         )}
 
         {productType === 4 && (
-          <div className="text-center py-8">
+          <div className={clsx("text-center py-8", isRtl && "text-right")}>
             <p className="text-gray-500 dark:text-gray-400">
-              Medical details are not required for equipment products.
+              {t('common.products.form.medical_details.equipment_notice')}
             </p>
           </div>
         )}
       </div>
       
-      <div className="mt-8 flex justify-between">
+      <div className={clsx("mt-8 flex gap-3", isRtl ? "justify-start" : "justify-end")}>
         <Button
           type="button"
           variant="outlined"
           onClick={onPrevious}
         >
-          Previous
+          {t('common.previous')}
         </Button>
         <Button type="submit" color="primary">
-          {productType === 2 ? "Next" : "Next"}
+          {t('common.next')}
         </Button>
       </div>
     </form>
