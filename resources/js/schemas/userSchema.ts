@@ -11,21 +11,25 @@ export const userFormSchema = z.object({
     .min(2, 'validation.lastname_min_length')
     .max(100, 'validation.lastname_max_length')
     .regex(/^[a-zA-ZÀ-ÿ\s\-']+$/, 'validation.lastname_invalid_chars'),
-    email: z.string()
+  email: z.string()
     .min(1, 'validation.email_required')
     .email('validation.email_invalid')
     .refine((val) => !/[A-Z]/.test(val), {
       message: 'validation.email_lowercase',
     }),
-  phone: z.string()
-    .min(1, 'validation.phone_required')
-    .refine((val) => !val || /^(\+212|0)[0-9]{9}$/.test(val), {
-      message: 'validation.phone_invalid',
-    }),
-      image: z.instanceof(File)
-        .optional()
-        .nullable(),
-    role: z.string()
-        .min(1, 'validation.role_required'),
+  phone: z.preprocess(
+    (val) => val === null || val === undefined ? '' : val,
+    z.string()
+      .min(1, 'validation.phone_required')
+      .refine((val) => !val || /^(\+212|0)[0-9]{9}$/.test(val), {
+        message: 'validation.phone_invalid',
+      })
+  ),
+  image: z.instanceof(File)
+    .optional()
+    .nullable(),
+  role: z.string()
+    .min(1, 'validation.role_required'),
 });
-export type CategoryBlogFormData = z.infer<typeof userFormSchema>;
+
+export type UserFormData = z.infer<typeof userFormSchema>;

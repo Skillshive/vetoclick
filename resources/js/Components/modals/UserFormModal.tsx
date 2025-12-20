@@ -52,10 +52,9 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
 
     useEffect(() => {
         if (user) {
-            console.log('user', user);
             setData('firstname', user.firstname);
             setData('lastname', user.lastname);
-            setData('phone', user.phone);
+            setData('phone', user.phone || '');
             setData('email', user.email);
             setData('image', null);
             setData('role', user.roles?.[0]?.uuid || '');
@@ -122,7 +121,6 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                 .catch((error) => {
                     if (error.response && error.response.status === 422) {
                         const errors = error.response.data.errors;
-                        console.log('errors', errors)
                         setValidationErrors({
                             firstname: errors.firstname?.[0] ? t(errors.firstname[0]) : undefined,
                             lastname: errors.lastname?.[0] ? t(errors.lastname[0]) : undefined, phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
@@ -141,7 +139,6 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                     setProcessing(false);
                 });
         } else {
-            console.log('formData', formData)
             axios.post(route('users.store'), formData, config)
                 .then(() => {
                     showToast({
@@ -160,7 +157,6 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                 .catch((error) => {
                     if (error.response && error.response.status === 422) {
                         const errors = error.response.data.errors;
-                        console.log('errors', errors)
                         setValidationErrors({
                             firstname: errors.firstname?.[0] ? t(errors.firstname[0]) : undefined,
                             lastname: errors.lastname?.[0] ? t(errors.lastname[0]) : undefined, phone: errors.phone?.[0] ? t(errors.phone[0]) : undefined,
