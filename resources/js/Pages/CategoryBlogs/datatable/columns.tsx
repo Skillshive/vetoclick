@@ -24,6 +24,7 @@ export const createColumns = ({ setSelectedCategoryBlog, setIsModalOpen, onDelet
     id: "select",
     header: SelectHeader,
     cell: SelectCell,
+    enableHiding: false,
   },
   {
     id: "name",
@@ -67,5 +68,6 @@ export const createColumns = ({ setSelectedCategoryBlog, setIsModalOpen, onDelet
         onDeleteRow={onDeleteRow}
       />
     ),
+    enableHiding: false,
   },
 ];
