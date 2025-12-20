@@ -364,7 +364,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
       >
         <div className="min-w-0">
           <h2 className="dark:text-dark-50 truncate text-xl font-medium tracking-wide text-gray-800">
-            {t('common.products')}
+            {t('common.products_breadcrumb')}
           </h2>
         </div>
         
@@ -385,7 +385,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
                         </p>
                         <CubeIcon className="text-primary-500 size-5" />
                     </div>
-                    <p className="text-xs-plus mt-1">{t('common.products')}</p>
+                    <p className="text-xs-plus mt-1">{t('common.products_breadcrumb')}</p>
                 </div>
                 <div className="bg-gray-150 dark:bg-dark-700 rounded-lg p-3 2xl:p-4">
                     <div className="flex justify-between space-x-1">
@@ -483,7 +483,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
             onClose={() => setLotsModalOpen(false)}
             title={
                 <div>
-                    <div className="text-lg font-semibold">{t('common.product_lots') || 'Product Lots'}</div>
+                    <div className="text-lg font-semibold">{t('common.product_lots')}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 font-normal">
                         {selectedProduct?.name}
                     </div>
@@ -500,8 +500,8 @@ export default function Index({products, categories, filters, old, errors}: Prod
                             ) : productLots.length === 0 ? (
                                 <div className="text-center py-12">
                                     <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
-                                    <p className="mt-4 text-gray-600 dark:text-gray-400">
-                                        {t('common.no_lots_found') || 'No lots found for this product'}
+                                    <p className="mt-4 text-gray-600 dark:text-gray-400 text-center">
+                                        {t('common.no_lots_found')}
                                     </p>
                                 </div>
                             ) : (
@@ -563,7 +563,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
                                                                     onChange={(e) => {
                                                                         const value = parseInt(e.target.value) || 0;
                                                                         if (value > lot.initial_quantity) {
-                                                                            setLotValidationError(t('common.current_quantity_cannot_exceed_initial') || 'Current quantity cannot exceed initial quantity');
+                                                                            setLotValidationError(t('common.current_quantity_cannot_exceed_initial'));
                                                                         } else {
                                                                             setLotValidationError('');
                                                                         }
@@ -592,7 +592,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
                                                                 className="w-full px-2 py-1 border rounded dark:bg-dark-600 dark:border-gray-600 text-right"
                                                             />
                                                         ) : (
-                                                            parseFloat(lot.selling_price).toFixed(2)+ ' MAD'
+                                                            parseFloat(lot.selling_price).toFixed(2)+      t('common.currency')
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">

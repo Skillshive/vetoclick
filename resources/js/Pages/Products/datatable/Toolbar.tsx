@@ -177,6 +177,9 @@ function SearchInput({
   globalFilter: string; 
   setGlobalFilter: (filter: string) => void; 
 }) {
+
+  const { t } = useTranslation();
+
   return (
     <Input
       value={globalFilter}
@@ -186,7 +189,7 @@ function SearchInput({
         input: "ring-primary-500/50 h-8 text-xs focus:ring-3",
         root: "shrink-0",
       }}
-      placeholder="Search products..."
+      placeholder={t('common.search_products')}
     />
   );
 }
