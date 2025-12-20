@@ -23,13 +23,9 @@ export function ClientNameCell({ getValue, row }: any) {
   return (
     <div className="flex max-w-xs items-center space-x-4 2xl:max-w-sm">
       <div className="min-w-0">
-        <p className="truncate">
-          <a
-            href="##"
-            className="hover:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors"
-          >
+        <p             className="hover:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 font-medium text-gray-700 transition-colors"
+        >
             {first_name} {last_name}
-          </a>
         </p>
       </div>
     </div>
@@ -98,8 +94,12 @@ export function PetsCountCell({ getValue }: CellProps) {
 }
 
 export function CreatedAtCell({ getValue }: CellProps) {
+  const { locale } = useTranslation();
   const createdAt = getValue();
-  const formattedDate = new Date(createdAt).toLocaleDateString('en-US', {
+  
+  const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
+  
+  const formattedDate = new Date(createdAt).toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
