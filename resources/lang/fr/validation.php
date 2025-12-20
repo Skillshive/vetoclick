@@ -345,4 +345,28 @@ return [
 
     'breed_name_min_length' => 'Le nom de la race doit contenir au moins 3 caractères.',
     'breed_name_invalid_chars' => 'Le nom de la race contient des caractères invalides.',
+
+    // Product Form validation messages
+    'product_name_required' => 'Le nom du produit est requis.',
+    'product_sku_required' => 'Le SKU est requis.',
+    'product_image_size' => 'L\'image doit être inférieure à 5 Mo.',
+    'product_image_format' => 'Seuls les formats .jpg, .jpeg, .png, .gif et .webp sont pris en charge.',
+    'product_category_required' => 'La catégorie est requise.',
+    'product_type_invalid' => 'Type de produit invalide.',
+    'vaccine_manufacturer_required' => 'Le fabricant est requis.',
+    'vaccine_batch_number_required' => 'Le numéro de lot est requis.',
+    'vaccine_dosage_positive' => 'La posologie doit être positive.',
+    'stock_level_min' => 'Doit être 0 ou plus.',
+    'availability_status_invalid' => 'Statut de disponibilité invalide.',
+    'vaccination_schedule_name_required' => 'Le nom du calendrier est requis.',
+    'vaccination_sequence_order_min' => 'L\'ordre de séquence doit être d\'au moins 1.',
+    'vaccination_age_weeks_min' => 'L\'âge doit être 0 ou plus.',
+    'stock_level_max_gt_min' => 'Le niveau de stock maximum doit être supérieur au niveau de stock minimum.',
+
+    'pet_name_required' => 'Le nom de l\'animal est requis.',
+        'pet_name_too_long' => 'Le nom de l\'animal ne doit pas dépasser 100 caractères.',
+    'species_required' => 'La race est requise.',
+    'breed_required' => 'La race est requise.',
+    'microchip_too_long' => 'Le numéro de puce ne doit pas dépasser 50 caractères.',
+    'color_too_long' => 'La couleur ne doit pas dépasser 50 caractères.',
 ];

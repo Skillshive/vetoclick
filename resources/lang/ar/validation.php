@@ -345,4 +345,28 @@ return [
 
 'breed_name_min_length' => 'يجب أن يتكون اسم السلالة من 3 أحرف على الأقل.',
 'breed_name_invalid_chars' => 'يحتوي اسم السلالة على أحرف غير صالحة.',
+
+    // Product Form validation messages
+    'product_name_required' => 'اسم المنتج مطلوب.',
+    'product_sku_required' => 'رمز المخزون (SKU) مطلوب.',
+    'product_image_size' => 'يجب أن تكون الصورة أقل من 5 ميجابايت.',
+    'product_image_format' => 'يتم دعم تنسيقات .jpg و .jpeg و .png و .gif و .webp فقط.',
+    'product_category_required' => 'الفئة مطلوبة.',
+    'product_type_invalid' => 'نوع المنتج غير صالح.',
+    'vaccine_manufacturer_required' => 'الشركة المصنعة مطلوبة.',
+    'vaccine_batch_number_required' => 'رقم الدفعة مطلوب.',
+    'vaccine_dosage_positive' => 'يجب أن تكون الجرعة موجبة.',
+    'stock_level_min' => 'يجب أن يكون 0 أو أكثر.',
+    'availability_status_invalid' => 'حالة التوفر غير صالحة.',
+    'vaccination_schedule_name_required' => 'اسم الجدول مطلوب.',
+    'vaccination_sequence_order_min' => 'يجب أن يكون ترتيب التسلسل 1 على الأقل.',
+    'vaccination_age_weeks_min' => 'يجب أن يكون العمر 0 أو أكثر.',
+    'stock_level_max_gt_min' => 'يجب أن يكون مستوى المخزون الأقصى أكبر من مستوى المخزون الأدنى.',
+
+    'pet_name_required' => 'اسم الحيوان الأليف مطلوب.',
+    'pet_name_too_long' => 'اسم الحيوان الأليف يجب ألا يتجاوز 100 حرف.',
+    'species_required' => 'الفصيلة مطلوبة.',
+    'breed_required' => 'السلالة مطلوبة.',
+    'microchip_too_long' => 'رقم الشريحة الدقيقة يجب ألا يتجاوز 50 حرفًا.',
+    'color_too_long' => 'اللون يجب ألا يتجاوز 50 حرفًا.',
 ];
