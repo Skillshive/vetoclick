@@ -25,9 +25,7 @@ interface ToolbarProps {
   setGlobalFilter: (value: string) => void;
   setSelectedCategoryProduct: (categoryProduct: CategoryProduct | null) => void;
   setIsModalOpen: (open: boolean) => void;
-  parentCategories: {
-    data: CategoryProduct[];
-  };
+  parentCategories: CategoryProduct[];
 }
 
 const Toolbar = ({
@@ -86,7 +84,7 @@ const Toolbar = ({
           {table.getColumn("parentCategory") && (
             <ParentCategoryFilter
               column={table.getColumn("parentCategory")!}
-              options={parentCategories.data}
+              options={parentCategories}
             />
           )}
         </div>

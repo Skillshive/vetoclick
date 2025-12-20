@@ -80,7 +80,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
   const columns = createColumns({ setSelectedCategoryProduct, setIsModalOpen, t });
 
   const table = useReactTable({
-    data: categoryProducts.data,
+    data: categoryProducts.data.data,
     columns: columns,
     state: {
       globalFilter,
@@ -406,7 +406,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
                     ) && "pt-4",
                   )}
                 >
-                  <PaginationSection table={table} />
+                  <PaginationSection table={table} totalRows={categoryProductsData?.meta?.total || 0} />
                 </div>
               )}
             </Card>
@@ -422,7 +422,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
         setSelectedCategoryProduct(null);
       }}
       categoryProduct={selectedCategoryProduct}
-      parentCategories={parentCategories.data}
+      parentCategories={parentCategories}
     />
 
     <ConfirmModal

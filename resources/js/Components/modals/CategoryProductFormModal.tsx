@@ -22,6 +22,10 @@ interface CategoryProductFormModalProps {
 }
 
 export default function CategoryProductFormModal({ isOpen, onClose, categoryProduct, parentCategories = [], errors }: CategoryProductFormModalProps) {
+    // Normalize parentCategories to ensure it's always an array
+    const normalizedParentCategories = Array.isArray(parentCategories) 
+        ? parentCategories 
+        : (parentCategories?.data || []);
     const { showToast } = useToast();
     const { t } = useTranslation();
     const isEditing = !!categoryProduct;
@@ -54,6 +58,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
         e.preventDefault();
         
         const result = categoryProductFormSchema.safeParse(data);
+        
         if (!result.success) {
             const errors = result.error.flatten().fieldErrors;
             setValidationErrors({
@@ -223,7 +228,7 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                                 data.category_product_id
                                                     ? {
                                                         value: data.category_product_id,
-                                                        label: parentCategories?.find(cat => cat.uuid === data.category_product_id)?.name || ''
+                                                        label: normalizedParentCategories.find(cat => cat.uuid === data.category_product_id)?.name || ''
                                                     }
                                                     : null
                                             }
@@ -232,12 +237,12 @@ export default function CategoryProductFormModal({ isOpen, onClose, categoryProd
                                             }}
                                             options={[
                                                 { value: '', label: t('common.no_parent_category') },
-                                                ...parentCategories
-                                                    ?.filter(cat => !isEditing || cat.uuid !== categoryProduct?.uuid)
+                                                ...normalizedParentCategories
+                                                    .filter(cat => !isEditing || cat.uuid !== categoryProduct?.uuid)
                                                     .map((category) => ({
                                                         value: category.uuid,
                                                         label: category.name
-                                                    })) || []
+                                                    }))
                                             ]}
                                             placeholder={t('common.no_parent_category')}
                                             className={errors?.category_product_id ? 'border-red-500' : ''}

@@ -6,12 +6,12 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Index({categoryProducts, parentCategories, filters}: CategoryProductManagementPageProps) {
     const { t } = useTranslation();
-
+console.log(parentCategories);
       return <MainLayout>
           <Page title={t('common.category_products')}>
             <CategoryProductDatatable
-              categoryProducts={categoryProducts.data}
-              parentCategories={parentCategories}
+              categoryProducts={categoryProducts}
+              parentCategories={parentCategories.data}
               filters={{
                 ...filters,
                 per_page: filters.per_page || 10,

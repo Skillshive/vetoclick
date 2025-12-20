@@ -66,7 +66,7 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
       // Optimistically remove the row from local state
       setCategoryProducts(prevProducts => ({
         ...prevProducts,
-        data: prevProducts.data.filter(product => product.uuid !== row.original.uuid)
+        data: prevProducts.data.data.filter(product => product.uuid !== row.original.uuid)
       }));
 
       // Make API call to delete the row
@@ -93,7 +93,7 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
       // Optimistically remove the rows from local state
       setCategoryProducts(prevProducts => ({
         ...prevProducts,
-        data: prevProducts.data.filter(product => !rowIds.includes(product.uuid))
+        data: prevProducts.data.data.filter(product => !rowIds.includes(product.uuid))
       }));
 
       try {
@@ -115,8 +115,6 @@ export function useCategoryProductTable({ initialData, initialFilters }: UseCate
         }, 100);
 
       } catch (error) {
-        console.error('Some deletes failed:', error);
-        // If any delete fails, reload to get the accurate state
         router.visit(window.location.href, { preserveScroll: true, preserveState: false });
       }
     },
