@@ -61,8 +61,8 @@ export function PetCard({
         initialColor="auto"
       />
 
-      <div className="my-2 grow w-full">
-        <h3 className="dark:text-dark-100 text-base font-medium text-gray-800 mb-3">
+<div className="my-2 grow w-full flex flex-col items-center text-center">
+<h3 className="dark:text-dark-100 text-base font-medium text-gray-800 mb-3">
           {pet.name}
         </h3>
         
