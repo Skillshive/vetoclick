@@ -111,7 +111,7 @@ const ProductForm = ({ product, categories }: ProductFormPageProps) => {
   
 
   const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('common.products_breadcrumb), path: route('products.index') },
+    { title: t('common.products_breadcrumb'), path: route('products.index') },
     { title: isEditing ? t('common.edit_product') : t('common.create_product')},
   ];
   return (
