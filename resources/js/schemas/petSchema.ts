@@ -4,14 +4,14 @@ export const petFormSchema = z.object({
   client_id: z.string().optional(),
   
   name: z.string()
-    .min(1, 'common.pet_name_required')
-    .max(255, 'common.pet_name_too_long'),
+    .min(1, 'validation.pet_name_required')
+    .max(255, 'validation.pet_name_too_long'),
   
   species_id: z.string()
-    .min(1, 'common.species_required'),
+    .min(1, 'validation.species_required'),
   
   breed_id: z.string()
-    .min(1, 'common.breed_required'),
+    .min(1, 'validation.breed_required'),
   
   sex: z.union([z.literal(0), z.literal(1)]),
   
@@ -22,7 +22,7 @@ export const petFormSchema = z.object({
     .nullable(),
   
   microchip_ref: z.string()
-    .max(50, 'common.microchip_too_long')
+    .max(50, 'validation.microchip_too_long')
     .optional()
     .nullable(),
   
@@ -39,13 +39,13 @@ export const petFormSchema = z.object({
     }),
   
   bcs: z.number()
-    .min(1, 'common.bcs_min')
-    .max(9, 'common.bcs_max')
+    .min(1, 'validation.bcs_min')
+    .max(9, 'validation.bcs_max')
     .optional()
     .nullable(),
   
   color: z.string()
-    .max(255, 'common.color_too_long')
+    .max(255, 'validation.color_too_long')
     .optional()
     .nullable(),
   
