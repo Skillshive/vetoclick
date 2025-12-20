@@ -25,6 +25,7 @@ class Veterinary extends Model
     protected $fillable = [
         'uuid',
         'license_number','specialization', 'years_experience', 'clinic_name', 'profile_img', 'address',
+        'consultation_price',
         'subscription_plan_id', 'subscription_status', 'subscription_start_date',
         'subscription_end_date'
     ];
@@ -37,7 +38,7 @@ class Veterinary extends Model
 
     public function availabilitySchedules()
     {
-        return $this->hasMany(Availability::class, 'veterinary_id');
+        return $this->hasMany(Availability::class, 'veterinarian_id');
     }
 
     public function invoices()
