@@ -551,7 +551,7 @@ const EditOrder: React.FC<EditOrderProps> = ({ order, suppliers, products: initi
                         <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                    {t('common.products') || 'Products'}
+                                    {t('common.products_breadcrumb') || 'Products'}
                                 </h3>
                                 {canModify && (
                                     <Button

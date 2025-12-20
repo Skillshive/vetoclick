@@ -1,8 +1,10 @@
 import MainLayout from '@/layouts/MainLayout';
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
+import clsx from 'clsx';
 import { Button, Card, Badge } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLocaleContext } from '@/contexts/locale/context';
 import { useToast } from '@/components/common/Toast/ToastContext';
 import { Page } from '@/components/shared/Page';
 import { BreadcrumbItem, Breadcrumbs } from '@/components/shared/Breadcrumbs';
@@ -83,6 +85,7 @@ interface ShowOrderProps {
 
 const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
     const { t } = useTranslation();
+    const { isRtl } = useLocaleContext();
     const { showToast } = useToast();
     
     // Receive modal state
@@ -455,7 +458,7 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
                                 <div className="flex items-center gap-2 mb-4">
                                     <ShoppingCartIcon className="size-5 text-primary-600 dark:text-primary-400" />
                                     <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                                        {t('common.products') || 'Products'}
+                                        {t('common.products_breadcrumb') || 'Products'}
                                     </h2>
                                 </div>
 
@@ -463,22 +466,22 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
                                     <table className="w-full">
                                         <thead className="bg-gray-50 dark:bg-dark-600">
                                             <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                <th className={clsx("px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider", isRtl ? "text-right" : "text-left")}>
                                                     {t('common.product') || 'Product'}
                                                 </th>
-                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                <th className={clsx("px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider", isRtl ? "text-right" : "text-left")}>
                                                     {t('common.quantity') || 'Quantity'}
                                                 </th>
-                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                <th className={clsx("px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider", isRtl ? "text-right" : "text-left")}>
                                                     {t('common.unit_price') || 'Unit Price'}
                                                 </th>
-                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                <th className={clsx("px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider", isRtl ? "text-right" : "text-left")}>
                                                     {t('common.tva') || 'TVA %'}
                                                 </th>
-                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                <th className={clsx("px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider", isRtl ? "text-right" : "text-left")}>
                                                     {t('common.reduction') || 'Reduction %'}
                                                 </th>
-                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                <th className={clsx("px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider", isRtl ? "text-right" : "text-left")}>
                                                     {t('common.total') || 'Total'}
                                                 </th>
                                             </tr>
