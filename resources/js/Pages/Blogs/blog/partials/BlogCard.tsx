@@ -9,6 +9,9 @@ import { MdCategory } from "react-icons/md";
 import { getImageUrl } from "@/utils/imageHelper";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import 'dayjs/locale/ar';
+import 'dayjs/locale/fr';
+import 'dayjs/locale/en';
 import axios from "axios";
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
@@ -26,7 +29,7 @@ export function BlogCard({
 }: BlogCardProps) {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const handleEdit = () => {
     const editUrl = route('blogs.edit', blog.uuid) as string;
@@ -82,8 +85,10 @@ export function BlogCard({
   const imageUrl = getImageUrl(blog.image?.path || null, "/images/1.png");
 
   const formatDate = (dateString: string) => {
-    const date = dayjs(dateString);
-    const now = dayjs();
+    // Map locale codes to dayjs locale codes
+    const dayjsLocale = locale === 'ar' ? 'ar' : locale === 'fr' ? 'fr' : 'en';
+    const date = dayjs(dateString).locale(dayjsLocale);
+    const now = dayjs().locale(dayjsLocale);
     const diffInDays = now.diff(date, 'day');
     
     if (diffInDays === 0) {
@@ -93,6 +98,7 @@ export function BlogCard({
     } else if (diffInDays < 7) {
       return date.fromNow();
     } else {
+      // Use locale-aware date formatting
       return date.format('MMM DD, YYYY');
     }
   };
