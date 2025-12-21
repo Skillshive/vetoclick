@@ -282,6 +282,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->group(function () {
             Route::get('', 'index')->name('index');
             Route::get('calendar', 'calendar')->name('calendar');
+            Route::get('available-times', 'getAvailableTimes')->name('available-times');
             Route::post('{uuid}/create-consultation', 'createConsultation')->name('create-consultation');
             Route::post('{uuid}/cancel', 'cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->name('report');
