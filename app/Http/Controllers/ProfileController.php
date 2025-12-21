@@ -82,12 +82,14 @@ class ProfileController extends Controller
             }
         }
 
-        // Separate user fields from veterinary fields
+        // Separate user fields from veterinary fields and client fields
         $userFields = ['firstname', 'lastname', 'email', 'phone', 'image_id'];
-        $veterinaryFields = ['license_number', 'specialization', 'years_experience', 'clinic_name', 'address'];
+        $veterinaryFields = ['license_number', 'specialization', 'years_experience', 'clinic_name', 'address', 'consultation_price'];
+        $clientFields = ['address', 'city', 'postal_code'];
         
         $userData = array_intersect_key($validated, array_flip($userFields));
         $veterinaryData = array_intersect_key($validated, array_flip($veterinaryFields));
+        $clientData = array_intersect_key($validated, array_flip($clientFields));
 
         // Check if phone is being changed
         $phoneChanged = false;
@@ -111,12 +113,29 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
-        // If phone changed, reset phone_verified_at (will be set when OTP is verified)
         if ($phoneChanged) {
             $user->phone_verified_at = null;
         }
 
         $user->save();
+
+        // Update client record if it exists (sync user data to client)
+        $client = $user->client;
+        if ($client) {
+            $clientUpdateData = [
+                'first_name' => $user->firstname,
+                'last_name' => $user->lastname,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ];
+            
+            // Add client-specific fields if provided
+            if (!empty($clientData)) {
+                $clientUpdateData = array_merge($clientUpdateData, $clientData);
+            }
+            
+            $client->update($clientUpdateData);
+        }
 
         // Update veterinary information if user has veterinarian role
         if ($user->hasRole('veterinarian') && !empty($veterinaryData)) {
