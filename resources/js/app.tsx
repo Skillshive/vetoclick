@@ -29,7 +29,10 @@ createInertiaApp({
     // Handle both lowercase and uppercase Pages folder
     const tsxPage = pages[`./Pages/${name}.tsx`] || pages[`./pages/${name}.tsx`];
     const jsxPage = pages[`./Pages/${name}.jsx`] || pages[`./pages/${name}.jsx`];
-    const importPage = tsxPage || jsxPage;
+    // Also try index.tsx/jsx for folder-based components
+    const indexTsxPage = pages[`./Pages/${name}/index.tsx`] || pages[`./pages/${name}/index.tsx`];
+    const indexJsxPage = pages[`./Pages/${name}/index.jsx`] || pages[`./pages/${name}/index.jsx`];
+    const importPage = tsxPage || jsxPage || indexTsxPage || indexJsxPage;
     
     if (!importPage) {
       throw new Error(`Unknown Inertia page: ${name}`);
