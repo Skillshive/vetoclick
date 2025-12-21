@@ -42,8 +42,10 @@ class AppointmentRequest extends FormRequest
         $now = now()->format('Y-m-d H:i:s');
         
         return [
+            'veterinary_id' => 'required|string|exists:veterinarians,uuid',
             'client_id' => 'required|string|exists:clients,uuid',
             'pet_id' => 'nullable|string|exists:pets,uuid',
+            'appointment_type' => 'required|string',
             'appointment_date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'is_video_conseil' => 'sometimes|boolean',
@@ -55,6 +57,9 @@ class AppointmentRequest extends FormRequest
      public function messages(): array
     {
         return [
+            'veterinary_id.required' => __('validation.veterinary_id_required'),
+            'veterinary_id.exists' => __('validation.veterinary_id_exists'),
+            'appointment_type.required' => __('validation.appointment_type_required'),
             'client_id.required' => __('validation.client_id_required'),
             'client_id.exists' => __('validation.client_id_exists'),
 
