@@ -1922,4 +1922,11 @@ return [
 'appointment_breadcrumb' => 'Rendez-vous',
 'pet_selected' => 'Animal Sélectionné',
 'neutered_status' => 'Statut de la castration',
+'veterinarian_not_available_at_requested_time' => 'Le vétérinaire n\'est pas disponible à l\'heure demandée',
+'appointment_time_conflict' => 'L\'heure de rendez-vous demandée entre en conflit avec un rendez-vous existant',
+'appointment_time_available' => 'L\'heure du rendez-vous est disponible',
+'loading_available_times' => 'Chargement des heures disponibles...',
+'available_times_suggestions' => 'Heures disponibles :',
+'no_available_times' => 'Aucune heure disponible pour cette date. Veuillez sélectionner une date différente.',
+'time_available' => '✓ Cette heure est disponible',
 ];

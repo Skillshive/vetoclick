@@ -1992,4 +1992,11 @@ return [
     'appointment_breadcrumb' => 'Appointments',
     'pet_selected' => 'Pet Selected',
     'neutered_status' => 'Neutered Status',
+    'veterinarian_not_available_at_requested_time' => 'Veterinarian is not available at the requested time',
+    'appointment_time_conflict' => 'The requested appointment time conflicts with an existing appointment',
+    'appointment_time_available' => 'Appointment time is available',
+    'loading_available_times' => 'Loading available times...',
+    'available_times_suggestions' => 'Available times:',
+    'no_available_times' => 'No available times for this date. Please select a different date.',
+    'time_available' => '✓ This time is available',
 ];

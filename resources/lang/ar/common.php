@@ -1809,4 +1809,11 @@ return [
     'vaccination' => 'التطعيم',
     'veterinarian' => 'طبيب بيطري',
     'neutered_status' => 'حالة التهجين',
+    'veterinarian_not_available_at_requested_time' => 'الطبيب البيطري غير متاح في الوقت المطلوب',
+    'appointment_time_conflict' => 'وقت الموعد المطلوب يتعارض مع موعد موجود',
+    'appointment_time_available' => 'وقت الموعد متاح',
+    'loading_available_times' => 'جاري تحميل الأوقات المتاحة...',
+    'available_times_suggestions' => 'الأوقات المتاحة:',
+    'no_available_times' => 'لا توجد أوقات متاحة لهذا التاريخ. يرجى اختيار تاريخ مختلف.',
+    'time_available' => '✓ هذا الوقت متاح',
 ];
