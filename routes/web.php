@@ -37,6 +37,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 require_once 'common.php';
 
@@ -58,7 +59,8 @@ Route::post('/api/otp/verify', [\App\Http\Controllers\Auth\OtpVerificationContro
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
     ->name('api.otp.verify');
 
-// OTP routes for phone update (requires authentication)
+Route::get('/api/user', [\App\Http\Controllers\Api\UserController::class, 'checkAuth'])->name('api.user');
+
 Route::middleware(['auth'])->group(function () {
     Route::post('/api/otp/phone-update/send', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'sendPhoneUpdateOtp'])
         ->name('api.otp.phone-update.send');
@@ -179,6 +181,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->group(function () {
             Route::get('', 'index')->name('index');
             Route::post('store', 'store')->name('store');
+            Route::post('store-for-appointment', 'storeForAppointment')->name('store-for-appointment');
             Route::put('{uuid}/update', 'update')->name('update');
             Route::delete('{uuid}/delete', 'destroy')->name('destroy');
         });
@@ -282,9 +285,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('{uuid}/create-consultation', 'createConsultation')->name('create-consultation');
             Route::post('{uuid}/cancel', 'cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->name('report');
-            Route::get('create', function () {
-                return Inertia::render('Appointments/Create');
-            })->name('create');
+            Route::get('create', 'create')->name('create');
+            Route::post('create-appointment', 'createAppointment')->name('create-appointment');
             Route::post('store', 'store')->name('store');
             Route::post('request', 'requestAppointment')->name('request');
             Route::post('{uuid}/accept', 'accept')->name('accept');

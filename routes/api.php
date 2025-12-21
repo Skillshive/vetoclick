@@ -16,6 +16,8 @@ use App\Http\Controllers\TwilioController;
 Route::post('login', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store'])
     ->name('api.login');
 
+// Note: /api/user route moved to web.php for proper session support
+
 Route::prefix('email')->controller(EmailController::class)->group(function () {
     Route::post('/send', 'sendEmail');
     Route::post('/send-template', 'sendTemplateEmail');
@@ -58,14 +60,4 @@ Route::prefix('appointments')->controller(AppointmentController::class)->group(f
 Route::get('/clients', [ClientController::class, 'getAll'])->name('clients.all');
 Route::post('/clients', [ClientController::class, 'store'])->name('clients.store')->middleware(['auth', 'verified']);
 Route::get('/clients/{uuid}/pets', [PetController::class, 'getByClient'])->name('clients.pets');
-Route::get('/veterinarians', function () {
-    $veterinarians = \App\Models\Veterinary::with('user')->get();
-    return response()->json($veterinarians->map(function ($vet) {
-        return [
-            'uuid' => $vet->uuid,
-            'name' => $vet->user ? ($vet->user->firstname . ' ' . $vet->user->lastname) : 'Unknown',
-            'clinic_name' => $vet->clinic_name,
-            'specialization' => $vet->specialization,
-        ];
-    }));
-})->name('veterinarians.all');
+Route::get('/veterinarians', [\App\Http\Controllers\Api\VeterinarianController::class, 'index'])->name('veterinarians.all');
