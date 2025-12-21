@@ -303,7 +303,7 @@ export default function RoleFormModal({
                                     {/* Permissions Selection */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                            {t('common.permissions')}
+                                            {t('common.permissions_breadcrumb')}
                                         </label>
                                         <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                                             {Object.entries(groupedPermissions).map(([groupName, groupPermissions]) => (

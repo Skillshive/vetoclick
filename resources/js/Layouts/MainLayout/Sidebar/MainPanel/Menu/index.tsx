@@ -5,6 +5,7 @@ import { NavigationTree } from "@/@types/navigation";
 import { useSidebarContext } from "@/contexts/sidebar/context";
 import { useRoleBasedMenu } from "@/hooks/useRoleBasedMenu";
 import { Item } from "./item";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface MenuProps {
   nav?: NavigationTree[];
@@ -13,6 +14,7 @@ export interface MenuProps {
 export function Menu({}: MenuProps) {
   const { isExpanded, open, close, setActiveSegmentPath: setSidebarActiveSegment } = useSidebarContext();
   const { menuItems } = useRoleBasedMenu();
+  const { t } = useTranslation();
 
   const handleSegmentSelect = (path: string) => {
     setSidebarActiveSegment(path);
@@ -36,7 +38,7 @@ export function Menu({}: MenuProps) {
     >
       {itemsToRender.length === 0 ? (
         <div className="text-center text-gray-500 text-sm p-4">
-          <p>No menu items found</p>
+          <p>{t('common.no_menu_items') }</p>
         </div>
       ) : (
         itemsToRender.map((item) => {
@@ -63,7 +65,6 @@ export function Menu({}: MenuProps) {
               if (!isLink) {
                 handleSegmentSelect(item.path || item.id);
               } else {
-                // Reset activeSegmentPath when clicking a direct link
                 setSidebarActiveSegment('');
                 close();
               }
