@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\ClientService;
 use App\Models\Client;
+use App\Models\User;
 use App\Models\Veterinary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -136,11 +137,107 @@ class ClientController extends Controller
     public function store(Request $request): JsonResponse|RedirectResponse
     {
         try {
+            $user = Auth::user();
+            $hasUserId = $request->has('user_id') || ($user && $request->has('use_current_user'));
+            
             $validated = $request->validate([
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
-                'phone' => 'required|string|max:20',
+                'user_id' => 'nullable|exists:users,id',
+                'first_name' => $hasUserId ? 'nullable|string|max:255' : 'required|string|max:255',
+                'last_name' => $hasUserId ? 'nullable|string|max:255' : 'required|string|max:255',
+                'email' => $hasUserId ? 'nullable|email|max:255' : 'required|email|max:255',
+                'phone' => $hasUserId ? 'nullable|string|max:20' : 'required|string|max:20',
+                'fixe' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:500',
+                'city' => 'nullable|string|max:255',
+                'postal_code' => 'nullable|string|max:20',
+                'veterinarian_id' => 'nullable|string',
+            ]);
+
+            $veterinarianId = null;
+            if (!empty($validated['veterinarian_id'])) {
+                $veterinarian = Veterinary::where('uuid', $validated['veterinarian_id'])->first();
+                if ($veterinarian) {
+                    $veterinarianId = $veterinarian->id;
+                }
+            } else {
+                $user = Auth::user();
+                if ($user && $user->veterinary) {
+                    $veterinarianId = $user->veterinary->id;
+                }
+            }
+
+            if (!$veterinarianId) {
+                return response()->json([
+                    'error' => __('common.veterinarian_not_found'),
+                    'message' => __('common.unable_to_determine_veterinarian_for_this_client')
+                ], 400);
+            }
+
+            $userId = $validated['user_id'] ?? ($user?->id ?? null);
+            if ($userId && !$user) {
+                $user = User::find($userId);
+            }
+            
+            $client = Client::create([
+                'veterinarian_id' => $veterinarianId,
+                'user_id' => $userId,
+                'first_name' => $validated['first_name'] ?? ($user?->firstname ?? null),
+                'last_name' => $validated['last_name'] ?? ($user?->lastname ?? null),
+                'email' => $validated['email'] ?? ($user?->email ?? null),
+                'phone' => $validated['phone'] ?? ($user?->phone ?? null),
+                'fixe' => $validated['fixe'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'postal_code' => $validated['postal_code'] ?? null,
+            ]);
+
+            if ($request->header('X-Inertia')) {
+                return redirect()->route('clients.index')
+                    ->with('success', __('common.client_created_successfully'));
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('common.client_created_successfully'),
+                'client' => [
+                    'uuid' => $client->uuid,
+                    'first_name' => $client->first_name,
+                    'last_name' => $client->last_name,
+                    'email' => $client->email,
+                    'phone' => $client->phone,
+                ]
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => __('common.validation_failed'),
+                'message' => __('common.error'),
+                'errors' => __('common.error'),
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => __('common.failed_to_create_client'),
+                'message' => __('common.error_creating_client')
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a client for appointment booking (email and phone are optional)
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function storeForAppointment(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $hasUserId = $user !== null;
+            
+            $validated = $request->validate([
+                'first_name' => $hasUserId ? 'nullable|string|max:255' : 'required|string|max:255',
+                'last_name' => $hasUserId ? 'nullable|string|max:255' : 'required|string|max:255',
+                'email' => 'nullable|email|max:255',
+                'phone' => 'nullable|string|max:20',
                 'fixe' => 'nullable|string|max:20',
                 'address' => 'nullable|string|max:500',
                 'city' => 'nullable|string|max:255',
@@ -162,33 +259,19 @@ class ClientController extends Controller
                 }
             }
 
-            if (!$veterinarianId) {
-                return response()->json([
-                    'error' => __('common.veterinarian_not_found'),
-                    'message' => __('common.unable_to_determine_veterinarian_for_this_client')
-                ], 400);
-            }
-
             $client = Client::create([
                 'veterinarian_id' => $veterinarianId,
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
+                'user_id' => $user?->id ?? null,
+                'first_name' => $validated['first_name'] ?? ($user?->firstname ?? null),
+                'last_name' => $validated['last_name'] ?? ($user?->lastname ?? null),
+                'email' => $validated['email'] ?? ($user?->email ?? null),
+                'phone' => $validated['phone'] ?? ($user?->phone ?? null),
                 'fixe' => $validated['fixe'] ?? null,
                 'address' => $validated['address'] ?? null,
                 'city' => $validated['city'] ?? null,
                 'postal_code' => $validated['postal_code'] ?? null,
             ]);
 
-            // Check if request is from Inertia or API
-            if ($request->header('X-Inertia')) {
-                // Inertia request (from modal form)
-                return redirect()->route('clients.index')
-                    ->with('success', __('common.client_created_successfully'));
-            }
-
-            // API request (from receptionist dashboard)
             return response()->json([
                 'success' => true,
                 'message' => __('common.client_created_successfully'),
@@ -198,18 +281,18 @@ class ClientController extends Controller
                     'last_name' => $client->last_name,
                     'email' => $client->email,
                     'phone' => $client->phone,
-                ]
+                ],
             ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
-                'error' => __('common.validation_failed'),
-                'message' => $e->getMessage(),
-                'errors' => $e->errors(),
+                'error' => __('common.validation_error'),
+                'message' => __('common.validation_failed'),
+                'errors' => __('common.error'),
             ], 422);
         } catch (Exception $e) {
             return response()->json([
-                'error' => __('common.failed_to_create_client'),
-                'message' => __('common.error_creating_client')
+                'error' => __('common.client_create_error'),
+                'message' =>__('common.error'),
             ], 500);
         }
     }
@@ -226,20 +309,44 @@ class ClientController extends Controller
         try {
             $client = Client::where('uuid', $uuid)->firstOrFail();
 
+            $hasUserId = $client->user_id !== null;
+            
             $validated = $request->validate([
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
-                'phone' => 'required|string|max:20',
+                'veterinarian_id' => 'nullable|string',
+                'first_name' => $hasUserId ? 'nullable|string|max:255' : 'required|string|max:255',
+                'last_name' => $hasUserId ? 'nullable|string|max:255' : 'required|string|max:255',
+                'email' => $hasUserId ? 'nullable|email|max:255' : 'required|email|max:255',
+                'phone' => $hasUserId ? 'nullable|string|max:20' : 'required|string|max:20',
                 'fixe' => 'nullable|string|max:20',
                 'address' => 'nullable|string|max:500',
                 'city' => 'nullable|string|max:255',
                 'postal_code' => 'nullable|string|max:20',
             ]);
 
-            $client->update($validated);
+            $veterinarianId = null;
+            if (!empty($validated['veterinarian_id'])) {
+                $veterinarian = Veterinary::where('uuid', $validated['veterinarian_id'])->first();
+                if ($veterinarian) {
+                    $veterinarianId = $veterinarian->id;
+                }
+                unset($validated['veterinarian_id']); 
+            }
+            
+            $user = $client->user;
+            $updateData = $validated;
+            if ($user) {
+                $updateData['first_name'] = $validated['first_name'] ?? $user->firstname;
+                $updateData['last_name'] = $validated['last_name'] ?? $user->lastname;
+                $updateData['email'] = $validated['email'] ?? $user->email;
+                $updateData['phone'] = $validated['phone'] ?? $user->phone;
+            }
+            
+            if ($veterinarianId !== null) {
+                $updateData['veterinarian_id'] = $veterinarianId;
+            }
+            
+            $client->update($updateData);
 
-            // Always return redirect for Inertia
             return redirect()->route('clients.index')
                 ->with('success', __('common.client_updated_successfully'));
         } catch (ValidationException $e) {
@@ -247,10 +354,10 @@ class ClientController extends Controller
                 return response()->json([
                     'error' => __('common.validation_failed'),
                     'message' => __('common.error_validating_client'),
-                    'errors' => $e->errors(),
+                    'errors' => __('common.error'),
                 ], 422);
             }
-            return back()->withErrors($e->errors())->withInput();
+            return back()->withErrors(__('common.error'))->withInput();
         } catch (Exception $e) {
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
