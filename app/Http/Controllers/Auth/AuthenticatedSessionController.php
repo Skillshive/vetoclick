@@ -23,11 +23,12 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'redirect' => $request->query('redirect'), // Pass redirect URL to frontend
         ]);
     }
 
@@ -59,6 +60,46 @@ class AuthenticatedSessionController extends Controller
 
             // For regular web requests, use session
             $request->session()->regenerate();
+            
+            // Check for redirect parameter (from form input, query string, or session)
+            $redirectUrl = $request->input('redirect') 
+                ?? $request->query('redirect')
+                ?? $request->session()->get('url.intended')
+                ?? null;
+            
+            if ($redirectUrl) {
+                // Decode the URL if it's encoded
+                $redirectUrl = urldecode($redirectUrl);
+                
+                // Clear the intended URL from session
+                $request->session()->forget('url.intended');
+                
+                // Parse the URL to extract path and query
+                $parsedUrl = parse_url($redirectUrl);
+                
+                // If it's a full URL, extract just the path and query for security
+                if ($parsedUrl && isset($parsedUrl['host'])) {
+                    // Validate host is our domain
+                    $appUrl = parse_url(config('app.url'));
+                    $isValidHost = (
+                        $parsedUrl['host'] === ($appUrl['host'] ?? '') ||
+                        $parsedUrl['host'] === 'localhost' ||
+                        str_ends_with($parsedUrl['host'] ?? '', '.localhost') ||
+                        str_contains($parsedUrl['host'] ?? '', '127.0.0.1')
+                    );
+                    
+                    if ($isValidHost) {
+                        // Build relative URL from path and query
+                        $relativeUrl = ($parsedUrl['path'] ?? '/') . 
+                                      (isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '');
+                        return redirect($relativeUrl);
+                    }
+                } elseif (str_starts_with($redirectUrl, '/')) {
+                    // It's already a relative URL, use it directly
+                    return redirect($redirectUrl);
+                }
+            }
+            
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->wantsJson() || $request->expectsJson()) {

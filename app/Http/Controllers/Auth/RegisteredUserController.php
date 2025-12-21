@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Client;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -20,9 +21,12 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('Auth/Register');
+        $redirect = $request->query('redirect');
+        return Inertia::render('Auth/Register', [
+            'redirect' => $redirect,
+        ]);
     }
 
     /**
@@ -40,7 +44,6 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Normalize phone number
         $phone = $request->phone;
         if (strpos($phone, '0') === 0) {
             $phone = '+212' . substr($phone, 1);
@@ -48,8 +51,6 @@ class RegisteredUserController extends Controller
             $phone = '+212' . $phone;
         }
 
-        // Verify phone number was verified via OTP (required for registration only)
-        // NOTE: Login does NOT require OTP verification
         $verificationKey = 'phone_verified_' . $phone;
         if (!Cache::has($verificationKey)) {
             if ($request->wantsJson() || $request->expectsJson()) {
@@ -76,6 +77,16 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        
+    
+        Client::create([
+            'user_id' => $user->id,
+            'veterinarian_id' => null,
+            'first_name' => $user->firstname,
+            'last_name' => $user->lastname,
+            'email' => $user->email,
+            'phone' => $user->phone,
+        ]);
 
         if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json([

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Client;
 use App\Services\TwilioService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -171,6 +172,17 @@ class OtpVerificationController extends Controller
             'email_verified_at' => now(),
             'phone_verified_at' => now(), // Phone is verified via OTP
             'phone_verified' => true,
+        ]);
+
+        // Auto-create client record for the new user
+        // veterinarian_id will be set when they book their first appointment
+        Client::create([
+            'user_id' => $user->id,
+            'veterinarian_id' => null, // Will be set when booking first appointment
+            'first_name' => $user->firstname,
+            'last_name' => $user->lastname,
+            'email' => $user->email,
+            'phone' => $user->phone,
         ]);
 
         // Fire registered event
