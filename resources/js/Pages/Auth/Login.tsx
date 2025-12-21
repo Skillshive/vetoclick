@@ -1,4 +1,4 @@
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, router } from "@inertiajs/react";
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { Button, Card } from "@/components/ui";
 import { Checkbox, Input } from "@/components/ui/Form";
@@ -11,11 +11,21 @@ import { useThemeContext } from "@/contexts/theme/context";
 import { useTranslation } from "@/hooks/useTranslation";
 import { InertiaLocaleProvider } from "@/contexts/locale/InertiaLocaleProvider";
 
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
+
+interface LoginPageProps {
+  redirect?: string;
+}
+
 export default function Login() {
+  const { props } = usePage();
+  const { redirect } = props as LoginPageProps;
+  
   const { data, setData, post, processing, errors, reset } = useForm({
     email: "",
     password: "",
     remember: false,
+    redirect: redirect || "", // Include redirect in form data
   });
 
   const {
@@ -133,6 +143,26 @@ export default function Login() {
                 {processing ? t('common.signing_in') : t('common.sign_in')}
               </Button>
                 </form>
+                
+                {/* Register Link */}
+                <div className="mt-6 text-center">
+                  <p className="dark:text-dark-300 text-sm text-gray-600">
+                    {t('common.dont_have_account') || "Don't have an account? "}
+                    <a
+                      href={redirect ? `${route('register')}?redirect=${encodeURIComponent(redirect)}` : route('register')}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const registerUrl = redirect 
+                          ? `${route('register')}?redirect=${encodeURIComponent(redirect)}` 
+                          : route('register');
+                        router.visit(registerUrl);
+                      }}
+                      className="dark:text-primary-400 dark:hover:text-primary-300 font-medium text-primary-600 transition-colors hover:text-primary-700 hover:underline"
+                    >
+                      {t('common.register') || 'Register'}
+                    </a>
+                  </p>
+                </div>
                
       
                 {/* <div className="text-tiny-plus my-7 flex items-center">

@@ -1,9 +1,9 @@
-import { useForm, router } from "@inertiajs/react";
+import { useForm, router, usePage } from "@inertiajs/react";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui";
 import { Input } from "@/components/ui/Form";
 import { Page } from "@/components/shared/Page";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useState, useEffect } from "react";
 import PasswordInput from "./PasswordInput";
 import DashboardCheck from "@/assets/illustrations/dashboard-check.svg?react";
 import { useThemeContext } from "@/contexts/theme/context";
@@ -11,7 +11,39 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { InertiaLocaleProvider } from "@/contexts/locale/InertiaLocaleProvider";
 import { Link } from "@inertiajs/react";
 
+interface RegisterPageProps {
+  redirect?: string;
+}
+
 export default function Register() {
+  const { props } = usePage();
+  const { redirect: redirectFromProps } = props as RegisterPageProps;
+  
+  // Get redirect from URL query parameter or props
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Check URL query parameter first
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectParam = urlParams.get('redirect');
+    
+    if (redirectParam) {
+      setRedirectUrl(decodeURIComponent(redirectParam));
+    } else if (redirectFromProps) {
+      setRedirectUrl(redirectFromProps);
+    } else {
+      // Fallback: Check localStorage for pending appointment return URL
+      try {
+        const pendingUrl = localStorage.getItem('pending_appointment_return_url');
+        if (pendingUrl) {
+          setRedirectUrl(pendingUrl);
+        }
+      } catch (error) {
+        console.warn('Could not access localStorage:', error);
+      }
+    }
+  }, [redirectFromProps]);
+  
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -192,10 +224,31 @@ export default function Register() {
 
       if (response.ok && result.success) {
         setSuccess('Phone verified successfully! Redirecting...');
-        // Session is now set on backend, do full page redirect to dashboard
+        
+        // Determine redirect URL
+        let finalRedirectUrl = '/dashboard'; // Default fallback
+        
+        if (redirectUrl) {
+          finalRedirectUrl = redirectUrl;
+        } else {
+          // Check localStorage as fallback
+          try {
+            const pendingUrl = localStorage.getItem('pending_appointment_return_url');
+            if (pendingUrl) {
+              finalRedirectUrl = pendingUrl;
+              // Clear it after use
+              localStorage.removeItem('pending_appointment_return_url');
+              localStorage.removeItem('pending_vet_id');
+            }
+          } catch (error) {
+            console.warn('Could not access localStorage:', error);
+          }
+        }
+        
+        // Session is now set on backend, do full page redirect
         // Use setTimeout to show success message briefly
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = finalRedirectUrl;
         }, 500);
       } else {
         setError(result.message || 'Invalid OTP');
@@ -300,7 +353,6 @@ export default function Register() {
                       value={data.password}
                       onChange={onChange}
                       error={formErrors.password || errors.password}
-                      disabled={sendingOtp}
                     />
                     <PasswordInput
                       label={t('common.confirm_password') || 'Confirm Password'}
@@ -309,7 +361,6 @@ export default function Register() {
                       value={data.password_confirmation}
                       onChange={onChange}
                       error={formErrors.password_confirmation || errors.password_confirmation}
-                      disabled={sendingOtp}
                     />
                   </div>
                   <Button
