@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\common\AppointmentDTO;
 use App\Http\Requests\AppointmentRequest;
+use App\Http\Requests\CreateAppointmentRequest;
 use App\Services\AppointmentService;
 use App\Services\JitsiMeetService;
 use App\Http\Resources\AppointmentResource;
@@ -34,13 +35,15 @@ class AppointmentController extends Controller
     }
 
 
+    /**
+     * Store a new appointment (admin/internal use)
+     */
     public function store(AppointmentRequest $request)
     {
         try {
             $dto = AppointmentDTO::fromRequest($request);
             $appointment = $this->appointmentService->create($dto);
             
-            // Check if request is from API/JSON
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
                     'success' => true,
@@ -59,6 +62,71 @@ class AppointmentController extends Controller
                 ], 400);
             }
             return back()->withErrors(['error' =>  __('common.error')]);
+        }
+    }
+
+    /**
+     * Create appointment from client form (public-facing)
+     */
+    public function createAppointment(CreateAppointmentRequest $request)
+    {
+        try {
+            $clientId = $request->input('client_id');
+            if (!$clientId) {
+                $user = Auth::user();
+                if ($user && $user->client) {
+                    $clientId = $user->client->uuid;
+                } else {
+                    return back()->withErrors([
+                        'client_id' => __('validation.client_id_required')
+                    ]);
+                }
+            }
+
+            $dto = new AppointmentDTO(
+                veterinarian_id: $request->input('veterinary_id'),
+                client_id: $clientId,
+                pet_id: $request->input('pet_id'),
+                appointment_type: $request->input('appointment_type'),
+                appointment_date: $request->input('appointment_date'),
+                start_time: $request->input('start_time'),
+                is_video_conseil: $request->input('is_video_conseil') ? '1' : '0',
+                reason_for_visit: $request->input('reason_for_visit'),
+                appointment_notes: $request->input('appointment_notes'),
+            );
+
+            $appointment = $this->appointmentService->create($dto);
+            
+            if ($request->header('X-Inertia')) {
+                return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
+            }
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('common.appointment_created_success'),
+                    'appointment' => new AppointmentResource($appointment),
+                ], 201);
+            }
+            
+            return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
+        } catch (Exception $e) {
+            
+            if ($request->header('X-Inertia')) {
+                return back()->withErrors([
+                    'error' => $e->getMessage() ?: __('common.error')
+                ]);
+            }
+            
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('common.error'),
+                    'message' => $e->getMessage(),
+                ], 400);
+            }
+            
+            return back()->withErrors(['error' => $e->getMessage() ?: __('common.error')]);
         }
     }
 
@@ -89,6 +157,102 @@ class AppointmentController extends Controller
             }
             return back()->withErrors(['error' =>  __('common.error')]);
         }
+    }
+
+    /**
+     * Show the form for creating a new appointment.
+     */
+    public function create(Request $request): Response
+    {
+        $vetId = $request->query('vet_id');
+        $user = Auth::user();
+        $client = $user ? $user->client : null;
+        
+        $pets = [];
+        $userPersonalInfo = null;
+        if ($client && $user) {
+            $hasCompleteData = !empty($user->firstname) && !empty($user->lastname);
+            
+            if ($hasCompleteData) {
+                $pets = $client->pets()->with(['breed.species'])->get()->map(function ($pet) {
+                    return [
+                        'uuid' => $pet->uuid,
+                        'name' => $pet->name,
+                        'breed_id' => $pet->breed?->uuid, 
+                        'species_id' => $pet->breed?->species?->uuid, 
+                        'breed_name' => $pet->breed?->breed_name,
+                        'species_name' => $pet->breed?->species?->name,
+                        'sex' => $pet->sex,
+                        'neutered_status' => $pet->neutered_status,
+                        'dob' => $pet->dob,
+                        'microchip_ref' => $pet->microchip_ref,
+                        'weight_kg' => $pet->weight_kg,
+                        'bcs' => $pet->bcs,
+                        'color' => $pet->color,
+                        'notes' => $pet->notes,
+                        'profile_img' => $pet->profile_img,
+                    ];
+                })->toArray();
+                
+                $userPersonalInfo = [
+                    'firstname' => $user->firstname ?? '',
+                    'lastname' => $user->lastname ?? '',
+                    'email' => $user->email ?? '',
+                    'phone' => $user->phone ?? '',
+                    'address' => $client->address ?? '',
+                    'city' => $client->city ?? '',
+                    'postal_code' => $client->postal_code ?? '',
+                ];
+            } else {
+                $pets = $client->pets()->with(['breed.species'])->get()->map(function ($pet) {
+                    return [
+                        'uuid' => $pet->uuid,
+                        'name' => $pet->name,
+                        'breed_id' => $pet->breed?->uuid, 
+                        'species_id' => $pet->breed?->species?->uuid, 
+                        'breed_name' => $pet->breed?->breed_name,
+                        'species_name' => $pet->breed?->species?->name,
+                        'sex' => $pet->sex,
+                        'neutered_status' => $pet->neutered_status,
+                        'dob' => $pet->dob,
+                        'microchip_ref' => $pet->microchip_ref,
+                        'weight_kg' => $pet->weight_kg,
+                        'bcs' => $pet->bcs,
+                        'color' => $pet->color,
+                        'notes' => $pet->notes,
+                        'profile_img' => $pet->profile_img,
+                    ];
+                })->toArray();
+            }
+        }
+        
+        $veterinarians = Veterinary::with(['user' => function($query) {
+            $query->select('id', 'firstname', 'lastname');
+        }])
+            ->whereHas('user') 
+            ->select('veterinarians.id', 'veterinarians.uuid', 'veterinarians.clinic_name', 'veterinarians.user_id')
+            ->get()
+            ->map(function ($vet) {
+                $name = 'Unknown';
+                if ($vet->user) {
+                    $nameParts = array_filter([$vet->user->firstname ?? '', $vet->user->lastname ?? '']);
+                    $name = !empty($nameParts) ? trim(implode(' ', $nameParts)) : 'Unknown';
+                }
+                return [
+                    'id' => $vet->id,
+                    'uuid' => $vet->uuid,
+                    'name' => $name,
+                    'clinic' => $vet->clinic_name ?? '',
+                ];
+            });
+        
+        return Inertia::render('Appointments/AppointmentForm', [
+            'veterinarians' => $veterinarians,
+            'selectedVetId' => $vetId,
+            'clientId' => $client ? $client->uuid : null,
+            'userPersonalInfo' => $userPersonalInfo,
+            'userPets' => $pets,
+        ]);
     }
 
     public function index(Request $request): Response
@@ -357,7 +521,7 @@ class AppointmentController extends Controller
             }
 
             // Get veterinarian_id from authenticated user
-            $user = auth()->user();
+            $user = Auth::user();
             $veterinarian = null;
             
             if ($user && $user->veterinary) {
