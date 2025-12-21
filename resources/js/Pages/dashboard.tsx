@@ -29,7 +29,7 @@ export default function Dashboard() {
             
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <h3 className={`text-lg font-semibold text-gray-900 dark:text-white mb-2 ${isRtl ? 'text-right' : 'text-left'}`}>
-                {t('common.appointments')}
+                {t('common.appointment_breadcrumb')}
               </h3>
               <p className={`text-gray-600 dark:text-gray-300 ${isRtl ? 'text-right' : 'text-left'}`}>
                 {t('common.medical_records')}
@@ -41,7 +41,7 @@ export default function Dashboard() {
                 {t('common.inventory')}
               </h3>
               <p className={`text-gray-600 dark:text-gray-300 ${isRtl ? 'text-right' : 'text-left'}`}>
-                {t('common.products')} & {t('common.suppliers')}
+                {t('common.products_breadcrumb')} & {t('common.suppliers')}
               </p>
             </div>
           </div>
