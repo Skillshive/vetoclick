@@ -201,6 +201,7 @@ return [
 
     // For localhost HTTP, must use 'lax' (none requires HTTPS)
     // In production with HTTPS, you can use 'none' if needed
+    // For cross-origin requests from Next.js on different port, we may need 'none' with secure=false in development
     'same_site' => env('SESSION_SAME_SITE', 'lax'),
 
     /*
