@@ -25,6 +25,7 @@ export const profileFormSchema = z.object({
   years_experience: z.union([z.string(), z.number()]).optional().transform((val) => val ? String(val) : undefined),
   clinic_name: z.string().optional(),
   address: z.string().optional(),
+  consultation_price: z.union([z.string(), z.number()]).optional().transform((val) => val ? (typeof val === 'string' ? parseFloat(val) || undefined : val) : undefined),
 });
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>;
