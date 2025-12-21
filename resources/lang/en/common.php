@@ -340,6 +340,10 @@ return [
     'breed' => 'Breed',
     'breed_name' => 'Breed Name',
     'avg_weight_kg' => 'Average Weight (kg)',
+    'weight_kg' => 'Weight (kg)',
+    'weight_kg_placeholder' => 'Enter weight in kg',
+    'microchip_ref' => 'Microchip Number',
+    'microchip_ref_placeholder' => 'Enter microchip number',
     'weight' => 'Weight (kg)',
     'life_span_years' => 'Life Span (years)',
     'life_span' => 'Life Span',
@@ -1829,12 +1833,8 @@ return [
 'edit_supplier_info' => 'Edit supplier information',
 'search_products'=>'',
 
-    // Product Form translations
-    // Note: 'products' is used as both a string (for t('common.products')) and an array (for nested keys)
-    // The array structure below will work for nested keys like common.products.form.*
-    // For the simple 'products' string, it's defined earlier in the file
     'products' => [
-        '_label' => 'Products', // For backward compatibility with t('common.products')
+        '_label' => 'Products', 
         'form' => [
             'edit_description' => 'Edit product information and details',
             'create_description' => 'Create a new product in the system',
@@ -1960,4 +1960,36 @@ return [
     'products_breadcrumb' => 'Products',
     'search_products' => 'Search products...',
     'order_details' => 'Order Details',
+    
+    // Appointments Form
+    'appointments' => [
+        'form' => [
+            'create_description' => 'Create a new appointment in the system',
+            'steps' => [
+                'personal_info' => [
+                    'label' => 'Personal Information',
+                    'description' => 'Enter your personal details',
+                ],
+                'pet_info' => [
+                    'label' => 'Pet Information',
+                    'description' => 'Add your pet details',
+                ],
+                'appointment_details' => [
+                    'label' => 'Appointment Details',
+                    'description' => 'Schedule your appointment',
+                ],
+            ],
+            'created' => [
+                'success_message' => 'Your appointment has been created successfully. You will receive a confirmation shortly.',
+                'view_all' => 'View All Appointments',
+                'create_another' => 'Create Another Appointment',
+            ],
+        ],
+    ],
+    'appointment_created_successfully' => 'Appointment Created Successfully!',
+    'add_new_pet' => 'Add New Pet',
+    'select_existing_pet' => 'Select Existing Pet',
+    'appointment_breadcrumb' => 'Appointments',
+    'pet_selected' => 'Pet Selected',
+    'neutered_status' => 'Neutered Status',
 ];
