@@ -42,7 +42,32 @@ class AppointmentController extends Controller
     {
         try {
             $dto = AppointmentDTO::fromRequest($request);
-            $appointment = $this->appointmentService->create($dto);
+            
+            // Validate appointment request before creating
+            if (!empty($dto->veterinarian_id)) {
+                $validation = $this->appointmentService->validateAppointmentRequest(
+                    $dto->veterinarian_id,
+                    $dto->appointment_date,
+                    $dto->start_time
+                );
+                
+                if (!$validation['valid']) {
+                    if ($request->wantsJson() || $request->expectsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => $validation['message'],
+                            'message' => $validation['message'],
+                            'suggestions' => $validation['suggestions'],
+                        ], 422);
+                    }
+                    return back()->withErrors([
+                        'error' => $validation['message'],
+                        'suggestions' => $validation['suggestions']
+                    ]);
+                }
+            }
+            
+            $appointment = $this->appointmentService->create($dto, true); // Skip validation since we already did it
             
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
@@ -54,14 +79,20 @@ class AppointmentController extends Controller
             
             return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
         } catch (Exception $e) {
+            $suggestions = [];
+                     
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'error' => __('common.error'),
-                    'message' => $e->getMessage(),
+                    'message' => __('common.error'),
+                    'suggestions' => $suggestions,
                 ], 400);
             }
-            return back()->withErrors(['error' =>  __('common.error')]);
+            return back()->withErrors([
+                'error' => __('common.error'),
+                'suggestions' => $suggestions
+            ]);
         }
     }
 
@@ -95,7 +126,39 @@ class AppointmentController extends Controller
                 appointment_notes: $request->input('appointment_notes'),
             );
 
-            $appointment = $this->appointmentService->create($dto);
+            // Validate appointment request before creating
+            if (!empty($dto->veterinarian_id)) {
+                $validation = $this->appointmentService->validateAppointmentRequest(
+                    $dto->veterinarian_id,
+                    $dto->appointment_date,
+                    $dto->start_time
+                );
+                
+                if (!$validation['valid']) {
+                    if ($request->header('X-Inertia')) {
+                        return back()->withErrors([
+                            'error' => $validation['message'],
+                            'suggestions' => $validation['suggestions']
+                        ]);
+                    }
+                    
+                    if ($request->wantsJson() || $request->expectsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => $validation['message'],
+                            'message' => $validation['message'],
+                            'suggestions' => $validation['suggestions'],
+                        ], 422);
+                    }
+                    
+                    return back()->withErrors([
+                        'error' => $validation['message'],
+                        'suggestions' => $validation['suggestions']
+                    ]);
+                }
+            }
+
+            $appointment = $this->appointmentService->create($dto, true); // Skip validation since we already did it
             
             if ($request->header('X-Inertia')) {
                 return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
@@ -111,22 +174,38 @@ class AppointmentController extends Controller
             
             return redirect()->route('appointments.index')->with('success', __('common.appointment_created_success'));
         } catch (Exception $e) {
+            // Check if error contains suggestions (format: "message|json_suggestions")
+            $errorMessage = $e->getMessage();
+            $suggestions = [];
+            
+            if (strpos($errorMessage, '|') !== false) {
+                $parts = explode('|', $errorMessage, 2);
+                $errorMessage = $parts[0];
+                if (isset($parts[1])) {
+                    $suggestions = json_decode($parts[1], true) ?? [];
+                }
+            }
             
             if ($request->header('X-Inertia')) {
                 return back()->withErrors([
-                    'error' => $e->getMessage() ?: __('common.error')
+                    'error' => $errorMessage ?: __('common.error'),
+                    'suggestions' => $suggestions
                 ]);
             }
             
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'error' => __('common.error'),
-                    'message' => $e->getMessage(),
+                    'error' => $errorMessage ?: __('common.error'),
+                    'message' => $errorMessage ?: __('common.error'),
+                    'suggestions' => $suggestions,
                 ], 400);
             }
             
-            return back()->withErrors(['error' => $e->getMessage() ?: __('common.error')]);
+            return back()->withErrors([
+                'error' => $errorMessage ?: __('common.error'),
+                'suggestions' => $suggestions
+            ]);
         }
     }
 
@@ -590,6 +669,62 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Get available time suggestions for a veterinarian on a specific date
+     */
+    public function getAvailableTimes(Request $request): JsonResponse
+    {
+        try {
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'veterinary_id' => 'required|string',
+                'appointment_date' => 'required|date',
+                'duration_minutes' => 'nullable|integer|min:15|max:240',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('common.validation_failed'),
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $veterinaryId = $request->input('veterinary_id');
+            $appointmentDate = $request->input('appointment_date');
+            $durationMinutes = $request->input('duration_minutes', 30);
+
+            // Get veterinarian
+            $veterinarian = Veterinary::where('uuid', $veterinaryId)->first();
+            
+            if (!$veterinarian) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('common.veterinarian_not_found'),
+                    'suggestions' => []
+                ], 404);
+            }
+
+            $suggestions = $this->appointmentService->getAvailableTimeSuggestions(
+                $veterinarian->id,
+                $appointmentDate,
+                $durationMinutes
+            );
+
+            return response()->json([
+                'success' => true,
+                'suggestions' => $suggestions,
+                'count' => count($suggestions),
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => __('common.error'),
+                'message' => $e->getMessage(),
+                'suggestions' => []
+            ], 500);
+        }
+    }
+
+    /**
      * Get appointments for calendar view (filtered by veterinarian)
      */
     public function calendar(Request $request): Response|JsonResponse|RedirectResponse
@@ -701,7 +836,7 @@ class AppointmentController extends Controller
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
                     'error' => __('common.error'),
-                    'message' => $e->getMessage()
+                    'message' => __('common.error')
                 ], 500);
             }
             return Inertia::render('Dashboards/Vet/Calendar', [

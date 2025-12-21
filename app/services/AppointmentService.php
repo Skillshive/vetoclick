@@ -99,7 +99,7 @@ class AppointmentService implements ServiceInterface
     /**
      * Create new appointment from DTO
      */
-    public function create(AppointmentDTO $dto): Appointment
+    public function create(AppointmentDTO $dto, bool $skipValidation = false): Appointment
     {
         // Calculate end_time and duration_minutes (default 30 minutes)
         $defaultDurationMinutes = 30;
@@ -114,17 +114,34 @@ class AppointmentService implements ServiceInterface
         
         // Determine veterinarian_id - use provided vet ID or fall back to authenticated user's vet ID
         $veterinarianId = null;
+        $veterinarianUuid = null;
         if (!empty($dto->veterinarian_id)) {
+            $veterinarianUuid = $dto->veterinarian_id;
             $veterinarianId = $this->getVet($dto->veterinarian_id);
         }
         
         // If still no vet ID, try authenticated user (for vet users creating appointments)
         if (!$veterinarianId && auth()->check() && auth()->user()->veterinary) {
             $veterinarianId = auth()->user()->veterinary->id;
+            $veterinarianUuid = auth()->user()->veterinary->uuid;
         }
         
         if (!$veterinarianId) {
             throw new Exception('Veterinarian ID is required');
+        }
+        
+        // Validate appointment request if not skipped (for admin/internal use)
+        if (!$skipValidation && $veterinarianUuid) {
+            $validation = $this->validateAppointmentRequest(
+                $veterinarianUuid,
+                $dto->appointment_date,
+                $dto->start_time,
+                $defaultDurationMinutes
+            );
+            
+            if (!$validation['valid']) {
+                throw new Exception($validation['message'] . '|' . json_encode($validation['suggestions']));
+            }
         }
         
         $appointment= Appointment::create([
@@ -413,6 +430,176 @@ class AppointmentService implements ServiceInterface
         }
 
         return $query->count() === 0;
+    }
+
+    /**
+     * Validate appointment request and check availability
+     * Returns array with 'valid' boolean and 'message' string, and optionally 'suggestions' array
+     */
+    public function validateAppointmentRequest(string $veterinarianId, string $appointmentDate, string $startTime, int $durationMinutes = 30): array
+    {
+        $veterinarian = Veterinary::where('uuid', $veterinarianId)->first();
+        
+        if (!$veterinarian) {
+            return [
+                'valid' => false,
+                'message' => __('common.veterinarian_not_found'),
+                'suggestions' => []
+            ];
+        }
+
+        $veterinarianIdInt = $veterinarian->id;
+        
+        // Parse appointment date to get day of week
+        $appointmentDateCarbon = Carbon::parse($appointmentDate);
+        $dayOfWeek = strtolower($appointmentDateCarbon->format('l')); // monday, tuesday, etc.
+        
+        // Format time for availability check
+        $startTimeFormatted = Carbon::createFromFormat('H:i', $startTime)->format('H:i:s');
+        $endTime = Carbon::createFromFormat('H:i', $startTime)->addMinutes($durationMinutes);
+        $endTimeFormatted = $endTime->format('H:i:s');
+        
+        // Check if vet has availability set for this day and time
+        $isAvailable = $this->availabilityService->isVeterinaryAvailable(
+            $veterinarianIdInt,
+            $dayOfWeek,
+            $startTimeFormatted
+        );
+        
+        if (!$isAvailable) {
+            // Get suggestions for available times
+            $suggestions = $this->getAvailableTimeSuggestions($veterinarianIdInt, $appointmentDate, $durationMinutes);
+            
+            return [
+                'valid' => false,
+                'message' => __('common.veterinarian_not_available_at_requested_time'),
+                'suggestions' => $suggestions
+            ];
+        }
+        
+        // Check for conflicting appointments
+        $hasConflict = !$this->checkAvailability(
+            $veterinarianIdInt,
+            $appointmentDate,
+            $startTimeFormatted,
+            $endTimeFormatted
+        );
+        
+        if ($hasConflict) {
+            // Get suggestions for available times
+            $suggestions = $this->getAvailableTimeSuggestions($veterinarianIdInt, $appointmentDate, $durationMinutes);
+            
+            return [
+                'valid' => false,
+                'message' => __('common.appointment_time_conflict'),
+                'suggestions' => $suggestions
+            ];
+        }
+        
+        return [
+            'valid' => true,
+            'message' => __('common.appointment_time_available'),
+            'suggestions' => []
+        ];
+    }
+
+    /**
+     * Get available time suggestions for a veterinarian on a specific date
+     * 
+     * @param int $veterinarianId
+     * @param string $appointmentDate (Y-m-d format)
+     * @param int $durationMinutes Default 30 minutes
+     * @param int $maxSuggestions Maximum number of suggestions to return
+     * @return array Array of available time slots in H:i format
+     */
+    public function getAvailableTimeSuggestions(int $veterinarianId, string $appointmentDate, int $durationMinutes = 30, int $maxSuggestions = 10): array
+    {
+        $appointmentDateCarbon = Carbon::parse($appointmentDate);
+        $dayOfWeek = strtolower($appointmentDateCarbon->format('l'));
+        
+        // Get vet's availability slots for this day
+        $availabilitySlots = $this->availabilityService->getAvailableSlots($veterinarianId, $dayOfWeek);
+        
+        if ($availabilitySlots->isEmpty()) {
+            return [];
+        }
+        
+        // Get existing appointments for this date
+        $existingAppointments = Appointment::where('veterinarian_id', $veterinarianId)
+            ->where('appointment_date', $appointmentDate)
+            ->where('status', '!=', 'cancelled')
+            ->get()
+            ->map(function($apt) {
+                return [
+                    'start' => Carbon::parse($apt->start_time)->format('H:i'),
+                    'end' => Carbon::parse($apt->end_time)->format('H:i'),
+                ];
+            })
+            ->toArray();
+        
+        $suggestions = [];
+        
+        // Generate time slots from availability
+        foreach ($availabilitySlots as $slot) {
+            // Skip breaks
+            if ($slot->is_break ?? false) {
+                continue;
+            }
+            
+            $slotStart = Carbon::parse($slot->start_time);
+            $slotEnd = Carbon::parse($slot->end_time);
+            
+            // Generate 30-minute slots within this availability window
+            $currentTime = $slotStart->copy();
+            
+            while ($currentTime->copy()->addMinutes($durationMinutes)->lte($slotEnd)) {
+                $timeSlotStart = $currentTime->format('H:i');
+                $timeSlotEnd = $currentTime->copy()->addMinutes($durationMinutes)->format('H:i');
+                
+                // Check if this time slot conflicts with existing appointments
+                $hasConflict = false;
+                foreach ($existingAppointments as $existing) {
+                    $existingStart = Carbon::parse($existing['start']);
+                    $existingEnd = Carbon::parse($existing['end']);
+                    $slotStartCarbon = Carbon::parse($timeSlotStart);
+                    $slotEndCarbon = Carbon::parse($timeSlotEnd);
+                    
+                    // Check for overlap
+                    if ($slotStartCarbon->lt($existingEnd) && $slotEndCarbon->gt($existingStart)) {
+                        $hasConflict = true;
+                        break;
+                    }
+                }
+                
+                // Also check if time is not in the past (if appointment date is today)
+                $isInPast = false;
+                if ($appointmentDateCarbon->isToday()) {
+                    $now = Carbon::now();
+                    $slotDateTime = $appointmentDateCarbon->copy()->setTimeFromTimeString($timeSlotStart);
+                    if ($slotDateTime->lt($now)) {
+                        $isInPast = true;
+                    }
+                }
+                
+                if (!$hasConflict && !$isInPast) {
+                    $suggestions[] = $timeSlotStart;
+                    
+                    if (count($suggestions) >= $maxSuggestions) {
+                        break 2; // Break out of both loops
+                    }
+                }
+                
+                // Move to next slot (use duration as interval, with minimum 15 minutes)
+                $interval = max($durationMinutes, 15);
+                $currentTime->addMinutes($interval);
+            }
+            
+            if (count($suggestions) >= $maxSuggestions) {
+                break;
+            }
+        }
+        
+        return $suggestions;
     }
 
 
