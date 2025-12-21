@@ -111,8 +111,24 @@ class AppointmentService implements ServiceInterface
         if ($isVideoConseil === null) {
             $isVideoConseil = false; // Default to false if not provided or invalid
         }
+        
+        // Determine veterinarian_id - use provided vet ID or fall back to authenticated user's vet ID
+        $veterinarianId = null;
+        if (!empty($dto->veterinarian_id)) {
+            $veterinarianId = $this->getVet($dto->veterinarian_id);
+        }
+        
+        // If still no vet ID, try authenticated user (for vet users creating appointments)
+        if (!$veterinarianId && auth()->check() && auth()->user()->veterinary) {
+            $veterinarianId = auth()->user()->veterinary->id;
+        }
+        
+        if (!$veterinarianId) {
+            throw new Exception('Veterinarian ID is required');
+        }
+        
         $appointment= Appointment::create([
-            "veterinarian_id"=>auth()->user()->veterinary->id,
+            "veterinarian_id"=> $veterinarianId,
             "client_id"=>$this->getClient($dto->client_id),
             "pet_id"=>$this->getPet($dto->pet_id),
             "appointment_type"=>$dto->appointment_type,
@@ -138,7 +154,6 @@ class AppointmentService implements ServiceInterface
      */
     public function requestAppointment(AppointmentDTO $dto): Appointment
     {
-        // Calculate end_time and duration_minutes (default 30 minutes)
         $defaultDurationMinutes = 30;
         $startTime = Carbon::createFromFormat('H:i', $dto->start_time);
         $endTime = $startTime->copy()->addMinutes($defaultDurationMinutes);
@@ -149,7 +164,6 @@ class AppointmentService implements ServiceInterface
             $isVideoConseil = false;
         }
         
-        // Create appointment with 'scheduled' status (pending vet approval)
         $appointment = Appointment::create([
             "veterinarian_id" => $this->getVet($dto->veterinarian_id),
             "client_id" => $this->getClient($dto->client_id),
@@ -165,10 +179,7 @@ class AppointmentService implements ServiceInterface
             "appointment_notes" => $dto->appointment_notes,
         ]);
 
-        // Only generate Jitsi Meet link if video consultation is enabled
-        // But don't generate it yet - wait for vet approval
         if ($isVideoConseil) {
-            // We can generate the link, but it won't be accessible until appointment is confirmed
             $this->generateJitsiMeetingLink($appointment);
         }
 
@@ -240,7 +251,6 @@ class AppointmentService implements ServiceInterface
             // Refresh the appointment to get updated attributes
             $appointment->refresh();
         } catch (Exception $e) {
-            // Log the error but don't fail the appointment creation
             \Illuminate\Support\Facades\Log::error('Failed to generate Jitsi Meet link: ' . $e->getMessage());
         }
     }
@@ -288,7 +298,7 @@ class AppointmentService implements ServiceInterface
 
             return $appointment->fresh(['client', 'pet', 'veterinary']);
         } catch (Exception $e) {
-            throw new Exception("Failed to update appointment: " . $e->getMessage());
+            throw new Exception("Failed to update appointment");
         }
     }
 
@@ -306,7 +316,7 @@ class AppointmentService implements ServiceInterface
 
             return $appointment->delete();
         } catch (Exception $e) {
-            throw new Exception("Failed to delete appointment: " . $e->getMessage());
+            throw new Exception("Failed to delete appointment");
         }
     }
 
@@ -322,7 +332,7 @@ class AppointmentService implements ServiceInterface
             $appointment->status = 'cancelled';
             return $appointment->save();
         } catch (Exception $e) {
-            throw new Exception("Failed to cancel appointment: " . $e->getMessage());
+            throw new Exception("Failed to cancel appointment");
         }
     }
 
@@ -344,7 +354,7 @@ class AppointmentService implements ServiceInterface
             
             return $appointment->fresh(['client', 'pet', 'veterinary']);
         } catch (Exception $e) {
-            throw new Exception("Failed to report appointment: " . $e->getMessage());
+            throw new Exception("Failed to report appointment");
         }
     }
 
@@ -514,7 +524,6 @@ class AppointmentService implements ServiceInterface
             throw new Exception("Only scheduled appointments can be accepted");
         }
 
-        // Get appointment date and time
         $appointmentDate = $appointment->appointment_date instanceof Carbon 
             ? $appointment->appointment_date
             : Carbon::parse($appointment->appointment_date);
@@ -527,10 +536,8 @@ class AppointmentService implements ServiceInterface
             ? $appointment->end_time
             : Carbon::parse($appointment->end_time)->format('H:i:s');
 
-        // Get day of week
-        $dayOfWeek = strtolower($appointmentDate->format('l')); // Monday, Tuesday, etc.
+        $dayOfWeek = strtolower($appointmentDate->format('l')); 
 
-        // Check if vet has availability for this day and time
         $isAvailable = $this->availabilityService->isVeterinaryAvailable(
             $appointment->veterinarian_id,
             $dayOfWeek,
@@ -542,7 +549,6 @@ class AppointmentService implements ServiceInterface
             throw new Exception("Veterinarian is not available at the requested time");
         }
 
-        // Check if there are conflicting appointments
         $hasConflict = !$this->checkAvailability(
             $appointment->veterinarian_id,
             $appointmentDate->format('Y-m-d'),
@@ -554,11 +560,9 @@ class AppointmentService implements ServiceInterface
             throw new Exception("There is a conflicting appointment at this time");
         }
 
-        // Update appointment status to confirmed
         $appointment->status = 'confirmed';
         $appointment->save();
 
-        // Generate Jitsi Meet link if it's a video consultation and doesn't have one yet
         if ($appointment->is_video_conseil && !$appointment->video_join_url) {
             $this->generateJitsiMeetingLink($appointment);
         }
