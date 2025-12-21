@@ -1,11 +1,11 @@
 import MainLayout from '@/layouts/MainLayout';
-import React, { useState } from 'react';
-import { router, useForm } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { Button, Card, Input, Textarea, Switch } from '@/components/ui';
 import { useToast } from '@/components/common/Toast/ToastContext';
 import { appointmentSchema, AppointmentFormValues } from '@/schemas/appointmentSchema';
 import { useTranslation } from '@/hooks/useTranslation';
-import { CalendarIcon, InformationCircleIcon, VideoCameraIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, InformationCircleIcon, VideoCameraIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
 import { DatePicker } from '@/components/shared/form/Datepicker';
 import { Page } from '@/components/shared/Page';
 import { BreadcrumbItem, Breadcrumbs } from '@/components/shared/Breadcrumbs';
@@ -15,10 +15,30 @@ import { CalendarCogIcon } from 'lucide-react';
 // Declare route helper
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
+interface Veterinarian {
+    id: number;
+    uuid: string;
+    name: string;
+    clinic: string;
+}
+
+interface CreateAppointmentPageProps {
+    veterinarians?: Veterinarian[];
+    selectedVetId?: string;
+    clientId?: string;
+}
+
 const CreateAppointment: React.FC = () => {
     const { showToast } = useToast();
     const { t } = useTranslation();
+    const { props } = usePage<CreateAppointmentPageProps>();
+    const { veterinarians = [], selectedVetId, clientId } = props;
     const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof AppointmentFormValues, string>>>({});
+
+    // Find the selected veterinarian by UUID
+    const selectedVet = selectedVetId 
+        ? veterinarians.find(vet => vet.uuid === selectedVetId)
+        : null;
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormValues>({
         appointment_type: 'Check-up',
@@ -27,8 +47,17 @@ const CreateAppointment: React.FC = () => {
         is_video_conseil: false,
         reason_for_visit: '',
         appointment_notes: '',
-        vet_id: '1',
+        veterinary_id: selectedVet?.uuid || '',
+        pet_id: '',
+        client_id: clientId || '', // Add client_id from auth user
     });
+
+    // Update veterinary_id when selectedVetId changes
+    useEffect(() => {
+        if (selectedVet) {
+            setData('veterinary_id', selectedVet.uuid);
+        }
+    }, [selectedVetId]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,7 +73,7 @@ const CreateAppointment: React.FC = () => {
             return;
         }
 
-        post(route('appointments.store'), {
+        post(route('appointments.create-appointment'), {
             onSuccess: () => {
                 showToast({
                     type: 'success',
@@ -73,7 +102,7 @@ const CreateAppointment: React.FC = () => {
     };
 
       const breadcrumbs: BreadcrumbItem[] = [
-        { title: t('common.appointments'), path: route('appointments.index') },
+        { title: t('common.appointment_breadcrumb'), path: route('appointments.index') },
         { title: t('common.new_appointment')},
       ]; 
 
@@ -85,6 +114,17 @@ const CreateAppointment: React.FC = () => {
   { value: "common.surgery_consult", label: t('common.surgery_consult') },
   { value: "common.other", label: t('common.other') }
 ];
+
+    // Prepare veterinarian options for ReactSelect
+    const veterinarianOptions = veterinarians.map((vet: Veterinarian) => ({
+        value: vet.uuid,
+        label: `${vet.name}${vet.clinic ? ` - ${vet.clinic}` : ''}`,
+    }));
+
+    // Get selected veterinarian option
+    const selectedVeterinarianOption = data.veterinary_id
+        ? veterinarianOptions.find((opt: { value: string; label: string }) => opt.value === data.veterinary_id)
+        : null;
     return (
        <MainLayout>
              <Page title={t("common.new_appointment")}>
@@ -103,9 +143,32 @@ const CreateAppointment: React.FC = () => {
                     <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="grid grid-cols-12 place-content-start gap-4 sm:gap-5 lg:gap-6">
                                   <div className="col-span-12">
-                                    <Card className="p-4 sm:px-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                                    <Card className="p-4 sm:p-5 sm:px-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                            <div className="w-full">
+                                <ReactSelect
+                                    id="veterinary_id"
+                                    label={t('common.veterinarian')}
+                                    leftIcon={<UserIcon className="h-5 w-5" />}
+                                    value={selectedVeterinarianOption}
+                                    onChange={(option) => {
+                                        if (option && !Array.isArray(option)) {
+                                            setData('veterinary_id', option.value);
+                                        } else {
+                                            setData('veterinary_id', '');
+                                        }
+                                    }}
+                                    options={[
+                                        { value: '', label: t('common.select_veterinarian') },
+                                        ...veterinarianOptions
+                                    ]}
+                                    placeholder={t('common.select_veterinarian')}
+                                    error={!!errors?.veterinary_id}
+                                    isRequired={true}
+                                />
+                                {validationErrors.veterinary_id && <p className="text-red-500 text-sm mt-1">{validationErrors.veterinary_id}</p>}
+                            </div>
+                            <div className="w-full">
                                 <label htmlFor="appointment_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('common.appointment_type')}
                                     <span className="text-red-500 mx-1">*</span>
                                 </label>
@@ -143,7 +206,7 @@ const CreateAppointment: React.FC = () => {
                                 {validationErrors.appointment_type && <p className="text-red-500 text-sm mt-1">{validationErrors.appointment_type}</p>}
                             </div>
 
-                            <div>
+                            <div className="w-full md:col-span-2">
                                 <DatePicker
                                     selected={data.appointment_date && data.start_time ? new Date(`${data.appointment_date}T${data.start_time}`) : null}
                                     onChange={(dates: Date[]) => {
@@ -174,21 +237,21 @@ const CreateAppointment: React.FC = () => {
                                     </p>
                                 )}
                             </div>
-                        <div>
-                            <Input
-                                type="text"
-                                placeholder={t('common.reason_for_visit_placeholder')}
-                                label={t('common.reason_for_visit')}
-                                className="rounded-xl"
-                                prefix={<InformationCircleIcon className="size-4.5" />}
-                                value={data.reason_for_visit}
-                                onChange={(e) => setData('reason_for_visit', e.target.value)}
-                            />
-                            {validationErrors.reason_for_visit && <p className="text-red-500 text-sm mt-1">{validationErrors.reason_for_visit}</p>}
-                        </div>
+                            <div className="w-full md:col-span-2">
+                                <Input
+                                    type="text"
+                                    placeholder={t('common.reason_for_visit_placeholder')}
+                                    label={t('common.reason_for_visit')}
+                                    className="rounded-xl"
+                                    prefix={<InformationCircleIcon className="size-4.5" />}
+                                    value={data.reason_for_visit}
+                                    onChange={(e) => setData('reason_for_visit', e.target.value)}
+                                />
+                                {validationErrors.reason_for_visit && <p className="text-red-500 text-sm mt-1">{validationErrors.reason_for_visit}</p>}
+                            </div>
                         </div>
 
-<div className="grid grid-cols-12 lg:grid-cols-2 gap-4 items-end">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
 
 <div className="mt-4">
                           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-500">
@@ -238,12 +301,13 @@ const CreateAppointment: React.FC = () => {
                         </div>
 
 
-                        <div className="flex items-center justify-end space-x-3 pt-4">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 mt-6">
                             <Button
                                 type="button"
                                 variant="outlined"
                                 onClick={() => router.get(route('appointments.index'))}
                                 disabled={processing}
+                                className="w-full sm:w-auto"
                             >
                                 {t('common.cancel')}
                             </Button>
@@ -252,6 +316,7 @@ const CreateAppointment: React.FC = () => {
                                 variant="filled"
                                 disabled={processing}
                                 color="primary"
+                                className="w-full sm:w-auto"
                             >
                                 {processing ? t('common.submitting') : t('common.request_appointment')}
                             </Button>

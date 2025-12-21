@@ -288,7 +288,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
       >
         <div className="min-w-0">
           <h2 className="dark:text-dark-50 truncate text-xl font-medium tracking-wide text-gray-800">
-            {t('common.appointments')}
+            {t('common.appointment_breadcrumb')}
           </h2>
         </div>
         
@@ -302,7 +302,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                         </p>
                         <CubeIcon className="text-primary-500 size-5" />
                     </div>
-                    <p className="text-xs-plus mt-1">{t('common.appointments')}</p>
+                    <p className="text-xs-plus mt-1">{t('common.appointment_breadcrumb')}</p>
                 </div>
                 <div className="bg-gray-150 dark:bg-dark-700 rounded-lg p-3 2xl:p-4">
                     <div className="flex justify-between space-x-1">
