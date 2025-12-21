@@ -1,7 +1,7 @@
 // Import Dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import clsx from "clsx";
 import { router } from "@inertiajs/react";
 import { SingleValue } from "react-select";
@@ -63,6 +63,10 @@ export function AppointmentDetails({
   });
 
   const watchedValues = watch();
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [isLoadingTimes, setIsLoadingTimes] = useState(false);
+  const [timeValidationError, setTimeValidationError] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Reset form with context data when component mounts or context data changes
   // This ensures data persists when navigating back to this step
@@ -84,6 +88,86 @@ export function AppointmentDetails({
       }
     }
   }, [appointmentFormCtx.selectedVetId, appointmentFormCtx.state.formData.appointmentDetails.veterinary_id, setValue, getValues]);
+
+  // Fetch available times when vet or date changes
+  const fetchAvailableTimes = useCallback(async (vetId: string, date: string) => {
+    if (!vetId || !date) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    setIsLoadingTimes(true);
+    setTimeValidationError(null);
+    setShowSuggestions(false);
+
+    try {
+      const response = await fetch(
+        route('appointments.available-times') + `?veterinary_id=${vetId}&appointment_date=${date}&duration_minutes=30`,
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'same-origin',
+        }
+      );
+
+      const result = await response.json();
+      
+      if (result.success && result.suggestions) {
+        setAvailableTimes(result.suggestions);
+      } else {
+        setAvailableTimes([]);
+      }
+    } catch (error) {
+      console.error('Error fetching available times:', error);
+      setAvailableTimes([]);
+    } finally {
+      setIsLoadingTimes(false);
+    }
+  }, []);
+
+  // Watch for changes in veterinary_id and appointment_date to fetch available times
+  useEffect(() => {
+    const vetId = watchedValues.veterinary_id;
+    const date = watchedValues.appointment_date;
+    
+    if (vetId && date) {
+      fetchAvailableTimes(vetId, date);
+    } else {
+      setAvailableTimes([]);
+      setTimeValidationError(null);
+      setShowSuggestions(false);
+    }
+  }, [watchedValues.veterinary_id, watchedValues.appointment_date, fetchAvailableTimes]);
+
+  // Validate selected time when it changes
+  useEffect(() => {
+    const vetId = watchedValues.veterinary_id;
+    const date = watchedValues.appointment_date;
+    const time = watchedValues.start_time;
+
+    if (vetId && date && time && availableTimes.length > 0) {
+      // Check if selected time is in available times
+      const isAvailable = availableTimes.includes(time);
+      
+      if (!isAvailable) {
+        setTimeValidationError(t('common.veterinarian_not_available_at_requested_time'));
+        setShowSuggestions(true);
+      } else {
+        setTimeValidationError(null);
+        setShowSuggestions(false);
+      }
+    } else if (vetId && date && time && availableTimes.length === 0 && !isLoadingTimes) {
+      // No available times found
+      setTimeValidationError(t('common.veterinarian_not_available_at_requested_time'));
+      setShowSuggestions(false);
+    } else {
+      setTimeValidationError(null);
+      setShowSuggestions(false);
+    }
+  }, [watchedValues.start_time, availableTimes, isLoadingTimes, watchedValues.veterinary_id, watchedValues.appointment_date, t]);
 
   // Save to context only on unmount (when leaving the step)
   useEffect(() => {
@@ -376,8 +460,10 @@ export function AppointmentDetails({
             onChange={(dates: Date[]) => {
               if (dates && dates.length > 0) {
                 const date = dates[0];
-                setValue('appointment_date', date.toISOString().split('T')[0]);
-                setValue('start_time', date.toTimeString().split(' ')[0].substring(0, 5));
+                const dateStr = date.toISOString().split('T')[0];
+                const timeStr = date.toTimeString().split(' ')[0].substring(0, 5);
+                setValue('appointment_date', dateStr);
+                setValue('start_time', timeStr);
               } else {
                 setValue('appointment_date', '');
                 setValue('start_time', '');
@@ -396,6 +482,74 @@ export function AppointmentDetails({
           {(errors?.appointment_date || errors?.start_time) && (
             <p className="text-red-500 text-sm mt-1">
               {translateError(errors.appointment_date?.message || errors.start_time?.message)}
+            </p>
+          )}
+          
+          {/* Loading indicator */}
+          {isLoadingTimes && watchedValues.veterinary_id && watchedValues.appointment_date && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              {t('common.loading_available_times') || 'Loading available times...'}
+            </p>
+          )}
+          
+          {/* Time validation error and suggestions */}
+          {timeValidationError && (
+            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+                {timeValidationError}
+              </p>
+              
+              {showSuggestions && availableTimes.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('common.available_times_suggestions') || 'Available times:'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableTimes.map((time) => {
+                      // Create a ref to the DatePicker's onChange handler
+                      const handleTimeSelect = () => {
+                        if (watchedValues.appointment_date) {
+                          // Create a date object with the selected date and time
+                          const [hours, minutes] = time.split(':');
+                          const selectedDate = new Date(watchedValues.appointment_date);
+                          selectedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                          
+                          // Update form values
+                          setValue('appointment_date', watchedValues.appointment_date);
+                          setValue('start_time', time);
+                          
+                          setTimeValidationError(null);
+                          setShowSuggestions(false);
+                        }
+                      };
+                      
+                      return (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={handleTimeSelect}
+                          className="px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                        >
+                          {time}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {availableTimes.length === 0 && !isLoadingTimes && (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('common.no_available_times')}
+                </p>
+              )}
+            </div>
+          )}
+          
+          {/* Show available times count when time is valid */}
+          {!timeValidationError && availableTimes.length > 0 && watchedValues.start_time && (
+            <p className="text-sm text-primary-600 dark:text-primary-400 mt-2">
+              {t('common.time_available')}
             </p>
           )}
         </div>
