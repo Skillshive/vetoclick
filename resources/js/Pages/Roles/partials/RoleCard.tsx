@@ -70,14 +70,14 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
                         variant="soft"
                         className="text-xs"
                     >
-                        {role.permissions_count || 0} {t('common.permissions')}
+                        {role.permissions_count || 0} {t('common.permissions_breadcrumb')}
                     </Badge>
                 </div>
 
             {role.permissions && role.permissions.length > 0 && (
                 <div className="mb-3 flex-1">
                     <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('common.permissions')}:
+                        {t('common.permissions_breadcrumb')}:
                     </p>
                     <div className="flex flex-wrap gap-1">
                         {role.permissions.slice(0, 2).map((permission) => (
