@@ -18,7 +18,7 @@ class Client extends Model
         });
     }
     protected $fillable = [
-        'veterinarian_id', 'first_name', 'last_name', 'email', 'phone', 'fixe',
+        'veterinarian_id', 'user_id', 'first_name', 'last_name', 'email', 'phone', 'fixe',
         'address', 'city', 'postal_code'
     ];
 
