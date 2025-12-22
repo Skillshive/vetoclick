@@ -216,8 +216,13 @@ export function AppointmentDetails({
       // Step 1: Handle client creation or update
       let clientId: string = appointmentFormCtx.clientId || '';
       const veterinaryId = data.veterinary_id || appointmentFormCtx.selectedVetId;
-      
-      if (!clientId) {
+      console.log('clientId', clientId);
+      console.log('veterinaryId', veterinaryId);
+      console.log('personalInfo', personalInfo);
+      console.log('petInfo', petInfo);
+      console.log('data', data);
+      console.log('appointmentFormCtx', appointmentFormCtx);
+      if (personalInfo) {
         if (!veterinaryId) {
           throw new Error('Veterinarian must be selected before creating client');
         }
