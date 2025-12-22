@@ -37,6 +37,12 @@ export default function Register() {
         const pendingUrl = localStorage.getItem('pending_appointment_return_url');
         if (pendingUrl) {
           setRedirectUrl(pendingUrl);
+        } else {
+          // If no full URL, check for vet_id and construct appointment URL
+          const pendingVetId = localStorage.getItem('pending_vet_id');
+          if (pendingVetId) {
+            setRedirectUrl(`/appointments/create?vet_id=${encodeURIComponent(pendingVetId)}`);
+          }
         }
       } catch (error) {
         console.warn('Could not access localStorage:', error);
@@ -202,6 +208,34 @@ export default function Register() {
         return;
       }
 
+      // Prepare request body with redirect parameter if available
+      const requestBody: any = {
+        phone: data.phone,
+        otp: otp,
+        email: data.email,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
+      };
+      
+      // Add redirect parameter if we have one
+      if (redirectUrl) {
+        requestBody.redirect = redirectUrl;
+      } else {
+        // Check localStorage for pending appointment URL
+        try {
+          const pendingUrl = localStorage.getItem('pending_appointment_return_url');
+          const pendingVetId = localStorage.getItem('pending_vet_id');
+          if (pendingUrl) {
+            requestBody.redirect = pendingUrl;
+          } else if (pendingVetId) {
+            requestBody.redirect = `/appointments/create?vet_id=${encodeURIComponent(pendingVetId)}`;
+            requestBody.vet_id = pendingVetId;
+          }
+        } catch (error) {
+          console.warn('Could not access localStorage:', error);
+        }
+      }
+
       const response = await fetch('/api/otp/verify', {
         method: 'POST',
         headers: {
@@ -211,13 +245,7 @@ export default function Register() {
           'X-Requested-With': 'XMLHttpRequest',
         },
         credentials: 'same-origin', // Include cookies for CSRF
-        body: JSON.stringify({
-          phone: data.phone,
-          otp: otp,
-          email: data.email,
-          password: data.password,
-          password_confirmation: data.password_confirmation,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
@@ -225,25 +253,45 @@ export default function Register() {
       if (response.ok && result.success) {
         setSuccess('Phone verified successfully! Redirecting...');
         
-        // Determine redirect URL
+        // Determine redirect URL - ALWAYS prioritize backend response first
+        // The backend checks session's url.intended (set by Laravel auth middleware)
         let finalRedirectUrl = '/dashboard'; // Default fallback
         
-        if (redirectUrl) {
-          finalRedirectUrl = redirectUrl;
+        // ALWAYS use backend's redirect_url if provided - it has access to session
+        if (result.redirect_url) {
+          finalRedirectUrl = result.redirect_url;
+          console.log('✓ Using redirect_url from backend response (includes session intended):', finalRedirectUrl);
         } else {
-          // Check localStorage as fallback
-          try {
-            const pendingUrl = localStorage.getItem('pending_appointment_return_url');
-            if (pendingUrl) {
-              finalRedirectUrl = pendingUrl;
-              // Clear it after use
-              localStorage.removeItem('pending_appointment_return_url');
-              localStorage.removeItem('pending_vet_id');
+          // Fallback to frontend sources only if backend didn't provide one
+          if (redirectUrl) {
+            finalRedirectUrl = redirectUrl;
+            console.log('⚠ Using redirectUrl from state (backend did not provide redirect_url):', finalRedirectUrl);
+          } else {
+            // Check localStorage as last resort
+            try {
+              const pendingUrl = localStorage.getItem('pending_appointment_return_url');
+              const pendingVetId = localStorage.getItem('pending_vet_id');
+              
+              if (pendingUrl) {
+                finalRedirectUrl = pendingUrl;
+                console.log('⚠ Using pending_appointment_return_url from localStorage:', finalRedirectUrl);
+              } else if (pendingVetId) {
+                finalRedirectUrl = `/appointments/create?vet_id=${encodeURIComponent(pendingVetId)}`;
+                console.log('⚠ Constructed URL from pending_vet_id:', finalRedirectUrl);
+              }
+              
+              // Clear localStorage after use
+              if (pendingUrl || pendingVetId) {
+                localStorage.removeItem('pending_appointment_return_url');
+                localStorage.removeItem('pending_vet_id');
+              }
+            } catch (error) {
+              console.warn('Could not access localStorage:', error);
             }
-          } catch (error) {
-            console.warn('Could not access localStorage:', error);
           }
         }
+        
+        console.log('→ Final redirect URL:', finalRedirectUrl);
         
         // Session is now set on backend, do full page redirect
         // Use setTimeout to show success message briefly

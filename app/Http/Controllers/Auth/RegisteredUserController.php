@@ -23,7 +23,16 @@ class RegisteredUserController extends Controller
      */
     public function create(Request $request): Response
     {
-        $redirect = $request->query('redirect');
+        // Check for redirect in query parameter, session intended URL, or construct from vet_id
+        $redirect = $request->query('redirect')
+            ?? $request->session()->get('url.intended')
+            ?? null;
+        
+        // If we have a vet_id in query but no redirect, construct the appointment URL
+        if (!$redirect && $request->query('vet_id')) {
+            $redirect = route('appointments.create', ['vet_id' => $request->query('vet_id')], false);
+        }
+        
         return Inertia::render('Auth/Register', [
             'redirect' => $redirect,
         ]);
