@@ -1999,4 +1999,11 @@ return [
     'available_times_suggestions' => 'Available times:',
     'no_available_times' => 'No available times for this date. Please select a different date.',
     'time_available' => '✓ This time is available',
+    'veterinarian' => 'Veterinarian',
+    'dont_have_account' => 'Don\'t have an account? ',
+    'address_placeholder' => 'Enter your address',  
+    'city_placeholder' => 'Enter your city',  
+    'postal_code_placeholder' => 'Enter your postal code',  
+    'verify_phone' => 'Verify Phone Number',
+    'enter_otp' => 'Enter OTP',
 ];

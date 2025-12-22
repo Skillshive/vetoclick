@@ -1929,4 +1929,11 @@ return [
 'available_times_suggestions' => 'Heures disponibles :',
 'no_available_times' => 'Aucune heure disponible pour cette date. Veuillez sélectionner une date différente.',
 'time_available' => '✓ Cette heure est disponible',
+'veterinarian' => 'Vétérinaire',
+'dont_have_account' => 'Vous n\'avez pas de compte ? ',
+'address_placeholder' => 'Entrez votre adresse',
+'city_placeholder' => 'Entrez votre ville',  
+'postal_code_placeholder' => 'Entrez votre code postal',  
+'verify_phone' => 'Vérifier le numéro de téléphone',
+'enter_otp' => 'Entrer le code OTP',
 ];
