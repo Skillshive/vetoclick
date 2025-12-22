@@ -45,7 +45,7 @@ class AppointmentService implements ServiceInterface
             if ($user->hasRole('receptionist')) {
                 $query->where('veterinarian_id', $user->veterinary->id);
             }
-            
+
         if (!empty($filters['status'])) {
             $statusValues = is_array($filters['status']) ? $filters['status'] : explode(',', $filters['status']);
             $statusValues = array_map('intval', $statusValues);
@@ -159,6 +159,8 @@ class AppointmentService implements ServiceInterface
             }
         }
         
+        $isFirstAppointment = Appointment::where('client_id', $this->getClient($dto->client_id))->where('status', 'confirmed')->count() === 0;
+
         $appointment= Appointment::create([
             "veterinarian_id"=> $veterinarianId,
             "client_id"=>$this->getClient($dto->client_id),
@@ -176,6 +178,11 @@ class AppointmentService implements ServiceInterface
 
         // Generate Jitsi Meet link for the appointment
         $this->generateJitsiMeetingLink($appointment);
+        if($isFirstAppointment){
+            $client = Client::where('id', $this->getClient($dto->client_id))->first();
+            $client->veterinarian_id =  $veterinarianId;
+            $client->save();
+        }
 
         return $appointment->load(['client', 'pet', 'veterinary']);
     }
