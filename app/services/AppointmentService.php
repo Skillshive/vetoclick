@@ -12,6 +12,7 @@ use App\Services\AvailabilityService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class AppointmentService implements ServiceInterface
 {
@@ -29,8 +30,22 @@ class AppointmentService implements ServiceInterface
     public function getAll(array $filters = []): LengthAwarePaginator
     {
         $perPage = $filters['per_page'] ?? 15;
+        $user = Auth::user();
         $query = Appointment::with(['client', 'pet', 'veterinary']);
+            if ($user->hasRole('client')) {
+                $query->where('client_id', $user->client->id);
+            }
 
+            if ($user->hasRole('veterinarian')) {
+                $query->where('veterinarian_id', $user->veterinary->id);
+            }
+            if ($user->hasRole('admin')) {
+                $query->where('veterinarian_id', $user->veterinary->id);
+            }
+            if ($user->hasRole('receptionist')) {
+                $query->where('veterinarian_id', $user->veterinary->id);
+            }
+            
         if (!empty($filters['status'])) {
             $statusValues = is_array($filters['status']) ? $filters['status'] : explode(',', $filters['status']);
             $statusValues = array_map('intval', $statusValues);
