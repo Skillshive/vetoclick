@@ -80,7 +80,7 @@ export function createColumns(
 
         return appointment_type ? (
           <Badge color={getTypeColor(appointment_type)}>
-            {appointment_type}
+            {t(`common.${appointment_type}`)}
           </Badge>
         ) : (
           <Badge color="neutral">
@@ -131,7 +131,7 @@ export function createColumns(
 
         return status ? (
           <Badge color={getStatusColor(status)}>
-            {status}
+            {status.charAt(0).toUpperCase() + status.slice(1)}
           </Badge>
         ) : (
           <Badge color="neutral">
