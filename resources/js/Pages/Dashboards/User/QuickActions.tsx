@@ -1,5 +1,5 @@
 // Import Dependencies
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import { useState } from "react";
 import {
   CalendarIcon,
@@ -52,10 +52,8 @@ export function QuickActions() {
       label: t("common.user_dashboard.quick_actions.schedule") || "Schedule Appointment",
       icon: CalendarIcon,
       href: undefined as string | undefined,
-      color: "primary" as const,
       onClick: () => {
-        setIsVideoConsultation(false);
-        setIsAppointmentModalOpen(true);
+        router.visit(route("appointments.create"));
       },
     },
     {
@@ -65,8 +63,8 @@ export function QuickActions() {
       href: undefined as string | undefined,
       color: "info" as const,
       onClick: () => {
-        setIsVideoConsultation(true);
-        setIsAppointmentModalOpen(true);
+        router.visit(route("appointments.create"));
+
       },
     },
     {
@@ -134,7 +132,7 @@ export function QuickActions() {
           })}
         </div>
       </Card>
-      <AppointmentFormModal 
+     {/* <AppointmentFormModal 
         isOpen={isAppointmentModalOpen} 
         onClose={() => {
           setIsAppointmentModalOpen(false);
@@ -142,6 +140,7 @@ export function QuickActions() {
         }}
         initialVideoConsultation={isVideoConsultation}
       />
+      */}
     </>
   );
 }
