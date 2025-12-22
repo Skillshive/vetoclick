@@ -185,6 +185,8 @@ class OtpVerificationController extends Controller
             'phone' => $user->phone,
         ]);
 
+
+        $user->assignRole('client');
         // Fire registered event
         event(new Registered($user));
 
@@ -217,12 +219,61 @@ class OtpVerificationController extends Controller
             $sameSite = 'lax';
         }
         
+        // Determine redirect URL - check session intended URL first (like login does)
+        // This is set by Laravel's auth middleware when redirecting unauthenticated users
+        $redirectUrl = $request->session()->get('url.intended')
+            ?? $request->input('redirect') 
+            ?? $request->query('redirect')
+            ?? route('dashboard');
+        
+        // Clear the intended URL from session if we're using it
+        if ($request->session()->has('url.intended')) {
+            $request->session()->forget('url.intended');
+        }
+        
+        // If redirect URL contains appointment path, ensure vet_id is preserved
+        if (str_contains($redirectUrl, 'appointments/create')) {
+            // Check if vet_id is in the URL, if not, try to get from request
+            if (!str_contains($redirectUrl, 'vet_id=')) {
+                $vetId = $request->input('vet_id') ?? $request->query('vet_id');
+                if ($vetId) {
+                    $separator = str_contains($redirectUrl, '?') ? '&' : '?';
+                    $redirectUrl .= $separator . 'vet_id=' . urlencode($vetId);
+                }
+            }
+        }
+        
+        // Parse URL to ensure it's a relative path (for security)
+        $parsedUrl = parse_url($redirectUrl);
+        if ($parsedUrl && isset($parsedUrl['host'])) {
+            // Validate host is our domain
+            $appUrl = parse_url(config('app.url'));
+            $isValidHost = (
+                $parsedUrl['host'] === ($appUrl['host'] ?? '') ||
+                $parsedUrl['host'] === 'localhost' ||
+                str_ends_with($parsedUrl['host'] ?? '', '.localhost') ||
+                str_contains($parsedUrl['host'] ?? '', '127.0.0.1')
+            );
+            
+            if ($isValidHost) {
+                // Build relative URL from path and query
+                $redirectUrl = ($parsedUrl['path'] ?? '/') . 
+                              (isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '');
+            } else {
+                // Invalid host, use dashboard
+                $redirectUrl = route('dashboard');
+            }
+        } elseif (!str_starts_with($redirectUrl, '/')) {
+            // Not a relative URL and not a full URL, use dashboard
+            $redirectUrl = route('dashboard');
+        }
+        
         // Create response with explicit session cookie
         return response()->json([
             'success' => true,
             'message' => __('common.otp.verified_successfully'),
             'verified' => true,
-            'redirect_url' => route('dashboard'),
+            'redirect_url' => $redirectUrl,
         ])->cookie(
             $sessionName,
             $sessionId,

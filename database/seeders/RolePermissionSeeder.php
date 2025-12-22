@@ -99,6 +99,11 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
+        $clientRole = Role::create([
+            'uuid' => Str::uuid(),
+            'name' => 'client',
+            'guard_name' => 'web',
+        ]);
 
         // Assign permissions to roles
         $adminRole->givePermissionTo(Permission::all());
