@@ -259,18 +259,72 @@ class ClientController extends Controller
                 }
             }
 
-            $client = Client::create([
-                'veterinarian_id' => $veterinarianId,
-                'user_id' => $user?->id ?? null,
-                'first_name' => $validated['first_name'] ?? ($user?->firstname ?? null),
-                'last_name' => $validated['last_name'] ?? ($user?->lastname ?? null),
-                'email' => $validated['email'] ?? ($user?->email ?? null),
-                'phone' => $validated['phone'] ?? ($user?->phone ?? null),
-                'fixe' => $validated['fixe'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'city' => $validated['city'] ?? null,
-                'postal_code' => $validated['postal_code'] ?? null,
-            ]);
+            // If user is authenticated, update user data first
+            if ($user) {
+                $userUpdateData = [];
+                
+                // Update user's firstname if provided and different
+                if (!empty($validated['first_name']) && $user->firstname !== $validated['first_name']) {
+                    $userUpdateData['firstname'] = $validated['first_name'];
+                }
+                
+                // Update user's lastname if provided and different
+                if (!empty($validated['last_name']) && $user->lastname !== $validated['last_name']) {
+                    $userUpdateData['lastname'] = $validated['last_name'];
+                }
+                
+                // Update user's email if provided and different (and not already set)
+                if (!empty($validated['email']) && $user->email !== $validated['email']) {
+                    $userUpdateData['email'] = $validated['email'];
+                }
+                
+                // Update user's phone if provided and different
+                if (!empty($validated['phone']) && $user->phone !== $validated['phone']) {
+                    $userUpdateData['phone'] = $validated['phone'];
+                }
+                
+                // Update user if there are changes
+                if (!empty($userUpdateData)) {
+                    $user->update($userUpdateData);
+                    $user->refresh(); // Refresh to get updated values
+                }
+            }
+
+            // Check if client already exists for this user
+            $existingClient = null;
+            if ($user && $user->id) {
+                $existingClient = Client::where('user_id', $user->id)->first();
+            }
+
+            if ($existingClient) {
+                // Update existing client
+                $existingClient->update([
+                    'veterinarian_id' => $veterinarianId ?? $existingClient->veterinarian_id,
+                    'first_name' => $validated['first_name'] ?? $existingClient->first_name ?? ($user?->firstname ?? null),
+                    'last_name' => $validated['last_name'] ?? $existingClient->last_name ?? ($user?->lastname ?? null),
+                    'email' => $validated['email'] ?? $existingClient->email ?? ($user?->email ?? null),
+                    'phone' => $validated['phone'] ?? $existingClient->phone ?? ($user?->phone ?? null),
+                    'fixe' => $validated['fixe'] ?? $existingClient->fixe,
+                    'address' => $validated['address'] ?? $existingClient->address,
+                    'city' => $validated['city'] ?? $existingClient->city,
+                    'postal_code' => $validated['postal_code'] ?? $existingClient->postal_code,
+                ]);
+                $client = $existingClient->fresh();
+            } else {
+                // Create new client
+                $client = Client::create([
+                    'veterinarian_id' => $veterinarianId,
+                    'user_id' => $user?->id ?? null,
+                    'first_name' => $validated['first_name'] ?? ($user?->firstname ?? null),
+                    'last_name' => $validated['last_name'] ?? ($user?->lastname ?? null),
+                    'email' => $validated['email'] ?? ($user?->email ?? null),
+                    'phone' => $validated['phone'] ?? ($user?->phone ?? null),
+                    'fixe' => $validated['fixe'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'city' => $validated['city'] ?? null,
+                    'postal_code' => $validated['postal_code'] ?? null,
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
