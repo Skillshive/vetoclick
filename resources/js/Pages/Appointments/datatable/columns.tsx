@@ -10,10 +10,37 @@ export function createColumns(
   onReport: (appointment: Appointment) => void,
   onCancel: (appointment: Appointment) => void,
   onAccept: (appointment: Appointment) => void,
-  t: (key: string) => string
+  t: (key: string) => string,
+  user?: any
 ): ColumnDef<Appointment>[] {
+  
+  const canShowActions = (() => {
+    if (!user) return false;
+    
+    if (user.veterinary !== null && user.veterinary !== undefined) {
+      return true;
+    }
+    
+    if (user.receptionist !== null && user.receptionist !== undefined) {
+      return true;
+    }
+    
+    if (user.role) {
+      const role = typeof user.role === 'string' ? user.role.toLowerCase() : user.role;
+      return ['admin', 'vet', 'veterinarian', 'receptionist'].includes(role);
+    }
+    
+    if (user.roles && Array.isArray(user.roles)) {
+      return user.roles.some((r: any) => {
+        const roleName = typeof r === 'string' ? r.toLowerCase() : (r?.name?.toLowerCase() || '');
+        return ['admin', 'vet', 'veterinarian', 'receptionist'].includes(roleName);
+      });
+    }
+    
+    return false;
+  })();
 
-  return [
+  const baseColumns: ColumnDef<Appointment>[] = [
     {
       accessorKey: 'client_pet',
       header: t('common.client'),
@@ -186,7 +213,11 @@ export function createColumns(
         );
       },
     },
-    {
+  ];
+
+  // Only include actions column if user has the appropriate role
+  if (canShowActions) {
+    baseColumns.push({
       id: 'actions',
       header: "",
       cell: ({ row }) => {
@@ -245,6 +276,8 @@ export function createColumns(
       },
       enableSorting: false,
       enableHiding: false,
-    },
-  ];
+    });
+  }
+
+  return baseColumns;
 }

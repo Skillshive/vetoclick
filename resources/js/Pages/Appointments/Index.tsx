@@ -18,11 +18,14 @@ import {
 } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 import { ReportModal } from './datatable/ReportModal';
+import { usePusher } from '@/hooks/usePusher';
+import { useAuthContext } from '@/contexts/auth/context';
 
 export default function Index({appointments, filters, vets, clients, statuses, old, errors}: AppointmentPageProps) {
     const { t } = useTranslation();
     const { showToast } = useToast();
     const { props } = usePage();
+    const { isAuthenticated, user } = useAuthContext();
     const tableRef = useRef<DataTableRef<Appointment>>(null);
     const [rowSelection, setRowSelection] = useState({});
     const [filtersInitialized, setFiltersInitialized] = useState(false);
@@ -38,6 +41,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
     const [confirmCancelLoading, setConfirmCancelLoading] = useState(false);
     const [acceptLoading, setAcceptLoading] = useState(false);
     const [acceptError, setAcceptError] = useState<string | null>(null);
+    const justAcceptedRef = useRef(false);
 
     const handleConfirmCancel = () => {
         if (!selectedAppointment) return;
@@ -85,24 +89,36 @@ export default function Index({appointments, filters, vets, clients, statuses, o
 
         setAcceptLoading(true);
         setAcceptError(null);
+        justAcceptedRef.current = true;
 
         router.post(route('appointments.accept', selectedAppointment.uuid), {}, {
-            onSuccess: () => {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                // Close modal immediately
                 setAcceptModalOpen(false);
                 setAcceptLoading(false);
+                setSelectedAppointment(null);
+                setAcceptError(null);
                 showToast({ 
                     type: 'success', 
                     message: t('common.appointment_accepted_success') || 'Appointment accepted successfully' 
                 });
-                router.visit(route('appointments.index'), { only: ['appointments'] });
+                // Reset the flag after a delay to allow WebSocket refresh
+                setTimeout(() => {
+                    justAcceptedRef.current = false;
+                }, 2000);
             },
             onError: (errors: any) => {
                 setAcceptError(errors.message || errors.error || t('common.failed_to_accept_appointment') || 'Failed to accept appointment');
                 setAcceptLoading(false);
+                justAcceptedRef.current = false;
                 showToast({ 
                     type: 'error', 
                     message: errors.message || errors.error || t('common.failed_to_accept_appointment') || 'Failed to accept appointment' 
                 });
+            },
+            onFinish: () => {
             }
         });
     };
@@ -156,6 +172,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
         onReport: handleReport,
         onCancel: handleCancel,
         onAccept: handleAccept,
+        user,
     });
 
     // Handle flash messages
@@ -260,6 +277,50 @@ export default function Index({appointments, filters, vets, clients, statuses, o
         window.addEventListener('popstate', handleUrlChange);
         return () => window.removeEventListener('popstate', handleUrlChange);
     }, [currentUrl]);
+
+    // Listen for appointment updates via WebSocket and refresh the datatable
+    usePusher({
+        userId: isAuthenticated && user ? (user.id as number) : null,
+        onAppointmentUpdated: (data: any) => {
+            // Skip refresh if we just accepted an appointment (to prevent modal from reopening)
+            if (justAcceptedRef.current) return;
+            
+            // Refresh the appointments datatable when an appointment is updated
+            // This ensures the user sees the latest status changes
+            if (data.appointment && window.location.pathname.includes('/appointments')) {
+                router.visit(window.location.pathname + window.location.search, {
+                    only: ['appointments'],
+                    preserveScroll: true,
+                    preserveState: true,
+                    replace: true,
+                });
+            }
+        },
+        onNotification: (data: any) => {
+            // Skip refresh if we just accepted an appointment (to prevent modal from reopening)
+            if (justAcceptedRef.current) return;
+            
+            // Also refresh when appointment-related notifications are received
+            const notificationType = data.type || data.notification?.data?.type;
+            if (notificationType && (
+                notificationType === 'appointment.confirmed' ||
+                notificationType === 'appointment.cancelled' ||
+                notificationType === 'appointment.status.changed' ||
+                notificationType === 'appointment_confirmed' ||
+                notificationType === 'appointment_cancelled' ||
+                notificationType === 'appointment_status_changed'
+            )) {
+                if (window.location.pathname.includes('/appointments')) {
+                    router.visit(window.location.pathname + window.location.search, {
+                        only: ['appointments'],
+                        preserveScroll: true,
+                        preserveState: true,
+                        replace: true,
+                    });
+                }
+            }
+        },
+    });
 
     // Handle bulk delete
     const openBulkModal = () => {
