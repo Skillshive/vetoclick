@@ -28,6 +28,7 @@ class AppointmentController extends Controller
     protected $appointmentService;
     protected $jitsiMeetService;
 
+    
     public function __construct(AppointmentService $appointmentService, JitsiMeetService $jitsiMeetService)
     {
         $this->appointmentService = $appointmentService;
@@ -521,15 +522,23 @@ class AppointmentController extends Controller
                 ]);
             }
             
+            // For Inertia requests, return back with success
             return redirect()->back()->with('success', __('common.appointment_accepted_success'));
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error accepting appointment', [
+                'uuid' => $uuid,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             if (request()->wantsJson() || request()->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'error' =>  __('common.error')
+                    'error' => $e->getMessage() ?: __('common.error'),
+                    'message' => $e->getMessage() ?: __('common.error')
                 ], 400);
             }
-            return back()->withErrors(['error' => __('common.error')]);
+            return back()->withErrors(['error' => $e->getMessage() ?: __('common.error')]);
         }
     }
 
@@ -644,7 +653,14 @@ class AppointmentController extends Controller
     public function cancel(string $uuid): JsonResponse
     {
         try {
-            $appointment = Appointment::where('uuid', $uuid)->firstOrFail();
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return response()->json([
+                    'error' => 'Appointment not found',
+                    'message' => __('common.appointment_not_found')
+                ], 404);
+            }
 
             // Check if appointment can be cancelled
             if ($appointment->status === 'completed' || $appointment->status === 'cancelled') {
@@ -654,7 +670,7 @@ class AppointmentController extends Controller
                 ], 400);
             }
 
-            $appointment->update(['status' => 'cancelled']);
+            $this->appointmentService->cancel($uuid);
 
             return response()->json([
                 'success' => true,

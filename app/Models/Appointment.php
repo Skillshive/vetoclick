@@ -30,7 +30,7 @@ class Appointment extends Model
 
     public function veterinary()
     {
-        return $this->belongsTo(Veterinary::class);
+        return $this->belongsTo(Veterinary::class, 'veterinarian_id');
     }
 
     public function client()

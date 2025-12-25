@@ -9,20 +9,27 @@ use App\Models\Client;
 use App\Models\Pet;
 use App\Models\Veterinary;
 use App\Services\AvailabilityService;
+use App\Events\AppointmentCreated;
+use App\Events\AppointmentUpdated;
+use App\Events\AppointmentReminder;
+use App\Notifications\AppointmentCancelled;
+use App\Notifications\AppointmentConfirmed;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentService implements ServiceInterface
 {
     protected $jitsiMeetService;
     protected $availabilityService;
-
-    public function __construct(JitsiMeetService $jitsiMeetService = null, AvailabilityService $availabilityService = null)
+    protected $twilioService;
+    public function __construct(JitsiMeetService $jitsiMeetService = null, AvailabilityService $availabilityService = null, TwilioService $twilioService = null)
     {
         $this->jitsiMeetService = $jitsiMeetService ?? new JitsiMeetService();
         $this->availabilityService = $availabilityService ?? new AvailabilityService();
+        $this->twilioService = $twilioService ?? new TwilioService();
     }
     /**
      * Get all appointments with optional pagination
@@ -184,7 +191,12 @@ class AppointmentService implements ServiceInterface
             $client->save();
         }
 
-        return $appointment->load(['client', 'pet', 'veterinary']);
+        $appointment = $appointment->load(['client', 'pet', 'veterinary']);
+        
+        // Broadcast appointment created event
+        event(new AppointmentCreated($appointment));
+
+        return $appointment;
     }
 
     /**
@@ -222,7 +234,12 @@ class AppointmentService implements ServiceInterface
             $this->generateJitsiMeetingLink($appointment);
         }
 
-        return $appointment->load(['client', 'pet', 'veterinary']);
+        $appointment = $appointment->load(['client', 'pet', 'veterinary']);
+        
+        // Broadcast appointment created event
+        event(new AppointmentCreated($appointment));
+
+        return $appointment;
     }
 
     
@@ -317,6 +334,12 @@ class AppointmentService implements ServiceInterface
                 $isVideoConseil = false; // Default to false if not provided or invalid
             }
 
+            $oldData = [
+                'status' => $appointment->status,
+                'appointment_date' => $appointment->appointment_date,
+                'start_time' => $appointment->start_time,
+            ];
+
             $updateData = $appointment->update([
             "veterinarian_id"=>$this->getVet($dto->veterinarian_id),
             "client_id"=>$this->getClient($dto->client_id),
@@ -335,7 +358,24 @@ class AppointmentService implements ServiceInterface
                 return $appointment;
             }
 
-            return $appointment->fresh(['client', 'pet', 'veterinary']);
+            $appointment = $appointment->fresh(['client', 'pet', 'veterinary']);
+            
+            // Detect changes
+            $changes = [];
+            if ($oldData['status'] !== $appointment->status) {
+                $changes['status'] = ['old' => $oldData['status'], 'new' => $appointment->status];
+            }
+            if ($oldData['appointment_date'] != $appointment->appointment_date) {
+                $changes['appointment_date'] = ['old' => $oldData['appointment_date'], 'new' => $appointment->appointment_date];
+            }
+            if ($oldData['start_time'] != $appointment->start_time) {
+                $changes['start_time'] = ['old' => $oldData['start_time'], 'new' => $appointment->start_time];
+            }
+            
+            // Broadcast appointment updated event
+            event(new AppointmentUpdated($appointment, $changes));
+
+            return $appointment;
         } catch (Exception $e) {
             throw new Exception("Failed to update appointment");
         }
@@ -353,7 +393,41 @@ class AppointmentService implements ServiceInterface
                 return false;
             }
 
-            return $appointment->delete();
+            $appointment->load(['client.user', 'veterinary.user', 'pet']);
+            $oldStatus = $appointment->status;
+            
+            // Store relations before deletion
+            $client = $appointment->client;
+            $veterinary = $appointment->veterinary;
+            $pet = $appointment->pet;
+            
+            $result = $appointment->delete();
+            
+            if ($result) {
+                // Create a temporary appointment object for broadcasting
+                $tempAppointment = new Appointment();
+                $tempAppointment->id = $appointment->id;
+                $tempAppointment->uuid = $appointment->uuid;
+                $tempAppointment->status = 'deleted';
+                $tempAppointment->appointment_date = $appointment->appointment_date;
+                $tempAppointment->start_time = $appointment->start_time;
+                $tempAppointment->end_time = $appointment->end_time;
+                
+                // Set relations
+                if ($client) {
+                    $tempAppointment->setRelation('client', $client);
+                }
+                if ($veterinary) {
+                    $tempAppointment->setRelation('veterinary', $veterinary);
+                }
+                if ($pet) {
+                    $tempAppointment->setRelation('pet', $pet);
+                }
+                
+                event(new AppointmentUpdated($tempAppointment, ['status' => ['old' => $oldStatus, 'new' => 'deleted']]));
+            }
+            
+            return $result;
         } catch (Exception $e) {
             throw new Exception("Failed to delete appointment");
         }
@@ -368,8 +442,22 @@ class AppointmentService implements ServiceInterface
                 return false;
             }
 
+            $oldStatus = $appointment->status;
             $appointment->status = 'cancelled';
-            return $appointment->save();
+            $result = $appointment->save();
+            
+            if ($result) {
+                $appointment->load(['client.user', 'veterinary.user', 'pet']);
+                event(new AppointmentUpdated($appointment, ['status' => ['old' => $oldStatus, 'new' => 'cancelled']]));
+                
+                // Send notification to the client only
+                // The vet doesn't need a notification when they cancel an appointment
+                if ($appointment->client && $appointment->client->user) {
+                    $appointment->client->user->notify(new AppointmentCancelled($appointment));
+                }
+            }
+            
+            return $result;
         } catch (Exception $e) {
             throw new Exception("Failed to cancel appointment");
         }
@@ -540,7 +628,7 @@ class AppointmentService implements ServiceInterface
         $dayOfWeek = strtolower($appointmentDateCarbon->format('l'));
         
         // Get vet's availability slots for this day
-        $availabilitySlots = $this->availabilityService->getAvailableSlots($veterinarianId, $dayOfWeek);
+        $availabilitySlots = $this->availabiliervice->getAvailableSlots($veterinarianId, $dayOfWeek);
         
         if ($availabilitySlots->isEmpty()) {
             return [];
@@ -769,6 +857,7 @@ class AppointmentService implements ServiceInterface
             throw new Exception("There is a conflicting appointment at this time");
         }
 
+        $oldStatus = $appointment->status;
         $appointment->status = 'confirmed';
         $appointment->save();
 
@@ -776,7 +865,51 @@ class AppointmentService implements ServiceInterface
             $this->generateJitsiMeetingLink($appointment);
         }
 
-        return $appointment->fresh(['client', 'pet', 'veterinary']);
+        // Broadcast appointment updated event
+        event(new AppointmentUpdated($appointment, ['status' => ['old' => $oldStatus, 'new' => 'confirmed']]));
+
+        // Load client.user relationship to ensure user data is available
+        if ($appointment->relationLoaded('client') && $appointment->client) {
+            if (!$appointment->client->relationLoaded('user')) {
+                $appointment->load('client.user');
+            }
+        } else {
+            $appointment->load('client.user');
+        }
+
+        // Send notification to the client only
+        // The vet doesn't need a notification when they confirm an appointment
+        if ($appointment->client && $appointment->client->user) {
+            $appointment->client->user->notify(new AppointmentConfirmed($appointment));
+        }
+
+        // Send SMS notification if phone number exists
+        if ($appointment->client && $appointment->client->user && $appointment->client->user->phone) {
+            try {
+                $message = "Votre rendez-vous du " . $appointment->appointment_date->format('d/m/Y') .
+                    " à " . (is_string($appointment->start_time) ? date('H:i', strtotime($appointment->start_time)) : $appointment->start_time->format('H:i')) .
+                    " avec le vétérinaire " . $appointment->veterinary->user->firstname . " " . $appointment->veterinary->user->lastname . " a bien été confirmé.";
+                
+                $result = $this->twilioService->sendSMS(
+                    $appointment->client->user->phone,
+                    $message
+                );
+
+            } catch (\Exception $e) {
+                Log::error('Exception while sending SMS for appointment confirmation', [
+                    'appointment_id' => $appointment->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        } else {
+            Log::warning('Cannot send SMS: phone number not available', [
+                'appointment_id' => $appointment->id,
+                'has_client' => $appointment->client ? true : false,
+                'has_user' => $appointment->client && $appointment->client->user ? true : false,
+                'has_phone' => $appointment->client && $appointment->client->user && $appointment->client->user->phone ? true : false
+            ]);
+        }
+        return $appointment->fresh(['client.user', 'pet', 'veterinary']);
     }
 
     /**
