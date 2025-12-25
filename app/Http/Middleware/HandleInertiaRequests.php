@@ -29,12 +29,12 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        
         return [
             ...parent::share($request),
             'auth' => [
-                 'user' => fn () => $request->user()
-                ? $this->formatUserData($request->user())
-                : null,
+                'user' => $user ? $this->formatUserData($user) : null,
             ],
             'locale' => [
                 'current' => app()->getLocale(),
@@ -75,6 +75,10 @@ class HandleInertiaRequests extends Middleware
                 
                 return $translations;
             },
+            'pusher' => [
+                'key' => config('broadcasting.connections.pusher.key'),
+                'cluster' => config('broadcasting.connections.pusher.options.cluster'),
+            ],
         ];
     }
 
