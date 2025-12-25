@@ -77,7 +77,7 @@ export function Header() {
           )}
         />
         <Notifications />
-        <RightSidebar />
+        {/* <RightSidebar /> */}
         <LanguageSelector />
       </div>
     </header>
