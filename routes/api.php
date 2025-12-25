@@ -61,3 +61,5 @@ Route::get('/clients', [ClientController::class, 'getAll'])->name('clients.all')
 Route::post('/clients', [ClientController::class, 'store'])->name('clients.store')->middleware(['auth', 'verified']);
 Route::get('/clients/{uuid}/pets', [PetController::class, 'getByClient'])->name('clients.pets');
 Route::get('/veterinarians', [\App\Http\Controllers\Api\VeterinarianController::class, 'index'])->name('veterinarians.all');
+
+// Note: Notification routes moved to web.php for proper session support

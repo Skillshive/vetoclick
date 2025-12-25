@@ -30,14 +30,10 @@ use App\Http\Controllers\PetController;
 use App\Http\Controllers\VaccinationController;
 use App\Http\Controllers\VaccinController;
 use App\Http\Controllers\VaccineProductController;
-use App\Models\Client;
 use App\Services\AppointmentService;
-use App\Http\Resources\AppointmentResource;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 require_once 'common.php';
 
@@ -45,9 +41,13 @@ require_once 'common.php';
 Route::get('/language/switch/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 Route::get('/api/languages', [LanguageController::class, 'getLanguages'])->name('language.get');
 
-// Auth check endpoint - using controller method for proper session access
 Route::get('/api/auth/check', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'check'])
     ->name('api.auth.check');
+
+// Broadcasting authentication
+Route::post('/broadcasting/auth', [\App\Http\Controllers\BroadcastingController::class, 'authenticate'])
+    ->middleware('auth')
+    ->name('broadcasting.auth');
 
 // OTP routes for registration - need web middleware for session support
 // Exclude from CSRF since these are public registration endpoints
@@ -61,6 +61,17 @@ Route::post('/api/otp/verify', [\App\Http\Controllers\Auth\OtpVerificationContro
 
 Route::get('/api/user', [\App\Http\Controllers\Api\UserController::class, 'checkAuth'])->name('api.user');
 
+// Notification routes (require authentication) - in web.php for session support
+Route::middleware('auth')->prefix('api/notifications')->controller(\App\Http\Controllers\NotificationController::class)->group(function () {
+    Route::get('/', 'index')->name('notifications.index');
+    Route::get('/latest', 'latest')->name('notifications.latest');
+    Route::get('/unread-count', 'unreadCount')->name('notifications.unread-count');
+    Route::post('/{id}/read', 'markAsRead')->name('notifications.mark-as-read');
+    Route::post('/mark-all-read', 'markAllAsRead')->name('notifications.mark-all-read');
+    Route::delete('/{id}', 'destroy')->name('notifications.destroy');
+    Route::delete('/read/all', 'deleteAllRead')->name('notifications.delete-all-read');
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::post('/api/otp/phone-update/send', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'sendPhoneUpdateOtp'])
         ->name('api.otp.phone-update.send');
@@ -72,32 +83,47 @@ Route::middleware(['auth'])->group(function () {
 Route::redirect('/', '/dashboard');
 
 // Dashboard routes - check user role to redirect to appropriate dashboard
+// Note: This route handles login tokens first (without auth), then redirects to itself with auth
 Route::get('/dashboard', function (AppointmentService $appointmentService, Request $request) {
-
+    // Handle login token if present (for API/JSON login flow)
+    if ($request->has('login_token')) {
+        $token = $request->input('login_token');
+        $userId = Cache::get('login_token_' . $token);
+        
+        if ($userId) {
+            Auth::loginUsingId($userId);
+            Cache::forget('login_token_' . $token);
+            $request->session()->regenerate();
+            
+            // Redirect to dashboard without token in URL
+            return redirect('/dashboard');
+        }
+    }
     
     $user = Auth::user();
     
+    // If no user is authenticated, redirect to login
+    if (!$user) {
+        return redirect('/login');
+    }
+    
     // Check if user is an admin (highest priority)
-    if ($user && $user->hasRole('admin')) {
+    if ($user->hasRole('admin')) {
         return app(AdminDashboardController::class)->index();
     }
     // Check if user is a veterinarian
-    else if ($user && $user->veterinary) {
+    else if ($user->veterinary) {
         return app(VetDashboardController::class)->index($appointmentService);
     } 
     // Check if user is a receptionist
-    else if ($user && $user->hasRole('receptionist')) {
+    else if ($user->hasRole('receptionist')) {
         return app(ReceptionistDashboardController::class)->index();
     } 
     else {
-        // If no user is authenticated, redirect to login
-        if (!$user) {
-            return redirect('/login');
-        }
         // Redirect to user dashboard
         return app(UserDashboardController::class)->index();
     }
-})->name('dashboard'); // Removed auth middleware to allow token-based login
+})->middleware(['web', 'auth'])->name('dashboard'); // FIXED: Added auth middleware
 
 // User dashboard route
 Route::get('/user/dashboard', [UserDashboardController::class, 'index'])
