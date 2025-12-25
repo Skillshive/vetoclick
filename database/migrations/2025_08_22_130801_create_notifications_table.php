@@ -12,8 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->string('type'); // Type of notification (e.g., AppointmentConfirmed, AppointmentCancelled)
+            $table->morphs('notifiable'); // User receiving the notification
+            $table->text('data'); // JSON data about the notification
+            $table->timestamp('read_at')->nullable(); // When the notification was read
             $table->timestamps();
+            
+            $table->index(['notifiable_type', 'notifiable_id']);
         });
     }
 

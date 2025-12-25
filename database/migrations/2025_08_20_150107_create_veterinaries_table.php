@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('subscription_status', ['active', 'inactive', 'suspended'])->default('inactive');
             $table->date('subscription_start_date')->nullable();
             $table->date('subscription_end_date')->nullable();
+            $table->foreignId('subscription_plan_id')->nullable()->constrained('subscription_plans')->onDelete('set null');
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('clinic_name')->nullable();
             $table->string('address')->nullable();
