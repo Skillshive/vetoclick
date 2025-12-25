@@ -13,6 +13,7 @@ import "./styles/index.css";
 import { SidebarProvider } from "./contexts/sidebar/Provider";
 import { ConfirmProvider } from './Components/common/Confirm/ConfirmContext';
 import { ToastProvider } from './Components/common/Toast/ToastContext';
+import { NotificationProvider } from './Components/common/Notification/NotificationProvider';
 import Tooltip from './Components/template/Tooltip';
 declare global {
   interface Window {
@@ -40,10 +41,12 @@ createInertiaApp({
     return importPage();
   },
   setup({ el, App: InertiaApp, props }) {
+    // props is the full Inertia page object with component, props, url, version, etc.
+    // We need to pass the full page object so AuthProvider can access props.auth
     createRoot(el).render(
       <StrictMode>
         <ErrorBoundary>
-          <App>
+          <App initialPage={props}>
             <InertiaApp {...props} />
           </App>
         </ErrorBoundary>
@@ -54,21 +57,24 @@ createInertiaApp({
 
 interface AppProps {
   children: ReactNode;
+  initialPage?: any;
 }
 
-function App({ children }: AppProps) {
+function App({ children, initialPage }: AppProps) {
   return (
     <LocaleProvider>
       <ThemeProvider>
         <ToastProvider>
-          <AuthProvider>
-            <BreakpointProvider>
-              <SidebarProvider>
-                <ConfirmProvider>
-                  {children}
-                </ConfirmProvider>
-              </SidebarProvider>
-            </BreakpointProvider>
+          <AuthProvider initialPage={initialPage}>
+            <NotificationProvider>
+              <BreakpointProvider>
+                <SidebarProvider>
+                  <ConfirmProvider>
+                    {children}
+                  </ConfirmProvider>
+                </SidebarProvider>
+              </BreakpointProvider>
+            </NotificationProvider>
           </AuthProvider>
           <Tooltip />
         </ToastProvider>
