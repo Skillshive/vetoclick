@@ -38,6 +38,7 @@ interface VeterinaryInfo {
   clinic_name?: string;
   address?: string;
   profile_img?: string;
+  consultation_price?: number;
 }
 
 interface ProfilePageProps {
@@ -74,6 +75,7 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
     years_experience: veterinaryInfo?.years_experience || "",
     clinic_name: veterinaryInfo?.clinic_name || "",
     address: veterinaryInfo?.address || "",
+    consultation_price: veterinaryInfo?.consultation_price || "",
     });
 
   const [profileValidationErrors, setProfileValidationErrors] = useState<{
@@ -86,6 +88,7 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
     years_experience?: string;
     clinic_name?: string;
     address?: string;
+    consultation_price?: string;
   }>({});
 
   const [isWaitingForValidation, setIsWaitingForValidation] = useState(false);
@@ -330,6 +333,7 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
         years_experience: errors?.years_experience?.[0] ? t(errors.years_experience[0]) : undefined,
         clinic_name: errors?.clinic_name?.[0] ? t(errors.clinic_name[0]) : undefined,
         address: errors?.address?.[0] ? t(errors.address[0]) : undefined,
+        consultation_price: errors?.consultation_price?.[0] ? t(errors.consultation_price[0]) : undefined,
       });
       return;
     }
@@ -770,6 +774,37 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
                           }
                         }}
                         error={errors?.clinic_name || profileValidationErrors.clinic_name}
+                      />
+                      
+                      <Input
+                        placeholder={t('common.enter_consultation_price')}
+                        label={t('common.consultation_price')}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="rounded-xl"
+                        value={data?.consultation_price}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setData('consultation_price', value);
+                          const result = profileFormSchema.safeParse({
+                            ...data,
+                            consultation_price: value,
+                          });
+                          if (!result.success) {
+                            const errors = result.error.flatten().fieldErrors;
+                            setProfileValidationErrors(prev => ({
+                              ...prev,
+                              consultation_price: errors.consultation_price?.[0] ? t(errors.consultation_price[0]) : undefined,
+                            }));
+                          } else {
+                            setProfileValidationErrors(prev => ({
+                              ...prev,
+                              consultation_price: undefined,
+                            }));
+                          }
+                        }}
+                        error={errors?.consultation_price || profileValidationErrors.consultation_price}
                       />
                       
                       <div className="sm:col-span-2">
