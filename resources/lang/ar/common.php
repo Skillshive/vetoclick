@@ -1839,4 +1839,5 @@ return [
 'pack' => 'حزمة',
 'total_sold' => 'إجمالي المبيعات',
 'no_notifications_yet' => 'لا توجد إشعارات جديدة بعد',
+'blog_retrieve_error' => 'فشل استرداد المدونة',
 ];

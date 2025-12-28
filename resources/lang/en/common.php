@@ -2052,4 +2052,5 @@ return [
 'total_sold' => 'Total Sold',
 'monthly_increase' => 'Monthly increase',
 'no_notifications_yet' => 'No new notifications yet',
+'blog_retrieve_error' => 'Failed to retrieve blog',
 ];

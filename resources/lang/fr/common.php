@@ -1949,4 +1949,5 @@ return [
 'no_data' => 'Aucune donnée disponible',
 'revenue_current_year' => 'Revenus - Année en cours',
 'no_notifications_yet' => 'Aucune notification nouvelle pour le moment',
+'blog_retrieve_error' => 'Échec de la récupération du blog',
 ];
