@@ -50,6 +50,7 @@ Route::prefix('products')->controller(ProductController::class)->group(function 
 
 Route::prefix('blogs')->controller(BlogController::class)->group(function () {
     Route::get('/', 'apiIndex');
+    Route::get('/{uuid}', 'apiShow');
 });
 
 Route::prefix('appointments')->controller(AppointmentController::class)->group(function () {
