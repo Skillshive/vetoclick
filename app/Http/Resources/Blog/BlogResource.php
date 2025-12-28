@@ -8,6 +8,33 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class BlogResource extends JsonResource
 {
     /**
+     * Parse tags from various formats (JSON string, comma-separated, or array)
+     *
+     * @param mixed $tags
+     * @return array
+     */
+    private function parseTags($tags): array
+    {
+        if (empty($tags)) {
+            return [];
+        }
+
+        // If it's already an array, return it
+        if (is_array($tags)) {
+            return array_map('trim', $tags);
+        }
+
+        // Try to decode as JSON first (handles JSON strings like ["tag1","tag2"])
+        $decoded = json_decode($tags, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return array_map('trim', $decoded);
+        }
+
+        // Otherwise, treat as comma-separated string
+        return array_map('trim', explode(',', $tags));
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
@@ -18,11 +45,13 @@ class BlogResource extends JsonResource
             'uuid' => $this->uuid,
             'title' => $this->title,
             'body' => $this->body,
+            'content' => $this->body, 
+            'description' => $this->caption ?: $this->body,
             'caption' => $this->caption,
             'meta_title' => $this->meta_title,
             'meta_desc' => $this->meta_desc,
             'meta_keywords' => $this->meta_keywords,
-            'tags' => $this->tags,
+            'tags' => $this->parseTags($this->tags),
             'image' => $this->when($this->image, function () {
                 return [
                     'id' => $this->image?->id,
@@ -37,8 +66,8 @@ class BlogResource extends JsonResource
                 ];
             }),
             'category_blog_id' => $this->category_blog_id,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'created_at' => $this->created_at ? $this->created_at->toISOString() : null,
+            'updated_at' => $this->updated_at ? $this->updated_at->toISOString() : null,
         ];
     }
 }

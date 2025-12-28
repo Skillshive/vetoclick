@@ -159,4 +159,49 @@ class BlogService implements ServiceInterface
             ->take($limit)
             ->get();
     }
+
+    /**
+     * Get related blogs by category (excluding current blog)
+     */
+    public function getRelatedByCategory(int $categoryId, string $excludeUuid, int $limit = 3): Collection
+    {
+        return Blog::with(['image', 'categoryBlog'])
+            ->where('category_blog_id', $categoryId)
+            ->where('uuid', '!=', $excludeUuid)
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
+
+    /**
+     * Get previous blog (older than current)
+     */
+    public function getPrevious(string $currentUuid): ?Blog
+    {
+        $currentBlog = $this->getByUuid($currentUuid);
+        if (!$currentBlog) {
+            return null;
+        }
+
+        return Blog::with(['image', 'categoryBlog'])
+            ->where('created_at', '<', $currentBlog->created_at)
+            ->orderBy('created_at', 'desc')
+            ->first();
+    }
+
+    /**
+     * Get next blog (newer than current)
+     */
+    public function getNext(string $currentUuid): ?Blog
+    {
+        $currentBlog = $this->getByUuid($currentUuid);
+        if (!$currentBlog) {
+            return null;
+        }
+
+        return Blog::with(['image', 'categoryBlog'])
+            ->where('created_at', '>', $currentBlog->created_at)
+            ->orderBy('created_at', 'asc')
+            ->first();
+    }
 }

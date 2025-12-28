@@ -255,13 +255,73 @@ class BlogController extends Controller
         }
     }
 
-    public function apiIndex()
+    public function apiIndex(Request $request)
     {
         try {
-            $blogs = $this->blogService->getLatest(3);
-            return BlogResource::collection($blogs);
+            $page = $request->input('page', 1);
+            $perPage = $request->input('per_page', 10);
+            
+            $blogs = $this->blogService->getAll($perPage);
+            
+            return response()->json([
+                'success' => true,
+                'data' => BlogResource::collection($blogs->items())->toArray(request()),
+                'pagination' => [
+                    'currentPage' => $blogs->currentPage(),
+                    'totalPages' => $blogs->lastPage(),
+                    'perPage' => $blogs->perPage(),
+                    'total' => $blogs->total(),
+                ]
+            ]);
         } catch (Exception $e) {
-            return response()->json(['error' => __('common.blog_retrieve_error')], 500);
+            return response()->json([
+                'success' => false,
+                'error' => __('common.blog_retrieve_error')
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a single blog by UUID (API endpoint)
+     */
+    public function apiShow(string $uuid)
+    {
+        try {
+            $blog = $this->blogService->getByUuid($uuid);
+
+            if (!$blog) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('common.blog_not_found')
+                ], 404);
+            }
+
+            // Get related blogs from same category
+            $relatedBlogs = collect([]);
+            if ($blog->category_blog_id) {
+                $relatedBlogs = $this->blogService->getRelatedByCategory(
+                    $blog->category_blog_id,
+                    $blog->uuid,
+                    3
+                );
+            }
+
+            // Get previous and next blogs
+            $previousBlog = $this->blogService->getPrevious($blog->uuid);
+            $nextBlog = $this->blogService->getNext($blog->uuid);
+
+            return response()->json([
+                'success' => true,
+                'data' => (new BlogResource($blog))->toArray(request()),
+                'related' => BlogResource::collection($relatedBlogs)->toArray(request()),
+                'previous' => $previousBlog ? (new BlogResource($previousBlog))->toArray(request()) : null,
+                'next' => $nextBlog ? (new BlogResource($nextBlog))->toArray(request()) : null,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => __('common.blog_retrieve_error')
+            ], 500);
         }
     }
 }
