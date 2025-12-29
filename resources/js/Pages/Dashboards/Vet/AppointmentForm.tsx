@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DatePicker } from '@/components/shared/form/Datepicker';
 import { Card, Button, Switch } from '@/components/ui';
 import Select from 'react-select';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useTranslation } from '@/hooks/useTranslation';
 import { router } from '@inertiajs/react';
@@ -35,6 +35,11 @@ export const AppointmentForm = () => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [isLoadingTimes, setIsLoadingTimes] = useState(false);
+  const [timeValidationError, setTimeValidationError] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const appointmentOptions = [
     { value: 'common.checkup', label: t('common.checkup') },
@@ -50,7 +55,6 @@ export const AppointmentForm = () => {
         const response = await axios.get(route('clients.all'));
         setClients(response.data);
       } catch (error) {
-        console.error('Error fetching clients:', error);
       }
     };
     fetchClients();
@@ -63,7 +67,6 @@ export const AppointmentForm = () => {
           const response = await axios.get(route('clients.pets', { uuid: selectedClient }));
           setPets(response.data);
         } catch (error) {
-          console.error('Error fetching pets:', error);
         }
       };
       fetchPets();
@@ -76,6 +79,7 @@ export const AppointmentForm = () => {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<VetAppointmentFormValues>({
     resolver: zodResolver(vetAppointmentSchema),
@@ -91,6 +95,95 @@ export const AppointmentForm = () => {
     },
   });
 
+  const watchedValues = watch();
+  const veterinaryId = (user as any)?.veterinary?.uuid;
+
+  // Fetch available times when date changes
+  const fetchAvailableTimes = useCallback(async (vetId: string, date: string) => {
+    if (!vetId || !date) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    setIsLoadingTimes(true);
+    setTimeValidationError(null);
+    setShowSuggestions(false);
+
+    try {
+      const response = await fetch(
+        `${route('appointments.available-times')}?veterinary_id=${vetId}&appointment_date=${date}&duration_minutes=30`,
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'same-origin',
+        }
+      );
+
+      const result = await response.json();
+
+
+      if (result.suggestions.length === 0) {
+        setAvailableTimes(result.suggestions);
+        setIsDisabled(true);
+      }
+
+      if (result.success && result.suggestions.length > 0) {
+        setAvailableTimes(result.suggestions);
+        setIsDisabled(false);
+      } else {
+        setAvailableTimes([]);
+        setIsDisabled(true);
+      }
+    } catch (error) {
+      setAvailableTimes([]);
+      setIsDisabled(true);
+    } finally {
+      setIsLoadingTimes(false);
+    }
+  }, []);
+
+  // Watch for changes in appointment_date to fetch available times
+  useEffect(() => {
+    const date = watchedValues.appointment_date;
+    
+    if (veterinaryId && date) {
+      fetchAvailableTimes(veterinaryId, date);
+    } else {
+      setAvailableTimes([]);
+      setTimeValidationError(null);
+      setShowSuggestions(false);
+    }
+  }, [watchedValues.appointment_date, veterinaryId, fetchAvailableTimes]);
+
+  // Validate selected time when it changes
+  useEffect(() => {
+    const date = watchedValues.appointment_date;
+    const time = watchedValues.start_time;
+
+    if (veterinaryId && date && time && availableTimes.length > 0) {
+      // Check if selected time is in available times
+      const isAvailable = availableTimes.includes(time);
+      
+      if (!isAvailable) {
+        setTimeValidationError(t('common.veterinarian_not_available_at_requested_time'));
+        setShowSuggestions(true);
+      } else {
+        setTimeValidationError(null);
+        setShowSuggestions(false);
+      }
+    } else if (veterinaryId && date && time && availableTimes.length === 0 && !isLoadingTimes) {
+      // No available times found
+      setTimeValidationError(t('common.veterinarian_not_available_at_requested_time'));
+      setShowSuggestions(false);
+    } else {
+      setTimeValidationError(null);
+      setShowSuggestions(false);
+    }
+  }, [watchedValues.start_time, availableTimes, isLoadingTimes, watchedValues.appointment_date, veterinaryId, t]);
+
   const onSubmit = async (data: VetAppointmentFormValues) => {
     if (!startDate || startDate.length === 0 || !startDate[0]) {
       showToast({
@@ -100,8 +193,6 @@ export const AppointmentForm = () => {
       });
       return;
     }
-
-    console.log('user', user);
     
     // Get veterinary ID from user
     const veterinaryId = (user as any)?.veterinary?.uuid;
@@ -156,7 +247,25 @@ export const AppointmentForm = () => {
           setIsSubmitting(false);
         },
         onError: (errors: any) => {
-          const errorMessage = Object.values(errors)[0] as string || t('common.vet_dashboard.messages.appointment_error');
+          const errorMessage = errors.error || errors.message || (Object.values(errors)[0] as string) || t('common.vet_dashboard.messages.appointment_error');
+          
+          // Check if this is a conflict or availability error
+          const conflictKeywords = [
+            'conflict', 
+            'not available', 
+            'appointment_time_conflict', 
+            'veterinarian_not_available',
+            t('common.appointment_time_conflict').toLowerCase(),
+            t('common.veterinarian_not_available_at_requested_time').toLowerCase()
+          ];
+          const isConflictError = conflictKeywords.some(keyword => 
+            errorMessage.toLowerCase().includes(keyword.toLowerCase())
+          );
+          
+          if (isConflictError) {
+            setTimeValidationError(errorMessage);
+          }
+          
           showToast({
             type: 'error',
             message: errorMessage || t('common.vet_dashboard.messages.appointment_error'),
@@ -214,6 +323,72 @@ export const AppointmentForm = () => {
             {errors.appointment_date && (
               <p className="mt-2 text-sm text-red-600">
                 {t(String(errors.appointment_date.message))}
+              </p>
+            )}
+            
+            {/* Loading indicator */}
+            {isLoadingTimes && veterinaryId && watchedValues.appointment_date && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                {t('common.loading_available_times') || 'Loading available times...'}
+              </p>
+            )}
+            
+            {/* Time validation error and suggestions */}
+            {timeValidationError && (
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+                  {timeValidationError}
+                </p>
+                
+                {showSuggestions && availableTimes.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('common.available_times_suggestions') || 'Available times:'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableTimes.map((time) => {
+                        const handleTimeSelect = () => {
+                          if (watchedValues.appointment_date) {
+                            const [hours, minutes] = time.split(':');
+                            const selectedDate = new Date(watchedValues.appointment_date);
+                            selectedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                            
+                            setStartDate([selectedDate]);
+                            setValue('appointment_date', watchedValues.appointment_date);
+                            setValue('start_time', time);
+                            
+                            setTimeValidationError(null);
+                            setShowSuggestions(false);
+                          }
+                        };
+                        
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={handleTimeSelect}
+                            className="px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                          >
+                            {time}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {availableTimes.length === 0 && !isLoadingTimes && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('common.no_available_times')}
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Show available times count when time is valid */}
+            {!timeValidationError && availableTimes.length > 0 && watchedValues.start_time && (
+              <p className="text-sm text-primary-600 dark:text-primary-400 mt-2">
+                {t('common.time_available')}
               </p>
             )}
           </div>
@@ -339,7 +514,7 @@ export const AppointmentForm = () => {
               </div>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit"  className="w-full" disabled={isSubmitting || isDisabled} color="primary">
             {isSubmitting 
               ? t('common.submitting') || 'Submitting...' 
               : t('common.vet_dashboard.form.schedule_appointment')}
