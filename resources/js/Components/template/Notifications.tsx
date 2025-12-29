@@ -12,7 +12,7 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { IoCheckmarkDoneOutline } from "react-icons/io5";
-import React, { useEffect } from "react";
+import React from "react";
 
 // Local Imports
 import {
@@ -27,7 +27,6 @@ import AlarmIcon from "@/assets/dualicons/alarm.svg?react";
 import GirlEmptyBox from "@/assets/illustrations/girl-empty-box.svg?react";
 import { useThemeContext } from "@/contexts/theme/context";
 import { useNotification } from "@/Components/common/Notification/NotificationProvider";
-import { T } from "node_modules/react-router/dist/development/index-react-server-client-DRhjXpk2.d.mts";
 import { useTranslation } from "@/hooks/useTranslation";
 
 // ----------------------------------------------------------------------
@@ -77,11 +76,6 @@ const types: Record<NotificationType, NotificationTypeInfo> = {
 export function Notifications() {
   const { overlayNotifications, removeOverlayNotification } = useNotification();
 
-  // Debug: Log notifications
-  useEffect(() => {
-    console.log('[Notifications Component] overlayNotifications:', overlayNotifications.length, overlayNotifications);
-  }, [overlayNotifications]);
-
   // Convert overlay notifications to the format expected by this component
   const notifications: Notification[] = overlayNotifications.map((notif) => ({
     id: notif.id,
@@ -91,7 +85,6 @@ export function Notifications() {
     time: notif.time,
   }));
 
-  console.log('[Notifications Component] Converted notifications:', notifications.length, notifications);
 
   const removeNotification = (id: string): void => {
     removeOverlayNotification(id);
