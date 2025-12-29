@@ -180,7 +180,7 @@ class AppointmentService implements ServiceInterface
             "is_video_conseil"=>$isVideoConseil,
             "reason_for_visit"=>$dto->reason_for_visit,
             "appointment_notes"=>$dto->appointment_notes,
-            "status"=>auth()->user()->hasRole('veterinarian') ? 'scheduled' : 'confirmed',
+            "status"=>auth()->user()->hasRole('veterinarian') ?'confirmed' : 'scheduled',
         ]);
 
         // Generate Jitsi Meet link for the appointment
@@ -628,7 +628,7 @@ class AppointmentService implements ServiceInterface
         $dayOfWeek = strtolower($appointmentDateCarbon->format('l'));
         
         // Get vet's availability slots for this day
-        $availabilitySlots = $this->availabiliervice->getAvailableSlots($veterinarianId, $dayOfWeek);
+        $availabilitySlots = $this->availabilityService->getAvailableSlots($veterinarianId, $dayOfWeek);
         
         if ($availabilitySlots->isEmpty()) {
             return [];

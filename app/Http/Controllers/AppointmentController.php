@@ -61,10 +61,9 @@ class AppointmentController extends Controller
                             'suggestions' => $validation['suggestions'],
                         ], 422);
                     }
-                    return back()->withErrors([
-                        'error' => $validation['message'],
-                        'suggestions' => $validation['suggestions']
-                    ]);
+                    return back()
+                        ->withErrors(['error' => $validation['message']])
+                        ->with('suggestions', $validation['suggestions']);
                 }
             }
             
@@ -137,10 +136,9 @@ class AppointmentController extends Controller
                 
                 if (!$validation['valid']) {
                     if ($request->header('X-Inertia')) {
-                        return back()->withErrors([
-                            'error' => $validation['message'],
-                            'suggestions' => $validation['suggestions']
-                        ]);
+                        return back()
+                            ->withErrors(['error' => $validation['message']])
+                            ->with('suggestions', $validation['suggestions']);
                     }
                     
                     if ($request->wantsJson() || $request->expectsJson()) {
@@ -152,10 +150,9 @@ class AppointmentController extends Controller
                         ], 422);
                     }
                     
-                    return back()->withErrors([
-                        'error' => $validation['message'],
-                        'suggestions' => $validation['suggestions']
-                    ]);
+                    return back()
+                        ->withErrors(['error' => $validation['message']])
+                        ->with('suggestions', $validation['suggestions']);
                 }
             }
 
@@ -188,10 +185,9 @@ class AppointmentController extends Controller
             }
             
             if ($request->header('X-Inertia')) {
-                return back()->withErrors([
-                    'error' => $errorMessage ?: __('common.error'),
-                    'suggestions' => $suggestions
-                ]);
+                return back()
+                    ->withErrors(['error' => $errorMessage ?: __('common.error')])
+                    ->with('suggestions', $suggestions);
             }
             
             if ($request->wantsJson() || $request->expectsJson()) {
@@ -203,10 +199,9 @@ class AppointmentController extends Controller
                 ], 400);
             }
             
-            return back()->withErrors([
-                'error' => $errorMessage ?: __('common.error'),
-                'suggestions' => $suggestions
-            ]);
+            return back()
+                ->withErrors(['error' => $errorMessage ?: __('common.error')])
+                ->with('suggestions', $suggestions);
         }
     }
 

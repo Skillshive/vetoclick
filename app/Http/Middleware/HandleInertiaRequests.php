@@ -79,6 +79,7 @@ class HandleInertiaRequests extends Middleware
                 'key' => config('broadcasting.connections.pusher.key'),
                 'cluster' => config('broadcasting.connections.pusher.options.cluster'),
             ],
+            'suggestions' => fn () => $request->session()->get('suggestions', []),
         ];
     }
 
