@@ -76,88 +76,40 @@ export function usePusher(options: UsePusherOptions = {}) {
 
   // Always keep ref up to date with latest callbacks
   callbacksRef.current = options;
-  
-  console.log('[usePusher] Current callbacks ref:', {
-    hasCreated: !!callbacksRef.current.onAppointmentCreated,
-    hasUpdated: !!callbacksRef.current.onAppointmentUpdated,
-    hasReminder: !!callbacksRef.current.onAppointmentReminder,
-  });
 
   useEffect(() => {
-    console.log('[usePusher] useEffect triggered with:', {
-      userId,
-      pusherConfig,
-      isAdmin,
-    });
-    
     if (!userId) {
-      console.log('[Pusher] No userId, skipping Pusher initialization. userId:', userId);
       return;
     }
 
     const pusher = initializePusher(userId, pusherConfig);
 
     if (!pusher) {
-      console.warn('[Pusher] Failed to initialize Pusher');
       return;
     }
-
-    // Add connection event listeners for debugging
-    pusher.connection.bind('connected', () => {
-      console.log('[Pusher] Connected to Pusher');
-    });
-
-    pusher.connection.bind('error', (err: any) => {
-      console.error('[Pusher] Connection error:', err);
-    });
-
-    pusher.connection.bind('disconnected', () => {
-      console.warn('[Pusher] Disconnected from Pusher');
-    });
 
     // Create wrapper functions that always use the latest callbacks from ref
     const handleAppointmentCreated = (data: PusherEvent) => {
       const callbacks = callbacksRef.current;
-      console.log('[Pusher] handleAppointmentCreated - callbacks:', {
-        hasCreated: !!callbacks.onAppointmentCreated,
-        callbackType: typeof callbacks.onAppointmentCreated,
-      });
       if (callbacks.onAppointmentCreated) {
         try {
           callbacks.onAppointmentCreated(data);
         } catch (error) {
-          console.error('[Pusher] Error in onAppointmentCreated:', error);
+          // Error in onAppointmentCreated
         }
       }
     };
 
     const handleAppointmentUpdated = (data: PusherEvent) => {
       const callbacks = callbacksRef.current;
-      console.log('[Pusher] handleAppointmentUpdated START');
-      console.log('[Pusher] callbacksRef.current:', callbacks);
-      console.log('[Pusher] onAppointmentUpdated exists?', !!callbacks.onAppointmentUpdated);
-      console.log('[Pusher] onAppointmentUpdated type:', typeof callbacks.onAppointmentUpdated);
-      console.log('[Pusher] onAppointmentUpdated function:', callbacks.onAppointmentUpdated?.toString().substring(0, 100));
-      
+
       if (callbacks.onAppointmentUpdated) {
-        console.log('[Pusher] About to call onAppointmentUpdated with data:', data);
-        console.log('[Pusher] Calling callback now...');
         try {
-          const result = callbacks.onAppointmentUpdated(data);
-          console.log('[Pusher] onAppointmentUpdated returned:', result);
-          console.log('[Pusher] Callback execution completed');
+          callbacks.onAppointmentUpdated(data);
         } catch (error) {
-          console.error('[Pusher] ERROR in onAppointmentUpdated:', error);
-          console.error('[Pusher] Error details:', {
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : 'No stack',
-            name: error instanceof Error ? error.name : 'Unknown',
-          });
+          // Error in onAppointmentUpdated
         }
-      } else {
-        console.warn('[Pusher] onAppointmentUpdated is not defined in callbacksRef');
       }
-      console.log('[Pusher] handleAppointmentUpdated END');
     };
 
     const handleAppointmentReminder = (data: PusherEvent) => {
@@ -166,30 +118,32 @@ export function usePusher(options: UsePusherOptions = {}) {
         try {
           callbacks.onAppointmentReminder(data);
         } catch (error) {
-          console.error('[Pusher] Error in onAppointmentReminder:', error);
+          // Error in onAppointmentReminder
         }
       }
     };
 
     // Subscribe to public appointments channel
     const appointmentsChannel = pusher.subscribe('appointments');
+    
+    // CRITICAL: Unbind all previous handlers to prevent duplicates when component remounts
+    appointmentsChannel.unbind_all();
+    
     channelsRef.current.push(appointmentsChannel);
     
     appointmentsChannel.bind('pusher:subscription_succeeded', () => {
-      console.log('[Pusher] Successfully subscribed to appointments channel');
+      // Successfully subscribed to appointments channel
     });
 
     appointmentsChannel.bind('pusher:subscription_error', (err: any) => {
-      console.error('[Pusher] Subscription error for appointments channel:', err);
+      // Subscription error for appointments channel
     });
-    
-    console.log('[Pusher] Subscribed to appointments channel');
 
     // Subscribe to admin channel if user is admin
     if (isAdmin) {
       const adminChannel = pusher.subscribe('admin.appointments');
+      adminChannel.unbind_all(); // Unbind previous handlers
       channelsRef.current.push(adminChannel);
-      console.log('[Pusher] Subscribed to admin.appointments channel');
       
       adminChannel.bind('appointment.created', handleAppointmentCreated);
       adminChannel.bind('appointment.updated', handleAppointmentUpdated);
@@ -197,17 +151,19 @@ export function usePusher(options: UsePusherOptions = {}) {
 
     // Subscribe to private user channel
     const userChannel = pusher.subscribe(`private-user.${userId}`);
+    
+    // CRITICAL: Unbind all previous handlers to prevent duplicates when component remounts
+    userChannel.unbind_all();
+    
     channelsRef.current.push(userChannel);
     
     userChannel.bind('pusher:subscription_succeeded', () => {
-      console.log(`[Pusher] Successfully subscribed to private-user.${userId} channel`);
+      // Successfully subscribed to private user channel
     });
 
     userChannel.bind('pusher:subscription_error', (err: any) => {
-      console.error(`[Pusher] Subscription error for private-user.${userId} channel:`, err);
+      // Subscription error for private user channel
     });
-    
-    console.log(`[Pusher] Subscribed to private-user.${userId} channel`);
 
     // Listen for notifications on the user channel (AppointmentConfirmed, AppointmentCancelled use user.{userId})
     // AppointmentStatusChanged still uses App.Models.User.{id}, but we'll listen on user channel for the main notifications
@@ -215,25 +171,39 @@ export function usePusher(options: UsePusherOptions = {}) {
     // Listen for appointment created events on public channel
     appointmentsChannel.bind('appointment.created', handleAppointmentCreated);
 
-    // Listen for appointment updated events on public channel
+    // Listen for appointment updated events on public channel (for admins/general updates only)
+    // Note: Individual users will get their notifications via the private channel
     appointmentsChannel.bind('appointment.updated', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.updated on appointments channel:', data);
-      handleAppointmentUpdated(data);
+      // Only handle this if user is admin, otherwise let the private channel handle it
+      if (isAdmin) {
+        handleAppointmentUpdated(data);
+      }
+    });
+
+    // Also listen for notification events on public appointments channel (in case they're broadcast there too)
+    appointmentsChannel.bind('appointment.confirmed', (data: PusherEvent) => {
+      handleNotification(data);
+    });
+
+    // Global listener for appointments channel too
+    appointmentsChannel.bind_global((eventName: string, data: any) => {
+      if (eventName === 'appointment.confirmed' || eventName.includes('notification') || eventName.includes('Notification')) {
+        if (eventName === 'appointment.confirmed') {
+          handleNotification(data);
+        }
+      }
     });
 
     // Listen for events on private user channel
     userChannel.bind('appointment.created', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.created on private channel:', data);
       handleAppointmentCreated(data);
     });
 
     userChannel.bind('appointment.updated', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.updated on private channel:', data);
       handleAppointmentUpdated(data);
     });
 
     userChannel.bind('appointment.reminder', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.reminder:', data);
       handleAppointmentReminder(data);
     });
 
@@ -241,12 +211,11 @@ export function usePusher(options: UsePusherOptions = {}) {
     // AppointmentConfirmed and AppointmentCancelled now broadcast to user.{userId}
     const handleNotification = (data: PusherEvent) => {
       const callbacks = callbacksRef.current;
-      console.log('[Pusher] Received notification on user channel:', data);
       if (callbacks.onNotification) {
         try {
           callbacks.onNotification(data);
         } catch (error) {
-          console.error('[Pusher] Error in onNotification:', error);
+          // Error in onNotification
         }
       }
     };
@@ -254,59 +223,72 @@ export function usePusher(options: UsePusherOptions = {}) {
     // Listen for notification events on user channel
     // Laravel broadcasts notifications with the event name from broadcastType()
     userChannel.bind('appointment.confirmed', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.confirmed on user channel:', data);
       handleNotification(data);
     });
     userChannel.bind('appointment.cancelled', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.cancelled on user channel:', data);
       handleNotification(data);
     });
     userChannel.bind('appointment.status.changed', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.status.changed on user channel:', data);
       handleNotification(data);
     });
     userChannel.bind('appointment.reminder', (data: PusherEvent) => {
-      console.log('[Pusher] Received appointment.reminder on user channel:', data);
       handleNotification(data);
     });
     
     // Also listen for Laravel's default notification broadcast event
     // Even though we use broadcastType(), Laravel may still send the default event
     userChannel.bind('Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', (data: PusherEvent) => {
-      console.log('[Pusher] Received BroadcastNotificationCreated on user channel:', data);
       // Check if this is one of our custom notification types
-      // The data structure is: { type: 'appointment.confirmed', title: '...', message: '...', appointment: {...} }
-      const notificationType = (data as any).type || data.notification?.type || (data as any).notification?.data?.type;
-      const hasAppointment = (data as any).appointment || data.notification?.data?.appointment || (data as any).notification?.appointment;
+      // The data structure from Laravel's default notification broadcast:
+      // { id: '...', type: 'App\\Notifications\\AppointmentConfirmed', notifiable_type: '...', notifiable_id: ..., data: {...} }
+      const notificationType = (data as any).type || data.notification?.type || (data as any).notification?.data?.type || 
+                               (data as any).data?.type || (data as any).data?.notification?.type;
+      const hasAppointment = (data as any).appointment || data.notification?.data?.appointment || 
+                            (data as any).notification?.appointment || (data as any).data?.appointment;
       
-      // If it has an appointment field or the type matches, it's an appointment notification
-      const isAppointmentNotification = hasAppointment || (notificationType && (
-        notificationType === 'appointment.confirmed' ||
-        notificationType === 'appointment.cancelled' ||
-        notificationType === 'appointment.status.changed' ||
-        notificationType === 'appointment.reminder' ||
-        notificationType === 'appointment_status_changed' ||
-        notificationType === 'appointment_reminder' ||
-        (typeof notificationType === 'string' && (
-          notificationType.includes('AppointmentConfirmed') ||
-          notificationType.includes('AppointmentCancelled') ||
-          notificationType.includes('AppointmentStatusChanged') ||
-          notificationType.includes('AppointmentReminder')
-        ))
-      ));
+      // Check if it's an appointment notification by class name or type
+      const isAppointmentNotification = hasAppointment || 
+        (notificationType && (
+          notificationType === 'appointment.confirmed' ||
+          notificationType === 'appointment.cancelled' ||
+          notificationType === 'appointment.status.changed' ||
+          notificationType === 'appointment.reminder' ||
+          notificationType === 'appointment_confirmed' ||
+          notificationType === 'appointment_cancelled' ||
+          notificationType === 'appointment_status_changed' ||
+          notificationType === 'appointment_reminder' ||
+          (typeof notificationType === 'string' && (
+            notificationType.includes('AppointmentConfirmed') ||
+            notificationType.includes('AppointmentCancelled') ||
+            notificationType.includes('AppointmentStatusChanged') ||
+            notificationType.includes('AppointmentReminder') ||
+            notificationType.includes('App\\Notifications\\Appointment')
+          ))
+        ));
       
       if (isAppointmentNotification) {
-        console.log('[Pusher] This is an appointment notification, handling it. Type:', notificationType, 'Has appointment:', !!hasAppointment);
-        handleNotification(data);
-      } else {
-        console.log('[Pusher] Not an appointment notification, ignoring. Type:', notificationType, 'Has appointment:', !!hasAppointment);
+        // Extract the actual notification data from Laravel's structure
+        const notificationData = (data as any).data || data.notification?.data || data;
+        handleNotification(notificationData);
       }
     });
     
     // Listen for all events on the channel for debugging
     userChannel.bind_global((eventName: string, data: any) => {
-      if (eventName.startsWith('appointment.') || eventName.includes('Notification')) {
-        console.log('[Pusher] Global event listener caught:', eventName, data);
+      // Check if this is a notification-related event
+      if (eventName.startsWith('appointment.') || 
+          eventName.includes('Notification') || 
+          eventName.includes('notification') ||
+          eventName === 'appointment.confirmed' ||
+          eventName === 'appointment.cancelled' ||
+          eventName.includes('BroadcastNotification') ||
+          eventName.includes('Illuminate')) {
+        // Try to handle it as a notification if it looks like one
+        if (eventName === 'appointment.confirmed' || 
+            (data && (data.type === 'appointment.confirmed' || data.type === 'appointment_confirmed' || 
+                     (data.data && data.data.type === 'appointment.confirmed')))) {
+          handleNotification(data);
+        }
       }
     });
 

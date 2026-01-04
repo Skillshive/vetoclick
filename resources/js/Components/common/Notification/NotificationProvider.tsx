@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { usePusher } from '@/hooks/usePusher';
 import { useAuthContext } from '@/contexts/auth/context';
 import { NotificationToast } from './NotificationToast';
@@ -52,7 +52,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const { user, isAuthenticated } = useAuthContext();
   const [pusherConfig, setPusherConfig] = useState<{ key?: string; cluster?: string } | undefined>(undefined);
 
-  useEffect(() => {
+  const [prevNotificationIds, setPrevNotificationIds] = useState<Set<string>>(new Set());
+  // Use ref for immediate synchronous duplicate detection (state updates are async and can cause race conditions)
+  const processedAppointmentUpdatesRef = useRef<Set<string>>(new Set());
+
+  const fetchNotifications = useCallback((showToastForNew = false) => {
     if (isAuthenticated && user && user.id) {
       getLatestNotifications(10)
         .then((response) => {
@@ -69,6 +73,13 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
               appointmentId: notification.data.appointment?.id?.toString(),
               appointmentUuid: notification.data.appointment?.uuid,
             }));
+            
+            // Update the tracking set with all current notification IDs
+            setPrevNotificationIds((prevIds) => {
+              const newIds = new Set(prevIds);
+              response.notifications.forEach(notif => newIds.add(notif.id));
+              return newIds;
+            });
             
             const uniqueNotifications = converted.filter((notification, index, self) =>
               index === self.findIndex((n) => n.id === notification.id)
@@ -99,13 +110,27 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           }
         })
         .catch((error) => {
-          console.error('[NotificationProvider] Error fetching notifications:', error);
+          // Error fetching notifications
         });
     } else {
       // Clear notifications if user is not authenticated
       setOverlayNotifications([]);
     }
-  }, [isAuthenticated, user?.id]); // Only depend on user.id to prevent re-fetching
+  }, [isAuthenticated, user?.id]);
+
+  useEffect(() => {
+    fetchNotifications(false);
+    
+    // Periodically check for new notifications (in case broadcast isn't working)
+    // Use a longer interval to avoid spamming
+    const interval = setInterval(() => {
+      fetchNotifications(false); // Don't show toasts on interval refresh
+    }, 30000); // Check every 30 seconds instead of 5
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [fetchNotifications]);
 
   // Get Pusher config - will be initialized from env vars in pusher.ts if not available
   // The pusher.ts utility will handle getting config from env vars as fallback
@@ -217,7 +242,75 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   }, [showNotification]);
 
   const handleAppointmentUpdated = useCallback((data: any) => {
-  }, []);
+    const appointment = data.appointment;
+    const changes = data.changes;
+    const message = data.message;
+    
+    // If there's a status change, show a notification
+    if (changes?.status) {
+      const oldStatus = changes.status.old;
+      const newStatus = changes.status.new;
+      
+      // Create a unique key for this specific update to prevent duplicates
+      const updateKey = `${appointment?.id || appointment?.uuid}-${oldStatus}-${newStatus}`;
+      
+      // Use ref for IMMEDIATE synchronous check (no async state update delay)
+      if (processedAppointmentUpdatesRef.current.has(updateKey)) {
+        return;
+      }
+      
+      // Mark this update as processed IMMEDIATELY in the ref
+      processedAppointmentUpdatesRef.current.add(updateKey);
+      
+      // Keep only the last 50 updates to prevent memory leak
+      if (processedAppointmentUpdatesRef.current.size > 100) {
+        const arr = Array.from(processedAppointmentUpdatesRef.current);
+        processedAppointmentUpdatesRef.current = new Set(arr.slice(-50));
+      }
+      
+      let notificationType: 'success' | 'error' | 'info' | 'warning' = 'info';
+      let title = 'Mise à jour du rendez-vous';
+      let notificationMessage = message || `Le rendez-vous a été mis à jour`;
+      
+      // Determine notification type based on status change
+      if (newStatus === 'confirmed') {
+        notificationType = 'success';
+        title = 'Rendez-vous confirmé';
+        notificationMessage = message || 'Votre rendez-vous a été confirmé';
+      } else if (newStatus === 'cancelled') {
+        notificationType = 'warning';
+        title = 'Rendez-vous annulé';
+        notificationMessage = message || 'Votre rendez-vous a été annulé';
+      } else if (newStatus === 'completed') {
+        notificationType = 'success';
+        title = 'Rendez-vous terminé';
+        notificationMessage = message || 'Votre rendez-vous a été complété';
+      } else if (newStatus === 'rescheduled') {
+        notificationType = 'info';
+        title = 'Rendez-vous reporté';
+        notificationMessage = message || 'Votre rendez-vous a été reporté';
+      }
+      
+      // Show toast notification (this also adds to overlay automatically)
+      showNotification({
+        type: notificationType,
+        title,
+        message: notificationMessage,
+        duration: 5000,
+      });
+    } else {
+      
+      // Generic update notification if no status change
+      if (message) {
+        showNotification({
+          type: 'info',
+          title: 'Mise à jour du rendez-vous',
+          message,
+          duration: 5000,
+        });
+      }
+    }
+  }, [showNotification]);
 
   const handleAppointmentReminder = useCallback((data: any) => {
     const title = data.title || 'Rappel de rendez-vous';
@@ -276,7 +369,10 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }
     
     const appointment = notificationData.appointment || data.appointment;
-    const notifType = notificationData.type || data.type;
+    // Extract notification type from multiple possible sources
+    const notifType = notificationData.type || data.type || (data as any).notification?.type || 
+                      (data as any).notification?.data?.type || 
+                      (notificationData as any).notification?.type;
     
     let notificationType: 'success' | 'error' | 'info' | 'warning' = 'info';
     let overlayType: NotificationType = 'message';
@@ -302,12 +398,15 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     const message = notificationData.message || data.message || 'Vous avez une nouvelle notification';
 
     // Show toast notification
-    showNotification({
-      type: notificationType,
-      title,
-      message,
-      duration: notifType === 'appointment_reminder' ? 10000 : 5000,
-    });
+    // Always show if we have valid notification data (handler is only called for valid notifications)
+    if (title || message) {
+      showNotification({
+        type: notificationType,
+        title,
+        message,
+        duration: notifType === 'appointment_reminder' || normalizedType === 'appointment_reminder' ? 10000 : 5000,
+      });
+    }
 
     const normalizedTypeForId = notifType?.replace(/\./g, '_') || notifType || 'unknown';
     const finalNotificationId = notificationId || 
