@@ -8,7 +8,7 @@ use Carbon\Carbon;
 class JitsiMeetService
 {
     /**
-     * Generate a Jitsi Meet link for an appointment based on date and time
+     * Generate a VetoClick Meet link for an appointment based on date and time
      *
      * @param string $appointmentUuid The appointment UUID
      * @param string $appointmentDate The appointment date (Y-m-d format)
@@ -17,7 +17,7 @@ class JitsiMeetService
      * @param string|null $petName Optional pet name for room display name
      * @return array Returns an array with 'meeting_id' and 'join_url'
      */
-    public function generateMeetingLink(string $appointmentUuid, string $appointmentDate, string $startTime, ?string $clientName = null, ?string $petName = null, ?string $redirectUrl = null): array
+    public function generateMeetingLink(string $appointmentUuid, string $appointmentDate, string $startTime, ?string $clientName = null, ?string $petName = null, ?string $redirectUrl = null, bool $trackEndOnRedirect = true): array
     {
         $domain = config('services.jitsi.domain', 'jitsi.colabcorner.com');
         
@@ -27,7 +27,7 @@ class JitsiMeetService
         // Generate meeting ID (can be same as room name or separate)
         $meetingId = $roomName;
         
-        // Build the Jitsi Meet URL
+        // Build the VetoClick Meet URL
         $joinUrl = "https://{$domain}/{$roomName}";
         
         // Add optional parameters for better meeting experience
@@ -43,17 +43,35 @@ class JitsiMeetService
         $params['config.startWithAudioMuted'] = 'false';
         
         // Add redirect URL - where to redirect users when they leave the meeting
-        if ($redirectUrl) {
-            // Ensure redirect URL is absolute
-            if (!filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
-                $redirectUrl = url($redirectUrl);
+        // Include appointment UUID in redirect URL to track meeting end
+        if ($trackEndOnRedirect) {
+            $endMeetingUrl = url("/appointments/{$appointmentUuid}/end-meeting-on-leave");
+            if ($redirectUrl) {
+                // Ensure redirect URL is absolute and add end tracking
+                if (!filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
+                    $redirectUrl = url($redirectUrl);
+                }
+                // Combine end tracking with redirect
+                $params['config.leaveButtonURL'] = urlencode($endMeetingUrl . '?redirect=' . urlencode($redirectUrl));
+            } else {
+                // Default redirect to app dashboard with end tracking
+                $defaultRedirect = url('/dashboard');
+                $params['config.leaveButtonURL'] = urlencode($endMeetingUrl . '?redirect=' . urlencode($defaultRedirect));
             }
-            $params['config.leaveButtonURL'] = urlencode($redirectUrl);
         } else {
-            // Default redirect to app dashboard
-            $appUrl = config('app.url', url('/'));
-            $defaultRedirect = url('/dashboard');
-            $params['config.leaveButtonURL'] = urlencode($defaultRedirect);
+            // Original behavior without end tracking
+            if ($redirectUrl) {
+                // Ensure redirect URL is absolute
+                if (!filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
+                    $redirectUrl = url($redirectUrl);
+                }
+                $params['config.leaveButtonURL'] = urlencode($redirectUrl);
+            } else {
+                // Default redirect to app dashboard
+                $appUrl = config('app.url', url('/'));
+                $defaultRedirect = url('/dashboard');
+                $params['config.leaveButtonURL'] = urlencode($defaultRedirect);
+            }
         }
         
         // Add custom branding if configured
@@ -68,7 +86,7 @@ class JitsiMeetService
             $logoUrl = $branding['logo_url'];
             if (!filter_var($logoUrl, FILTER_VALIDATE_URL)) {
                 // If relative URL, make it absolute with full domain
-                // Jitsi Meet needs full HTTPS URLs to load the logo
+                // VetoClick Meet needs full HTTPS URLs to load the logo
                 $logoUrl = url($logoUrl);
             }
             $params['config.brandingLogoUrl'] = urlencode($logoUrl);
@@ -100,6 +118,12 @@ class JitsiMeetService
         $params['config.hideDisplayName'] = 'false';
         $params['config.prejoinPageEnabled'] = 'true';
         $params['config.requireDisplayName'] = 'false';
+        
+        $params['config.enableRecordingService'] = 'true';
+        $params['config.recordingServiceEnabled'] = 'true';
+        $params['config.liveStreamingEnabled'] = 'false'; // Disable live streaming, use recording instead
+
+        $params['config.enableAutoRecording'] = 'true';
         
         if (!empty($params)) {
             $joinUrl .= '?' . http_build_query($params);
@@ -173,10 +197,39 @@ class JitsiMeetService
                 ];
             } else {
                 if ($now->lt($earliestAccess)) {
-                    $minutesUntil = $now->diffInMinutes($earliestAccess);
+                    $secondsUntil = $now->diffInSeconds($earliestAccess);
+                    $totalMinutes = $secondsUntil / 60.0;
+                    
+                    // Format time: if > 60 minutes, convert to hours, otherwise show minutes and seconds
+                    if ($totalMinutes > 60) {
+                        $hours = floor($totalMinutes / 60);
+                        $remainingMinutes = floor($totalMinutes % 60);
+                        $hoursUnit = $hours == 1 ? 'hour' : 'hours';
+                        $minutesUnit = $remainingMinutes == 1 ? 'minute' : 'minutes';
+                        
+                        if ($remainingMinutes > 0) {
+                            $message = "Meeting will be available in {$hours} {$hoursUnit} {$remainingMinutes} {$minutesUnit}";
+                        } else {
+                            $message = "Meeting will be available in {$hours} {$hoursUnit}";
+                        }
+                    } else {
+                        $minutes = floor($totalMinutes);
+                        $seconds = $secondsUntil % 60;
+                        $minutesUnit = $minutes == 1 ? 'minute' : 'minutes';
+                        $secondsUnit = $seconds == 1 ? 'second' : 'seconds';
+                        
+                        if ($minutes > 0 && $seconds > 0) {
+                            $message = "Meeting will be available in {$minutes} {$minutesUnit} {$seconds} {$secondsUnit}";
+                        } else if ($minutes > 0) {
+                            $message = "Meeting will be available in {$minutes} {$minutesUnit}";
+                        } else {
+                            $message = "Meeting will be available in {$seconds} {$secondsUnit}";
+                        }
+                    }
+                    
                     return [
                         'can_access' => false,
-                        'message' => "Meeting will be available in {$minutesUntil} minutes",
+                        'message' => $message,
                         'appointment_datetime' => $appointmentDateTime,
                         'current_datetime' => $now,
                         'earliest_access' => $earliestAccess,
@@ -214,6 +267,46 @@ class JitsiMeetService
         $sanitizedRoomName = preg_replace('/[^a-zA-Z0-9-]/', '', $roomName);
         
         return "https://{$domain}/{$sanitizedRoomName}";
+    }
+
+    /**
+     * Get recording URL for a meeting
+     * This tries multiple common Jitsi recording URL patterns
+     *
+     * @param string $meetingId The meeting ID
+     * @return string|null
+     */
+    public function getRecordingUrl(string $meetingId): ?string
+    {
+        $domain = config('services.jitsi.domain', 'jitsi.colabcorner.com');
+        
+        // Common Jitsi recording URL patterns
+        $possibleUrls = [
+            "https://{$domain}/recordings/{$meetingId}",
+            "https://{$domain}/recordings/{$meetingId}.mp4",
+            "https://{$domain}/recordings/{$meetingId}/recording.mp4",
+        ];
+
+        // Try to find which URL works
+        foreach ($possibleUrls as $url) {
+            try {
+                $context = stream_context_create([
+                    'http' => [
+                        'method' => 'HEAD',
+                        'timeout' => 5,
+                    ]
+                ]);
+                
+                $headers = @get_headers($url, 1);
+                if ($headers && strpos($headers[0], '200') !== false) {
+                    return $url;
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        return null;
     }
 }
 
