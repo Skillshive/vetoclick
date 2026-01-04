@@ -94,12 +94,15 @@ export default function Index({appointments, filters, vets, clients, statuses, o
         router.post(route('appointments.accept', selectedAppointment.uuid), {}, {
             preserveState: true,
             preserveScroll: true,
-            onSuccess: (page) => {
-                // Close modal immediately
-                setAcceptModalOpen(false);
+            onSuccess: () => {
+                // Close modal and reset states immediately
                 setAcceptLoading(false);
-                setSelectedAppointment(null);
                 setAcceptError(null);
+                setSelectedAppointment(null);
+                // Use setTimeout to ensure state updates are applied before closing modal
+                setTimeout(() => {
+                    setAcceptModalOpen(false);
+                }, 0);
                 showToast({ 
                     type: 'success', 
                     message: t('common.appointment_accepted_success') || 'Appointment accepted successfully' 
@@ -119,6 +122,8 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                 });
             },
             onFinish: () => {
+                // Ensure loading state is reset after request finishes
+                setAcceptLoading(false);
             }
         });
     };
@@ -297,11 +302,14 @@ export default function Index({appointments, filters, vets, clients, statuses, o
             }
         },
         onNotification: (data: any) => {
-            // Skip refresh if we just accepted an appointment (to prevent modal from reopening)
-            if (justAcceptedRef.current) return;
+            // The NotificationProvider handles displaying notifications globally
+            // We only handle page refresh logic here, not the notification display
             
-            // Also refresh when appointment-related notifications are received
-            const notificationType = data.type || data.notification?.data?.type;
+            // Check if this is an appointment-related notification for page refresh
+            const notificationType = data.type || data.notification?.data?.type || data.notification?.type;
+            
+            // Only skip refresh if we just accepted an appointment (to prevent modal from reopening)
+            // But notifications are always processed by the global NotificationProvider
             if (notificationType && (
                 notificationType === 'appointment.confirmed' ||
                 notificationType === 'appointment.cancelled' ||
@@ -310,7 +318,8 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                 notificationType === 'appointment_cancelled' ||
                 notificationType === 'appointment_status_changed'
             )) {
-                if (window.location.pathname.includes('/appointments')) {
+                // Only refresh the page if we haven't just accepted (to prevent modal reopening)
+                if (!justAcceptedRef.current && window.location.pathname.includes('/appointments')) {
                     router.visit(window.location.pathname + window.location.search, {
                         only: ['appointments'],
                         preserveScroll: true,
@@ -319,6 +328,8 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                     });
                 }
             }
+            // Note: Notifications are processed and displayed by the global NotificationProvider
+            // We don't need to do anything else here - just handle page refresh logic
         },
     });
 
@@ -476,8 +487,16 @@ export default function Index({appointments, filters, vets, clients, statuses, o
             onClose={() => {
                 setAcceptModalOpen(false);
                 setAcceptError(null);
+                setAcceptLoading(false);
+                setSelectedAppointment(null);
             }}
-            onOk={handleConfirmAccept}
+            onOk={acceptError ? () => {
+                // If in error state, close the modal
+                setAcceptModalOpen(false);
+                setAcceptError(null);
+                setAcceptLoading(false);
+                setSelectedAppointment(null);
+            } : handleConfirmAccept}
             state={acceptError ? "error" : "pending"}
             confirmLoading={acceptLoading}
             messages={{
