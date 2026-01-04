@@ -83,7 +83,7 @@ export function Profile() {
                 <div>
                   <Link
                     className="text-base font-medium text-gray-700 hover:text-primary-600 focus:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400 dark:focus:text-primary-400"
-                    href="/settings/profile"
+                    href="/profile"
                   >
                     {fullName}
                   </Link>
