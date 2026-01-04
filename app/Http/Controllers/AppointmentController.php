@@ -454,7 +454,7 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Validate and redirect to Jitsi Meet meeting
+     * Validate and redirect to VetoClick Meet meeting
      * Checks if the current time matches the appointment time before allowing access
      */
     public function joinMeeting(string $uuid)
@@ -493,7 +493,24 @@ class AppointmentController extends Controller
                 return back()->withErrors(['error' => $accessCheck['message']]);
             }
 
-            // Redirect to Jitsi Meet
+            // Track meeting start and client attendance
+            $user = Auth::user();
+            $isClient = $user && $user->client && $user->client->id === $appointment->client_id;
+            
+            if ($isClient && !$appointment->client_attended_meeting) {
+                $appointment->update([
+                    'client_attended_meeting' => true,
+                    'client_joined_at' => now(),
+                    'meeting_started_at' => $appointment->meeting_started_at ?? now(),
+                ]);
+            } elseif (!$appointment->meeting_started_at) {
+                // Vet or first person joining - mark meeting as started
+                $appointment->update([
+                    'meeting_started_at' => now(),
+                ]);
+            }
+
+            // Redirect to VetoClick Meet
             return redirect($appointment->video_join_url);
         } catch (Exception $e) {
             return back()->withErrors(['error' => __('common.failed_to_join_meeting')]);
@@ -732,6 +749,327 @@ class AppointmentController extends Controller
                 'message' => $e->getMessage(),
                 'suggestions' => []
             ], 500);
+        }
+    }
+
+    /**
+     * Save video recording URL for an appointment
+     * Can be called manually or via webhook
+     */
+    public function saveRecording(string $uuid, Request $request): JsonResponse
+    {
+        try {
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('common.appointment_not_found')
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'recording_url' => 'required|url',
+            ]);
+
+            // If recording_url is provided, download and store it locally
+            if ($validated['recording_url'] && !empty($validated['recording_url'])) {
+                // Dispatch job to download and store the recording
+                \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid);
+                
+                // Also save the original URL in case download fails
+                $appointment->update([
+                    'video_recording_url' => $validated['recording_url'],
+                ]);
+            } else {
+                $appointment->update([
+                    'video_recording_url' => $validated['recording_url'],
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Recording URL saved successfully',
+                'appointment' => new AppointmentResource($appointment)
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save recording URL'
+            ], 500);
+        }
+    }
+
+    /**
+     * Webhook endpoint for Jitsi to notify when recording is ready
+     */
+    public function jitsiRecordingWebhook(string $uuid, Request $request): JsonResponse
+    {
+        try {
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('common.appointment_not_found')
+                ], 404);
+            }
+
+            // Jitsi webhook payload typically contains recording information
+            $recordingUrl = $request->input('recording_url') 
+                ?? $request->input('recordingUrl')
+                ?? $request->input('url');
+
+            if ($recordingUrl) {
+                // Dispatch job to download and store the recording
+                \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid);
+                
+                $appointment->update([
+                    'video_recording_url' => $recordingUrl,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Recording webhook processed successfully'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No recording URL provided in webhook'
+            ], 400);
+
+        } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Jitsi recording webhook error', [
+                'uuid' => $uuid,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process recording webhook'
+            ], 500);
+        }
+    }
+
+    /**
+     * Track meeting start and attendance
+     */
+    public function trackMeetingStart(string $uuid): JsonResponse
+    {
+        try {
+            \Illuminate\Support\Facades\Log::info('trackMeetingStart called', ['uuid' => $uuid]);
+            
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                \Illuminate\Support\Facades\Log::error('Appointment not found in trackMeetingStart', ['uuid' => $uuid]);
+                return response()->json([
+                    'success' => false,
+                    'message' => __('common.appointment_not_found')
+                ], 404);
+            }
+
+            $user = Auth::user();
+            $isClient = $user && $user->client && $user->client->id === $appointment->client_id;
+            
+            $updates = [];
+            
+            // Always mark meeting as started when someone joins (vet or client)
+            // If already started, this ensures we have a timestamp of when it actually started
+            if (!$appointment->meeting_started_at) {
+                $updates['meeting_started_at'] = now();
+                \Illuminate\Support\Facades\Log::info('Setting meeting_started_at', ['uuid' => $uuid, 'time' => now()]);
+            }
+            
+            // Track client attendance
+            if ($isClient && !$appointment->client_attended_meeting) {
+                $updates['client_attended_meeting'] = true;
+                $updates['client_joined_at'] = now();
+                \Illuminate\Support\Facades\Log::info('Client attendance tracked', ['uuid' => $uuid]);
+            } elseif (!$isClient && $user) {
+                // Vet or other user joining - ensure meeting_started_at is set
+                if (!$appointment->meeting_started_at) {
+                    $updates['meeting_started_at'] = now();
+                }
+                \Illuminate\Support\Facades\Log::info('Vet/user joining meeting', [
+                    'uuid' => $uuid, 
+                    'user_id' => $user->id,
+                    'is_vet' => $user->veterinary ? true : false
+                ]);
+            }
+            
+            if (!empty($updates)) {
+                $result = $appointment->update($updates);
+                $appointment->refresh(); // Refresh to get updated values
+                \Illuminate\Support\Facades\Log::info('Appointment updated', [
+                    'uuid' => $uuid, 
+                    'updates' => $updates,
+                    'update_result' => $result,
+                    'meeting_started_at' => $appointment->meeting_started_at,
+                    'client_attended_meeting' => $appointment->client_attended_meeting,
+                    'client_joined_at' => $appointment->client_joined_at
+                ]);
+                
+                // Schedule recording download jobs based on appointment end time (fallback if endMeetingOnLeave isn't called)
+                // Only schedule if meeting just started (first time)
+                if (isset($updates['meeting_started_at']) && !$appointment->video_recording_url) {
+                    try {
+                        // Calculate when the meeting should end
+                        $appointmentDate = \Carbon\Carbon::parse($appointment->appointment_date);
+                        $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $appointment->end_time);
+                        $appointmentEndDateTime = $appointmentDate->copy()
+                            ->setTime($endTime->hour, $endTime->minute, $endTime->second);
+                        
+                        // Schedule jobs: 2, 5, and 10 minutes after appointment end time
+                        $delay1 = now()->diffInSeconds($appointmentEndDateTime->copy()->addMinutes(2), false);
+                        $delay2 = now()->diffInSeconds($appointmentEndDateTime->copy()->addMinutes(5), false);
+                        $delay3 = now()->diffInSeconds($appointmentEndDateTime->copy()->addMinutes(10), false);
+                        
+                        // Only schedule if the delay is positive (future time)
+                        if ($delay1 > 0) {
+                            \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay1));
+                        }
+                        if ($delay2 > 0) {
+                            \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay2));
+                        }
+                        if ($delay3 > 0) {
+                            \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay3));
+                        }
+                        
+                        \Illuminate\Support\Facades\Log::info('Recording download jobs scheduled (fallback)', [
+                            'uuid' => $uuid,
+                            'appointment_end' => $appointmentEndDateTime,
+                            'delays' => [$delay1, $delay2, $delay3]
+                        ]);
+                    } catch (Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Failed to schedule recording jobs (fallback)', [
+                            'uuid' => $uuid,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            } else {
+                \Illuminate\Support\Facades\Log::info('No updates needed', ['uuid' => $uuid]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Meeting start tracked',
+                'updates' => $updates,
+                'appointment' => new AppointmentResource($appointment->fresh())
+            ]);
+        } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('trackMeetingStart error', [
+                'uuid' => $uuid,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to track meeting start: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Track meeting end
+     */
+    public function endMeeting(string $uuid): JsonResponse
+    {
+        try {
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('common.appointment_not_found')
+                ], 404);
+            }
+
+            $appointment->update([
+                'meeting_ended_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Meeting end time recorded',
+                'appointment' => new AppointmentResource($appointment)
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record meeting end time'
+            ], 500);
+        }
+    }
+
+    /**
+     * Track meeting end when user leaves (called from Jitsi redirect)
+     */
+    public function endMeetingOnLeave(string $uuid, Request $request)
+    {
+        try {
+            \Illuminate\Support\Facades\Log::info('endMeetingOnLeave called', [
+                'uuid' => $uuid,
+                'user' => Auth::id(),
+                'redirect' => $request->get('redirect')
+            ]);
+            
+            $appointment = $this->appointmentService->getByUuid($uuid);
+
+            if (!$appointment) {
+                \Illuminate\Support\Facades\Log::error('Appointment not found in endMeetingOnLeave', ['uuid' => $uuid]);
+                // If appointment not found, just redirect
+                $redirectUrl = $request->get('redirect', url('/dashboard'));
+                return redirect($redirectUrl);
+            }
+
+            // Always update meeting_ended_at when someone leaves (update if already set to track last person leaving)
+            $wasAlreadySet = $appointment->meeting_ended_at ? true : false;
+            
+            $result = $appointment->update([
+                'meeting_ended_at' => now(),
+            ]);
+            
+            $appointment->refresh(); // Refresh to get updated values
+            
+            \Illuminate\Support\Facades\Log::info('Meeting end time set', [
+                'uuid' => $uuid,
+                'update_result' => $result,
+                'meeting_ended_at' => $appointment->meeting_ended_at,
+                'was_already_set' => $wasAlreadySet,
+                'meeting_started_at' => $appointment->meeting_started_at,
+                'client_attended' => $appointment->client_attended_meeting
+            ]);
+            
+            // Schedule jobs to check for recording after meeting ends (only if not already scheduled)
+            if (!$wasAlreadySet) {
+                try {
+                    \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addMinutes(2));
+                    \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addMinutes(5));
+                    \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addMinutes(10));
+                    \Illuminate\Support\Facades\Log::info('Recording download jobs scheduled', ['uuid' => $uuid]);
+                } catch (Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to schedule recording jobs', [
+                        'uuid' => $uuid,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // Redirect to the specified URL or dashboard
+            $redirectUrl = $request->get('redirect', url('/dashboard'));
+            return redirect($redirectUrl);
+        } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('endMeetingOnLeave error', [
+                'uuid' => $uuid,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // On error, still redirect to prevent user being stuck
+            $redirectUrl = $request->get('redirect', url('/dashboard'));
+            return redirect($redirectUrl);
         }
     }
 

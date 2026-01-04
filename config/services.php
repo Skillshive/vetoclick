@@ -57,8 +57,18 @@ return [
         'domain' => env('JITSI_DOMAIN', 'jitsi.colabcorner.com'),
         // Redirect URL when user leaves the meeting (defaults to dashboard)
         'redirect_url' => env('JITSI_REDIRECT_URL', '/dashboard'),
+        // Jibri recording configuration
+        'recordings' => [
+            // Base URL where Jibri recordings are accessible
+            // Default: https://jitsi-domain/recordings/
+            'base_url' => env('JITSI_RECORDINGS_URL', null), // e.g., 'https://recordings.yourdomain.com'
+            // Recording file formats to check (in priority order)
+            'formats' => ['webm', 'mp4', 'mkv'],
+            // Enable/disable recording auto-download
+            'auto_download' => env('JITSI_AUTO_DOWNLOAD_RECORDINGS', true),
+        ],
         'branding' => [
-            // Display name shown in Jitsi Meet interface
+            // Display name shown in VetoClick Meet interface
             'display_name' => env('JITSI_BRANDING_DISPLAY_NAME', 'VetoClick'),
             // Logo URL - must be publicly accessible via HTTPS
             // Use full URL if Jitsi server is on different domain

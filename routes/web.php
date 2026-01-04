@@ -319,6 +319,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('{uuid}/accept', 'accept')->name('accept');
             Route::get('{uuid}/join-meeting', 'joinMeeting')->name('join-meeting');
             Route::get('{uuid}/check-meeting-access', 'checkMeetingAccess')->name('check-meeting-access');
+            Route::post('{uuid}/track-meeting-start', 'trackMeetingStart')->name('track-meeting-start');
+            Route::post('{uuid}/save-recording', 'saveRecording')->name('save-recording');
+            Route::post('{uuid}/end-meeting', 'endMeeting')->name('end-meeting');
+            Route::get('{uuid}/end-meeting-on-leave', 'endMeetingOnLeave')->name('end-meeting-on-leave');
+            Route::post('{uuid}/jitsi-recording-webhook', 'jitsiRecordingWebhook')->name('jitsi-recording-webhook');
         });
 });
 // Product routes

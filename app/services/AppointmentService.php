@@ -183,7 +183,7 @@ class AppointmentService implements ServiceInterface
             "status"=>auth()->user()->hasRole('veterinarian') ?'confirmed' : 'scheduled',
         ]);
 
-        // Generate Jitsi Meet link for the appointment
+        // Generate VetoClick Meet link for the appointment
         $this->generateJitsiMeetingLink($appointment);
         if($isFirstAppointment){
             $client = Client::where('id', $this->getClient($dto->client_id))->first();
@@ -244,7 +244,7 @@ class AppointmentService implements ServiceInterface
 
     
     /**
-     * Generate and store Jitsi Meet link for an appointment
+     * Generate and store VetoClick Meet link for an appointment
      *
      * @param Appointment $appointment
      * @return void
@@ -272,7 +272,7 @@ class AppointmentService implements ServiceInterface
                 $petName = $appointment->pet->name;
             }
 
-            // Generate the Jitsi Meet link based on appointment date and time
+            // Generate the VetoClick Meet link based on appointment date and time
             // Handle date format
             $appointmentDate = $appointment->appointment_date instanceof Carbon 
                 ? $appointment->appointment_date->format('Y-m-d')
@@ -307,7 +307,7 @@ class AppointmentService implements ServiceInterface
             // Refresh the appointment to get updated attributes
             $appointment->refresh();
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to generate Jitsi Meet link: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Failed to generate VetoClick Meet link: ' . $e->getMessage());
         }
     }
 
