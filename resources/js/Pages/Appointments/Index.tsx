@@ -95,14 +95,11 @@ export default function Index({appointments, filters, vets, clients, statuses, o
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
-                // Close modal and reset states immediately
+                // Close modal immediately
+                setAcceptModalOpen(false);
                 setAcceptLoading(false);
                 setAcceptError(null);
                 setSelectedAppointment(null);
-                // Use setTimeout to ensure state updates are applied before closing modal
-                setTimeout(() => {
-                    setAcceptModalOpen(false);
-                }, 0);
                 showToast({ 
                     type: 'success', 
                     message: t('common.appointment_accepted_success') || 'Appointment accepted successfully' 
