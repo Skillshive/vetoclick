@@ -107,7 +107,7 @@ export function createColumns(
 
         return appointment_type ? (
           <Badge color={getTypeColor(appointment_type)}>
-            {t(`common.${appointment_type}`)}
+            {t(`${appointment_type}`)}
           </Badge>
         ) : (
           <Badge color="neutral">
