@@ -459,14 +459,15 @@ export default function Register() {
                       {t('common.back') || 'Back'}
                     </button>
                     <div className="flex items-center gap-3">
-                      <button
+                      <Button
                         type="button"
+                        color="neutral"
                         onClick={sendOtp}
-                        className="dark:text-dark-300 dark:hover:text-dark-100 text-sm text-gray-600 underline hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="dark:text-dark-300 dark:hover:text-dark-100 text-sm text-gray-600 hover:text-gray-800"
                         disabled={sendingOtp || verifyingOtp}
                       >
                         {sendingOtp ? (t('common.sending') || 'Sending...') : (t('common.resend_otp') || 'Resend OTP')}
-                      </button>
+                      </Button>
                       <Button
                         type="submit"
                         color="primary"
