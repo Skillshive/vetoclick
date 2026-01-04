@@ -14,7 +14,7 @@ import { PencilSquareIcon } from "@heroicons/react/24/solid";
 // Local Imports
 import { Avatar, Button, Card, Modal } from "@/components/ui";
 import { Appointment } from "@/pages/Appointments/datatable/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PetDetailModal from "../modals/PetModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRTL } from "@/hooks/useRTL";
@@ -36,6 +36,9 @@ export function AppointmentCard({
   const { showToast } = useToast();
   const [isCheckingAccess, setIsCheckingAccess] = useState(false);
   const [creatingConsultation, setCreatingConsultation] = useState(false);
+  const [canAccessMeeting, setCanAccessMeeting] = useState<boolean | null>(null);
+  const [timeRemainingMessage, setTimeRemainingMessage] = useState<string | null>(null);
+  const [showJoinButton, setShowJoinButton] = useState<boolean>(true);
   // Only set consultationId if consultation exists and is not completed
   const [consultationId, setConsultationId] = useState<string | null>(
     appointment.consultation?.uuid && appointment.consultation?.status !== 'completed' 
@@ -62,12 +65,107 @@ export function AppointmentCard({
   
     const handleCardClick = () => {
       setIsModalOpen(true);
-      setConsultationId(appointment.consultation?.uuid);
+      setConsultationId(appointment.consultation?.uuid || null);
     };
   
     const handleCloseModal = () => {
       setIsModalOpen(false);
     };
+
+    // Calculate time remaining and update access status in real-time
+    useEffect(() => {
+      if (!appointment.is_video_conseil || !appointment.video_join_url) {
+        return;
+      }
+
+      const calculateTimeRemaining = () => {
+        try {
+          // Parse appointment date and time
+          const appointmentDate = new Date(appointment.appointment_date);
+          const [startHours, startMinutes] = appointment.start_time.split(':').map(Number);
+          const [endHours, endMinutes] = appointment.end_time.split(':').map(Number);
+          
+          // Create appointment start and end datetime
+          const appointmentStartDateTime = new Date(appointmentDate);
+          appointmentStartDateTime.setHours(startHours, startMinutes, 0, 0);
+          
+          const appointmentEndDateTime = new Date(appointmentDate);
+          appointmentEndDateTime.setHours(endHours, endMinutes, 0, 0);
+          
+          const earliestAccess = new Date(appointmentStartDateTime.getTime() - 5 * 60 * 1000); // 5 minutes before
+          const latestAccess = new Date(appointmentEndDateTime.getTime() + 30 * 60 * 1000); // 30 minutes after end time
+          
+          const now = new Date();
+          
+          // Hide button 30 minutes after appointment end time
+          if (now > latestAccess) {
+            setShowJoinButton(false);
+            setCanAccessMeeting(false);
+            setTimeRemainingMessage(null);
+            return;
+          }
+          
+          setShowJoinButton(true);
+          
+          // Check if current time is before earliest access
+          if (now < earliestAccess) {
+            const diffMs = earliestAccess.getTime() - now.getTime();
+            const totalMinutes = diffMs / (1000 * 60);
+            
+            // Format time: if > 60 minutes, convert to hours, otherwise show minutes and seconds
+            let message: string;
+            if (totalMinutes > 60) {
+              const hours = Math.floor(totalMinutes / 60);
+              const remainingMinutes = Math.floor(totalMinutes % 60);
+              const hoursUnit = hours === 1 ? 'hour' : 'hours';
+              const minutesUnit = remainingMinutes === 1 ? 'minute' : 'minutes';
+              
+              if (remainingMinutes > 0) {
+                message = `Meeting will be available in ${hours} ${hoursUnit} ${remainingMinutes} ${minutesUnit}`;
+              } else {
+                message = `Meeting will be available in ${hours} ${hoursUnit}`;
+              }
+            } else {
+              const minutes = Math.floor(totalMinutes);
+              const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+              const minutesUnit = minutes === 1 ? 'minute' : 'minutes';
+              const secondsUnit = seconds === 1 ? 'second' : 'seconds';
+              
+              if (minutes > 0 && seconds > 0) {
+                message = `Meeting will be available in ${minutes} ${minutesUnit} ${seconds} ${secondsUnit}`;
+              } else if (minutes > 0) {
+                message = `Meeting will be available in ${minutes} ${minutesUnit}`;
+              } else {
+                message = `Meeting will be available in ${seconds} ${secondsUnit}`;
+              }
+            }
+            
+            setCanAccessMeeting(false);
+            setTimeRemainingMessage(message);
+          } else {
+            // Check if still within access window (up to 30 minutes after end time)
+            if (now >= earliestAccess && now <= latestAccess) {
+              setCanAccessMeeting(true);
+              setTimeRemainingMessage(null);
+            } else {
+              setCanAccessMeeting(false);
+              setTimeRemainingMessage('Meeting time has passed');
+            }
+          }
+        } catch (error) {
+          console.error('Error calculating time remaining:', error);
+          setCanAccessMeeting(false);
+        }
+      };
+
+      // Calculate immediately
+      calculateTimeRemaining();
+      
+      // Update every second for live countdown
+      const interval = setInterval(calculateTimeRemaining, 1000);
+      
+      return () => clearInterval(interval);
+    }, [appointment.uuid, appointment.is_video_conseil, appointment.video_join_url, appointment.appointment_date, appointment.start_time, appointment.end_time]);
 
     const handleCreateConsultation = async (e: React.MouseEvent) => {
       e.stopPropagation(); // Prevent card click
@@ -194,31 +292,51 @@ export function AppointmentCard({
         return;
       }
 
+      // Use the already calculated access state - no need for API call
+      if (canAccessMeeting === false) {
+        showToast({
+          type: 'error',
+          message: timeRemainingMessage || 'Meeting is not available at this time',
+          duration: 5000,
+        });
+        return;
+      }
+
       setIsCheckingAccess(true);
 
       try {
-        // Check if meeting can be accessed
-        const response = await fetch(route('appointments.check-meeting-access', { uuid: appointment.uuid }));
-        const data = await response.json();
+        // Track meeting start and attendance on backend before redirecting
+        const trackResponse = await fetch(route('appointments.track-meeting-start', { uuid: appointment.uuid }), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Accept': 'application/json',
+          },
+        });
 
-        if (data.can_access) {
-          // Redirect to join meeting route which will validate and redirect to Jitsi
-          window.location.href = route('appointments.join-meeting', { uuid: appointment.uuid });
+        const trackData = await trackResponse.json();
+        
+        if (!trackResponse.ok) {
+          console.error('Failed to track meeting start:', trackData);
+          // Still continue to join meeting even if tracking fails
         } else {
-          showToast({
-            type: 'error',
-            message: data.message || 'Meeting is not available at this time',
-            duration: 5000,
-          });
+          console.log('Meeting start tracked successfully:', trackData);
+        }
+
+        // Redirect to Jitsi URL
+        if (appointment.video_join_url) {
+          window.location.href = appointment.video_join_url;
+        } else {
+          throw new Error('Meeting URL not available');
         }
       } catch (error) {
-        console.error('Error checking meeting access:', error);
+        console.error('Error joining meeting:', error);
         showToast({
           type: 'error',
-          message: 'Failed to check meeting access. Please try again.',
+          message: 'Failed to join meeting. Please try again.',
           duration: 3000,
         });
-      } finally {
         setIsCheckingAccess(false);
       }
     };
@@ -271,13 +389,13 @@ export function AppointmentCard({
             </div>
           </div>
   
-          {appointment.is_video_conseil  ? (
+          {appointment.is_video_conseil && showJoinButton ? (
             <div className="mt-4">
               <Button
                 color="primary"
                 className="w-full"
                 onClick={handleJoinMeeting}
-                disabled={isCheckingAccess}>
+                disabled={isCheckingAccess || canAccessMeeting === false}>
                 <VideoCameraIcon
                   className={clsx("size-5", rtlClasses.mr("2"))}
                 />
@@ -285,6 +403,11 @@ export function AppointmentCard({
                   ? t("common.checking") || "Checking..."
                   : t("common.vet_dashboard.appointment_card.join_video_call")}
               </Button>
+              {canAccessMeeting === false && timeRemainingMessage && (
+                <p className="mt-2 text-xs text-gray-500 dark:text-dark-300 text-center">
+                  {timeRemainingMessage}
+                </p>
+              )}
             </div>
           ) : null}
 
