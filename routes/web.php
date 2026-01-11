@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -153,6 +154,14 @@ Route::middleware(['auth', 'verified'])->prefix('availability')->controller(Avai
     Route::get('/current-week', 'getCurrentWeek')->name('availability.getCurrentWeek');
     Route::delete('/{uuid}', 'destroy')->name('availability.destroy');
     Route::post('/check', 'checkAvailability')->name('availability.check');
+});
+
+// Holiday routes
+Route::middleware(['auth', 'verified'])->prefix('holidays')->controller(HolidayController::class)->group(function () {
+    Route::get('/', 'index')->name('holidays.index');
+    Route::post('/', 'store')->name('holidays.store');
+    Route::delete('/{uuid}', 'destroy')->name('holidays.destroy');
+    Route::get('/upcoming', 'upcoming')->name('holidays.upcoming');
 });
 
 // Species routes
@@ -435,6 +444,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/availabilities', function () {
             return Inertia::render('Settings/Availabilities');
         })->name('availabilities');
+        
+        Route::get('/holidays', function () {
+            return Inertia::render('Settings/Holidays');
+        })->name('holidays');
     });
 });
 
