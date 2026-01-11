@@ -4,6 +4,7 @@ import { useAuthContext } from '@/contexts/auth/context';
 import { NotificationToast } from './NotificationToast';
 import { NotificationType } from '@/@types/common';
 import { getLatestNotifications, deleteNotification } from '@/services/notificationService';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ToastNotification {
   id: string;
@@ -51,10 +52,15 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const [overlayNotifications, setOverlayNotifications] = useState<OverlayNotification[]>([]);
   const { user, isAuthenticated } = useAuthContext();
   const [pusherConfig, setPusherConfig] = useState<{ key?: string; cluster?: string } | undefined>(undefined);
+  const { t } = useTranslation();
 
   const [prevNotificationIds, setPrevNotificationIds] = useState<Set<string>>(new Set());
   // Use ref for immediate synchronous duplicate detection (state updates are async and can cause race conditions)
   const processedAppointmentUpdatesRef = useRef<Set<string>>(new Set());
+
+  // Use ref to store the latest translation function to avoid dependency issues
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const fetchNotifications = useCallback((showToastForNew = false) => {
     if (isAuthenticated && user && user.id) {
@@ -63,8 +69,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           if (response.success && response.notifications) {
             const converted = response.notifications.map((notification) => ({
               id: notification.id, // Use the actual notification ID from database
-              title: notification.data.title || 'Notification',
-              description: notification.data.message || '',
+              title: notification.data.title ? tRef.current(notification.data.title) : tRef.current('common.notification'),
+              description: notification.data.message ? tRef.current(notification.data.message) : '',
               type: (notification.data.type === 'appointment_confirmed' || notification.data.type === 'appointment.confirmed' ? 'task' :
                      notification.data.type === 'appointment_cancelled' || notification.data.type === 'appointment.cancelled' ? 'security' :
                      notification.data.type === 'appointment_reminder' || notification.data.type === 'appointment.reminder' ? 'task' :
@@ -101,7 +107,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
               });
               
               const combined = [...apiNotifications, ...websocketNotifications];
-              const final = combined.filter((n, index, self) => 
+              const final = combined.filter((n, index, self) =>
                 index === self.findIndex(item => item.id === n.id)
               );
               
@@ -199,24 +205,57 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const userAny = user as any;
   const isAdmin = userAny?.roles?.some((r: any) => r.name === 'admin') || userAny?.role === 'admin' || false;
 
+  // Helper function to extract appointment details for translation replacements
+  const getAppointmentReplacements = useCallback((appointment: any): Record<string, string> => {
+    const vetName = appointment?.veterinary?.name || 
+                   (appointment?.veterinary?.user?.firstname && appointment?.veterinary?.user?.lastname
+                     ? `${appointment.veterinary.user.firstname} ${appointment.veterinary.user.lastname}`
+                     : 'the veterinarian');
+    
+    const petName = appointment?.pet?.name || 'your pet';
+    
+    let date = '';
+    if (appointment?.appointment_date) {
+      const appointmentDate = new Date(appointment.appointment_date);
+      date = appointmentDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    
+    let time = '';
+    if (appointment?.start_time) {
+      if (typeof appointment.start_time === 'string') {
+        // Extract time from "HH:mm:ss" format
+        time = appointment.start_time.substring(0, 5);
+      } else {
+        // If it's already formatted or a Date object
+        time = appointment.start_time;
+      }
+    }
+    
+    return {
+      vetName,
+      petName,
+      date,
+      time,
+    };
+  }, []);
+
   const handleAppointmentCreated = useCallback((data: any) => {
     const appointment = data.appointment;
-    const vetName = appointment?.veterinary?.name || 'le vétérinaire';
-    const petName = appointment?.pet?.name || 'votre animal';
-    const date = appointment?.appointment_date 
-      ? new Date(appointment.appointment_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
-      : '';
-    const time = appointment?.start_time 
-      ? (typeof appointment.start_time === 'string' 
-          ? appointment.start_time.substring(0, 5) 
-          : new Date(appointment.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
-      : '';
+    // Title and message from backend are translation keys
+    const titleKey = data.title || data.notification?.data?.title || 'common.new_appointment';
+    const messageKey = data.message || data.notification?.data?.message || '';
+    
+    const replacements = getAppointmentReplacements(appointment);
+    const title = t(titleKey);
+    const message = messageKey ? t(messageKey, replacements) : '';
 
-    const message = data.message || `Rendez-vous créé avec ${vetName} pour ${petName}${date ? ` le ${date}` : ''}${time ? ` à ${time}` : ''}`;
+    if (!title && !message) {
+      return;
+    }
 
     showNotification({
       type: 'success',
-      title: 'Nouveau rendez-vous',
+      title,
       message,
     });
 
@@ -226,12 +265,12 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     setOverlayNotifications((prev) => {
       const exists = prev.some(n => 
         n.id === notificationId || 
-        (appointment?.uuid && n.appointmentUuid === appointment.uuid && n.title === 'Nouveau rendez-vous')
+        (appointment?.uuid && n.appointmentUuid === appointment.uuid && n.title === title)
       );
       if (exists) return prev;
       return [{
         id: notificationId,
-        title: 'Nouveau rendez-vous',
+        title,
         description: message,
         type: 'task',
         time: 'Just now',
@@ -239,12 +278,14 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         appointmentUuid: appointment?.uuid,
       }, ...prev];
     });
-  }, [showNotification]);
+  }, [showNotification, t, getAppointmentReplacements]);
 
   const handleAppointmentUpdated = useCallback((data: any) => {
     const appointment = data.appointment;
     const changes = data.changes;
-    const message = data.message;
+    // Title and message from backend are translation keys
+    const titleKey = data.title || data.notification?.data?.title || '';
+    const messageKey = data.message || data.notification?.data?.message || '';
     
     // If there's a status change, show a notification
     if (changes?.status) {
@@ -269,52 +310,73 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       }
       
       let notificationType: 'success' | 'error' | 'info' | 'warning' = 'info';
-      let title = 'Mise à jour du rendez-vous';
-      let notificationMessage = message || `Le rendez-vous a été mis à jour`;
+      // Default translation keys based on status (if backend doesn't provide them)
+      let defaultTitleKey = 'common.appointment_updated';
+      let defaultMessageKey = 'common.appointment_updated_message';
       
-      // Determine notification type based on status change
+      // Determine notification type and default keys based on status change
       if (newStatus === 'confirmed') {
         notificationType = 'success';
-        title = 'Rendez-vous confirmé';
-        notificationMessage = message || 'Votre rendez-vous a été confirmé';
+        defaultTitleKey = 'common.appointment_confirmed';
+        defaultMessageKey = 'common.appointment_confirmed_message';
       } else if (newStatus === 'cancelled') {
         notificationType = 'warning';
-        title = 'Rendez-vous annulé';
-        notificationMessage = message || 'Votre rendez-vous a été annulé';
+        defaultTitleKey = 'common.appointment_cancelled';
+        defaultMessageKey = 'common.appointment_cancelled_message';
       } else if (newStatus === 'completed') {
         notificationType = 'success';
-        title = 'Rendez-vous terminé';
-        notificationMessage = message || 'Votre rendez-vous a été complété';
+        defaultTitleKey = 'common.appointment_completed';
+        defaultMessageKey = 'common.appointment_completed_message';
       } else if (newStatus === 'rescheduled') {
         notificationType = 'info';
-        title = 'Rendez-vous reporté';
-        notificationMessage = message || 'Votre rendez-vous a été reporté';
+        defaultTitleKey = 'common.appointment_rescheduled';
+        defaultMessageKey = 'common.appointment_rescheduled_message';
       }
       
-      // Show toast notification (this also adds to overlay automatically)
-      showNotification({
-        type: notificationType,
-        title,
-        message: notificationMessage,
-        duration: 5000,
-      });
-    } else {
+      // Use backend translation keys if provided, otherwise use defaults
+      const finalTitleKey = titleKey || defaultTitleKey;
+      const finalMessageKey = messageKey || defaultMessageKey;
       
+      const replacements = getAppointmentReplacements(appointment);
+      const title = t(finalTitleKey);
+      const message = finalMessageKey ? t(finalMessageKey, replacements) : '';
+      
+      // Only show notification if we have title or message
+      if (title || message) {
+        // Show toast notification (this also adds to overlay automatically)
+        showNotification({
+          type: notificationType,
+          title,
+          message,
+          duration: 5000,
+        });
+      }
+    } else {
       // Generic update notification if no status change
-      if (message) {
+      if (titleKey || messageKey) {
+        const replacements = getAppointmentReplacements(appointment);
+        const title = titleKey ? t(titleKey) : t('common.appointment_updated');
+        const message = messageKey ? t(messageKey, replacements) : '';
+        
         showNotification({
           type: 'info',
-          title: 'Mise à jour du rendez-vous',
+          title,
           message,
           duration: 5000,
         });
       }
     }
-  }, [showNotification]);
+  }, [showNotification, t, getAppointmentReplacements]);
 
   const handleAppointmentReminder = useCallback((data: any) => {
-    const title = data.title || 'Rappel de rendez-vous';
-    const message = data.message || 'Vous avez un rendez-vous à venir';
+    // Title and message from backend are translation keys
+    const titleKey = data.title || data.notification?.data?.title || 'common.appointment_reminder';
+    const messageKey = data.message || data.notification?.data?.message || 'common.appointment_reminder_message';
+    
+    const appointment = data.appointment || data.notification?.data?.appointment;
+    const replacements = getAppointmentReplacements(appointment);
+    const title = t(titleKey);
+    const message = t(messageKey, replacements);
     
     showNotification({
       type: 'info',
@@ -345,7 +407,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         appointmentUuid: data.appointment?.uuid,
       }, ...prev];
     });
-  }, [showNotification]);
+  }, [showNotification, t, getAppointmentReplacements]);
 
   const handleNotification = useCallback((data: any) => {
     let notificationData = data;
@@ -394,8 +456,13 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       overlayType = 'task';
     }
 
-    const title = notificationData.title || data.title || 'Notification';
-    const message = notificationData.message || data.message || 'Vous avez une nouvelle notification';
+    // Title and message from backend are translation keys
+    const titleKey = notificationData.title || data.title || 'common.notification';
+    const messageKey = notificationData.message || data.message || 'common.new_notification';
+
+    const replacements = appointment ? getAppointmentReplacements(appointment) : {};
+    const title = t(titleKey);
+    const message = t(messageKey, replacements);
 
     // Show toast notification
     // Always show if we have valid notification data (handler is only called for valid notifications)
@@ -447,7 +514,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       
       return [overlayNotification, ...prev];
     });
-  }, [showNotification]);
+  }, [showNotification, t, getAppointmentReplacements]);
 
   usePusher({
     userId: isAuthenticated && user ? (user.id as number) : null,
