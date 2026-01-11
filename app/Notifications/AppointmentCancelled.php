@@ -89,8 +89,8 @@ class AppointmentCancelled extends Notification implements ShouldBroadcastNow
 
         return [
             'type' => 'appointment_cancelled',
-            'title' => 'Rendez-vous annulé',
-            'message' => "Le rendez-vous avec {$vetName} pour {$petName} le {$date} à {$time} a été annulé par {$this->cancelledBy}.",
+            'title' => 'common.appointment_cancelled',
+            'message' => 'common.appointment_cancelled_message',
             'appointment' => [
                 'id' => $this->appointment->id,
                 'uuid' => $this->appointment->uuid,

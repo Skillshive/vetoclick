@@ -87,8 +87,8 @@ class AppointmentConfirmed extends Notification implements ShouldBroadcastNow
 
         return [
             'type' => 'appointment_confirmed',
-            'title' => 'Rendez-vous confirmé',
-            'message' => "Votre rendez-vous avec {$vetName} pour {$petName} le {$date} à {$time} a été confirmé.",
+            'title' => 'common.appointment_confirmed',
+            'message' => 'common.appointment_confirmed_message',
             'appointment' => [
                 'id' => $this->appointment->id,
                 'uuid' => $this->appointment->uuid,

@@ -80,20 +80,20 @@ class AppointmentStatusChanged extends Notification implements ShouldBroadcastNo
      */
     public function toArray(object $notifiable): array
     {
-        $statusMessages = [
-            'scheduled' => 'programmé',
-            'confirmed' => 'confirmé',
-            'cancelled' => 'annulé',
-            'completed' => 'terminé',
-            'no_show' => 'non présenté',
+        $statusTitleKeys = [
+            'scheduled' => 'common.appointment_scheduled',
+            'confirmed' => 'common.appointment_confirmed',
+            'cancelled' => 'common.appointment_cancelled',
+            'completed' => 'common.appointment_completed',
+            'no_show' => 'common.appointment_no_show',
         ];
 
-        $statusTitles = [
-            'scheduled' => 'Rendez-vous programmé',
-            'confirmed' => 'Rendez-vous confirmé',
-            'cancelled' => 'Rendez-vous annulé',
-            'completed' => 'Rendez-vous terminé',
-            'no_show' => 'Absence constatée',
+        $statusMessageKeys = [
+            'scheduled' => 'common.appointment_scheduled_message',
+            'confirmed' => 'common.appointment_confirmed_message',
+            'cancelled' => 'common.appointment_cancelled_message',
+            'completed' => 'common.appointment_completed_message',
+            'no_show' => 'common.appointment_no_show_message',
         ];
 
         $vetName = $this->appointment->veterinary && $this->appointment->veterinary->user
@@ -112,12 +112,10 @@ class AppointmentStatusChanged extends Notification implements ShouldBroadcastNo
                 : $this->appointment->start_time->format('H:i'))
             : '';
 
-        $statusText = $statusMessages[$this->newStatus] ?? $this->newStatus;
-
         return [
             'type' => 'appointment_status_changed',
-            'title' => $statusTitles[$this->newStatus] ?? 'Statut du rendez-vous mis à jour',
-            'message' => "Le rendez-vous avec {$vetName} pour {$petName} le {$date} à {$time} est maintenant {$statusText}.",
+            'title' => $statusTitleKeys[$this->newStatus] ?? 'common.appointment_updated',
+            'message' => $statusMessageKeys[$this->newStatus] ?? 'common.appointment_updated_message',
             'appointment' => [
                 'id' => $this->appointment->id,
                 'uuid' => $this->appointment->uuid,

@@ -93,8 +93,8 @@ class AppointmentReminder extends Notification implements ShouldBroadcastNow
 
         return [
             'type' => 'appointment_reminder',
-            'title' => 'Rappel de rendez-vous',
-            'message' => "N'oubliez pas votre rendez-vous avec {$vetName} pour {$petName} le {$date} à {$time} (dans {$this->reminderTime}).",
+            'title' => 'common.appointment_reminder',
+            'message' => 'common.appointment_reminder_message',
             'appointment' => [
                 'id' => $this->appointment->id,
                 'uuid' => $this->appointment->uuid,
