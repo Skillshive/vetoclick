@@ -57,6 +57,7 @@ class DatabaseSeeder extends Seeder
             PetSeeder::class,
             VeterinarySeeder::class,
             AppointmentSeeder::class,
+            MoroccoHolidaySeeder::class,
         ]);
     }
 }
