@@ -9,7 +9,7 @@ import axios from "axios";
 import { Page } from "@/components/shared/Page";
 import { PreviewImg } from "@/components/shared/PreviewImg";
 import { Avatar, Button, Input, Upload, Card } from "@/components/ui";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import { useTranslation } from "@/hooks/useTranslation";
 import MainLayout from "@/layouts/MainLayout";
 import { profileFormSchema } from "@/schemas/profileSchema";
@@ -41,7 +41,9 @@ export default function Profile({ user }: ProfilePageProps) {
    const { t } = useTranslation();
    const { showToast } = useToast();
    const { confirm } = useConfirm();
+   const { props } = usePage();
    const [avatar, setAvatar] = useState<File | null>(null);
+   const [flashHandled, setFlashHandled] = useState(false);
 
 
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -91,14 +93,21 @@ export default function Profile({ user }: ProfilePageProps) {
     }
 
     post(route('profile.update'), {
-      onSuccess: () => {
+      onSuccess: (page: any) => {
         setProfileValidationErrors({});
-        showToast({
-          type: 'success',
-          message: t('common.success'),
-        });
+console.log('page?.props?.flash',page?.props?.flash);
+        // Show toast with flash message from response
+        const flashMessage = page?.props?.flash?.success || page?.flash?.success;
+        if (flashMessage) {
+          setFlashHandled(true);
+          showToast({
+            type: 'success',
+            message: flashMessage,
+            duration: 3000,
+          });
+        }
       },
-      onError: (errors) => {
+      onError: (errors: any) => {
         setProfileValidationErrors({
                         firstname: errors.firstname ? t(errors.firstname) : undefined,
                         lastname: errors.lastname ? t(errors.lastname) : undefined,
@@ -137,7 +146,7 @@ export default function Profile({ user }: ProfilePageProps) {
           message: t('common.success'),
         });
       },
-      onError: (errors) => {
+      onError: (errors: any) => {
                 setPasswordValidationErrors({
                         current_password: errors.current_password ? t(errors.current_password) : undefined,
                         password: errors.password ? t(errors.password) : undefined,
@@ -158,11 +167,35 @@ export default function Profile({ user }: ProfilePageProps) {
     fetchAvailability();
   }, []);
 
+  // Handle flash messages (for page loads and redirects not handled in onSuccess)
+  useEffect(() => {
+    const flash = (props as any)?.flash;
+    if (flash?.success && !flashHandled) {
+      setFlashHandled(true);
+      showToast({
+        type: 'success',
+        message: flash.success,
+        duration: 3000,
+      });
+    }
+    if (flash?.error) {
+      showToast({
+        type: 'error',
+        message: flash.error,
+        duration: 3000,
+      });
+    }
+    // Reset flashHandled when flash changes
+    if (!flash?.success) {
+      setFlashHandled(false);
+    }
+  }, [(props as any)?.flash, flashHandled, showToast]);
+
   const fetchAvailability = async () => {
     try {
       const response = await axios.get(route('availability.getCurrentWeek'));
       if (response.data.success) {
-        const formattedSlots = response.data.data.map(slot => ({
+        const formattedSlots = response.data.data.map((slot: any) => ({
           id: slot.uuid,
           title: 'Available',
           daysOfWeek: [getDayNumber(slot.day_of_week)],

@@ -9,7 +9,7 @@ import { HiPencil } from "react-icons/hi";
 import { Page } from "@/components/shared/Page";
 import { PreviewImg } from "@/components/shared/PreviewImg";
 import { Avatar, Button, Input, Upload, Card } from "@/components/ui";
-import { useForm, router } from "@inertiajs/react";
+import { useForm, router, usePage } from "@inertiajs/react";
 import { useTranslation } from "@/hooks/useTranslation";
 import MainLayout from "@/layouts/MainLayout";
 import { profileFormSchema } from "@/schemas/profileSchema";
@@ -37,6 +37,7 @@ interface VeterinaryInfo {
   years_experience?: number;
   clinic_name?: string;
   address?: string;
+  city?: string;
   profile_img?: string;
   consultation_price?: number;
 }
@@ -52,7 +53,9 @@ interface ProfilePageProps {
 export default function General({ user, isVeterinarian, veterinaryInfo, phoneVerified: initialPhoneVerified }: ProfilePageProps) {
    const { t } = useTranslation();
    const { showToast } = useToast();
+   const { props } = usePage();
    const [avatar, setAvatar] = useState<File | null>(null);
+   const [flashHandled, setFlashHandled] = useState(false);
    const { isValidating, validationResult, validateAddress, clearValidation } = useAddressValidation();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -75,6 +78,7 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
     years_experience: veterinaryInfo?.years_experience || "",
     clinic_name: veterinaryInfo?.clinic_name || "",
     address: veterinaryInfo?.address || "",
+    city: veterinaryInfo?.city || "",
     consultation_price: veterinaryInfo?.consultation_price || "",
     });
 
@@ -88,6 +92,7 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
     years_experience?: string;
     clinic_name?: string;
     address?: string;
+    city?: string;
     consultation_price?: string;
   }>({});
 
@@ -167,6 +172,36 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
       setIsWaitingForValidation(false);
     };
   }, [data.address, isVeterinarian, validateAddress, clearValidation]);
+
+  // Handle flash messages (for page loads and redirects not handled in onSuccess)
+  useEffect(() => {
+    const pageProps = props as any;
+    // Flash messages are shared at the root level in Inertia
+    const flash = pageProps?.flash;
+    
+    if (flash?.success) {
+      // Only show if not already handled (to avoid duplicates)
+      if (!flashHandled) {
+        setFlashHandled(true);
+        showToast({
+          type: 'success',
+          message: flash.success,
+          duration: 3000,
+        });
+      }
+    }
+    if (flash?.error) {
+      showToast({
+        type: 'error',
+        message: flash.error,
+        duration: 3000,
+      });
+    }
+    // Reset flashHandled when flash.success is cleared
+    if (!flash?.success) {
+      setFlashHandled(false);
+    }
+  }, [props, flashHandled, showToast]);
 
   // Handle address selection from map
   const handleAddressSelect = (address: string, coordinates: { lat: number; lng: number }) => {
@@ -341,10 +376,8 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
     post(route('profile.update'), {
       onSuccess: () => {
         setProfileValidationErrors({});
-        showToast({
-          type: 'success',
-          message: t('common.success'),
-        });
+        // Flash message will be handled by useEffect after redirect
+        // The redirect will update the page props with the flash message
       },
       onError: (errors: any) => {
         setProfileValidationErrors({
@@ -392,13 +425,25 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
     }
 
     postPassword(route('profile.password.update'), {
-      onSuccess: () => {
+      onSuccess: (page: any) => {
         resetPassword();
         setPasswordValidationErrors({});
-        showToast({
-          type: 'success',
-          message: t('common.sessions.password_updated_successfully'),
-        });
+        // Show toast with flash message from response
+        const flashMessage = page?.props?.flash?.success || page?.flash?.success;
+        if (flashMessage) {
+          showToast({
+            type: 'success',
+            message: flashMessage,
+            duration: 3000,
+          });
+        } else {
+          // Fallback to translation if no flash message
+          showToast({
+            type: 'success',
+            message: t('common.sessions.password_updated_successfully'),
+            duration: 3000,
+          });
+        }
       },
       onError: (errors: any) => {
         setPasswordValidationErrors({
@@ -806,6 +851,33 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
                         }}
                         error={errors?.consultation_price || profileValidationErrors.consultation_price}
                       />
+
+<Input
+                        placeholder={t('common.enter_city') || 'Enter city'}
+                        label={t('common.city') || 'City'}
+                        className="rounded-xl"
+                        value={data?.city}
+                        onChange={(e) => {
+                          setData('city', e.target.value);
+                          const result = profileFormSchema.safeParse({
+                            ...data,
+                            city: e.target.value,
+                          });
+                          if (!result.success) {
+                            const errors = result.error.flatten().fieldErrors;
+                            setProfileValidationErrors(prev => ({
+                              ...prev,
+                              city: errors.city?.[0] ? t(errors.city[0]) : undefined,
+                            }));
+                          } else {
+                            setProfileValidationErrors(prev => ({
+                              ...prev,
+                              city: undefined,
+                            }));
+                          }
+                        }}
+                        error={errors?.city || profileValidationErrors.city}
+                      />
                       
                       <div className="sm:col-span-2">
                         <Input
@@ -830,7 +902,7 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
                             <svg className="animate-pulse -ml-1 mr-2 h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                             </svg>
-                            Waiting for you to finish typing...
+                           {t('common.waiting_for_you_to_finish_typing')}
                           </p>
                         )}
                         {isValidating && (
@@ -881,6 +953,8 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
                           validationResult={validationResult}
                         />
                       </div>
+                      
+                    
                     </div>
                   </div>
                 </>
