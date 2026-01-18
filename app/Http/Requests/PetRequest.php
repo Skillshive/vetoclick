@@ -40,7 +40,7 @@ class PetRequest extends FormRequest
                 'max:50',
                 $pet ? Rule::unique('pets', 'microchip_ref')->ignore($pet->getKey()) : 'unique:pets,microchip_ref',
             ],
-            'profile_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'weight_kg' => 'nullable|numeric|min:0|max:999.99',
             'bcs' => 'nullable|integer|min:1|max:9',
             'color' => 'nullable|string|max:50',
