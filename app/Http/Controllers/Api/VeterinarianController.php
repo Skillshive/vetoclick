@@ -48,8 +48,13 @@ class VeterinarianController extends Controller
             $query->where('consultation_price', '<=', $request->price_max);
         }
 
-        // Filter by video consultation (if this field exists in the future)
-        // For now, we'll skip this as it's not in the database
+        // Filter by city
+        if ($request->has('city') && $request->city) {
+            $city = trim($request->city);
+            if (!empty($city)) {
+                $query->where('city', 'like', "%{$city}%");
+            }
+        }
 
         // Get results
         $veterinarians = $query->get();
@@ -108,6 +113,7 @@ class VeterinarianController extends Controller
                 'price' => $vet->consultation_price ?? 0,
                 'distance' => $distance ? round($distance, 1) : null,
                 'address' => $vet->address,
+                'city' => $vet->city ?? null,
                 'phone' => $user->phone ?? null,
                 'images' => $avatarUrl ? [$avatarUrl] : [],
                 'videoConseil' => false, // Placeholder - add to database if needed
