@@ -22,6 +22,7 @@ class VeterinaryResource extends JsonResource
             'clinic_name' => $this->clinic_name,
             'profile_img' => $this->profile_img,
             'address' => $this->address,
+            'city' => $this->city,
             'subscription_status' => $this->subscription_status,
             'subscription_start_date' => $this->subscription_start_date,
             'subscription_end_date' => $this->subscription_end_date,

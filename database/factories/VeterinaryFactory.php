@@ -93,6 +93,7 @@ class VeterinaryFactory extends Factory
             'subscription_status' => $this->faker->randomElement(['active', 'inactive', 'suspended']),
             'subscription_start_date' => null,
             'subscription_end_date' => null,
+            'city' => 'Fès',
         ];
     }
 }
