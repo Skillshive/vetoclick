@@ -10,6 +10,7 @@ import {
   CreditCardIcon,
   CalendarDaysIcon,
   Cog6ToothIcon as SettingIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
@@ -32,18 +33,67 @@ export interface PrimePanelProps {
 export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps) {
   const { cardSkin } = useThemeContext();
   const { t } = useTranslation();
-  const { menuItems } = useRoleBasedMenu();
+  const { menuItems, hasPermission, hasRole, hasAnyRole } = useRoleBasedMenu();
   const { activeSegmentPath } = useSidebarContext();
 
-  // Settings menu items
-  const settingsItems = [
-    { name: t("common.prime_panel.general"), icon: UserIcon, href: "/settings/general" },
-    { name: t("common.prime_panel.appearance"), icon: PaintBrushIcon, href: "/settings/appearance" },
-    // { name: t("common.prime_panel.password"), icon: ShieldCheckIcon, href: "/settings/sessions" },
-    { name: t("common.prime_panel.availabilities"), icon: CalendarDaysIcon, href: "/settings/availabilities" },
-    { name: t("common.prime_panel.roles"), icon: UserGroupIcon, href: "/roles" },
-    { name: t("common.prime_panel.subscription_plans"), icon: CreditCardIcon, href: "/subscription-plans" }
+  // Settings menu items with permission checks
+  const allSettingsItems = [
+    { 
+      name: t("common.prime_panel.general"), 
+      icon: UserIcon, 
+      href: "/settings/general",
+      permission: "settings.view",
+      roles: ["admin", "super-admin", "veterinarian"]
+    },
+    { 
+      name: t("common.prime_panel.appearance"), 
+      icon: PaintBrushIcon, 
+      href: "/settings/appearance",
+      permission: "settings.view",
+      roles: ["admin", "super-admin", "veterinarian"]
+    },
+    { 
+      name: t("common.prime_panel.holidays"), 
+      icon: CalendarIcon, 
+      href: "/settings/holidays",
+      permission: "holidays.view",
+      roles: ["super-admin", "veterinarian"]
+    },
+    { 
+      name: t("common.prime_panel.availabilities"), 
+      icon: CalendarDaysIcon, 
+      href: "/settings/availabilities",
+      permission: "availability.view",
+      roles: ["super-admin", "veterinarian"]
+    },
+    { 
+      name: t("common.prime_panel.roles"), 
+      icon: UserGroupIcon, 
+      href: "/roles",
+      permission: "roles.view",
+      roles: ["admin", "super-admin"]
+    },
+    { 
+      name: t("common.prime_panel.subscription_plans"), 
+      icon: CreditCardIcon, 
+      href: "/subscription-plans",
+      permission: "subscription-plans.view",
+      roles: ["admin", "super-admin"]
+    }
   ];
+
+  // Filter settings items based on permissions and roles
+  const settingsItems = allSettingsItems.filter(item => {
+    // Check if user has the required permission (preferred method)
+    if (item.permission && hasPermission(item.permission)) {
+      return true;
+    }
+    // Fallback: Check if user has one of the required roles
+    if (item.roles && item.roles.length > 0 && hasAnyRole(item.roles)) {
+      return true;
+    }
+    return false;
+  });
 
   // Check if we're showing settings menu
   const isPathSettings = pathname.startsWith('/settings/') || 
@@ -61,7 +111,7 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
   const currentMenuItem = menuItems.find(item => item.id === activeSegmentPath) || 
                         menuItems.find(item => item.submenu?.some(sub => sub.id === activeSegmentPath));
 
-  const title = isSettingsActive ? t("common.prime_panel.settings") : (currentMenuItem?.title || t(currentSegment?.transKey ?? "") || currentSegment?.title);
+  const title = (isSettingsActive && settingsItems.length > 1) ? t("common.prime_panel.settings") : (currentMenuItem?.title || t(currentSegment?.transKey ?? "") || currentSegment?.title);
 
   // Get submenu items for the current active segment
   const getSubmenuItems = () => {
@@ -105,8 +155,8 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
         )}
       >
         <div className="relative flex h-16 w-full aspect-square shrink-0 items-center gap-2 pl-4 pr-1 rtl:pl-1 rtl:pr-4">
-        {(currentMenuItem?.icon || isSettingsActive) && <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20"  style={{ borderRadius: '50%' }}>
-            {isSettingsActive ? (
+        {(currentMenuItem?.icon || (isSettingsActive && settingsItems.length > 1)) && <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20"  style={{ borderRadius: '50%' }}>
+            {isSettingsActive && settingsItems.length > 1 ? (
               <SettingIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             ) : (
               currentMenuItem?.icon && <currentMenuItem.icon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
@@ -124,7 +174,7 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
             <ChevronLeftIcon className="size-6 rtl:rotate-180" />
           </Button>
         </div>
-        {isSettingsActive ? (
+        {isSettingsActive && settingsItems.length > 1 ? (
           <ScrollShadow className="grow">
             {/* Settings Menu Items */}
             <div className="py-2 space-y-1">
