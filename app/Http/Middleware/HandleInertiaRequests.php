@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -33,6 +34,10 @@ class HandleInertiaRequests extends Middleware
         
         return [
             ...parent::share($request),
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+            ],
             'auth' => [
                 'user' => $user ? $this->formatUserData($user) : null,
             ],
@@ -63,12 +68,10 @@ class HandleInertiaRequests extends Middleware
                 $locale = app()->getLocale();
                 $translations = [];
                 
-                // Load common translations
                 if (file_exists(resource_path("lang/{$locale}/common.php"))) {
                     $translations['common'] = include resource_path("lang/{$locale}/common.php");
                 }
                 
-                // Load validation translations
                 if (file_exists(resource_path("lang/{$locale}/validation.php"))) {
                     $translations['validation'] = include resource_path("lang/{$locale}/validation.php");
                 }
@@ -91,20 +94,30 @@ class HandleInertiaRequests extends Middleware
      */
     protected function formatUserData($user)
     {
-        $user->load(['image', 'veterinary']);
+        $user->load(['image', 'veterinary', 'roles.permissions']);
         
         $userData = $user->toArray();
         
-        // Format veterinary data: remove id, ensure uuid exists
+        if ($user->roles) {
+            $userData['roles'] = $user->roles->map(function ($role) {
+                return [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                    'guard_name' => $role->guard_name,
+                    'permissions' => $role->permissions->pluck('name')->toArray()
+                ];
+            })->toArray();
+        }
+        
+        $userData['permissions'] = $user->getAllPermissions()->pluck('name')->toArray();
+        
         if ($user->veterinary) {
             $veterinary = $user->veterinary->toArray();
             
-            // Remove id from veterinary data
             unset($veterinary['id']);
             
-            // Ensure UUID exists (generate if missing for existing records)
             if (empty($veterinary['uuid'])) {
-                $user->veterinary->uuid = \Illuminate\Support\Str::uuid();
+                $user->veterinary->uuid = Str::uuid();
                 $user->veterinary->save();
                 $veterinary['uuid'] = $user->veterinary->uuid;
             }
