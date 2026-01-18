@@ -53,6 +53,7 @@ class ProfileUpdateRequest extends FormRequest
                 'years_experience' => ['nullable', 'integer', 'min:0', 'max:50'],
                 'clinic_name' => ['nullable', 'string', 'max:255'],
                 'address' => ['nullable', 'string', 'max:500', new ValidAddress()],
+                'city' => ['nullable', 'string', 'max:255'],
                 'consultation_price' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
             ]);
         }
