@@ -32,6 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'subscription.feature' => CheckSubscriptionFeature::class,
             'subscription.permission' => CheckSubscriptionPermission::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
