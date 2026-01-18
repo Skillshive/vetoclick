@@ -17,10 +17,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $user = User::create(
+        $vet = User::create(
             ['firstname' => 'Jhon',
             'lastname' => 'Doe',
             'email' => 'admin@gmail.com',
+            'password' => bcrypt('Password1234!234'),
+        ]
+        );
+        $user = User::create(
+            ['firstname' => 'Abdellah',
+            'lastname' => 'Bounafaa',
+            'email' => 'abdellahbounafaa@gmail.com',
             'password' => bcrypt('Password1234!234'),
         ]
         );
@@ -35,11 +42,12 @@ class DatabaseSeeder extends Seeder
             'specialization' => 'General Veterinary',
             'years_experience' => 5,
             'profile_img' => null,
-            'user_id' => $user->id,
+            'user_id' => $vet->id,
         ]);
 
         // Assign veterinarian role to the user
-        $user->assignRole('veterinarian');
+        $vet->assignRole('veterinarian');
+        $user->assignRole('admin');
 
         // Seed other data
         $this->call([
