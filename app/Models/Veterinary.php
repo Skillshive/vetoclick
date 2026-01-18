@@ -27,7 +27,8 @@ class Veterinary extends Model
         'license_number','specialization', 'years_experience', 'clinic_name', 'profile_img', 'address',
         'consultation_price',
         'subscription_plan_id', 'subscription_status', 'subscription_start_date',
-        'subscription_end_date'
+        'subscription_end_date',
+        'city'
     ];
 
     // Relations

@@ -84,7 +84,7 @@ class ProfileController extends Controller
 
         // Separate user fields from veterinary fields and client fields
         $userFields = ['firstname', 'lastname', 'email', 'phone', 'image_id'];
-        $veterinaryFields = ['license_number', 'specialization', 'years_experience', 'clinic_name', 'address', 'consultation_price'];
+        $veterinaryFields = ['license_number', 'specialization', 'years_experience', 'clinic_name', 'address', 'consultation_price', 'city'];
         $clientFields = ['address', 'city', 'postal_code'];
         
         $userData = array_intersect_key($validated, array_flip($userFields));
@@ -148,7 +148,7 @@ class ProfileController extends Controller
             }
         }
 
-        return Redirect::route('profile.show')->with('success', 'Profile updated successfully.');
+        return Redirect::route('profile.show')->with('success', __('common.profile_updated_successfully'));
     }
 
     /**

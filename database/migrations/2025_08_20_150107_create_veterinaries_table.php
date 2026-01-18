@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('veterinarians', function (Blueprint $table) {
             $table->id();
-            $table->string('license_number')->unique();
+            $table->string( 'license_number')->unique();
             $table->string('specialization')->nullable();
             $table->integer('years_experience')->nullable();
             $table->string('profile_img')->nullable();
+            $table->string('city')->nullable();
             $table->enum('subscription_status', ['active', 'inactive', 'suspended'])->default('inactive');
             $table->date('subscription_start_date')->nullable();
             $table->date('subscription_end_date')->nullable();
