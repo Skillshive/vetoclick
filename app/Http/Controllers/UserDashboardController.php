@@ -36,6 +36,7 @@ class UserDashboardController extends Controller
             // If no client found, return dashboard with empty statistics
             return Inertia::render('Dashboards/User/index', [
                 'upcomingAppointments' => [],
+                'pets' => [],
                 'statistics' => [
                     'totalAppointments' => 0,
                     'upcomingAppointments' => 0,
@@ -54,12 +55,25 @@ class UserDashboardController extends Controller
         $statistics = $this->appointmentService->getClientStatistics($client->id);
         $statistics['totalPets'] = $client->pets()->count();
 
+        // Get pets data (limit to 5 for dashboard)
+        $pets = $client->pets()->with(['breed.species'])->limit(5)->get()->map(function ($pet) {
+            return [
+                'uuid' => $pet->uuid,
+                'name' => $pet->name,
+                'breed' => $pet->breed?->breed_name,
+                'species' => $pet->breed?->species?->name,
+                'avatar' => $pet->profile_img,
+                'dob' => $pet->dob,
+            ];
+        })->toArray();
+
         // Convert appointments to array format
         $upcomingData = AppointmentResource::collection($upcomingAppointments)->toArray(request());
 
         return Inertia::render('Dashboards/User/index', [
             'upcomingAppointments' => $upcomingData,
             'statistics' => $statistics,
+            'pets' => $pets,
             'client' => [
                 'uuid' => $client->uuid,
                 'first_name' => $client->first_name,
