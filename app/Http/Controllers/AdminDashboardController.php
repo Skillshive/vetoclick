@@ -170,13 +170,25 @@ class AdminDashboardController extends Controller
             ->leftJoin('appointments', function($join) {
                 $join->on('appointments.veterinarian_id', '=', 'veterinarians.id');
             })
-            ->groupBy('veterinarians.id', 'veterinarians.uuid', 'veterinarians.license_number', 
-                      'veterinarians.specialization', 'veterinarians.years_experience', 
-                      'veterinarians.clinic_name', 'veterinarians.profile_img', 'veterinarians.address',
-                      'veterinarians.consultation_price', 'veterinarians.subscription_plan_id',
-                      'veterinarians.subscription_status', 'veterinarians.subscription_start_date',
-                      'veterinarians.subscription_end_date', 'veterinarians.user_id',
-                      'veterinarians.created_at', 'veterinarians.updated_at')
+            ->groupBy(
+                'veterinarians.id',
+                'veterinarians.uuid',
+                'veterinarians.license_number',
+                'veterinarians.specialization',
+                'veterinarians.years_experience',
+                'veterinarians.clinic_name',
+                'veterinarians.profile_img',
+                'veterinarians.address',
+                'veterinarians.city',
+                'veterinarians.consultation_price',
+                'veterinarians.subscription_plan_id',
+                'veterinarians.subscription_status',
+                'veterinarians.subscription_start_date',
+                'veterinarians.subscription_end_date',
+                'veterinarians.user_id',
+                'veterinarians.created_at',
+                'veterinarians.updated_at'
+            )
             ->orderByDesc('appointments_count')
             ->limit(3)
             ->get()
