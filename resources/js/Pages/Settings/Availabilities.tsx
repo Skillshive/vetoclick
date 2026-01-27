@@ -330,8 +330,8 @@ const [statistics, setStatistics] = useState<any>(null);
 
               {/* Current Day Availabilities */}
               <div className="space-y-6">
-                <div className={`flex items-center justify-between ${rtlClasses.flexRow}`}>
-                  {isRtl ? (
+               {/* <div className={`flex items-center justify-between ${rtlClasses.flexRow}`}>
+                   {isRtl ? (
                     <>
                       <span className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
                         {(availabilities[selectedDay] || []).length} {t('common.slots')}
@@ -342,15 +342,15 @@ const [statistics, setStatistics] = useState<any>(null);
                     </>
                   ) : (
                     <>
-                   {/*    <h3 className={`text-lg font-semibold text-gray-900 dark:text-white ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                      <h3 className={`text-lg font-semibold text-gray-900 dark:text-white ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
                         {t(DAYS.find(d => d.value === selectedDay)?.labelKey || 'common.days.monday')}
                       </h3>
                       <span className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${rtlClasses.textEnd}`} dir={isRtl ? 'rtl' : 'ltr'}>
                         {(availabilities[selectedDay] || []).length} {t('common.slots')}
-                      </span>*/}
+                      </span>
                     </>
                   )}
-                </div>
+                </div>*/}
 
                 {/* Timeline Visualization */}
                 {(() => {
@@ -410,16 +410,12 @@ const [statistics, setStatistics] = useState<any>(null);
                                 const availableSlots = daySlots
                                   .filter(slot => slot && slot.start_time && slot.end_time && !slot.is_break)
                                   .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
-                                
-                                console.log(`[Timeline Render] Found ${availableSlots.length} available slots:`, availableSlots.map(s => `${s.start_time}-${s.end_time} (${s.uuid})`));
-                                
+                                                                
                                 return availableSlots.map((slot, index) => {
                                   const left = getTimelinePosition(slot.start_time, startHour, endHour);
                                   const right = getTimelinePosition(slot.end_time, startHour, endHour);
                                   const width = Math.max(0, right - left);
-                                  
-                                  console.log(`[Rendering Slot ${index + 1}] UUID: ${slot.uuid}, Time: ${slot.start_time}-${slot.end_time}, Left: ${left}%, Width: ${width}%`);
-                                  
+                                                                    
                                   return (
                                     <div
                                       key={`slot-${slot.uuid}`}
