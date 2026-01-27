@@ -10,13 +10,10 @@ import { usePage } from "@inertiajs/react";
 import { Appointment } from "@/pages/Appointments/datatable/types";
 import { Card, Avatar, Button } from "@/components/ui";
 import {
-  CalendarIcon,
-  ClockIcon,
   DocumentTextIcon,
-  EllipsisVerticalIcon,
 } from "@heroicons/react/24/outline";
-
-// ----------------------------------------------------------------------
+import { useEffect, useState } from "react";
+import { Loader } from "lucide-react";
 
 interface Client {
   uuid: string;
@@ -37,18 +34,37 @@ interface DashboardProps {
   client?: Client;
 }
 
-// ----------------------------------------------------------------------
-// Local overview panels (My Doctors / Prescriptions / Recent Activity)
+interface Doctor {
+  id: number;
+  name: string;
+  city: string;
+  total_consultations: number;
+}
 
 function MyDoctorsPanel() {
   const { t } = useTranslation();
-
-  const doctors = [
-    { id: 1, name: "Dr. Mick Thompson", role: "Cardiologist", bookings: 20 },
-    { id: 2, name: "Dr. Sarah Johnson", role: "Orthopedic Surgeon", bookings: 15 },
-    { id: 3, name: "Dr. Emily Carter", role: "Pediatrician", bookings: 12 },
-    { id: 4, name: "Dr. David Lee", role: "Gynecologist", bookings: 8 },
-  ];
+  const [ doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const handleRefreshData = () => {
+    setLoading(true);
+    fetch(route('user.dashboard.my_doctors'))
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Failed to fetch doctors');
+        }
+      })
+      .then(data => {
+        console.log('data doctors',data);
+        setDoctors(data);
+      })
+      .catch(error => console.error('Error fetching doctors:', error))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    handleRefreshData();
+  }, []);
 
   return (
     <Card className="h-full px-4 py-4 sm:px-5">
@@ -58,128 +74,187 @@ function MyDoctorsPanel() {
         </h2>
       </div>
       <div className="space-y-4">
-        {doctors.map((doctor) => (
-          <div
-            key={doctor.id}
-            className="flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-dark-800/60"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <Avatar
-                size={9}
-                name={doctor.name}
-                classNames={{ display: "rounded-full" }}
-                initialColor="auto"
-              />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-dark-50">
-                  {doctor.name}
-                </p>
-                <p className="truncate text-xs text-gray-500 dark:text-dark-300">
-                  {doctor.role}
-                </p>
-              </div>
-            </div>
-            <span className="whitespace-nowrap rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-600 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-              {doctor.bookings.toString().padStart(2, "0")}{" "}
-              {t("common.user_dashboard.bookings") || "Bookings"}
-            </span>
+        {loading ? (
+          <div className="flex flex-1 items-center justify-center py-4">
+            <Loader className="h-8 w-8 animate-spin text-primary-500" />
           </div>
-        ))}
+        ) : doctors.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center py-4">
+            <div className="text-center text-xs text-gray-500 dark:text-dark-400">
+              {t("common.user_dashboard.no_doctors") || "No doctors found"}
+            </div>
+          </div>
+        ) : (
+          doctors.map((doctor) => (
+            <div
+              key={doctor.id}
+              className="flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-dark-800/60"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar
+                  size={9}
+                  name={doctor.name}
+                  classNames={{ display: "rounded-full" }}
+                  initialColor="auto"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-gray-900 dark:text-dark-50">
+                    {doctor.name}
+                  </p>
+                  <p className="truncate text-xs text-gray-500 dark:text-dark-300">
+                    {doctor.city}
+                  </p>
+                </div>
+              </div>
+              <span className="whitespace-nowrap rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-[11px] font-semibold text-primary-600 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-200">
+                {doctor.total_consultations.toString().padStart(2, "0")}{" "}
+                {t("common.user_dashboard.consultations") || "Consultations"}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </Card>
   );
+}
+
+interface Prescription {
+  id: number;
+  medication: string;
+  dosage: string;
+  frequency: string;
 }
 
 function PrescriptionsPanel() {
   const { t } = useTranslation();
-
-  const prescriptions = [
-    { id: 1, title: "Cardiology Prescription", date: "20 Apr 2025" },
-    { id: 2, title: "Dentist Prescription", date: "25 Mar 2025" },
-    { id: 3, title: "Dentist Prescription", date: "16 Mar 2025" },
-    { id: 4, title: "Dentist Prescription", date: "12 Feb 2025" },
-  ];
-
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [loading, setLoading] = useState(false);
+  const handleRefreshData = () => {
+    setLoading(true);
+    fetch(route('user.dashboard.last_prescriptions'))
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Failed to fetch prescriptions');
+        }
+      })
+      .then(data => {
+        console.log('data prescriptions',data);
+        setPrescriptions(data);
+      })
+      .catch(error => console.error('Error fetching prescriptions:', error))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    handleRefreshData();
+  }, []);
   return (
     <Card className="h-full px-4 py-4 sm:px-5">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-dark-50">
           {t("common.user_dashboard.prescriptions") || "Prescriptions"}
         </h2>
       </div>
-      <div className="space-y-3">
-        {prescriptions.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-dark-800/60"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-300">
-                <DocumentTextIcon className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-dark-50">
-                  {item.title}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-dark-300">
-                  {item.date}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                isIcon
-                size="xs"
-                variant="ghost"
-                className="text-gray-500 hover:text-primary-600"
-              >
-                <CalendarIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                isIcon
-                size="xs"
-                variant="ghost"
-                className="text-gray-500 hover:text-primary-600"
-              >
-                <EllipsisVerticalIcon className="h-4 w-4" />
-              </Button>
+      <div className="flex flex-col h-full py-4">
+        {loading ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Loader className="h-8 w-8 animate-spin text-primary-500" />
+          </div>
+        ) : prescriptions.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <DocumentTextIcon className="h-9 w-9 mb-2 text-gray-300 dark:text-dark-500" />
+            <div className="text-center text-xs text-gray-500 dark:text-dark-400">
+              {t("common.user_dashboard.no_prescriptions") || "No prescriptions"}
             </div>
           </div>
-        ))}
+        ) : (
+          prescriptions.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-gray-50 dark:hover:bg-dark-800/60"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-300">
+                  <DocumentTextIcon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-gray-900 dark:text-dark-50">
+                    {item.medication}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-dark-300">
+                    {item.dosage} x {item.frequency}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </Card>
   );
 }
 
-function RecentActivityPanel() {
-  const { t } = useTranslation();
+interface Activity {
+  id: string;
+  type: string;
+  color: string;
+  title: string;
+  date: string;
+  created_at: string;
+}
 
-  const activities = [
-    {
-      id: 1,
-      color: "bg-emerald-500",
-      title: "Appointment with Primary Care Physician",
-      date: "24 Mar 2025, 10:55 AM",
-    },
-    {
-      id: 2,
-      color: "bg-rose-500",
-      title: "Blood Pressure Check (Home)",
-      date: "24 Apr 2025, 11:00 AM",
-    },
-    {
-      id: 3,
-      color: "bg-amber-400",
-      title: "Physical Therapy Session",
-      date: "24 Apr 2025, 11:00 AM",
-    },
-    {
-      id: 4,
-      color: "bg-blue-500",
-      title: "Discuss dietary changes",
-      date: "24 Apr 2025, 11:00 AM",
-    },
-  ];
+function RecentActivityPanel() {
+  const { t, locale } = useTranslation();
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const formatActivityDate = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
+      
+      // Format date based on locale
+      const formattedDate = date.toLocaleDateString(dateLocale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      
+      // Format time in 24-hour format
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+      
+      return `${formattedDate}, ${formattedTime}`;
+    } catch (error) {
+      return dateString; // Return original if parsing fails
+    }
+  };
+
+  const handleRefreshData = () => {
+    setLoading(true);
+    fetch(route('user.dashboard.recent_activities'))
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Failed to fetch recent activities');
+        }
+      })
+      .then(data => {
+        console.log('data activities', data);
+        setActivities(data);
+      })
+      .catch(error => console.error('Error fetching recent activities:', error))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    handleRefreshData();
+  }, []);
 
   return (
     <Card className="h-full px-4 py-4 sm:px-5">
@@ -189,29 +264,41 @@ function RecentActivityPanel() {
         </h2>
       </div>
       <div className="space-y-4">
-        {activities.map((activity, index) => (
-          <div key={activity.id} className="relative flex gap-3">
-            <div className="flex flex-col items-center pt-1">
-              <span
-                className={clsx(
-                  "h-2.5 w-2.5 rounded-full border-2 border-white dark:border-dark-900",
-                  activity.color
-                )}
-              />
-              {index !== activities.length - 1 && (
-                <span className="mt-1 h-full w-px bg-gray-200 dark:bg-dark-600" />
-              )}
-            </div>
-            <div className="pb-2">
-              <p className="text-sm font-medium text-gray-900 dark:text-dark-50">
-                {activity.title}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-dark-300">
-                {activity.date}
-              </p>
+        {loading ? (
+          <div className="flex flex-1 items-center justify-center py-4">
+            <Loader className="h-8 w-8 animate-spin text-primary-500" />
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center py-4">
+            <div className="text-center text-xs text-gray-500 dark:text-dark-400">
+              {t("common.user_dashboard.no_recent_activity") || "No recent activity"}
             </div>
           </div>
-        ))}
+        ) : (
+          activities.map((activity, index) => (
+            <div key={activity.id} className="relative flex gap-3">
+              <div className="flex flex-col items-center pt-1">
+                <span
+                  className={clsx(
+                    "h-2.5 w-2.5 rounded-full border-2 border-white dark:border-dark-900",
+                    activity.color
+                  )}
+                />
+                {index !== activities.length - 1 && (
+                  <span className="mt-1 h-full w-px bg-gray-200 dark:bg-dark-600" />
+                )}
+              </div>
+              <div className="pb-2">
+                <p className="text-sm font-medium text-gray-900 dark:text-dark-50">
+                  {activity.title}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-dark-300">
+                  {formatActivityDate(activity.date)}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </Card>
   );
