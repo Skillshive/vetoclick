@@ -16,10 +16,13 @@ class UserResource extends JsonResource
     {
         return [
             'uuid' => $this->uuid,
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
+            'first_name' => $this->firstname ?? $this->first_name,
+            'last_name' => $this->lastname ?? $this->last_name,
             'email' => $this->email,
-            'avatar' => $this->getFirstMediaUrl('avatar'),
+            // Use 'image_url' accessor or similar if defined on User model, else fallback to image data or null
+            'avatar' => isset($this->image_url)
+                ? $this->image_url
+                : (isset($this->profile_img) ? $this->profile_img : null),
         ];
     }
 }
