@@ -47,7 +47,6 @@
 .client-info-card {
   flex-basis: 40%; /* Give it a flexible width */
   min-width: 320px;
-  background-color: #f0f7ff; /* Light blue background */
   border: 1px solid #bfe0ff; /* Light blue border */
   border-radius: 0.5rem; /* 8px */
   padding: 1.25rem; /* 20px */
@@ -70,5 +69,5 @@
 
 .client-info-item svg {
   flex-shrink: 0;
-  color: #495057; /* --color-text-body */
+  color: #4db9ad; /* --color-text-body */
 }
