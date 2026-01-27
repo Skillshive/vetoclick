@@ -7,7 +7,6 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { Link } from "@inertiajs/react";
 
 // Local Imports
 import { Avatar, Badge, Box, Button } from "@/components/ui";
@@ -23,11 +22,44 @@ interface AppointmentCardProps {
 }
 
 export function AppointmentCard({ appointment }: AppointmentCardProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const formatDate = (date: Date | string): string => {
     const d = date instanceof Date ? date : new Date(date);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const dateLocale = locale === 'ar' ? 'ar-SA' : locale === 'fr' ? 'fr-FR' : 'en-US';
+    return d.toLocaleDateString(dateLocale, { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const formatTime = (time: string): string => {
+    // Convert time to 24-hour format (HH:mm) without seconds
+    if (!time) return '';
+    
+    // Check if time contains AM/PM
+    if (time.includes('AM') || time.includes('PM')) {
+      const [timePart, period] = time.split(/(AM|PM)/i);
+      const [hours, minutes] = timePart.trim().split(':');
+      let hour24 = parseInt(hours, 10);
+      
+      if (period.toUpperCase() === 'PM' && hour24 !== 12) {
+        hour24 += 12;
+      } else if (period.toUpperCase() === 'AM' && hour24 === 12) {
+        hour24 = 0;
+      }
+      
+      return `${hour24.toString().padStart(2, '0')}:${minutes}`;
+    }
+    
+    // Already in 24-hour format - remove seconds if present
+    const timeParts = time.split(':');
+    if (timeParts.length >= 2) {
+      return `${timeParts[0].padStart(2, '0')}:${timeParts[1]}`;
+    }
+    
+    return time;
   };
 
   const getStatusColor = (status: string): "primary" | "warning" | "error" | "info" |  "secondary" => {
@@ -89,10 +121,11 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
           </div>
           <StatusIcon className={clsx(
             "size-5",
-            statusColor === "success" && "text-primary-500 dark:text-primary-400",
+            statusColor === "primary" && "text-primary-500 dark:text-primary-400",
             statusColor === "warning" && "text-warning-600 dark:text-warning-400",
             statusColor === "error" && "text-error-600 dark:text-error-400",
             statusColor === "info" && "text-info-600 dark:text-info-400",
+            statusColor === "secondary" && "text-gray-500 dark:text-gray-400",
           )} />
         </div>
         
@@ -110,11 +143,17 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
         </Badge>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-2">
         <div className="flex items-center gap-2">
           <CalendarIcon className="size-4 text-gray-400 dark:text-dark-300" />
           <p className="dark:text-dark-100 text-sm font-medium text-gray-800">
-            {formatDate(appointment.appointment_date)} &nbsp;|&nbsp; {appointment.start_time} - {appointment.end_time}
+            {formatDate(appointment.appointment_date)}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <ClockIcon className="size-4 text-gray-400 dark:text-dark-300" />
+          <p className="dark:text-dark-300 text-xs text-gray-600">
+            {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
           </p>
         </div>
       </div>
