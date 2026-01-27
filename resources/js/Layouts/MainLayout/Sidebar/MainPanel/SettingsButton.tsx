@@ -1,13 +1,58 @@
 import { useSidebarContext } from "@/contexts/sidebar/context";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useRoleBasedMenu } from "@/hooks/useRoleBasedMenu";
 import SettingIcon from "@/assets/dualicons/setting.svg?react";
 
 export function SettingsButton() {
-  const { setActiveSegmentPath, open, isExpanded, toggle } = useSidebarContext();
+  const { setActiveSegmentPath, open, isExpanded } = useSidebarContext();
   const { t } = useTranslation();
+  const { hasPermission, hasAnyRole } = useRoleBasedMenu();
   const pathname = window.location.pathname;
 
-  // Check if we're on a settings-related page
+  // Check if user is admin or super-admin - always show settings for them
+  const isAdmin = hasAnyRole(['admin', 'super-admin']);
+  const isVeterinarian = hasAnyRole(['veterinarian']);
+
+  // Settings menu items with permission checks
+  const allSettingsItems = [
+    { 
+      permission: "settings.view",
+      roles: ["admin", "super-admin", "veterinarian"]
+    },
+    { 
+      permission: "holidays.view",
+      roles: ["super-admin", "veterinarian"]
+    },
+    { 
+      permission: "availability.view",
+      roles: ["super-admin", "veterinarian"]
+    },
+    { 
+      permission: "roles.view",
+      roles: ["admin", "super-admin"]
+    },
+    { 
+      permission: "subscription-plans.view",
+      roles: ["admin", "super-admin"]
+    }
+  ];
+
+  const settingsItems = allSettingsItems.filter(item => {
+    if (item.permission && hasPermission(item.permission)) {
+      return true;
+    }
+    if (item.roles && item.roles.length > 0 && hasAnyRole(item.roles)) {
+      return true;
+    }
+    return false;
+  });
+
+  const shouldShowSettings = isAdmin || isVeterinarian || settingsItems.length > 1;
+  
+  if (!shouldShowSettings) {
+    return null;
+  }
+
   const isSettingsActive = pathname.startsWith('/settings/') || 
                           pathname === '/roles' || 
                           pathname.startsWith('/roles/') ||
@@ -17,7 +62,6 @@ export function SettingsButton() {
   const handleClick = () => {
     setActiveSegmentPath('settings');
     
-    // Force open the sidebar
     if (!isExpanded) {
       open();
     }
