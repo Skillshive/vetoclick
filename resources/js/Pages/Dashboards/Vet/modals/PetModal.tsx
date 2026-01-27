@@ -1343,8 +1343,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                                     />
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-2xl font-bold text-gray-900 dark:text-dark-50">{pet.name}</h3>
-                                        <span className="text-xs text-gray-500 dark:text-dark-300 font-mono">{t('common.vet_dashboard.pet_modal.pet_id', { id: pet.microchip })}</span>
-                                        <dl className="mt-3 grid grid-cols-2 gap-3">
+                                        <dl className="grid grid-cols-2 gap-1">
                                             <DetailItem label={t('common.vet_dashboard.pet_modal.species')} value={pet.species} />
                                             <DetailItem label={t('common.vet_dashboard.pet_modal.breed')} value={pet.breed} />
                                             <DetailItem label={t('common.vet_dashboard.pet_modal.gender')} value={getGenderLabel(pet.gender, t)} />
