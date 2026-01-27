@@ -52,6 +52,7 @@ export function QuickActions() {
       label: t("common.user_dashboard.quick_actions.schedule") || "Schedule Appointment",
       icon: CalendarIcon,
       href: undefined as string | undefined,
+      color: "primary" as const,
       onClick: () => {
         router.visit(route("appointments.create"));
       },
@@ -64,7 +65,6 @@ export function QuickActions() {
       color: "info" as const,
       onClick: () => {
         router.visit(route("appointments.create"));
-
       },
     },
     {

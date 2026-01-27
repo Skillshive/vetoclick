@@ -3,7 +3,6 @@ import clsx from "clsx";
 import { Page } from "@/components/shared/Page";
 import { Statistics } from "./Statistics";
 import { UpcomingAppointments } from "./UpcomingAppointments";
-import { QuickActions } from "./QuickActions";
 import MainLayout from "@/layouts/MainLayout";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRTL } from "@/hooks/useRTL";
@@ -52,16 +51,16 @@ export default function UserDashboard() {
       <Page title={t("common.user_dashboard.page_title") || "My Dashboard"}>
         <div
           {...rtlProps}
-          className={clsx("overflow-hidden pb-8", rtlProps.className)}
+          className={clsx("overflow-hidden", rtlProps.className)}
         >
-          <div className="transition-content px-(--margin-x) pb-8 mt-5 lg:mt-6">
-            <Statistics statistics={statistics} />
-            <div className="mt-4 grid grid-cols-12 gap-4 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
+          <div className="transition-content px-(--margin-x) py-8">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
               <div className="col-span-12 lg:col-span-8">
                 <UpcomingAppointments appointments={upcomingAppointments} />
               </div>
               <div className="col-span-12 lg:col-span-4">
-                <QuickActions />
+                <Statistics statistics={statistics} />
               </div>
             </div>
           </div>
