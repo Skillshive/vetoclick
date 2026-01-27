@@ -131,6 +131,21 @@ Route::get('/user/dashboard', [UserDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('user.dashboard');
 
+// User dashboard route
+Route::get('/user/dashboard/last-prescriptions', [UserDashboardController::class, 'getLastPrescriptions'])
+    ->middleware(['auth', 'verified'])
+    ->name('user.dashboard.last_prescriptions');
+
+// User dashboard route
+Route::get('/user/dashboard/my-doctors', [UserDashboardController::class, 'getMyDoctors'])
+    ->middleware(['auth', 'verified'])
+    ->name('user.dashboard.my_doctors');
+
+// User dashboard route
+Route::get('/user/dashboard/recent-activities', [UserDashboardController::class, 'getRecentActivities'])
+    ->middleware(['auth', 'verified'])
+    ->name('user.dashboard.recent_activities');
+
 // Receptionist dashboard route
 Route::get('/receptionist/dashboard', [App\Http\Controllers\ReceptionistDashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
