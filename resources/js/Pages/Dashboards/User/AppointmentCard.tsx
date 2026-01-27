@@ -97,7 +97,7 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
         </div>
         
         <p className="dark:text-dark-100 text-sm font-semibold text-gray-800 mb-1">
-          {appointment.appointment_type}
+          {t(appointment.appointment_type)}
         </p>
         {appointment.reason_for_visit ?  (
           <p className="dark:text-dark-300 text-xs text-gray-400 mb-3 line-clamp-2">
@@ -111,16 +111,10 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
       </div>
 
       <div className="mt-6">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2">
           <CalendarIcon className="size-4 text-gray-400 dark:text-dark-300" />
           <p className="dark:text-dark-100 text-sm font-medium text-gray-800">
-            {formatDate(appointment.appointment_date)}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ClockIcon className="size-4 text-gray-400 dark:text-dark-300" />
-          <p className="dark:text-dark-100 text-sm font-medium text-gray-800">
-            {appointment.start_time} - {appointment.end_time}
+            {formatDate(appointment.appointment_date)} &nbsp;|&nbsp; {appointment.start_time} - {appointment.end_time}
           </p>
         </div>
       </div>
