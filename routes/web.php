@@ -149,18 +149,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Availability routes
-Route::middleware(['auth', 'verified'])->prefix('availability')->controller(AvailabilityController::class)->group(function () {
-    Route::post('/', 'store')->name('availability.store');
+Route::middleware(['auth', 'verified', 'permission:availability.view'])->prefix('availability')->controller(AvailabilityController::class)->group(function () {
+    Route::post('/', 'store')->middleware('permission:availability.create')->name('availability.store');
     Route::get('/current-week', 'getCurrentWeek')->name('availability.getCurrentWeek');
-    Route::delete('/{uuid}', 'destroy')->name('availability.destroy');
+    Route::delete('/{uuid}', 'destroy')->middleware('permission:availability.delete')->name('availability.destroy');
     Route::post('/check', 'checkAvailability')->name('availability.check');
 });
 
 // Holiday routes
-Route::middleware(['auth', 'verified'])->prefix('holidays')->controller(HolidayController::class)->group(function () {
+Route::middleware(['auth', 'verified', 'permission:holidays.view'])->prefix('holidays')->controller(HolidayController::class)->group(function () {
     Route::get('/', 'index')->name('holidays.index');
-    Route::post('/', 'store')->name('holidays.store');
-    Route::delete('/{uuid}', 'destroy')->name('holidays.destroy');
+    Route::post('/', 'store')->middleware('permission:holidays.create')->name('holidays.store');
+    Route::delete('/{uuid}', 'destroy')->middleware('permission:holidays.delete')->name('holidays.destroy');
     Route::get('/upcoming', 'upcoming')->name('holidays.upcoming');
 });
 
@@ -171,28 +171,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->group(function () {
             Route::get('', 'index')
                 ->name('index');
-            Route::get('create', 'create')->name('create');
-            Route::post('store', 'store')->name('store');
-            Route::get('{species}/edit', 'edit')->name('edit');
-            Route::post('delete', 'destroyGroup')->name('destroyGroup');
-            Route::delete('{species}/delete', 'destroy')->name('destroy');
+            Route::get('create', 'create')->middleware('permission:species.create')->name('create');
+            Route::post('store', 'store')->middleware('permission:species.create')->name('store');
+            Route::get('{species}/edit', 'edit')->middleware('permission:species.edit')->name('edit');
+            Route::post('delete', 'destroyGroup')->middleware('permission:species.delete')->name('destroyGroup');
+            Route::delete('{species}/delete', 'destroy')->middleware('permission:species.delete')->name('destroy');
             Route::get('{species}/show', 'show')->name('show');
-            Route::post('{species}/update', 'update')->name('update');
+            Route::post('{species}/update', 'update')->middleware('permission:species.edit')->name('update');
         });
 });
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:users.view'])->group(function () {
     Route::name('users.')->prefix('users')
         ->controller(UserController::class)
         ->group(function () {
             Route::get('', 'index')
                 ->name('index');
-            Route::get('create', 'create')->name('create');
-            Route::post('store', 'store')->name('store');
-            Route::get('{user}/edit', 'edit')->name('edit');
-            Route::post('delete', 'destroyGroup')->name('destroyGroup');
-            Route::delete('{user}/delete', 'destroy')->name('destroy');
+            Route::get('create', 'create')->middleware('permission:users.create')->name('create');
+            Route::post('store', 'store')->middleware('permission:users.create')->name('store');
+            Route::get('{user}/edit', 'edit')->middleware('permission:users.edit')->name('edit');
+            Route::post('delete', 'destroyGroup')->middleware('permission:users.delete')->name('destroyGroup');
+            Route::delete('{user}/delete', 'destroy')->middleware('permission:users.delete')->name('destroy');
             Route::get('{user}/show', 'show')->name('show');
-            Route::post('{user}/update', 'update')->name('update');
+            Route::post('{user}/update', 'update')->middleware('permission:users.edit')->name('update');
         });
 });
 
@@ -201,9 +201,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::name('breeds.')->prefix('breeds')
         ->controller(BreedController::class)
         ->group(function () {
-            Route::post('store', 'store')->name('store');
-            Route::post('{breed}/update', 'update')->name('update');
-            Route::delete('{breed}/delete', 'destroy')->name('destroy');
+            Route::post('store', 'store')->middleware('permission:breeds.create')->name('store');
+            Route::post('{breed}/update', 'update')->middleware('permission:breeds.edit')->name('update');
+            Route::delete('{breed}/delete', 'destroy')->middleware('permission:breeds.delete')->name('destroy');
             // Get breeds for a specific species
             Route::get('species/{speciesUuid}', 'getBySpecies')->name('by-species');
         });
@@ -217,115 +217,116 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('', 'index')->name('index');
             Route::post('store', 'store')->name('store');
             Route::post('store-for-appointment', 'storeForAppointment')->name('store-for-appointment');
-            Route::put('{uuid}/update', 'update')->name('update');
-            Route::delete('{uuid}/delete', 'destroy')->name('destroy');
+            Route::put('{uuid}/update', 'update')->middleware('permission:clients.edit')->name('update');
+            Route::delete('{uuid}/delete', 'destroy')->middleware('permission:clients.delete')->name('destroy');
         });
 });
 
 // Pet routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:pets.view'])->group(function () {
     Route::name('pets.')->prefix('pets')
         ->controller(PetController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::get('create', 'create')->name('create');
-            Route::post('store', 'store')->name('store');
+            Route::get('create', 'create')->middleware('permission:pets.create')->name('create');
+            Route::post('store', 'store')->middleware('permission:pets.create')->name('store');
             Route::get('{pet:uuid}/show', 'show')->name('show');
-            Route::get('{pet:uuid}/edit', 'edit')->name('edit');
-            Route::post('{pet:uuid}/update', 'update')->name('update');
-            Route::delete('{pet:uuid}/delete', 'destroy')->name('destroy');
+            Route::get('{pet:uuid}/edit', 'edit')->middleware('permission:pets.edit')->name('edit');
+            Route::post('{pet:uuid}/update', 'update')->middleware('permission:pets.edit')->name('update');
+            Route::delete('{pet:uuid}/delete', 'destroy')->middleware('permission:pets.delete')->name('destroy');
             Route::get('{uuid}/medical-history', 'getMedicalHistory')->name('medical-history');
         });
 });
 
 // Supplier routes
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('suppliers', SupplierController::class);
+Route::middleware(['auth', 'verified', 'permission:suppliers.view'])->group(function () {
+    Route::resource('suppliers', SupplierController::class)->middleware([
+        'create' => 'permission:suppliers.create',
+        'edit' => 'permission:suppliers.edit',
+        'destroy' => 'permission:suppliers.delete',
+    ]);
     Route::prefix('suppliers')->group(function () {
-        Route::get('export', [SupplierController::class, 'export'])->name('suppliers.export');
-        Route::post('import', [SupplierController::class, 'import'])->name('suppliers.import');
+        Route::get('export', [SupplierController::class, 'export'])->middleware('permission:suppliers.export')->name('suppliers.export');
+        Route::post('import', [SupplierController::class, 'import'])->middleware('permission:suppliers.import')->name('suppliers.import');
     });
 });
 
 // Order routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:orders.view'])->group(function () {
     Route::name('orders.')->prefix('orders')
         ->controller(OrderController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::get('create', 'create')->name('create');
-            Route::post('store', 'store')->name('store');
-            Route::get('{uuid}/edit', 'edit')->name('edit');
-            Route::put('{uuid}/update', 'update')->name('update');
-            Route::delete('{uuid}/delete', 'destroy')->name('destroy');
+            Route::get('create', 'create')->middleware('permission:orders.create')->name('create');
+            Route::post('store', 'store')->middleware('permission:orders.create')->name('store');
+            Route::get('{uuid}/edit', 'edit')->middleware('permission:orders.edit')->name('edit');
+            Route::put('{uuid}/update', 'update')->middleware('permission:orders.edit')->name('update');
+            Route::delete('{uuid}/delete', 'destroy')->middleware('permission:orders.delete')->name('destroy');
             Route::get('{uuid}/show', 'show')->name('show');
-            Route::post('{uuid}/confirm', 'confirm')->name('confirm');
-            Route::post('{uuid}/receive', 'receive')->name('receive');
-            Route::post('{uuid}/cancel', 'cancel')->name('cancel');
+            Route::post('{uuid}/confirm', 'confirm')->middleware('permission:orders.confirm')->name('confirm');
+            Route::post('{uuid}/receive', 'receive')->middleware('permission:orders.receive')->name('receive');
+            Route::post('{uuid}/cancel', 'cancel')->middleware('permission:orders.cancel')->name('cancel');
         });
 });
 
 // Category Products routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:category-products.view'])->group(function () {
     Route::prefix('category-products')->group(function () {
-        Route::get('export', [CategoryProductController::class, 'export'])->name('category-products.export');
-        Route::post('import', [CategoryProductController::class, 'import'])->name('category-products.import');
+        Route::get('export', [CategoryProductController::class, 'export'])->middleware('permission:category-products.export')->name('category-products.export');
+        Route::post('import', [CategoryProductController::class, 'import'])->middleware('permission:category-products.import')->name('category-products.import');
     });
-    Route::resource('category-products', CategoryProductController::class)->names('category-products');
+    Route::resource('category-products', CategoryProductController::class)->names('category-products')->middleware([
+        'create' => 'permission:category-products.create',
+        'edit' => 'permission:category-products.edit',
+        'destroy' => 'permission:category-products.delete',
+    ]);
 });
 
 // Category Blog routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:category-blogs.view'])->group(function () {
     Route::prefix('category-blogs')->group(function () {
-        Route::get('export', [CategoryBlogController::class, 'export'])->name('category-blogs.export');
-        Route::post('import', [CategoryBlogController::class, 'import'])->name('category-blogs.import');
+        Route::get('export', [CategoryBlogController::class, 'export'])->middleware('permission:category-blogs.export')->name('category-blogs.export');
+        Route::post('import', [CategoryBlogController::class, 'import'])->middleware('permission:category-blogs.import')->name('category-blogs.import');
     });
 
-    // Route::name('category-blogs.')->prefix('category-blogs')
-    //     ->controller(CategoryBlogController::class)
-    //     ->group(function () {
-    //         Route::get('', 'index')->name('index');
-    //         Route::get('create', 'create')->name('create');
-    //         Route::post('store', 'store')->name('store');
-    //         Route::get('{categoryBlog}/edit', 'edit')->name('edit');
-    //         Route::put('{categoryBlog}/update', 'update')->name('update');
-    //         Route::delete('{categoryBlog}/delete', 'destroy')->name('destroy');
-    //     });
-
-    Route::resource('category-blogs', CategoryBlogController::class)->except(['show']);
+    Route::resource('category-blogs', CategoryBlogController::class)->except(['show'])->middleware([
+        'create' => 'permission:category-blogs.create',
+        'edit' => 'permission:category-blogs.edit',
+        'destroy' => 'permission:category-blogs.delete',
+    ]);
 
 });
 
 // Blog routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:blogs.view'])->group(function () {
     Route::name('blogs.')->prefix('blogs')
         ->controller(BlogController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::get('create', 'create')->name('create');
-            Route::post('', 'store')->name('store');
+            Route::get('create', 'create')->middleware('permission:blogs.create')->name('create');
+            Route::post('', 'store')->middleware('permission:blogs.create')->name('store');
             Route::get('{blog}', 'show')->name('show');
-            Route::get('{blog}/edit', 'edit')->name('edit');
-            Route::put('{blog}', 'update')->name('update');
-            Route::delete('{blog}', 'destroy')->name('destroy');
-            Route::get('search', 'search')->name('search');
+            Route::get('{blog}/edit', 'edit')->middleware('permission:blogs.edit')->name('edit');
+            Route::put('{blog}', 'update')->middleware('permission:blogs.edit')->name('update');
+            Route::delete('{blog}', 'destroy')->middleware('permission:blogs.delete')->name('destroy');
+            Route::get('search', 'search')->middleware('permission:blogs.search')->name('search');
         });
 });
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:appointments.view'])->group(function () {
     Route::name('appointments.')->prefix('appointments')
         ->controller(AppointmentController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::get('calendar', 'calendar')->name('calendar');
+            Route::get('calendar', 'calendar')->middleware('permission:appointments.calendar')->name('calendar');
             Route::get('available-times', 'getAvailableTimes')->name('available-times');
-            Route::post('{uuid}/create-consultation', 'createConsultation')->name('create-consultation');
-            Route::post('{uuid}/cancel', 'cancel')->name('cancel');
-            Route::post('{uuid}/report', 'report')->name('report');
+            Route::post('{uuid}/create-consultation', 'createConsultation')->middleware('permission:consultations.create')->name('create-consultation');
+            Route::post('{uuid}/cancel', 'cancel')->middleware('permission:appointments.cancel')->name('cancel');
+            Route::post('{uuid}/report', 'report')->middleware('permission:appointments.report')->name('report');
             Route::get('create', 'create')->name('create');
             Route::post('create-appointment', 'createAppointment')->name('create-appointment');
             Route::post('store', 'store')->name('store');
-            Route::post('request', 'requestAppointment')->name('request');
-            Route::post('{uuid}/accept', 'accept')->name('accept');
+            Route::post('request', 'requestAppointment')->middleware('permission:appointments.request')->name('request');
+            Route::post('{uuid}/accept', 'accept')->middleware('permission:appointments.accept')->name('accept');
             Route::get('{uuid}/join-meeting', 'joinMeeting')->name('join-meeting');
             Route::get('{uuid}/check-meeting-access', 'checkMeetingAccess')->name('check-meeting-access');
             Route::post('{uuid}/track-meeting-start', 'trackMeetingStart')->name('track-meeting-start');
@@ -336,96 +337,96 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 });
 // Product routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:products.view'])->group(function () {
     Route::prefix('products')->group(function () {
-        Route::get('export', [ProductController::class, 'export'])->name('products.export');
+        Route::get('export', [ProductController::class, 'export'])->middleware('permission:products.export')->name('products.export');
     });
 
     Route::name('products.')->prefix('products')
         ->controller(ProductController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::get('create', 'create')->name('create');
+            Route::get('create', 'create')->middleware('permission:products.create')->name('create');
             Route::get('form', function () {
                 return Inertia::render('Products/ProductForm');
-            })->name('form');
-            Route::post('store', 'store')->name('store');
-            Route::get('{uuid}/edit', 'edit')->name('edit');
-            Route::put('{uuid}/update', 'update')->name('update');
-            Route::get('{uuid}/lots', 'lots')->name('lots');
-            Route::delete('{uuid}/delete', 'destroy')->name('destroy');
+            })->middleware('permission:products.create')->name('form');
+            Route::post('store', 'store')->middleware('permission:products.create')->name('store');
+            Route::get('{uuid}/edit', 'edit')->middleware('permission:products.edit')->name('edit');
+            Route::put('{uuid}/update', 'update')->middleware('permission:products.edit')->name('update');
+            Route::get('{uuid}/lots', 'lots')->middleware('permission:lots.view')->name('lots');
+            Route::delete('{uuid}/delete', 'destroy')->middleware('permission:products.delete')->name('destroy');
         });
 
     // Lot routes
-    Route::put('lots/{id}', [LotController::class, 'update'])->name('lots.update');
+    Route::put('lots/{id}', [LotController::class, 'update'])->middleware('permission:lots.edit')->name('lots.update');
 
     // Vaccin routes (available vaccines list)
-    Route::get('vaccins', [VaccinController::class, 'index'])->name('vaccins.index');
+    Route::get('vaccins', [VaccinController::class, 'index'])->middleware('permission:vaccinations.view')->name('vaccins.index');
     
     // Vaccine products (from products table where type = VACCINE)
-    Route::get('vaccine-products', [VaccineProductController::class, 'index'])->name('vaccine-products.index');
+    Route::get('vaccine-products', [VaccineProductController::class, 'index'])->middleware('permission:products.view')->name('vaccine-products.index');
 
     // Vaccination routes
-    Route::post('vaccinations', [VaccinationController::class, 'store'])->name('vaccinations.store');
-    Route::put('vaccinations/{uuid}', [VaccinationController::class, 'update'])->name('vaccinations.update');
-    Route::delete('vaccinations/{uuid}', [VaccinationController::class, 'destroy'])->name('vaccinations.destroy');
+    Route::post('vaccinations', [VaccinationController::class, 'store'])->middleware('permission:vaccinations.create')->name('vaccinations.store');
+    Route::put('vaccinations/{uuid}', [VaccinationController::class, 'update'])->middleware('permission:vaccinations.edit')->name('vaccinations.update');
+    Route::delete('vaccinations/{uuid}', [VaccinationController::class, 'destroy'])->middleware('permission:vaccinations.delete')->name('vaccinations.destroy');
 
     // Allergy routes
-    Route::post('allergies', [\App\Http\Controllers\AllergyController::class, 'store'])->name('allergies.store');
-    Route::put('allergies/{uuid}', [\App\Http\Controllers\AllergyController::class, 'update'])->name('allergies.update');
-    Route::delete('allergies/{uuid}', [\App\Http\Controllers\AllergyController::class, 'destroy'])->name('allergies.destroy');
+    Route::post('allergies', [\App\Http\Controllers\AllergyController::class, 'store'])->middleware('permission:allergies.create')->name('allergies.store');
+    Route::put('allergies/{uuid}', [\App\Http\Controllers\AllergyController::class, 'update'])->middleware('permission:allergies.edit')->name('allergies.update');
+    Route::delete('allergies/{uuid}', [\App\Http\Controllers\AllergyController::class, 'destroy'])->middleware('permission:allergies.delete')->name('allergies.destroy');
 
     // Note routes
-    Route::post('notes', [NoteController::class, 'store'])->name('notes.store');
-    Route::put('notes/{uuid}', [NoteController::class, 'update'])->name('notes.update');
-    Route::delete('notes/{uuid}', [NoteController::class, 'destroy'])->name('notes.destroy');
+    Route::post('notes', [NoteController::class, 'store'])->middleware('permission:notes.create')->name('notes.store');
+    Route::put('notes/{uuid}', [NoteController::class, 'update'])->middleware('permission:notes.edit')->name('notes.update');
+    Route::delete('notes/{uuid}', [NoteController::class, 'destroy'])->middleware('permission:notes.delete')->name('notes.destroy');
 
     // Prescription routes
-    Route::post('prescriptions', [\App\Http\Controllers\PrescriptionController::class, 'store'])->name('prescriptions.store');
-    Route::put('prescriptions/{uuid}', [\App\Http\Controllers\PrescriptionController::class, 'update'])->name('prescriptions.update');
-    Route::delete('prescriptions/{uuid}', [\App\Http\Controllers\PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
+    Route::post('prescriptions', [\App\Http\Controllers\PrescriptionController::class, 'store'])->middleware('permission:prescriptions.create')->name('prescriptions.store');
+    Route::put('prescriptions/{uuid}', [\App\Http\Controllers\PrescriptionController::class, 'update'])->middleware('permission:prescriptions.edit')->name('prescriptions.update');
+    Route::delete('prescriptions/{uuid}', [\App\Http\Controllers\PrescriptionController::class, 'destroy'])->middleware('permission:prescriptions.delete')->name('prescriptions.destroy');
 
     // Consultation note routes
-    Route::post('consultation-notes', [ConsultationNoteController::class, 'store'])->name('consultation-notes.store');
-    Route::put('consultation-notes/{uuid}', [ConsultationNoteController::class, 'update'])->name('consultation-notes.update');
-    Route::delete('consultation-notes/{uuid}', [ConsultationNoteController::class, 'destroy'])->name('consultation-notes.destroy');
+    Route::post('consultation-notes', [ConsultationNoteController::class, 'store'])->middleware('permission:consultation-notes.create')->name('consultation-notes.store');
+    Route::put('consultation-notes/{uuid}', [ConsultationNoteController::class, 'update'])->middleware('permission:consultation-notes.edit')->name('consultation-notes.update');
+    Route::delete('consultation-notes/{uuid}', [ConsultationNoteController::class, 'destroy'])->middleware('permission:consultation-notes.delete')->name('consultation-notes.destroy');
 
     // Consultation routes
-    Route::post('consultations/{uuid}/close', [ConsultationController::class, 'close'])->name('consultations.close');
+    Route::post('consultations/{uuid}/close', [ConsultationController::class, 'close'])->middleware('permission:consultations.close')->name('consultations.close');
 });
 
 // Role routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:roles.view'])->group(function () {
     Route::name('roles.')->prefix('roles')
         ->controller(RoleController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
-            Route::post('store', 'store')->name('store');
-            Route::post('{role}/update', 'update')->name('update');
-            Route::delete('{role}/delete', 'destroy')->name('destroy');
-            Route::post('{role}/assign-permissions', 'assignPermissions')->name('assign-permissions');
+            Route::post('store', 'store')->middleware('permission:roles.create')->name('store');
+            Route::post('{role}/update', 'update')->middleware('permission:roles.edit')->name('update');
+            Route::delete('{role}/delete', 'destroy')->middleware('permission:roles.delete')->name('destroy');
+            Route::post('{role}/assign-permissions', 'assignPermissions')->middleware('permission:roles.assign-permissions')->name('assign-permissions');
         });
 });
 
 // Subscription Plans routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:subscription-plans.view'])->group(function () {
     Route::name('subscription-plans.')->prefix('subscription-plans')
         ->controller(SubscriptionPlanController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/count-active', 'countActive')->name('count-active');
-            Route::get('/create', 'create')->name('create');
-            Route::post('/', 'store')->name('store');
+            Route::get('/create', 'create')->middleware('permission:subscription-plans.create')->name('create');
+            Route::post('/', 'store')->middleware('permission:subscription-plans.create')->name('store');
             Route::get('/{subscription_plan}', 'show')->name('show');
-            Route::get('/{subscription_plan}/edit', 'edit')->name('edit');
-            Route::put('/{subscription_plan}', 'update')->name('update');
-            Route::patch('/{subscription_plan}/toggle', 'toggle')->name('toggle');
-            Route::delete('/{subscription_plan}', 'destroy')->name('destroy');
+            Route::get('/{subscription_plan}/edit', 'edit')->middleware('permission:subscription-plans.edit')->name('edit');
+            Route::put('/{subscription_plan}', 'update')->middleware('permission:subscription-plans.edit')->name('update');
+            Route::patch('/{subscription_plan}/toggle', 'toggle')->middleware('permission:subscription-plans.toggle')->name('toggle');
+            Route::delete('/{subscription_plan}', 'destroy')->middleware('permission:subscription-plans.delete')->name('destroy');
         });
 });
 
 // Settings routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:settings.view'])->group(function () {
     Route::name('settings.')->prefix('settings')->group(function () {
         Route::get('/', function () {
             return Inertia::render('Settings/Index');
@@ -443,11 +444,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::get('/availabilities', function () {
             return Inertia::render('Settings/Availabilities');
-        })->name('availabilities');
+        })->middleware('permission:availability.view')->name('availabilities');
         
         Route::get('/holidays', function () {
             return Inertia::render('Settings/Holidays');
-        })->name('holidays');
+        })->middleware('permission:holidays.view')->name('holidays');
     });
 });
 
