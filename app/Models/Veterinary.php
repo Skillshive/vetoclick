@@ -52,6 +52,11 @@ class Veterinary extends Model
         return $this->hasMany(Vaccination::class, 'vet_id');
     }
 
+    public function consultations()
+    {
+        return $this->hasMany( Consultation::class, 'veterinarian_id');
+    }
+
 
     public function user(){
         return $this->belongsTo(User::class);
