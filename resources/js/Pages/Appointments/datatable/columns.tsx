@@ -226,7 +226,7 @@ export function createColumns(
         const isScheduled = appointment.status === 'scheduled';
 
         return (
-          <div className="flex justify-center items-center gap-2"> 
+          <div className="flex justify-end items-center gap-2"> 
             {isScheduled && (
               <Button
                 type="button"
