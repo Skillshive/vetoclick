@@ -518,6 +518,25 @@ return [
     'break_slot_overlap' => 'This break slot overlaps with an existing break slot. Please select a different time.',
     'availability_slot_overlap_error' => 'This availability slot overlaps with an existing availability slot. Please select a different time.',
     'slots' => 'slot(s)',
+    
+    // Holiday translations
+    'holidays' => 'Holidays',
+    'add_holiday' => 'Add Holiday',
+    'holiday_date' => 'Holiday Date',
+    'start_date' => 'Start Date',
+    'end_date' => 'End Date',
+    'end_date_must_be_after_start_date' => 'End date must be after start date',
+    'holiday_reason' => 'Reason (Optional)',
+    'holiday_created_successfully' => 'Holiday added successfully',
+    'holiday_deleted_successfully' => 'Holiday removed successfully',
+    'holiday_already_exists' => 'A holiday already exists for this date range',
+    'confirm_delete_holiday' => 'Are you sure you want to remove this holiday?',
+    'no_holidays' => 'No holidays scheduled',
+    'failed_to_create_holiday' => 'Failed to create holiday',
+    'failed_to_delete_holiday' => 'Failed to delete holiday',
+    'failed_to_fetch_holidays' => 'Failed to fetch holidays',
+    'holiday_not_found' => 'Holiday not found',
+    'upcoming_holidays' => 'Upcoming Holidays',
 
         "menu" => [
             "dashboard" => "Dashboard",
@@ -552,7 +571,7 @@ return [
             "create_order" => "Create Order",
             "orders_management" => "Orders Management",
             "clients_list" => "Clients",
-
+            'calendar_appointments' => "Calendar",
     ],
 
     // Category Blogs specific translations
@@ -1081,6 +1100,7 @@ return [
 
     
     'prime_panel' => [
+        'holidays' => 'Holidays',
         'prime_panel' => 'Prime Panel',
         'settings' => 'Settings',
         'general' => 'General',
@@ -1213,8 +1233,6 @@ return [
 "cancel_appointment"=>"Cancel Appointment",
 "appointment_cancelled_successfully"=>"Appointment Cancelled Successfully",
     'appointment_type'           => 'Appointment Type', 
-    'checkup'                    => 'Check-up',
-    'vaccination'                => 'Vaccination',
     'surgery_consult'            => 'Surgery Consult',
     'select_date_and_time'       => 'Select date and time',
     'date_and_time'              => 'Date & Time',
@@ -1256,6 +1274,10 @@ return [
             'video_consultation' => 'Video Consultation',
             'add_pet' => 'Add Pet',
             'view_records' => 'View Records',
+        ],
+        'appointment_card' => [
+            'waiting' => 'Waiting...',
+            'until_call' => 'until call opens',
         ],
     ],
     'vet_dashboard' => [
@@ -1658,7 +1680,6 @@ return [
     'in_person' => 'In-Person',
     'video' => 'Video',
     'consultation_type' => 'Consultation Type',
-    'vaccination' => 'Vaccination',
     'allergy' => 'Allergy',
 
     
@@ -2053,4 +2074,41 @@ return [
 'monthly_increase' => 'Monthly increase',
 'no_notifications_yet' => 'No new notifications yet',
 'blog_retrieve_error' => 'Failed to retrieve blog',
+'vaccination'                => 'Vaccination',
+'sending' => 'Sending...',
+
+    // Notification translations
+    'notification' => 'Notification',
+    'new_notification' => 'New Notification',
+    'new_appointment' => 'New Appointment',
+    
+    // Appointment notification titles
+    'appointment_confirmed' => 'Appointment Confirmed',
+    'appointment_cancelled' => 'Appointment Cancelled',
+    'appointment_completed' => 'Appointment Completed',
+    'appointment_rescheduled' => 'Appointment Rescheduled',
+    'appointment_scheduled' => 'Appointment Scheduled',
+    'appointment_updated' => 'Appointment Updated',
+    'appointment_reminder' => 'Appointment Reminder',
+    'appointment_no_show' => 'No Show',
+    
+    // Appointment notification messages
+    'appointment_confirmed_message' => 'Your appointment with :vetName for :petName on :date at :time has been confirmed.',
+    'appointment_cancelled_message' => 'Your appointment with :vetName for :petName on :date at :time has been cancelled.',
+    'appointment_completed_message' => 'Your appointment with :vetName for :petName on :date at :time has been completed.',
+    'appointment_rescheduled_message' => 'Your appointment with :vetName for :petName has been rescheduled to :date at :time.',
+    'appointment_scheduled_message' => 'Your appointment with :vetName for :petName on :date at :time has been scheduled.',
+    'appointment_updated_message' => 'Your appointment with :vetName for :petName on :date at :time has been updated.',
+    'appointment_reminder_message' => 'Don\'t forget your appointment with :vetName for :petName on :date at :time.',
+    'appointment_no_show_message' => 'The appointment with :vetName for :petName on :date at :time was marked as no-show.',
+    'time_range_error' => 'Time must be between 08:00 and 19:00',
+    'not_available' => 'Not Available',
+    'select_time_range' => 'Select a time range between 08:00 and 19:00',
+    'statistics_title' => 'Statistics',
+    'checkup'                    => 'Check-up',
+    'enter_city'                    => 'Enter city',
+'waiting_for_you_to_finish_typing' => 'Waiting for you to finish typing...',
+'duplicate_slot_error' => 'Duplicate slot error',
+
+
 ];

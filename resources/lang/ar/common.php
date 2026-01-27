@@ -512,7 +512,7 @@ return [
         "create_order" => "إنشاء طلب",
         "orders_management" => "إدارة الطلبات",
         "clients_list" => "العملاء",
-
+        'calendar_appointments' => "التقويم",
     ],
 
     // Category Blogs specific translations
@@ -958,6 +958,7 @@ return [
 
 
     'prime_panel' => [
+        'holidays' => 'العطل',
         'prime_panel' => 'لوحة برايم',
         'settings' => 'الإعدادات',
         'general' => 'عام',
@@ -1107,6 +1108,10 @@ return [
             'video_consultation' => 'استشارة فيديو',
             'add_pet' => 'إضافة حيوان أليف',
             'view_records' => 'عرض السجلات',
+        ],
+        'appointment_card' => [
+            'waiting' => 'في الانتظار...',
+            'until_call' => 'حتى يفتح الاتصال',
         ],
     ],
     'vet_dashboard' => [

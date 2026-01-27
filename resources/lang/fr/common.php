@@ -531,6 +531,8 @@ return [
         "create_order" => "Créer une commande",
         "orders_management" => "Gestion des commandes",
         "clients_list" => "Clients",
+        'calendar_appointments' => "Calendrier",
+
     ],
 
     // Category Blogs specific translations
@@ -1057,6 +1059,7 @@ return [
     ],
 
     'prime_panel' => [
+        'holidays' => 'Jours fériés',
         'prime_panel' => 'Prime Panel',
         'settings' => 'Paramètres',
         'general' => 'Général',
@@ -1175,7 +1178,6 @@ return [
     "appointment_cancelled_successfully" => "Rendez-vous annulé avec succès",
     'appointment_type' => 'Type de rendez-vous',
     'checkup' => 'Bilan de santé',
-    'vaccination' => 'Vaccination',
     'surgery_consult' => 'Consultation chirurgicale',
     'select_date_and_time' => 'Sélectionner la date et l\'heure',
     'date_and_time' => 'Date et Heure',
@@ -1217,6 +1219,10 @@ return [
             'video_consultation' => 'Consultation Vidéo',
             'add_pet' => 'Ajouter un Animal',
             'view_records' => 'Voir les Dossiers',
+        ],
+        'appointment_card' => [
+            'waiting' => 'En attente...',
+            'until_call' => "jusqu'à l'ouverture de l'appel",
         ],
     ],
     'vet_dashboard' => [
@@ -1950,4 +1956,31 @@ return [
 'revenue_current_year' => 'Revenus - Année en cours',
 'no_notifications_yet' => 'Aucune notification nouvelle pour le moment',
 'blog_retrieve_error' => 'Échec de la récupération du blog',
+'vaccination'                => 'Vaccination',
+'sending' => 'Envoi en cours...',
+
+    // Notification translations
+    'notification' => 'Notification',
+    'new_notification' => 'Nouvelle notification',
+    'new_appointment' => 'Nouveau rendez-vous',
+    
+    // Appointment notification titles
+    'appointment_confirmed' => 'Rendez-vous confirmé',
+    'appointment_cancelled' => 'Rendez-vous annulé',
+    'appointment_completed' => 'Rendez-vous terminé',
+    'appointment_rescheduled' => 'Rendez-vous reprogrammé',
+    'appointment_scheduled' => 'Rendez-vous programmé',
+    'appointment_updated' => 'Rendez-vous mis à jour',
+    'appointment_reminder' => 'Rappel de rendez-vous',
+    'appointment_no_show' => 'Absence',
+    
+    // Appointment notification messages
+    'appointment_confirmed_message' => 'Votre rendez-vous avec :vetName pour :petName le :date à :time a été confirmé.',
+    'appointment_cancelled_message' => 'Votre rendez-vous avec :vetName pour :petName le :date à :time a été annulé.',
+    'appointment_completed_message' => 'Votre rendez-vous avec :vetName pour :petName le :date à :time a été terminé.',
+    'appointment_rescheduled_message' => 'Votre rendez-vous avec :vetName pour :petName a été reprogrammé au :date à :time.',
+    'appointment_scheduled_message' => 'Votre rendez-vous avec :vetName pour :petName le :date à :time a été programmé.',
+    'appointment_updated_message' => 'Votre rendez-vous avec :vetName pour :petName le :date à :time a été mis à jour.',
+    'appointment_reminder_message' => 'N\'oubliez pas votre rendez-vous avec :vetName pour :petName le :date à :time.',
+    'appointment_no_show_message' => 'Le rendez-vous avec :vetName pour :petName le :date à :time a été marqué comme absence.',
 ];
