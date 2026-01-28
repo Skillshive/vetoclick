@@ -9,7 +9,7 @@ import { ResponsiveFilter } from '@/components/shared/table/ResponsiveFilter';
 import clsx from 'clsx';
 import { CSSProperties, useMemo, useState } from 'react';
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
-import { ViewColumnsIcon, UserIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
+import { ViewColumnsIcon, UserIcon, ClipboardDocumentCheckIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
@@ -20,6 +20,7 @@ interface ToolbarProps {
   setGlobalFilter: (filter: string) => void;
   clients: Client[];
   statuses: { [key: number]: string };
+  user?: any;
 }
 
 export function Toolbar({
@@ -28,10 +29,37 @@ export function Toolbar({
   setGlobalFilter,
   clients,
   statuses,
+  user,
 }: ToolbarProps) {
   const { t } = useTranslation();
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings?.enableFullScreen;
+
+  // Check if user is a client
+  const isClient = useMemo(() => {
+    if (!user) return false;
+    
+    // Check if user has client property
+    if (user.client !== null && user.client !== undefined) {
+      return true;
+    }
+    
+    // Check if user has client role
+    if (user.role) {
+      const role = typeof user.role === 'string' ? user.role.toLowerCase() : user.role;
+      return role === 'client';
+    }
+    
+    // Check if user has client in roles array
+    if (user.roles && Array.isArray(user.roles)) {
+      return user.roles.some((r: any) => {
+        const roleName = typeof r === 'string' ? r.toLowerCase() : (r?.name?.toLowerCase() || '');
+        return roleName === 'client';
+      });
+    }
+    
+    return false;
+  }, [user]);
 
   return (
     <div className="table-toolbar">
@@ -80,6 +108,16 @@ export function Toolbar({
             )}
           >
             <Filters table={table}  clients={clients} statuses={statuses} />
+            {isClient && (
+              <Button
+                onClick={() => router.visit(route('appointments.create'))}
+                color="primary"
+                className="h-8 gap-2 px-3 text-xs whitespace-nowrap"
+              >
+                <PlusIcon className="size-4" />
+                <span>{t('common.create_appointment') || 'Create Appointment'}</span>
+              </Button>
+            )}
           </div>
         </>
       ) : (
@@ -102,6 +140,16 @@ export function Toolbar({
           </div>
 
           <div className="flex shrink-0 space-x-2">
+            {isClient && (
+              <Button
+                onClick={() => router.visit(route('appointments.create'))}
+                color="primary"
+                className="h-8 gap-2 px-3 text-xs whitespace-nowrap"
+              >
+                <PlusIcon className="size-4" />
+                <span>{t('common.create_appointment') || 'Create Appointment'}</span>
+              </Button>
+            )}
             <ResponsiveFilter
               anchor={{ to: "bottom end", gap: 12 }}
               buttonContent={
