@@ -1,4 +1,3 @@
-// Import Dependencies
 import clsx from "clsx";
 import {
   VideoCameraIcon,
@@ -11,20 +10,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilSquareIcon } from "@heroicons/react/24/solid";
 
-// Local Imports
-import { Avatar, Button, Card, Modal } from "@/components/ui";
+import { Avatar, Badge, Button, Card, Modal } from "@/components/ui";
 import { Appointment } from "@/pages/Appointments/datatable/types";
 import { useState, useEffect } from "react";
 import PetDetailModal from "../modals/PetModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRTL } from "@/hooks/useRTL";
-import { router } from "@inertiajs/react";
 import { useToast } from "@/components/common/Toast/ToastContext";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { useInertiaAuth } from "@/hooks/useInertiaAuth";
 
-// Declare route helper
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
-
-// ----------------------------------------------------------------------
 
 export function AppointmentCard({
   appointment,
@@ -34,12 +30,13 @@ export function AppointmentCard({
   const { t } = useTranslation();
   const { rtlClasses } = useRTL();
   const { showToast } = useToast();
+  const { user } = useInertiaAuth();
   const [isCheckingAccess, setIsCheckingAccess] = useState(false);
   const [creatingConsultation, setCreatingConsultation] = useState(false);
   const [canAccessMeeting, setCanAccessMeeting] = useState<boolean | null>(null);
   const [timeRemainingMessage, setTimeRemainingMessage] = useState<string | null>(null);
   const [showJoinButton, setShowJoinButton] = useState<boolean>(true);
-  // Only set consultationId if consultation exists and is not completed
+  const [isAppointmentTimePast, setIsAppointmentTimePast] = useState<boolean>(false);
   const [consultationId, setConsultationId] = useState<string | null>(
     appointment.consultation?.uuid && appointment.consultation?.status !== 'completed' 
       ? appointment.consultation.uuid 
@@ -62,6 +59,9 @@ export function AppointmentCard({
   };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
+    const [closingConsultation, setClosingConsultation] = useState(false);
+    const [isConsultationEndTimePast, setIsConsultationEndTimePast] = useState(false);
   
     const handleCardClick = () => {
       setIsModalOpen(true);
@@ -72,7 +72,93 @@ export function AppointmentCard({
       setIsModalOpen(false);
     };
 
-    // Calculate time remaining and update access status in real-time
+    const autoCloseConsultation = async () => {
+      if (!consultationId || appointment.consultation?.status === 'completed') {
+        return;
+      }
+
+      try {
+        const response = await fetch(route('consultations.close', { uuid: appointment.consultation?.uuid }), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          },
+        });
+
+        if (response.ok) {
+          setConsultationId(null);
+          setIsConsultationEndTimePast(true);
+          
+          showToast({
+            type: 'success',
+            message: t('common.consultation_closed') || 'Consultation closed successfully',
+            duration: 3000,
+          });
+        }
+      } catch (error) {
+        console.error('Error auto-closing consultation:', error);
+      }
+    };
+
+    useEffect(() => {
+      const checkAppointmentTime = () => {
+        try {
+          const appointmentDate = new Date(appointment.appointment_date);
+          const [endHours, endMinutes] = appointment.end_time.split(':').map(Number);
+          
+          const appointmentEndDateTime = new Date(appointmentDate);
+          appointmentEndDateTime.setHours(endHours, endMinutes, 0, 0);
+          
+          const now = new Date();
+          setIsAppointmentTimePast(now > appointmentEndDateTime);
+        } catch (error) {
+          console.error('Error checking appointment time:', error);
+          setIsAppointmentTimePast(false);
+        }
+      };
+
+      checkAppointmentTime();
+      
+      const interval = setInterval(checkAppointmentTime, 60000);
+      
+      return () => clearInterval(interval);
+    }, [appointment.appointment_date, appointment.end_time]);
+
+    useEffect(() => {
+      if (!consultationId || appointment.consultation?.status === 'completed') {
+        setIsConsultationEndTimePast(false);
+        return;
+      }
+
+      const checkConsultationEndTime = () => {
+        try {
+          const appointmentDate = new Date(appointment.appointment_date);
+          const [endHours, endMinutes] = appointment.end_time.split(':').map(Number);
+          
+          const appointmentEndDateTime = new Date(appointmentDate);
+          appointmentEndDateTime.setHours(endHours, endMinutes, 0, 0);
+          
+          const now = new Date();
+          const hasEndTimePassed = now > appointmentEndDateTime;
+          
+          setIsConsultationEndTimePast(hasEndTimePassed);
+          
+          if (hasEndTimePassed) {
+            autoCloseConsultation();
+          }
+        } catch (error) {
+          console.error('Error checking consultation end time:', error);
+        }
+      };
+
+      checkConsultationEndTime();
+      
+      const interval = setInterval(checkConsultationEndTime, 60000);
+      
+      return () => clearInterval(interval);
+    }, [consultationId, appointment.appointment_date, appointment.end_time, appointment.consultation?.status]);
+
     useEffect(() => {
       if (!appointment.is_video_conseil || !appointment.video_join_url) {
         return;
@@ -80,12 +166,10 @@ export function AppointmentCard({
 
       const calculateTimeRemaining = () => {
         try {
-          // Parse appointment date and time
           const appointmentDate = new Date(appointment.appointment_date);
           const [startHours, startMinutes] = appointment.start_time.split(':').map(Number);
           const [endHours, endMinutes] = appointment.end_time.split(':').map(Number);
           
-          // Create appointment start and end datetime
           const appointmentStartDateTime = new Date(appointmentDate);
           appointmentStartDateTime.setHours(startHours, startMinutes, 0, 0);
           
@@ -97,7 +181,6 @@ export function AppointmentCard({
           
           const now = new Date();
           
-          // Hide button 30 minutes after appointment end time
           if (now > latestAccess) {
             setShowJoinButton(false);
             setCanAccessMeeting(false);
@@ -107,12 +190,10 @@ export function AppointmentCard({
           
           setShowJoinButton(true);
           
-          // Check if current time is before earliest access
           if (now < earliestAccess) {
             const diffMs = earliestAccess.getTime() - now.getTime();
             const totalMinutes = diffMs / (1000 * 60);
             
-            // Format time: if > 60 minutes, convert to hours, otherwise show minutes and seconds
             let message: string;
             if (totalMinutes > 60) {
               const hours = Math.floor(totalMinutes / 60);
@@ -143,7 +224,6 @@ export function AppointmentCard({
             setCanAccessMeeting(false);
             setTimeRemainingMessage(message);
           } else {
-            // Check if still within access window (up to 30 minutes after end time)
             if (now >= earliestAccess && now <= latestAccess) {
               setCanAccessMeeting(true);
               setTimeRemainingMessage(null);
@@ -158,17 +238,15 @@ export function AppointmentCard({
         }
       };
 
-      // Calculate immediately
       calculateTimeRemaining();
       
-      // Update every second for live countdown
       const interval = setInterval(calculateTimeRemaining, 1000);
       
       return () => clearInterval(interval);
     }, [appointment.uuid, appointment.is_video_conseil, appointment.video_join_url, appointment.appointment_date, appointment.start_time, appointment.end_time]);
 
     const handleCreateConsultation = async (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent card click
+      e.stopPropagation();
       setCreatingConsultation(true);
 
       try {
@@ -189,8 +267,6 @@ export function AppointmentCard({
             message: t('common.consultation_created') || 'Consultation created successfully',
             duration: 3000,
           });
-          // Reload page to refresh appointment status
-          window.location.reload();
         } else {
           throw new Error(data.message || 'Failed to create consultation');
         }
@@ -242,13 +318,13 @@ export function AppointmentCard({
       }
     };
 
-    const handleCloseConsultation = async (e: React.MouseEvent) => {
+    const handleCloseConsultation = (e: React.MouseEvent) => {
       e.stopPropagation(); // Prevent card click
+      setShowCloseConfirmModal(true);
+    };
 
-      if (!confirm(t('common.confirm_close_consultation') || 'Are you sure you want to close this consultation?')) {
-        return;
-      }
-
+    const handleConfirmCloseConsultation = async () => {
+      setClosingConsultation(true);
       try {
         const response = await fetch(route('consultations.close', { uuid: appointment.consultation?.uuid }), {
           method: 'POST',
@@ -261,13 +337,15 @@ export function AppointmentCard({
         const data = await response.json();
 
         if (response.ok) {
+          setConsultationId(null);
+          setIsConsultationEndTimePast(true);
+          setShowCloseConfirmModal(false);
+          
           showToast({
             type: 'success',
             message: t('common.consultation_closed') || 'Consultation closed successfully',
             duration: 3000,
           });
-          setConsultationId(null);
-          window.location.reload();
         } else {
           throw new Error(data.message || 'Failed to close consultation');
         }
@@ -277,11 +355,14 @@ export function AppointmentCard({
           message: error.message || t('common.failed_to_close_consultation') || 'Failed to close consultation',
           duration: 3000,
         });
+        setClosingConsultation(false);
+      } finally {
+        setClosingConsultation(false);
       }
     };
 
     const handleJoinMeeting = async (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent card click
+      e.stopPropagation(); 
       
       if (!appointment.video_join_url) {
         showToast({
@@ -292,7 +373,6 @@ export function AppointmentCard({
         return;
       }
 
-      // Use the already calculated access state - no need for API call
       if (canAccessMeeting === false) {
         showToast({
           type: 'error',
@@ -305,7 +385,6 @@ export function AppointmentCard({
       setIsCheckingAccess(true);
 
       try {
-        // Track meeting start and attendance on backend before redirecting
         const trackResponse = await fetch(route('appointments.track-meeting-start', { uuid: appointment.uuid }), {
           method: 'POST',
           headers: {
@@ -316,15 +395,7 @@ export function AppointmentCard({
         });
 
         const trackData = await trackResponse.json();
-        
-        if (!trackResponse.ok) {
-          console.error('Failed to track meeting start:', trackData);
-          // Still continue to join meeting even if tracking fails
-        } else {
-          console.log('Meeting start tracked successfully:', trackData);
-        }
 
-        // Redirect to Jitsi URL
         if (appointment.video_join_url) {
           window.location.href = appointment.video_join_url;
         } else {
@@ -371,12 +442,18 @@ export function AppointmentCard({
           </div>
   
           <div>
-            <h3 className="text-md font-semibold text-gray-700 dark:text-dark-200">{appointment.appointment_type}</h3>
+            <Badge 
+              variant="soft" 
+              color="primary"
+              className="mb-2 text-xs font-semibold"
+            >
+              {appointment.appointment_type}
+            </Badge>
             <p className="text-sm text-gray-500 dark:text-dark-300">{appointment.reason_for_visit}</p>
           </div>
   
           <div className="border-t border-gray-200 dark:border-dark-600 pt-4">
-            <div className="flex items-center justify-center text-sm">
+            <div className="flex items-center justify-start text-sm">
               <ClockIcon
                 className={clsx(
                   "size-5 text-gray-500",
@@ -412,50 +489,48 @@ export function AppointmentCard({
           ) : null}
 
           {/* Action Buttons */}
-          <div className="mt-4 flex justify-center gap-2">
-            {!consultationId && appointment.status !== 'cancelled' && appointment.status !== 'completed'  && !appointment.is_video_conseil  ? (
-              <>
-                <Button
-                  color="primary"
-                  isIcon
-                  className="size-9"
-                  onClick={handleCreateConsultation}
-                  disabled={creatingConsultation}
-                  title={t("common.create_consultation") || "Start Consultation"}>
-                  <PlayIcon className="size-5" />
-                </Button>
-                <Button
-                  color="error"
-                  isIcon
-                  className="size-9"
-                  onClick={handleCancelAppointment}
-                  title={t("common.cancel_appointment") || "Cancel"}>
-                  <XCircleIcon className="size-5" />
-                </Button>
-              </>
-            ) : null    }
+          {!consultationId && appointment.status !== 'cancelled' && appointment.status !== 'completed' && !appointment.is_video_conseil && !isAppointmentTimePast ? (
+            <div className="mt-4 flex gap-2">
+              <Button
+                color="primary"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all text-sm font-medium"
+                onClick={handleCreateConsultation}
+                disabled={creatingConsultation}
+              >
+                <PlayIcon className="size-4" />
+                <span>{t("common.start") || "Start"}</span>
+              </Button>
+              <button
+                onClick={handleCancelAppointment}
+                className={clsx(
+                  "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all",
+                  "text-sm font-medium",
+                  "bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-dark-200 hover:bg-gray-200 dark:hover:bg-dark-600 border border-gray-200 dark:border-dark-600"
+                )}>
+                <XCircleIcon className="size-4" />
+                <span>{t("common.cancel") || "Cancel"}</span>
+              </button>
+            </div>
+          ) : null}
             
-            {consultationId && appointment.consultation?.status !== 'completed'  ? (
-              <>
-                <Button
-                  color="success"
-                  isIcon
-                  className="size-9"
-                  onClick={handleCloseConsultation}
-                  title={t("common.close_consultation") || "Close Consultation"}>
-                  <StopIcon className="size-5" />
-                </Button>
-                <Button
-                  color="info"
-                  isIcon
-                  className="size-9"
-                  onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
-                  title={t("common.view_details") || "View Details"}>
-                  <PencilSquareIcon className="size-5" />
-                </Button>
-              </>
-            ) : null}
-          </div>
+          {consultationId && appointment.consultation?.status !== 'completed' && !isConsultationEndTimePast ? (
+            <div className="mt-4 flex gap-2">
+              <Button
+                color="error"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all text-sm font-medium"
+                onClick={handleCloseConsultation}>
+                <StopIcon className="size-4" />
+                <span>{t("common.close") || "Close"}</span>
+              </Button>
+              <Button
+                color="primary"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all text-sm font-medium"
+                onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}>
+                <PencilSquareIcon className="size-4" />
+                <span>{t("common.details") || "View Details"}</span>
+              </Button>
+            </div>
+          ) : null}
         </Card>
   
         <PetDetailModal
@@ -463,6 +538,21 @@ export function AppointmentCard({
           onClose={handleCloseModal} 
           appointment={appointment}
           consultationId={consultationId}
+        />
+
+        <ConfirmModal
+          show={showCloseConfirmModal}
+          onClose={() => setShowCloseConfirmModal(false)}
+          onOk={handleConfirmCloseConsultation}
+          state="pending"
+          confirmLoading={closingConsultation}
+          messages={{
+            pending: {
+              title: t('common.are_you_sure') || 'Are you sure?',
+              description: t('common.confirm_close_consultation') || 'Are you sure you want to close this consultation?',
+              actionText: t('common.close_consultation') || 'Close Consultation',
+            }
+          }}
         />
       </>
     );
