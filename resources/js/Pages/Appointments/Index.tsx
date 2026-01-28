@@ -456,6 +456,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
                                 setGlobalFilter={setGlobalFilter}
                                 clients={clients}
                                 statuses={statuses}
+                                user={user}
                             />
                         )
                     }}
