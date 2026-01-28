@@ -149,7 +149,7 @@ const menuConfig: MenuConfig[] = [
     title: 'common.menu.users_management',
     icon: UserGroupIcon,
     type: 'group',
-    permission: 'users.view',
+    permissions: ['users.view', 'clients.view'],
     children: [
       {
         id: 'usersList',
