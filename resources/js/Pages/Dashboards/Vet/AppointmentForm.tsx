@@ -4,7 +4,6 @@ import { DatePicker } from '@/components/shared/form/Datepicker';
 import { Card, Button, Switch } from '@/components/ui';
 import Select from 'react-select';
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { useTranslation } from '@/hooks/useTranslation';
 import { router } from '@inertiajs/react';
 import { useInertiaAuth } from '@/hooks/useInertiaAuth';
@@ -52,9 +51,25 @@ export const AppointmentForm = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const response = await axios.get(route('clients.all'));
-        setClients(response.data);
+        const response = await fetch(route('clients.all'), {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          },
+          credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch clients');
+        }
+
+        const data = await response.json();
+        setClients(data);
       } catch (error) {
+        console.error('Error fetching clients:', error);
       }
     };
     fetchClients();
