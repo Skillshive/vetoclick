@@ -56,7 +56,6 @@ function MyDoctorsPanel() {
         }
       })
       .then(data => {
-        console.log('data doctors',data);
         setDoctors(data);
       })
       .catch(error => console.error('Error fetching doctors:', error))
@@ -140,7 +139,6 @@ function PrescriptionsPanel() {
         }
       })
       .then(data => {
-        console.log('data prescriptions',data);
         setPrescriptions(data);
       })
       .catch(error => console.error('Error fetching prescriptions:', error))
@@ -245,7 +243,6 @@ function RecentActivityPanel() {
         }
       })
       .then(data => {
-        console.log('data activities', data);
         setActivities(data);
       })
       .catch(error => console.error('Error fetching recent activities:', error))
