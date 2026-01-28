@@ -24,12 +24,32 @@ class VetDashboardController extends Controller
             abort(403, __('common.unauthorized'));
         }
         
-        // Get all clients for dropdown
-        $clients = Client::all()->mapWithKeys(function ($client) {
-            return [$client->uuid => $client->first_name];
-        });
-        
         $veterinaryId = $user->veterinary->id;
+
+        $clients = Client::where(function($q) use ($veterinaryId) {
+                $q->where('veterinarian_id', $veterinaryId)
+                  ->orWhereHas('pets.consultations', function($consultationQuery) use ($veterinaryId) {
+                      $consultationQuery->where('veterinarian_id', $veterinaryId);
+                  })
+                  ->orWhereHas('appointments.consultation', function($consultationQuery) use ($veterinaryId) {
+                      $consultationQuery->where('veterinarian_id', $veterinaryId);
+                  })
+                  ->orWhereIn('id', function($subquery) use ($veterinaryId) {
+                      $subquery->select('client_id')
+                               ->from('consultations')
+                               ->where('veterinarian_id', $veterinaryId)
+                               ->whereNotNull('client_id');
+                  });
+            })
+            ->get()
+            ->map(function ($client) {
+                return [
+                    'uuid' => $client->uuid,
+                    'first_name' => $client->first_name,
+                    'last_name' => $client->last_name,
+                ];
+            });
+
         $todayAppointments = $appointmentService->getTodayAppointments($veterinaryId);
         
         // Eager load consultation relationship

@@ -8,6 +8,7 @@ use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class ClientService implements ServiceInterface
 {
@@ -16,7 +17,42 @@ class ClientService implements ServiceInterface
      */
     public function getAllClients(): Collection
     {
-        return Client::with('user')->get();
+        $query = Client::with('user');
+        $user = Auth::user();
+
+        if ($user) {
+            if (!$user->relationLoaded('veterinary')) {
+                $user->load('veterinary');
+            }
+            
+            $isVeterinarian = $user->hasRole('veterinarian') || $user->veterinary;
+            
+            if ($isVeterinarian && $user->veterinary) {
+                $veterinarianId = $user->veterinary->id;
+                
+               $query->where(function($q) use ($veterinarianId) {
+                    $q->where('veterinarian_id', $veterinarianId)
+                      ->orWhereHas('pets', function($petQuery) use ($veterinarianId) {
+                          $petQuery->whereHas('consultations', function($consultationQuery) use ($veterinarianId) {
+                              $consultationQuery->where('veterinarian_id', $veterinarianId);
+                          });
+                      })
+                      ->orWhereHas('appointments', function($appointmentQuery) use ($veterinarianId) {
+                          $appointmentQuery->whereHas('consultation', function($consultationQuery) use ($veterinarianId) {
+                              $consultationQuery->where('veterinarian_id', $veterinarianId);
+                          });
+                      })
+                      ->orWhereIn('id', function($subquery) use ($veterinarianId) {
+                          $subquery->select('client_id')
+                                   ->from('consultations')
+                                   ->where('veterinarian_id', $veterinarianId)
+                                   ->whereNotNull('client_id');
+                      });
+                });
+            }
+        }
+
+        return $query->get();
     }
 
     /**

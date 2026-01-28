@@ -36,6 +36,27 @@ class ClientController extends Controller
 
         try {
             $query = Client::query();
+            $user = Auth::user();
+
+            if ($user && $user->veterinary) {
+                $veterinarianId = $user->veterinary->id;
+                
+                $query->where(function($q) use ($veterinarianId) {
+                    $q->where('veterinarian_id', $veterinarianId)
+                      ->orWhereHas('pets.consultations', function($consultationQuery) use ($veterinarianId) {
+                          $consultationQuery->where('veterinarian_id', $veterinarianId);
+                      })
+                      ->orWhereHas('appointments.consultation', function($consultationQuery) use ($veterinarianId) {
+                          $consultationQuery->where('veterinarian_id', $veterinarianId);
+                      })
+                      ->orWhereIn('id', function($subquery) use ($veterinarianId) {
+                          $subquery->select('client_id')
+                                   ->from('consultations')
+                                   ->where('veterinarian_id', $veterinarianId)
+                                   ->whereNotNull('client_id');
+                      });
+                });
+            }
 
             // Search functionality
             if ($search) {

@@ -230,6 +230,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->controller(ClientController::class)
         ->group(function () {
             Route::get('', 'index')->name('index');
+            Route::get('all', 'getAll')->name('all'); // API endpoint for fetching all clients (for dropdowns)
             Route::post('store', 'store')->name('store');
             Route::post('store-for-appointment', 'storeForAppointment')->name('store-for-appointment');
             Route::put('{uuid}/update', 'update')->middleware('permission:clients.edit')->name('update');
@@ -337,7 +338,7 @@ Route::middleware(['auth', 'verified', 'permission:appointments.view'])->group(f
             Route::post('{uuid}/create-consultation', 'createConsultation')->middleware('permission:consultations.create')->name('create-consultation');
             Route::post('{uuid}/cancel', 'cancel')->middleware('permission:appointments.cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->middleware('permission:appointments.report')->name('report');
-            Route::get('create', 'create')->name('create');
+            Route::get('create', 'create')->name('create')->name('create_from_page');
             Route::post('create-appointment', 'createAppointment')->name('create-appointment');
             Route::post('store', 'store')->name('store');
             Route::post('request', 'requestAppointment')->middleware('permission:appointments.request')->name('request');
