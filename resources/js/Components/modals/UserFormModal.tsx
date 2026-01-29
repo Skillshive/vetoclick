@@ -16,16 +16,23 @@ import ReactSelect from '../ui/ReactSelect';
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 
+interface Veterinarian {
+    uuid: string;
+    name: string;
+    clinic_name?: string;
+}
+
 interface UserFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     user?: User | null;
     roles?: Role[];
+    veterinarians?: Veterinarian[];
     errors?: Record<string, string>;
 }
 
 
-export default function UserFormModal({ isOpen, onClose, user, roles = [], errors }: UserFormModalProps) {
+export default function UserFormModal({ isOpen, onClose, user, roles = [], veterinarians = [], errors }: UserFormModalProps) {
     const { showToast } = useToast();
     const { t } = useTranslation();
     const isEditing = !!user;
@@ -36,6 +43,7 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
         email?: string;
         image?: string;
         role?: string;
+        veterinarian_id?: string;
     }>({});
 
     const { data, setData, reset } = useForm<UserFormData>({
@@ -45,6 +53,7 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
         email: user?.email || '',
         image: null,
         role: user?.roles?.[0]?.uuid || '',
+        veterinarian_id: (user as any)?.receptionist?.veterinary?.uuid || '',
         created_at: user?.created_at || '',
     });
 
@@ -58,6 +67,7 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
             setData('email', user.email);
             setData('image', null);
             setData('role', user.roles?.[0]?.uuid || '');
+            setData('veterinarian_id', (user as any)?.receptionist?.veterinary?.uuid || '');
             setData('created_at', user.created_at);
         } else {
             reset();
@@ -91,6 +101,9 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
         formData.append('email', data.email);
         if (data.role) {
             formData.append('role', data.role);
+        }
+        if (data.veterinarian_id) {
+            formData.append('veterinarian_id', data.veterinarian_id);
         }
 
         if (data.image instanceof File) {
@@ -127,6 +140,7 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                             email: errors.email?.[0] ? t(errors.email[0]) : undefined,
                             image: errors.image?.[0] ? t(errors.image[0]) : undefined,
                             role: errors.role?.[0] ? t(errors.role[0]) : undefined,
+                            veterinarian_id: errors.veterinarian_id?.[0] ? t(errors.veterinarian_id[0]) : undefined,
                         });
                         showToast({
                             type: 'error',
@@ -163,6 +177,7 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                             email: errors.email?.[0] ? t(errors.email[0]) : undefined,
                             image: errors.image?.[0] ? t(errors.image[0]) : undefined,
                             role: errors.role?.[0] ? t(errors.role[0]) : undefined,
+                            veterinarian_id: errors.veterinarian_id?.[0] ? t(errors.veterinarian_id[0]) : undefined,
                         });
 
                         showToast({
@@ -208,7 +223,7 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                             leaveTo="opacity-0 scale-95"
                         >
                             <DialogPanel className="transform overflow-visible rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
-                                <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center justify-between">
                                     <DialogTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                         {isEditing ? t('common.edit_user_modal') : t('common.new_user_modal')}
                                     </DialogTitle>
@@ -220,10 +235,16 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                                     </button>
                                 </div>
 
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                     {isEditing
                                         ? t('common.edit_user_info', { name: user.name })
                                         : t('common.create_user_info')
+                                    }
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                                    { !isEditing
+                                        ? t('common.password_info')
+                                        : ''
                                     }
                                 </p>
 
@@ -466,10 +487,14 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                                             }
                                             onChange={(option) => {
                                                 setData('role', option ? option.value : null);
+                                                // Clear veterinarian_id if role is not receptionist
+                                                if (option && roles?.find(r => r.uuid === option.value)?.name !== 'receptionist') {
+                                                    setData('veterinarian_id', '');
+                                                }
 
                                                 const result = userFormSchema.safeParse({
                                                     ...data,
-                                                    role: option.value,
+                                                    role: option?.value,
                                                 });
                                                 if (!result.success) {
                                                     const errors = result.error.flatten().fieldErrors;
@@ -500,6 +525,39 @@ export default function UserFormModal({ isOpen, onClose, user, roles = [], error
                                             )
                                         }
                                         </div>
+
+                                        {/* Veterinarian Selection - Show only when role is receptionist */}
+                                        {data.role && roles?.find(r => r.uuid === data.role)?.name === 'receptionist' && (
+                                            <div className="md:col-span-2 z-40">
+                                                <ReactSelect
+                                                    id="veterinarian"
+                                                    value={
+                                                        data.veterinarian_id
+                                                            ? {
+                                                                value: data.veterinarian_id,
+                                                                label: veterinarians?.find(vet => vet.uuid === data.veterinarian_id)?.name || ''
+                                                            }
+                                                            : null
+                                                    }
+                                                    onChange={(option) => {
+                                                        setData('veterinarian_id', option ? option.value : '');
+                                                    }}
+                                                    options={veterinarians.map(vet => ({
+                                                        label: vet.clinic_name ? `${vet.name} (${vet.clinic_name})` : vet.name,
+                                                        value: vet.uuid
+                                                    })) || []}
+                                                    placeholder={t('common.select_veterinarian') || 'Select Veterinarian'}
+                                                    isRequired
+                                                    className={errors?.veterinarian_id ? 'border-red-500' : ''}
+                                                    error={!!errors?.veterinarian_id}
+                                                />
+                                                {
+                                                    (errors?.veterinarian_id || validationErrors.veterinarian_id) && (
+                                                        <p className="text-red-500 text-sm mt-1">{errors?.veterinarian_id || validationErrors?.veterinarian_id}</p>
+                                                    )
+                                                }
+                                            </div>
+                                        )}
                                     </div>
 
 
