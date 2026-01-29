@@ -89,14 +89,10 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'category-products.create', 'group' => $contentManagementGroup],
             ['name' => 'category-products.edit', 'group' => $contentManagementGroup],
             ['name' => 'category-products.delete', 'group' => $contentManagementGroup],
-            ['name' => 'category-products.export', 'group' => $contentManagementGroup],
-            ['name' => 'category-products.import', 'group' => $contentManagementGroup],
             ['name' => 'category-blogs.view', 'group' => $contentManagementGroup],
             ['name' => 'category-blogs.create', 'group' => $contentManagementGroup],
             ['name' => 'category-blogs.edit', 'group' => $contentManagementGroup],
             ['name' => 'category-blogs.delete', 'group' => $contentManagementGroup],
-            ['name' => 'category-blogs.export', 'group' => $contentManagementGroup],
-            ['name' => 'category-blogs.import', 'group' => $contentManagementGroup],
 
             // Client Management
             ['name' => 'clients.view', 'group' => $clientManagementGroup],
@@ -130,6 +126,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'availability.create', 'group' => $appointmentManagementGroup],
             ['name' => 'availability.edit', 'group' => $appointmentManagementGroup],
             ['name' => 'availability.delete', 'group' => $appointmentManagementGroup],
+            ['name' => 'appointments.create_from_page', 'group' => $appointmentManagementGroup],
 
             // Inventory Management
             ['name' => 'suppliers.view', 'group' => $inventoryManagementGroup],
@@ -229,8 +226,6 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
-        // Assign permissions to roles
-        // Admin has most permissions but NOT holidays, availability, or blogs (those are for veterinarians)
         $adminPermissions = Permission::whereNotIn('name', [
             'appointments.view',
             'appointments.create',
@@ -254,92 +249,69 @@ class RolePermissionSeeder extends Seeder
             'products.create',
             'products.edit',
             'category-products.view',
+            'category-blogs.view',
+            'category-blogs.create',
+            'category-blogs.edit',
+            'category-blogs.delete',
             'suppliers.view',
             'orders.view',
             'orders.create',
             'orders.edit',
+            'orders.delete',
+            'orders.confirm',
+            'orders.receive',
+            'orders.cancel',
+            'lots.view',
+            'lots.create',
+            'lots.edit',
+            'lots.delete',
+            'clients.view',
+            'clients.create',
+            'clients.edit',
+            'clients.delete',
         ])->get();
         
         $adminRole->givePermissionTo($adminPermissions);
 
-        $veterinarianRole->givePermissionTo([            
-            // Content Management
-            'blogs.view',
-            'blogs.create',
-            'blogs.edit',
-            'products.view',
-            'products.create',
-            'products.edit',
-            'category-products.view',
-            'category-blogs.view',
+        // Veterinarian has all permissions except User Management, Role Management, Subscription Plans, and Species/Breeds Management
+        $veterinarianPermissions = Permission::whereNotIn('name', [
+            // User Management
+            'users.view',
+            'users.create',
+            'users.edit',
+            'users.delete',
             
-            // Client Management
-            'clients.view',
-            'clients.create',
-            'clients.edit',
-            'pets.view',
-            'pets.create',
-            'pets.edit',
-            'pets.delete',
+            // Role Management
+            'roles.view',
+            'roles.create',
+            'roles.edit',
+            'roles.delete',
+            'roles.assign-permissions',
+            'permissions.view',
+            'permissions.create',
+            'permissions.edit',
+            'permissions.delete',
+            
+            // Subscription Plans
+            'subscription-plans.view',
+            'subscription-plans.create',
+            'subscription-plans.edit',
+            'subscription-plans.delete',
+            'subscription-plans.toggle',
+            
+            // Species and Breeds Management (Admin only)
             'species.view',
+            'species.create',
+            'species.edit',
+            'species.delete',
             'breeds.view',
-            
-            // Appointment Management
-            'appointments.view',
-            'appointments.create',
-            'appointments.edit',
-            'appointments.cancel',
-            'appointments.accept',
-            'appointments.report',
-            'appointments.calendar',
-            'availability.view',
-            'availability.create',
-            'availability.edit',
-            'availability.delete',
-            'holidays.view',
-            'holidays.create',
-            'holidays.delete',
-            
-            // Inventory Management
-            'suppliers.view',
-            'orders.view',
-            'orders.create',
-            'orders.edit',
-            'orders.confirm',
-            'orders.receive',
-            'lots.view',
-            
-            // Medical Management
-            'consultations.view',
-            'consultations.create',
-            'consultations.edit',
-            'consultations.close',
-            'consultation-notes.view',
-            'consultation-notes.create',
-            'consultation-notes.edit',
-            'consultation-notes.delete',
-            'vaccinations.view',
-            'vaccinations.create',
-            'vaccinations.edit',
-            'vaccinations.delete',
-            'allergies.view',
-            'allergies.create',
-            'allergies.edit',
-            'allergies.delete',
-            'prescriptions.view',
-            'prescriptions.create',
-            'prescriptions.edit',
-            'prescriptions.delete',
-            'notes.view',
-            'notes.create',
-            'notes.edit',
-            'notes.delete',
-            
-            // System Management
-            'settings.view',
-            'notifications.view',
-            'notifications.delete',
-        ]);
+            'breeds.create',
+            'breeds.edit',
+            'breeds.delete',
+            'appointments.create_from_page',
+        ])->get();
+        
+        $veterinarianRole->givePermissionTo($veterinarianPermissions);
 
         $receptionistRole->givePermissionTo([
             // User Management
@@ -361,8 +333,6 @@ class RolePermissionSeeder extends Seeder
             'pets.view',
             'pets.create',
             'pets.edit',
-            'species.view',
-            'breeds.view',
             
             // Appointment Management
             'appointments.view',
@@ -373,6 +343,7 @@ class RolePermissionSeeder extends Seeder
             'appointments.calendar',
             'availability.view',
             'holidays.view',
+            'appointments.accept',
             
             // Inventory Management
             'suppliers.view',
