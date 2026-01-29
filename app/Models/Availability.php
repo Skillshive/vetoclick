@@ -22,6 +22,7 @@ class Availability extends Model
         'start_time',
         'end_time',
         'is_break',
+        'session',
     ];
 
     public function veterinarian()

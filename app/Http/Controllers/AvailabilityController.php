@@ -31,6 +31,7 @@ class AvailabilityController extends Controller
                 'start_time' => 'required|date_format:H:i:s',
                 'end_time' => 'required|date_format:H:i:s|after:start_time',
                 'is_break' => 'nullable|boolean',
+                'session' => 'nullable|string|in:morning,noon,afternoon',
                 'notes' => 'nullable|string|max:500'
             ]);
 
@@ -50,12 +51,28 @@ class AvailabilityController extends Controller
                 ], 404);
             }
 
+            // Validate session type matches time range
+            $session = $request->input('session', 'morning');
+            $validationError = $this->validateSessionTimeRange(
+                $session,
+                $request->start_time,
+                $request->end_time
+            );
+            
+            if ($validationError) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validationError,
+                ], 422);
+            }
+
             $dto = new AvaibilityDto(
                 veterinarian_id: $user->veterinary->getKey(),
                 day_of_week: strtolower($request->day_of_week),
                 start_time: $request->start_time,
                 end_time: $request->end_time,
-                is_break: $request->boolean('is_break', false)
+                is_break: $request->boolean('is_break', false),
+                session: $session
             );
 
             $availability = $this->availabilityService->create($dto);
@@ -70,6 +87,7 @@ class AvailabilityController extends Controller
                     'start_time' => $availability->start_time,
                     'end_time' => $availability->end_time,
                     'is_break' => $availability->is_break ?? false,
+                    'session' => $availability->session ?? 'morning',
                     'created_at' => $availability->created_at,
                     'updated_at' => $availability->updated_at,
                 ]
@@ -83,6 +101,148 @@ class AvailabilityController extends Controller
             ], 500);
         }
     }
+    /**
+     * Update availability by UUID
+     */
+    public function update(Request $request, string $uuid): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'day_of_week' => 'sometimes|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+                'start_time' => 'sometimes|date_format:H:i:s',
+                'end_time' => 'sometimes|date_format:H:i:s|after:start_time',
+                'is_break' => 'nullable|boolean',
+                'session' => 'nullable|string|in:morning,noon,afternoon',
+                'notes' => 'nullable|string|max:500'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('common.validation_failed'),
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $availability = $this->availabilityService->getByUuid($uuid);
+
+            if (!$availability) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('common.availability_not_found')
+                ], 404);
+            }
+
+            // Check if user owns this availability
+            $user = Auth::user();
+            if ($availability->veterinarian_id !== $user->veterinary?->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('common.unauthorized_access_to_availability')
+                ], 403);
+            }
+
+            // Validate session type matches time range if session or times are being updated
+            if ($request->has('session') || $request->has('start_time') || $request->has('end_time')) {
+                $session = $request->input('session', $availability->session ?? 'morning');
+                $startTime = $request->input('start_time', $availability->start_time);
+                $endTime = $request->input('end_time', $availability->end_time);
+                
+                $validationError = $this->validateSessionTimeRange($session, $startTime, $endTime);
+                
+                if ($validationError) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $validationError,
+                    ], 422);
+                }
+            }
+
+            // Update availability
+            $updateData = [];
+            if ($request->has('day_of_week')) {
+                $updateData['day_of_week'] = strtolower($request->day_of_week);
+            }
+            if ($request->has('start_time')) {
+                $updateData['start_time'] = $request->start_time;
+            }
+            if ($request->has('end_time')) {
+                $updateData['end_time'] = $request->end_time;
+            }
+            if ($request->has('is_break')) {
+                $updateData['is_break'] = $request->boolean('is_break');
+            }
+            if ($request->has('session')) {
+                $updateData['session'] = $request->input('session');
+            }
+
+            $availability->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('common.availability_updated_successfully'),
+                'data' => [
+                    'uuid' => $availability->uuid,
+                    'veterinary_id' => $availability->veterinarian_id,
+                    'day_of_week' => $availability->day_of_week,
+                    'start_time' => $availability->start_time,
+                    'end_time' => $availability->end_time,
+                    'is_break' => $availability->is_break ?? false,
+                    'session' => $availability->session ?? 'morning',
+                    'created_at' => $availability->created_at,
+                    'updated_at' => $availability->updated_at,
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('common.failed_to_update_availability'),
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Validate that session type matches the time range
+     */
+    private function validateSessionTimeRange(string $session, string $startTime, string $endTime): ?string
+    {
+        $startMinutes = $this->timeToMinutes($startTime);
+        $endMinutes = $this->timeToMinutes($endTime);
+        $noonMinutes = 12 * 60; // 12:00 PM (noon)
+
+        if ($session === 'morning') {
+            // Morning session should end before or at 12:00 PM
+            if ($endMinutes > $noonMinutes) {
+                return __('common.morning_session_must_end_before_noon') ?: 'Morning session must end before or at 12:00 PM';
+            }
+        } elseif ($session === 'afternoon') {
+            // Afternoon session should start after 12:00 PM
+            if ($startMinutes <= $noonMinutes) {
+                return __('common.afternoon_session_must_start_after_noon') ?: 'Afternoon session must start after 12:00 PM';
+            }
+        } elseif ($session === 'noon') {
+            // Noon session should include 12:00 PM (start before or at noon, end after noon)
+            if ($startMinutes > $noonMinutes || $endMinutes <= $noonMinutes) {
+                return __('common.noon_session_must_include_noon') ?: 'Noon session must include 12:00 PM (start before or at noon, end after noon)';
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Convert time string (H:i:s) to minutes
+     */
+    private function timeToMinutes(string $time): int
+    {
+        $parts = explode(':', $time);
+        $hours = (int)($parts[0] ?? 0);
+        $minutes = (int)($parts[1] ?? 0);
+        return $hours * 60 + $minutes;
+    }
+
     /**
      * Delete availability by UUID
      */
@@ -155,6 +315,7 @@ class AvailabilityController extends Controller
                         'start_time' => $item->start_time,
                         'end_time' => $item->end_time,
                         'is_break' => $item->is_break ?? false,
+                        'session' => $item->session ?? 'morning',
                         'created_at' => $item->created_at,
                         'updated_at' => $item->updated_at,
                     ];

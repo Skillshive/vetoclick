@@ -13,6 +13,7 @@ class AvaibilityDto extends DTO
     public string $start_time;
     public string $end_time;
     public bool $is_break;
+    public ?string $session;
     public ?string $created_at;
     public ?string $updated_at;
     public ?string $deleted_at;
@@ -24,6 +25,7 @@ class AvaibilityDto extends DTO
         string $start_time = '',
         string $end_time = '',
         bool $is_break = false,
+        ?string $session = 'morning',
         ?string $created_at = null,
         ?string $updated_at = null,
         ?string $deleted_at = null
@@ -34,6 +36,7 @@ class AvaibilityDto extends DTO
         $this->start_time = $start_time;
         $this->end_time = $end_time;
         $this->is_break = $is_break;
+        $this->session = $session;
         $this->created_at = $created_at;
         $this->updated_at = $updated_at;
         $this->deleted_at = $deleted_at;
@@ -46,7 +49,8 @@ class AvaibilityDto extends DTO
             'day_of_week'      => $this->day_of_week,
             'start_time'       => $this->start_time,
             'end_time'         => $this->end_time,
-            'is_break'         => $this->is_break
+            'is_break'         => $this->is_break,
+            'session'          => $this->session ?? 'morning'
         ];
     }
 
