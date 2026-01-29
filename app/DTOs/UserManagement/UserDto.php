@@ -17,6 +17,7 @@ class UserDto extends DTO implements DTOInterface
         public string $email = '',
         public ?UploadedFile $image_file = null,
         public ?string $role = null,
+        public ?string $veterinarian_id = null,
     ) {
     }
 
@@ -30,6 +31,7 @@ class UserDto extends DTO implements DTOInterface
             email: $request->input('email', ''),
             image_file: $request->file('image'), // This will return null if no file is uploaded
             role: $request->input('role'),
+            veterinarian_id: $request->input('veterinarian_id'),
         );
     }
 }

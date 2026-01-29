@@ -91,8 +91,14 @@ class UserDashboardController extends Controller
 
     public function getLastPrescriptions()
     {
+        $user = Auth::user();
+        $client = $user->client;
+        
+        if (!$client) {
+            return [];
+        }
 
-        $clientId = Auth::user()->client->id;
+        $clientId = $client->id;
         $prescriptions = Prescription::whereHas('consultation', function ($query) use ($clientId) {
             $query->where('client_id', $clientId);
         })->orderBy('created_at', 'desc')->limit(5)->get();
@@ -101,7 +107,14 @@ class UserDashboardController extends Controller
 
     public function getMyDoctors()
     {
-        $clientId = Auth::user()->client->id;
+        $user = Auth::user();
+        $client = $user->client;
+        
+        if (!$client) {
+            return [];
+        }
+
+        $clientId = $client->id;
 
         // Get up to 5 vets who have had consultations with this client, including the count of consultations and vet city
         $vets = \App\Models\Veterinary::whereHas('consultations', function ($query) use ($clientId) {
@@ -132,7 +145,14 @@ class UserDashboardController extends Controller
 
     public function getRecentActivities()
     {
-        $clientId = Auth::user()->client->id;
+        $user = Auth::user();
+        $client = $user->client;
+        
+        if (!$client) {
+            return [];
+        }
+
+        $clientId = $client->id;
 
         $appointments = Appointment::where('client_id', $clientId)
             ->whereIn('status', ['completed', 'cancelled', 'confirmed'])

@@ -4,6 +4,7 @@ namespace App\Http\Requests\UserManagment;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class UserRequest extends FormRequest
 {
@@ -22,7 +23,7 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'firstname' => [
                 'required',
                 'string',
@@ -55,6 +56,16 @@ class UserRequest extends FormRequest
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
             'role' => 'nullable|exists:roles,uuid',
         ];
+
+        // If role is receptionist, require veterinarian_id
+        if ($this->input('role')) {
+            $role = Role::where('uuid', $this->input('role'))->first();
+            if ($role && $role->name === 'receptionist') {
+                $rules['veterinarian_id'] = 'required|exists:veterinarians,uuid';
+            }
+        }
+
+        return $rules;
     }
 
     /**

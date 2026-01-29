@@ -93,4 +93,31 @@ class User extends Authenticatable
     {
         return $this->hasOne(Client::class, 'user_id');
     }
+
+    /**
+     * Get the receptionist record associated with the user (if any).
+     */
+    public function receptionist()
+    {
+        return $this->hasOne(\App\Models\Receptionist::class);
+    }
+
+    /**
+     * Resolve the veterinary the user belongs to:
+     * - if the user is a veterinarian, return their own veterinary record
+     * - if the user is a receptionist, return the veterinary they are linked to
+     * - otherwise, return null
+     */
+    public function scopedVeterinary(): ?Veterinary
+    {
+        if ($this->hasRole('veterinarian') && $this->veterinary) {
+            return $this->veterinary;
+        }
+
+        if ($this->hasRole('receptionist') && $this->receptionist && $this->receptionist->veterinary) {
+            return $this->receptionist->veterinary;
+        }
+
+        return null;
+    }
 }

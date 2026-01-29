@@ -8,8 +8,10 @@ use App\Http\Requests\UserManagment\UserRequest;
 use App\Http\Resources\UserManagment\UserResource;
 use App\Services\UserManagement\UserService;
 use App\Services\RoleService;
+use App\Models\Veterinary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
@@ -38,21 +40,39 @@ class UserController extends Controller
 
         try {
             $query = $this->userService->query()
-                ->where('id', '!=', auth()->id())
-                ->with(['roles']);
+                ->with(['roles', 'receptionist.veterinary.user']);
+            
+            if (Auth::check() && Auth::id()) {
+                $query->where('id', '!=', Auth::id());
+            }
 
             if ($search) {
                 $query->search($search);
             }
 
             $users = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
-
-            // Get all roles for the form
+            
             $allRoles = $this->roleService->query()->get();
+
+            $veterinarians = Veterinary::with('user')
+                ->get()
+                ->map(function ($vet) {
+                    return [
+                        'uuid' => $vet->uuid,
+                        'name' => ($vet->user->firstname ?? '') . ' ' . ($vet->user->lastname ?? ''),
+                        'clinic_name' => $vet->clinic_name ?? '',
+                    ];
+                })
+                ->filter(function ($vet) {
+                    return !empty(trim($vet['name']));
+                })
+                ->values();
 
             return Inertia::render('Users/Index', [
                 'users' => [
-                    'data' => UserResource::collection($users->items()),
+                    'data' => [
+                        'data' => UserResource::collection($users->items())->resolve(),
+                    ],
                     'meta' => [
                         'current_page' => $users->currentPage(),
                         'from' => $users->firstItem(),
@@ -70,13 +90,14 @@ class UserController extends Controller
                 ],
                 'roles' => $allRoles->map(function ($role) {
                     return [
-                        'uuid' => $role->uuid,
-                        'name' => $role->name,
-                        'display_name' => $role->localized_name,
-                        'guard_name' => $role->guard_name,
-                        'created_at' => $role->created_at,
+                        'uuid' => $role->uuid ?? '',
+                        'name' => $role->name ?? '',
+                        'display_name' => $role->localized_name ?? $role->name ?? '',
+                        'guard_name' => $role->guard_name ?? '',
+                        'created_at' => $role->created_at ?? null,
                     ];
-                }),
+                })->values(),
+                'veterinarians' => $veterinarians,
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
@@ -94,6 +115,7 @@ class UserController extends Controller
                     'links' => null
                 ],
                 'roles' => [],
+                'veterinarians' => [],
                 'filters' => [
                     'search' => $search,
                     'per_page' => $perPage,
@@ -131,7 +153,7 @@ class UserController extends Controller
 
             if (!$user) {
                 return redirect()->back()
-                    ->withErrors(['error' => __('common.hnot_found')]);
+                    ->withErrors(['error' => __('common.not_found')]);
             }
 
             return redirect()->route('users.index')
