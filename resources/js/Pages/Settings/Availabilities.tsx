@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 // Local Imports
-import { Card } from "@/components/ui";
+import { Card, Button, Input } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRTL } from "@/hooks/useRTL";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
 import MainLayout from "@/layouts/MainLayout";
-import { PlusIcon, TrashIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon, ClockIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Timepicker } from "@/components/shared/form/Timepicker";
 
 // Declare route helper
@@ -21,6 +21,7 @@ interface AvailabilitySlot {
   start_time: string;
   end_time: string;
   is_break?: boolean;
+  session?: string; // New field for session type
 }
 
 const DAYS = [
@@ -32,6 +33,12 @@ const DAYS = [
   { value: 'saturday', labelKey: 'common.days.saturday' },
 ];
 
+const SESSION_TYPES = [
+  { value: 'morning', labelKey: 'common.sessions.morning' },
+  { value: 'noon', labelKey: 'common.sessions.noon' },
+  { value: 'afternoon', labelKey: 'common.sessions.afternoon' },
+];
+
 export default function Availabilities() {
   const { t } = useTranslation();
   const { isRtl, rtlClasses } = useRTL();
@@ -40,9 +47,10 @@ export default function Availabilities() {
   
   const [availabilities, setAvailabilities] = useState<Record<string, AvailabilitySlot[]>>({});
   const [isLoading, setIsLoading] = useState(true);
-const [statistics, setStatistics] = useState<any>(null);
+  const [statistics, setStatistics] = useState<any>(null);
   const [selectedDay, setSelectedDay] = useState<string>('monday');
-  const [newSlot, setNewSlot] = useState({ start_time: '09:00', end_time: '17:00', is_break: false });
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     fetchAvailability();
@@ -67,12 +75,27 @@ const [statistics, setStatistics] = useState<any>(null);
               day_of_week: slot.day_of_week,
               start_time: typeof slot.start_time === 'string' ? slot.start_time.substring(0, 5) : slot.start_time,
               end_time: typeof slot.end_time === 'string' ? slot.end_time.substring(0, 5) : slot.end_time,
-              is_break: slot.is_break || false // Read from response if available
+              is_break: slot.is_break || false,
+              session: slot.session || 'morning', // Default to morning if not set
             });
           }
         });
 
+        // Ensure each day has at least one empty slot if no slots exist
+        DAYS.forEach(day => {
+          if (grouped[day.value].length === 0) {
+            grouped[day.value] = [{
+              day_of_week: day.value,
+              start_time: '09:00',
+              end_time: '17:00',
+              is_break: false,
+              session: 'morning',
+            }];
+          }
+        });
+
         setAvailabilities(grouped);
+        setHasChanges(false);
       }
     } catch (error) {
       console.error('Failed to fetch availability:', error);
@@ -85,131 +108,357 @@ const [statistics, setStatistics] = useState<any>(null);
     }
   };
 
-  const handleAddSlot = async (day: string) => {
-    // Validate times are within allowed range (08:00 - 19:00)
-    const startMinutes = timeToMinutes(newSlot.start_time);
-    const endMinutes = timeToMinutes(newSlot.end_time);
+  const handleAddRow = (day: string) => {
+    const daySlots = availabilities[day] || [];
+    const newSlot: AvailabilitySlot = {
+      day_of_week: day,
+      start_time: '09:00',
+      end_time: '17:00',
+      is_break: false,
+      session: 'morning',
+    };
+    
+    setAvailabilities(prev => ({
+      ...prev,
+      [day]: [...daySlots, newSlot],
+    }));
+    setHasChanges(true);
+  };
+
+  const handleDeleteRow = (day: string, index: number) => {
+    const daySlots = availabilities[day] || [];
+    const slot = daySlots[index];
+    
+    if (slot.uuid) {
+      // Existing slot - confirm deletion
+      confirm({
+        title: t('common.are_you_sure'),
+        message: t('common.confirm_delete_availability'),
+        confirmLabel: t('common.delete'),
+        cancelLabel: t('common.cancel'),
+        confirmVariant: 'danger'
+      }).then((confirmed) => {
+        if (confirmed) {
+          handleDeleteSlot(slot.uuid!, day, index);
+        }
+      });
+    } else {
+      // New slot - just remove from state
+      const remainingSlots = daySlots.filter((_, i) => i !== index);
+      // Ensure at least one empty slot remains
+      if (remainingSlots.length === 0) {
+        setAvailabilities(prev => ({
+          ...prev,
+          [day]: [{
+            day_of_week: day,
+            start_time: '09:00',
+            end_time: '17:00',
+            is_break: false,
+            session: 'morning',
+          }],
+        }));
+      } else {
+        setAvailabilities(prev => ({
+          ...prev,
+          [day]: remainingSlots,
+        }));
+      }
+      setHasChanges(true);
+    }
+  };
+
+  const handleDeleteSlot = async (uuid: string, day: string, index: number) => {
+    try {
+      await axios.delete(route('availability.destroy', { uuid }));
+      const remainingSlots = (availabilities[day] || []).filter((_, i) => i !== index);
+      // Ensure at least one empty slot remains
+      if (remainingSlots.length === 0) {
+        setAvailabilities(prev => ({
+          ...prev,
+          [day]: [{
+            day_of_week: day,
+            start_time: '09:00',
+            end_time: '17:00',
+            is_break: false,
+            session: 'morning',
+          }],
+        }));
+      } else {
+        setAvailabilities(prev => ({
+          ...prev,
+          [day]: remainingSlots,
+        }));
+      }
+      showToast({
+        type: 'success',
+        message: t('common.availability_deleted'),
+      });
+      setHasChanges(true);
+      // Don't refetch to preserve the empty slot we just added
+    } catch (error) {
+      console.error('Failed to delete availability:', error);
+      showToast({
+        type: 'error',
+        message: t('common.error_deleting_availability'),
+      });
+    }
+  };
+
+  const handleUpdateSlot = (day: string, index: number, field: keyof AvailabilitySlot, value: any) => {
+    const daySlots = availabilities[day] || [];
+    const updatedSlots = [...daySlots];
+    const updatedSlot = {
+      ...updatedSlots[index],
+      [field]: value,
+    };
+    
+    // If session type changed, validate immediately
+    if (field === 'session') {
+      const error = validateSlot(updatedSlot);
+      if (error) {
+        showToast({
+          type: 'error',
+          message: error,
+          duration: 4000,
+        });
+        return; // Don't update if validation fails
+      }
+    }
+    
+    // If time changed, validate against current session and check for conflicts
+    if (field === 'start_time' || field === 'end_time') {
+      const validationError = validateSlot(updatedSlot);
+      if (validationError) {
+        showToast({
+          type: 'error',
+          message: validationError,
+          duration: 4000,
+        });
+        // Still allow the update but show warning - user can fix it before saving
+      } else {
+        // Check for duplicates/overlaps with other slots
+        const conflictError = checkSlotConflicts(day, index, updatedSlot);
+        if (conflictError) {
+          showToast({
+            type: 'error',
+            message: conflictError,
+            duration: 4000,
+          });
+        }
+      }
+    }
+    
+    updatedSlots[index] = updatedSlot;
+    
+    setAvailabilities(prev => ({
+      ...prev,
+      [day]: updatedSlots,
+    }));
+    setHasChanges(true);
+  };
+
+  // Check for duplicates and overlaps in a day's slots
+  const checkSlotConflicts = (day: string, slotIndex: number, slot: AvailabilitySlot): string | null => {
+    const daySlots = availabilities[day] || [];
+    
+    for (let i = 0; i < daySlots.length; i++) {
+      if (i === slotIndex) continue; // Skip the current slot being edited
+      
+      const otherSlot = daySlots[i];
+      
+      // Check for exact duplicates
+      const isDuplicate = 
+        slot.start_time === otherSlot.start_time &&
+        slot.end_time === otherSlot.end_time &&
+        (slot.session || 'morning') === (otherSlot.session || 'morning') &&
+        (slot.is_break || false) === (otherSlot.is_break || false);
+      
+      if (isDuplicate) {
+        const slotType = slot.is_break ? 'break' : 'availability';
+        return t('common.duplicate_slot_error') || `Duplicate ${slotType} slot found`;
+      }
+      
+      // Check for overlapping time slots
+      const slotStart = timeToMinutes(slot.start_time);
+      const slotEnd = timeToMinutes(slot.end_time);
+      const otherStart = timeToMinutes(otherSlot.start_time);
+      const otherEnd = timeToMinutes(otherSlot.end_time);
+      
+      const timesOverlap = (slotStart < otherEnd && slotEnd > otherStart);
+      
+      if (timesOverlap) {
+        // Both are availability slots (not breaks) - they cannot overlap
+        if (!slot.is_break && !otherSlot.is_break) {
+          return t('common.availability_slot_overlap_error') || 
+            `This slot overlaps with another availability slot (${otherSlot.start_time}-${otherSlot.end_time})`;
+        }
+        
+        // Both are break slots - they cannot overlap
+        if (slot.is_break && otherSlot.is_break) {
+          return t('common.break_slot_overlap') || 
+            `This break slot overlaps with another break slot (${otherSlot.start_time}-${otherSlot.end_time})`;
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  const validateSlot = (slot: AvailabilitySlot): string | null => {
+    const startMinutes = timeToMinutes(slot.start_time);
+    const endMinutes = timeToMinutes(slot.end_time);
     const minMinutes = 8 * 60; // 08:00
     const maxMinutes = 19 * 60; // 19:00
     
     if (startMinutes < minMinutes || startMinutes > maxMinutes) {
-      showToast({
-        type: 'error',
-        message: t('common.time_range_error') || 'Start time must be between 08:00 and 19:00',
-      });
-      return;
+      return t('common.time_range_error') || 'Start time must be between 08:00 and 19:00';
     }
     
     if (endMinutes < minMinutes || endMinutes > maxMinutes) {
-      showToast({
-        type: 'error',
-        message: t('common.time_range_error') || 'End time must be between 08:00 and 19:00',
-      });
-      return;
+      return t('common.time_range_error') || 'End time must be between 08:00 and 19:00';
     }
     
-    // Validate times
-    if (newSlot.start_time >= newSlot.end_time) {
-      showToast({
-        type: 'error',
-        message: t('common.end_time_after_start'),
-      });
-      return;
+    if (slot.start_time >= slot.end_time) {
+      return t('common.end_time_after_start');
     }
 
-    // Check for overlaps
-    // Breaks can overlap with availability slots, but:
-    // - Availability slots cannot overlap with other availability slots
-    // - Breaks cannot overlap with other breaks
-    const daySlots = availabilities[day] || [];
-    let overlappingSlot: AvailabilitySlot | null = null;
+    // Validate session type matches time range
+    const session = slot.session || 'morning';
+    const noonMinutes = 12 * 60; // 12:00 PM (noon)
     
-    // Check if trying to add exact duplicate
-    const isExactDuplicate = daySlots.some(slot => 
-      slot.start_time === newSlot.start_time && 
-      slot.end_time === newSlot.end_time && 
-      slot.is_break === newSlot.is_break
-    );
-    
-    if (isExactDuplicate) {
-      showToast({
-        type: 'error',
-        message: t('common.duplicate_slot_error') || `A slot already exists for ${formatTime(newSlot.start_time)} - ${formatTime(newSlot.end_time)}`,
-      });
-      return;
+    if (session === 'morning') {
+      // Morning session should end before or at 12:00 PM
+      if (endMinutes > noonMinutes) {
+        return t('common.morning_session_must_end_before_noon') || 'Morning session must end before or at 12:00 PM';
+      }
+    } else if (session === 'afternoon') {
+      // Afternoon session should start after 12:00 PM
+      if (startMinutes <= noonMinutes) {
+        return t('common.afternoon_session_must_start_after_noon') || 'Afternoon session must start after 12:00 PM';
+      }
+    } else if (session === 'noon') {
+      // Noon session should include 12:00 PM (start before or at noon, end after noon)
+      if (startMinutes > noonMinutes || endMinutes <= noonMinutes) {
+        return t('common.noon_session_must_include_noon') || 'Noon session must include 12:00 PM (start before or at noon, end after noon)';
+      }
     }
     
+    return null;
+  };
+
+  const handleSave = async () => {
+    const daySlots = availabilities[selectedDay] || [];
+    
+    // Validate all slots
     for (const slot of daySlots) {
-      const slotStart = timeToMinutes(slot.start_time);
-      const slotEnd = timeToMinutes(slot.end_time);
-      const newStart = timeToMinutes(newSlot.start_time);
-      const newEnd = timeToMinutes(newSlot.end_time);
-      
-      // Check if times overlap (allowing exact touching: one ends when another starts)
-      // Overlap means: new slot starts before existing ends AND new slot ends after existing starts
-      // Using < and > (not <= and >=) allows exact touching (e.g., 12:00-13:00 and 13:00-14:00 are allowed)
-      const timesOverlap = (newStart < slotEnd && newEnd > slotStart);
-      
-      if (!timesOverlap) {
-        continue; // No time overlap, so no conflict
-      }
-      
-      // If both are breaks, they cannot overlap
-      if (newSlot.is_break && slot.is_break) {
-        overlappingSlot = slot;
-        break; // Breaks cannot overlap with each other
-      }
-      
-      // If both are availability slots, they cannot overlap
-      if (!newSlot.is_break && !slot.is_break) {
-        overlappingSlot = slot;
-        break; // Availability slots cannot overlap with each other
-      }
-      
-      // If one is a break and one is availability, allow overlap
-    }
-
-    if (overlappingSlot !== null) {
-      let errorMessage: string;
-      if (newSlot.is_break) {
-        errorMessage = t('common.break_slot_overlap');
-      } else {
-        const overlappingSlotType = overlappingSlot.is_break 
-          ? t('common.break') 
-          : t('common.available');
-        errorMessage = `${t('common.availability_slot_overlap_error')} Existing slot: ${formatTime(overlappingSlot.start_time)} - ${formatTime(overlappingSlot.end_time)}. Your slot: ${formatTime(newSlot.start_time)} - ${formatTime(newSlot.end_time)}`;
-      }
-      showToast({
-        type: 'error',
-        message: errorMessage,
-      });
-      return;
-    }
-
-    try {
-      const payload = {
-        day_of_week: day,
-        start_time: newSlot.start_time + ':00',
-        end_time: newSlot.end_time + ':00',
-        is_break: newSlot.is_break || false,
-      };
-      
-      console.log('Sending availability request:', payload);
-      
-      const response = await axios.post(route('availability.store'), payload);
-
-      if (response.data.success) {
+      const error = validateSlot(slot);
+      if (error) {
         showToast({
-          type: 'success',
-          message: t('common.availability_saved'),
+          type: 'error',
+          message: error,
         });
-
-        // Reset form
-        setNewSlot({ start_time: '09:00', end_time: '17:00', is_break: false });
-        
-        // Refresh from server to ensure everything is in sync and all slots are shown
-        await fetchAvailability();
+        return;
       }
+    }
+
+    // Check for exact duplicates (same start_time, end_time, session, and is_break)
+    for (let i = 0; i < daySlots.length; i++) {
+      for (let j = i + 1; j < daySlots.length; j++) {
+        const slot1 = daySlots[i];
+        const slot2 = daySlots[j];
+        
+        const isDuplicate = 
+          slot1.start_time === slot2.start_time &&
+          slot1.end_time === slot2.end_time &&
+          (slot1.session || 'morning') === (slot2.session || 'morning') &&
+          (slot1.is_break || false) === (slot2.is_break || false);
+        
+        if (isDuplicate) {
+          const slotType = slot1.is_break ? 'break' : 'availability';
+          showToast({
+            type: 'error',
+            message: t('common.duplicate_slot_error') || `Duplicate ${slotType} slot found: ${slot1.start_time} - ${slot1.end_time}`,
+            duration: 5000,
+          });
+          return;
+        }
+      }
+    }
+
+    // Check for overlapping time slots
+    for (let i = 0; i < daySlots.length; i++) {
+      for (let j = i + 1; j < daySlots.length; j++) {
+        const slot1 = daySlots[i];
+        const slot2 = daySlots[j];
+        
+        const slot1Start = timeToMinutes(slot1.start_time);
+        const slot1End = timeToMinutes(slot1.end_time);
+        const slot2Start = timeToMinutes(slot2.start_time);
+        const slot2End = timeToMinutes(slot2.end_time);
+        
+        // Check if times overlap (excluding exact boundaries for adjacent slots)
+        const timesOverlap = (slot1Start < slot2End && slot1End > slot2Start);
+        
+        if (timesOverlap) {
+          // Both are availability slots (not breaks) - they cannot overlap
+          if (!slot1.is_break && !slot2.is_break) {
+            showToast({
+              type: 'error',
+              message: t('common.availability_slot_overlap_error') || 
+                `Availability slots overlap: ${slot1.start_time}-${slot1.end_time} and ${slot2.start_time}-${slot2.end_time}`,
+              duration: 5000,
+            });
+            return;
+          }
+          
+          // Both are break slots - they cannot overlap
+          if (slot1.is_break && slot2.is_break) {
+            showToast({
+              type: 'error',
+              message: t('common.break_slot_overlap') || 
+                `Break slots overlap: ${slot1.start_time}-${slot1.end_time} and ${slot2.start_time}-${slot2.end_time}`,
+              duration: 5000,
+            });
+            return;
+          }
+          
+          // Break overlapping with availability - this is allowed, but we can warn if needed
+          // (Currently allowing this as breaks are meant to be within availability slots)
+        }
+      }
+    }
+
+    setIsSaving(true);
+    
+    try {
+      // Save all slots for the selected day
+      const savePromises = daySlots.map(async (slot) => {
+        const payload = {
+          day_of_week: slot.day_of_week,
+          start_time: slot.start_time + ':00',
+          end_time: slot.end_time + ':00',
+          is_break: slot.is_break || false,
+          session: slot.session || 'morning',
+        };
+        
+        if (slot.uuid) {
+          // Update existing slot
+          return axios.put(route('availability.update', { uuid: slot.uuid }), payload);
+        } else {
+          // Create new slot
+          return axios.post(route('availability.store'), payload);
+        }
+      });
+
+      await Promise.all(savePromises);
+      
+      showToast({
+        type: 'success',
+        message: t('common.availability_saved'),
+      });
+      
+      setHasChanges(false);
+      await fetchAvailability();
     } catch (error: any) {
       console.error('Failed to save availability:', error);
       let errorMessage = t('common.error_saving_availability');
@@ -219,48 +468,19 @@ const [statistics, setStatistics] = useState<any>(null);
       } else if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
         errorMessage = Object.values(errors).flat().join(', ');
-      } else if (error.message) {
-        errorMessage = error.message;
       }
       
       showToast({
         type: 'error',
         message: errorMessage,
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDeleteSlot = async (uuid: string, day: string) => {
-    const confirmed = await confirm({
-      title: t('common.are_you_sure'),
-      message: t('common.confirm_delete_availability'),
-      confirmLabel: t('common.delete'),
-      cancelLabel: t('common.cancel'),
-      confirmVariant: 'danger'
-    });
-
-    if (confirmed) {
-      try {
-        await axios.delete(route('availability.destroy', { uuid }));
-        setAvailabilities(prev => ({
-          ...prev,
-          [day]: (prev[day] || []).filter(slot => slot.uuid !== uuid)
-        }));
-        showToast({
-          type: 'success',
-          message: t('common.availability_deleted'),
-        });
-        
-        // Refresh statistics
-        fetchAvailability();
-      } catch (error) {
-        console.error('Failed to delete availability:', error);
-        showToast({
-          type: 'error',
-          message: t('common.error_deleting_availability'),
-        });
-      }
-    }
+  const handleCancel = () => {
+    fetchAvailability();
   };
 
   const timeToMinutes = (timeString: string): number => {
@@ -272,33 +492,17 @@ const [statistics, setStatistics] = useState<any>(null);
     return time.substring(0, 5);
   };
 
-  // Timeline component helper functions
-  const getTimelinePosition = (time: string, startHour: number = 8, endHour: number = 19): number => {
-    const totalMinutes = (endHour - startHour) * 60;
-    const [hours, minutes] = time.split(':').map(Number);
-    const timeMinutes = hours * 60 + minutes;
-    const startMinutes = startHour * 60;
-    const relativeMinutes = timeMinutes - startMinutes;
-    return Math.max(0, Math.min(100, (relativeMinutes / totalMinutes) * 100));
-  };
-
-  const getTimelineRange = (slots: AvailabilitySlot[]): { startHour: number; endHour: number } => {
-    // Always show full timeline from 08:00 to 19:00
-    return { startHour: 8, endHour: 19 };
-  };
-
   return (
     <MainLayout>
       <div className="transition-content px-(--margin-x) pb-6 my-5" dir={isRtl ? 'rtl' : 'ltr'}>
-        
         <Card className="p-6 sm:p-8">
           <div className="mb-8 border-b border-gray-200 dark:border-dark-600 pb-6">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-            {t('common.availability_management')}
+              {t('common.availability_management')}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-            {t('common.set_weekly_availability')}
-          </p>
+              {t('common.set_weekly_availability')}
+            </p>
           </div>
 
           {isLoading ? (
@@ -309,287 +513,216 @@ const [statistics, setStatistics] = useState<any>(null);
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Day Selector - Professional Tabs */}
-              <div className={`border-b border-gray-200 dark:border-dark-600 ${rtlClasses.flexRow}`}>
-                <div className={`flex flex-wrap ${isRtl ? 'flex-row-reverse' : 'flex-row'} ${rtlClasses.justifyStart} -mb-px`}>
-                {(isRtl ? [...DAYS].reverse() : DAYS).map(day => (
+              {/* Day Selector */}
+              <div className={`flex flex-wrap gap-2 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+                {DAYS.map(day => (
                   <button
                     key={day.value}
-                    onClick={() => setSelectedDay(day.value)}
-                      className={`px-5 py-3 font-medium text-sm transition-colors border-b-2 ${rtlClasses.textStart} ${
+                    onClick={() => {
+                      if (hasChanges) {
+                        confirm({
+                          title: t('common.unsaved_changes'),
+                          message: t('common.unsaved_changes_message') || 'You have unsaved changes. Are you sure you want to switch days?',
+                          confirmLabel: t('common.discard'),
+                          cancelLabel: t('common.cancel'),
+                          confirmVariant: 'danger'
+                        }).then((confirmed) => {
+                          if (confirmed) {
+                            setSelectedDay(day.value);
+                            setHasChanges(false);
+                            fetchAvailability();
+                          }
+                        });
+                      } else {
+                        setSelectedDay(day.value);
+                        // Ensure selected day has at least one empty slot
+                        const daySlots = availabilities[day.value] || [];
+                        if (daySlots.length === 0) {
+                          setAvailabilities(prev => ({
+                            ...prev,
+                            [day.value]: [{
+                              day_of_week: day.value,
+                              start_time: '09:00',
+                              end_time: '17:00',
+                              is_break: false,
+                              session: 'morning',
+                            }],
+                          }));
+                        }
+                      }
+                    }}
+                    className={`px-5 py-2.5 font-medium text-sm transition-colors rounded-lg ${
                       selectedDay === day.value
-                          ? 'border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-400'
-                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-dark-500'
+                        ? 'bg-primary-600 text-white dark:bg-primary-500'
+                        : 'bg-gray-100 text-gray-700 dark:bg-dark-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
                     }`}
                   >
                     {t(day.labelKey)}
                   </button>
                 ))}
-                </div>
               </div>
 
-              {/* Current Day Availabilities */}
-              <div className="space-y-6">
-               {/* <div className={`flex items-center justify-between ${rtlClasses.flexRow}`}>
-                   {isRtl ? (
-                    <>
-                      <span className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                        {(availabilities[selectedDay] || []).length} {t('common.slots')}
+              {/* Form Repeater Table */}
+              <div className="border border-gray-200 dark:border-dark-700 rounded-lg overflow-hidden">
+                {/* Table Header */}
+                <div className="bg-gray-50 dark:bg-dark-800 border-b border-gray-200 dark:border-dark-700 px-4 py-3">
+                  <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-3">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {t('common.session')}
                       </span>
-                      <h3 className={`text-lg font-semibold text-gray-900 dark:text-white ${rtlClasses.textEnd}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                        {t(DAYS.find(d => d.value === selectedDay)?.labelKey || 'common.days.monday')}
-                      </h3>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className={`text-lg font-semibold text-gray-900 dark:text-white ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                        {t(DAYS.find(d => d.value === selectedDay)?.labelKey || 'common.days.monday')}
-                      </h3>
-                      <span className={`text-sm font-medium text-gray-500 dark:text-gray-400 ${rtlClasses.textEnd}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                        {(availabilities[selectedDay] || []).length} {t('common.slots')}
+                    </div>
+                    <div className="col-span-3">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {t('common.from')}
                       </span>
-                    </>
-                  )}
-                </div>*/}
-
-                {/* Timeline Visualization */}
-                {(() => {
-                  const daySlots = availabilities[selectedDay] || [];
-                  
-                  if (daySlots.length === 0) {
-                    return (
-                      <div className="mb-6">
-                        <div className={`flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-dark-600 rounded-lg bg-gray-50 dark:bg-dark-800/50 ${rtlClasses.textStart}`}>
-                          <ClockIcon className="size-10 mb-3 opacity-40" />
-                          <p className={`text-sm font-medium ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                        {t('common.no_availability_slots')}
-                      </p>
                     </div>
-                      </div>
-                    );
-                  }
-                  
-                  const { startHour, endHour } = getTimelineRange(daySlots);
-                  const timeLabels: string[] = [];
-                  for (let h = startHour; h <= endHour; h++) {
-                    timeLabels.push(`${h.toString().padStart(2, '0')}:00`);
-                  }
-                  
-                  return (
-                    <div className="mb-6">
-                      <div className="relative bg-white dark:bg-dark-800 rounded-lg border border-gray-200 dark:border-dark-700 shadow-sm p-6">
-                        {/* Time labels */}
-                        <div className="relative mb-6" style={{ paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
-                          <div className="relative mb-3" style={{ minHeight: '1.25rem' }}>
-                            {timeLabels.map((label, index) => {
-                              const hour = parseInt(label.split(':')[0]);
-                              const position = getTimelinePosition(`${hour.toString().padStart(2, '0')}:00`, startHour, endHour);
-                              const isFirst = index === 0;
-                              const isLast = index === timeLabels.length - 1;
-                              return (
-                                <span
-                                  key={index}
-                                  className={`absolute text-xs font-medium text-gray-600 dark:text-gray-400 ${isFirst || isLast ? '' : 'transform -translate-x-1/2'}`}
-                                  style={{ 
-                                    left: `${position}%`,
-                                    ...(isFirst ? { transform: 'translateX(0)' } : isLast ? { transform: 'translateX(-100%)' } : {}),
-                                  }}
-                                >
-                                  {label}
-                                </span>
-                              );
-                            })}
-                          </div>
-                          
-                          {/* Timeline track container */}
-                          <div className="relative" style={{ paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
-                            {/* Timeline track */}
-                            <div className="relative h-2.5 bg-gray-100 dark:bg-dark-700 rounded-full overflow-hidden border border-gray-200 dark:border-dark-600">
-                              {/* Background availability slots - clickable */}
-                              {(() => {
-                                const availableSlots = daySlots
-                                  .filter(slot => slot && slot.start_time && slot.end_time && !slot.is_break)
-                                  .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
-                                                                
-                                return availableSlots.map((slot, index) => {
-                                  const left = getTimelinePosition(slot.start_time, startHour, endHour);
-                                  const right = getTimelinePosition(slot.end_time, startHour, endHour);
-                                  const width = Math.max(0, right - left);
-                                                                    
-                                  return (
-                                    <div
-                                      key={`slot-${slot.uuid}`}
-                                      data-slot-uuid={slot.uuid}
-                                      data-slot-time={`${slot.start_time}-${slot.end_time}`}
-                                      data-position={`left:${left}% width:${width}%`}
-                                      className="absolute h-full bg-primary-600 dark:bg-primary-500 rounded-full hover:bg-primary-700 dark:hover:bg-primary-600 cursor-pointer transition-all hover:shadow-md group z-0"
-                                      style={{
-                                        left: `${left}%`,
-                                        width: `${width}%`,
-                                        minWidth: width > 0 ? '2px' : '0',
-                                        top: 0,
-                                        bottom: 0,
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteSlot(slot.uuid!, selectedDay);
-                                      }}
-                                      title={`${formatTime(slot.start_time)} - ${formatTime(slot.end_time)} (${t('common.click_to_delete') || 'Click to delete'})`}
-                                    >
-                                      {/* Subtle markers at start and end */}
-                                      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white dark:bg-dark-800 opacity-80"></div>
-                                      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white dark:bg-dark-800 opacity-80"></div>
-                                    </div>
-                                  );
-                                });
-                              })()}
-                              
-                              {/* Break slots (not available) - clickable */}
-                              {daySlots
-                                .filter(slot => slot.is_break)
-                                .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time))
-                                .map((slot) => {
-                                  const left = getTimelinePosition(slot.start_time, startHour, endHour);
-                                  const right = getTimelinePosition(slot.end_time, startHour, endHour);
-                                  const width = right - left;
-                                  
-                                  return (
-                                    <div
-                                      key={`break-${slot.uuid || slot.start_time}-${slot.end_time}`}
-                                      className="absolute h-full bg-red-500 dark:bg-red-600 rounded-full hover:bg-red-600 dark:hover:bg-red-700 cursor-pointer transition-all hover:shadow-md group relative z-10"
-                                      style={{
-                                        left: `${left}%`,
-                                        width: `${width}%`,
-                                      }}
-                                      onClick={() => handleDeleteSlot(slot.uuid!, selectedDay)}
-                                      title={`${formatTime(slot.start_time)} - ${formatTime(slot.end_time)} (${t('common.click_to_delete') || 'Click to delete'})`}
-                                    >
-                                      {/* Subtle markers at start and end */}
-                                      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white dark:bg-dark-800 opacity-80"></div>
-                                      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white dark:bg-dark-800 opacity-80"></div>
-                                    </div>
-                                  );
-                                })}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Legend */}
-                        <div className={`flex flex-wrap gap-6 mt-6 pt-6 border-t border-gray-200 dark:border-dark-600 ${isRtl ? 'flex-row-reverse justify-end' : 'flex-row'}`}>
-                          <div className={`flex items-center gap-2.5 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
-                            <div className="w-3 h-3 rounded-full bg-primary-600 dark:bg-primary-500"></div>
-                            <span className={`text-xs font-medium text-gray-700 dark:text-gray-300 ${rtlClasses.textStart}`}>
-                              {t('common.available')}
-                            </span>
-                          </div>
-                          <div className={`flex items-center gap-2.5 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
-                            <div className="w-3 h-3 rounded-full bg-red-500 dark:bg-red-600"></div>
-                            <span className={`text-xs font-medium text-gray-700 dark:text-gray-300 ${rtlClasses.textStart}`}>
-                              {t('common.not_available') || 'Not Available'}
-                          </span>
-                          </div>
-                        </div>
-                      </div>
-                </div>
-                  );
-                })()}
-
-                {/* Add New Slot Form */}
-                <div className="bg-gradient-to-br from-white to-gray-50 dark:from-dark-800 dark:to-dark-900 rounded-xl border border-gray-200 dark:border-dark-700 shadow-sm p-6 sm:p-7">
-            {/*       <div className="mb-6">
-                    <h4 className={`text-lg font-semibold text-gray-900 dark:text-white mb-1 ${rtlClasses.textStart}`}>
-                    {t('common.add_availability_slot')}
-                    </h4>
-                    <p className={`text-xs text-gray-500 dark:text-gray-400 ${rtlClasses.textStart}`}>
-                      {t('common.select_time_range') || 'Select a time range between 08:00 and 19:00'}
-                    </p>
-                  </div>*/}
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
-                    {/* Start Time */}
-                    <div className="sm:col-span-3">
-                      <label className={`block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2.5 uppercase tracking-wide ${rtlClasses.textStart}`}>
-                        {t('common.start_time')}
-                      </label>
-                      <div className="relative">
-                      <Timepicker
-                        value={newSlot.start_time}
-                          onChange={(dates, dateStr) => {
-                            const timeMinutes = timeToMinutes(dateStr);
-                            const minMinutes = 8 * 60; // 08:00
-                            const maxMinutes = 19 * 60; // 19:00
-                            if (timeMinutes >= minMinutes && timeMinutes <= maxMinutes) {
-                              setNewSlot({ ...newSlot, start_time: dateStr });
-                            } else {
-                              showToast({
-                                type: 'error',
-                                message: t('common.time_range_error') || 'Time must be between 08:00 and 19:00',
-                              });
-                            }
-                          }}
-                        />
-                      </div>
+                    <div className="col-span-3">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {t('common.to')}
+                      </span>
                     </div>
-
-                    {/* Separator */}
-                    <div className="sm:col-span-1 flex items-end justify-center pb-2.5">
-                      <span className="text-gray-400 dark:text-gray-500 font-medium">—</span>
-                    </div>
-
-                    {/* End Time */}
-                    <div className="sm:col-span-3">
-                      <label className={`block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2.5 uppercase tracking-wide ${rtlClasses.textStart}`}>
-                        {t('common.end_time')}
-                      </label>
-                      <div className="relative">
-                      <Timepicker
-                        value={newSlot.end_time}
-                          onChange={(dates, dateStr) => {
-                            const timeMinutes = timeToMinutes(dateStr);
-                            const minMinutes = 8 * 60; // 08:00
-                            const maxMinutes = 19 * 60; // 19:00
-                            if (timeMinutes >= minMinutes && timeMinutes <= maxMinutes) {
-                              setNewSlot({ ...newSlot, end_time: dateStr });
-                            } else {
-                              showToast({
-                                type: 'error',
-                                message: t('common.time_range_error') || 'Time must be between 08:00 and 19:00',
-                              });
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Break Checkbox */}
-                    <div className="sm:col-span-2 flex items-end pb-2.5">
-                      <label className={`flex items-center gap-3 cursor-pointer group ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
-                        <div className="relative">
-                        <input
-                          type="checkbox"
-                          checked={newSlot.is_break}
-                          onChange={(e) => setNewSlot({ ...newSlot, is_break: e.target.checked })}
-                            className="w-5 h-5 text-primary-600 border-2 border-gray-300 dark:border-dark-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:ring-offset-0 cursor-pointer transition-all checked:bg-primary-600 checked:border-primary-600 dark:checked:bg-primary-500 dark:checked:border-primary-500"
-                        />
-                        </div>
-                        <span className={`text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors ${rtlClasses.textStart}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                          {t('common.mark_as_break')}
-                        </span>
-                      </label>
-                    </div>
-
-                    {/* Add Button */}
-                    <div className="sm:col-span-3">
-                      <button
-                        onClick={() => handleAddSlot(selectedDay)}
-                        className={`w-full flex items-center justify-center gap-2.5 px-5 py-3 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg transition-all font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 ${rtlClasses.flexRow}`}
-                      >
-                        <PlusIcon className="size-5" />
-                        <span>{t('common.add_slot')}</span>
-                      </button>
+                    <div className="col-span-3">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {t('common.actions')}
+                      </span>
                     </div>
                   </div>
                 </div>
+
+                {/* Table Body */}
+                <div className="bg-white dark:bg-dark-800">
+                  {(availabilities[selectedDay] || []).map((slot, index) => (
+                      <div
+                        key={slot.uuid || `new-${index}`}
+                        className="border-b border-gray-200 dark:border-dark-700 px-4 py-4 last:border-b-0"
+                      >
+                        <div className="grid grid-cols-12 gap-4 items-center">
+                          {/* Session Dropdown */}
+                          <div className="col-span-3">
+                            <div className="relative">
+                              <select
+                                value={slot.session || 'morning'}
+                                onChange={(e) => handleUpdateSlot(selectedDay, index, 'session', e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none pr-8"
+                              >
+                                {SESSION_TYPES.map(session => (
+                                  <option key={session.value} value={session.value}>
+                                    {t(session.labelKey) || session.value}
+                                  </option>
+                                ))}
+                              </select>
+                              <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                            </div>
+                          </div>
+
+                          {/* From Time */}
+                          <div className="col-span-3">
+                            <div className="relative">
+                              <Timepicker
+                                value={slot.start_time}
+                                onChange={(dates, dateStr) => {
+                                  const timeMinutes = timeToMinutes(dateStr);
+                                  const minMinutes = 8 * 60;
+                                  const maxMinutes = 19 * 60;
+                                  if (timeMinutes >= minMinutes && timeMinutes <= maxMinutes) {
+                                    handleUpdateSlot(selectedDay, index, 'start_time', dateStr);
+                                  } else {
+                                    showToast({
+                                      type: 'error',
+                                      message: t('common.time_range_error') || 'Time must be between 08:00 and 19:00',
+                                    });
+                                  }
+                                }}
+                                options={{
+                                  enableTime: true,
+                                  noCalendar: true,
+                                  dateFormat: "H:i",
+                                  time_24hr: true,
+                                }}
+                              />
+                              <ClockIcon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                            </div>
+                          </div>
+
+                          {/* To Time */}
+                          <div className="col-span-3">
+                            <div className="relative">
+                              <Timepicker
+                                value={slot.end_time}
+                                onChange={(dates, dateStr) => {
+                                  const timeMinutes = timeToMinutes(dateStr);
+                                  const minMinutes = 8 * 60;
+                                  const maxMinutes = 19 * 60;
+                                  if (timeMinutes >= minMinutes && timeMinutes <= maxMinutes) {
+                                    handleUpdateSlot(selectedDay, index, 'end_time', dateStr);
+                                  } else {
+                                    showToast({
+                                      type: 'error',
+                                      message: t('common.time_range_error') || 'Time must be between 08:00 and 19:00',
+                                    });
+                                  }
+                                }}
+                                options={{
+                                  enableTime: true,
+                                  noCalendar: true,
+                                  dateFormat: "H:i",
+                                  time_24hr: true,
+                                }}
+                              />
+                              <ClockIcon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="col-span-3 flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="flat"
+                              color="primary"
+                              isIcon
+                              className="size-8 rounded-sm"
+                              onClick={() => handleAddRow(selectedDay)}
+                              title={t('common.add')}
+                            >
+                              <PlusIcon className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="flat"
+                              color="error"
+                              isIcon
+                              className="size-8 rounded-sm"
+                              onClick={() => handleDeleteRow(selectedDay, index)}
+                              title={t('common.delete')}
+                            >
+                              <TrashIcon className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className={`flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-700 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  onClick={handleCancel}
+                  disabled={isSaving || !hasChanges}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  type="button"
+                  color="primary"
+                  onClick={handleSave}
+                  disabled={isSaving || !hasChanges}
+                >
+                  {isSaving ? t('common.saving') : t('common.save_changes')}
+                </Button>
               </div>
             </div>
           )}
