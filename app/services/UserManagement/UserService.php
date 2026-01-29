@@ -5,6 +5,8 @@ namespace App\Services\UserManagement;
 use App\DTOs\UserManagement\UserDto;
 use App\Interfaces\ServiceInterface;
 use App\Models\User;
+use App\Models\Receptionist;
+use App\Models\Veterinary;
 use App\Services\ImageService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Exception;
@@ -84,10 +86,21 @@ return User::where('id', '!=', Auth::id())
                 $role = \Spatie\Permission\Models\Role::where('uuid', $dto->role)->first();
                 if ($role) {
                     $user->assignRole($role);
+                    
+                    // If role is receptionist, create receptionist relationship
+                    if ($role->name === 'receptionist' && $dto->veterinarian_id) {
+                        $veterinary = Veterinary::where('uuid', $dto->veterinarian_id)->first();
+                        if ($veterinary) {
+                            Receptionist::create([
+                                'user_id' => $user->id,
+                                'veterinarian_id' => $veterinary->id,
+                            ]);
+                        }
+                    }
                 }
             }
 
-            return $user->load(['image', 'roles']);
+            return $user->load(['image', 'roles', 'receptionist']);
         } catch (Exception $e) {
             throw new Exception("Failed to create user: " . $e->getMessage());
         }
@@ -126,13 +139,30 @@ return User::where('id', '!=', Auth::id())
                 $role = \Spatie\Permission\Models\Role::where('uuid', $dto->role)->first();
                 if ($role) {
                     $user->syncRoles([$role]);
+                    
+                    // Handle receptionist relationship
+                    if ($role->name === 'receptionist' && $dto->veterinarian_id) {
+                        $veterinary = Veterinary::where('uuid', $dto->veterinarian_id)->first();
+                        if ($veterinary) {
+                            // Update or create receptionist relationship
+                            Receptionist::updateOrCreate(
+                                ['user_id' => $user->id],
+                                ['veterinarian_id' => $veterinary->id]
+                            );
+                        }
+                    } else {
+                        // Remove receptionist relationship if role changed from receptionist
+                        $user->receptionist?->delete();
+                    }
                 }
             } else {
                 // Remove all roles if no role is provided
                 $user->syncRoles([]);
+                // Also remove receptionist relationship
+                $user->receptionist?->delete();
             }
 
-            return $user->refresh()->load(['image', 'roles']);
+            return $user->refresh()->load(['image', 'roles', 'receptionist']);
         } catch (Exception $e) {
             throw new Exception("Failed to update blog");
         }
