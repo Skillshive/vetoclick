@@ -167,6 +167,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'permission:availability.view'])->prefix('availability')->controller(AvailabilityController::class)->group(function () {
     Route::post('/', 'store')->middleware('permission:availability.create')->name('availability.store');
     Route::get('/current-week', 'getCurrentWeek')->name('availability.getCurrentWeek');
+    Route::put('/{uuid}', 'update')->middleware('permission:availability.update')->name('availability.update');
     Route::delete('/{uuid}', 'destroy')->middleware('permission:availability.delete')->name('availability.destroy');
     Route::post('/check', 'checkAvailability')->name('availability.check');
 });
@@ -338,7 +339,7 @@ Route::middleware(['auth', 'verified', 'permission:appointments.view'])->group(f
             Route::post('{uuid}/create-consultation', 'createConsultation')->middleware('permission:consultations.create')->name('create-consultation');
             Route::post('{uuid}/cancel', 'cancel')->middleware('permission:appointments.cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->middleware('permission:appointments.report')->name('report');
-            Route::get('create', 'create')->name('create')->name('create_from_page');
+            Route::get('create', 'create')->middleware('permission:appointments.create_from_page')->name('create');
             Route::post('create-appointment', 'createAppointment')->name('create-appointment');
             Route::post('store', 'store')->name('store');
             Route::post('request', 'requestAppointment')->middleware('permission:appointments.request')->name('request');
