@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button,  Card, Switch } from "@/components/ui";
 import { CalendarIcon, HomeIcon, PlusIcon, VideoCameraIcon, UserPlusIcon } from "@heroicons/react/24/outline";
@@ -15,9 +15,10 @@ declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 interface QuickScheduleProps {
   clients: Record<string, string>;
+  veterinaryId: string | null;
 }
 
-export function QuickSchedule({ clients: initialClients }: QuickScheduleProps) {
+export function QuickSchedule({ clients: initialClients, veterinaryId }: QuickScheduleProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -34,6 +35,10 @@ export function QuickSchedule({ clients: initialClients }: QuickScheduleProps) {
   const [selectedDateTime, setSelectedDateTime] = useState<Date[]>([]);
   const [pets, setPets] = useState<Array<{ uuid: string; name: string }>>([]);
   const [loadingPets, setLoadingPets] = useState(false);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [isLoadingTimes, setIsLoadingTimes] = useState(false);
+  const [timeValidationError, setTimeValidationError] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const clientOptions = Object.entries(clients).map(([uuid, name]) => ({
     value: uuid,
@@ -47,6 +52,22 @@ export function QuickSchedule({ clients: initialClients }: QuickScheduleProps) {
     { value: 'common.surgery_consult', label: t('common.surgery_consult') },
     { value: 'common.other', label: t('common.other') },
   ];
+
+  // Watch for changes in selectedDateTime to fetch available times
+  useEffect(() => {
+    if (selectedDateTime && selectedDateTime.length > 0) {
+      const selectedDate = selectedDateTime[0];
+      const date = selectedDate.toISOString().split('T')[0];
+      const time = selectedDate.toTimeString().split(' ')[0].substring(0, 5);
+      
+      fetchAvailableTimes(date);
+      validateSelectedTime(date, time);
+    } else {
+      setAvailableTimes([]);
+      setTimeValidationError(null);
+      setShowSuggestions(false);
+    }
+  }, [selectedDateTime]);
 
 
   const handleClientAdded = (newClient: { uuid: string; name: string }) => {
@@ -86,6 +107,69 @@ export function QuickSchedule({ clients: initialClients }: QuickScheduleProps) {
     }
   };
 
+  // Fetch available times when date/time changes
+  const fetchAvailableTimes = async (date: string) => {
+    if (!veterinaryId || !date) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    setIsLoadingTimes(true);
+    setTimeValidationError(null);
+    setShowSuggestions(false);
+
+    try {
+      const response = await fetch(
+        `${route('appointments.available-times')}?veterinary_id=${veterinaryId}&appointment_date=${date}&duration_minutes=30`,
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'same-origin',
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success && result.suggestions.length > 0) {
+        setAvailableTimes(result.suggestions);
+      } else {
+        setAvailableTimes([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch available times:', error);
+      setAvailableTimes([]);
+    } finally {
+      setIsLoadingTimes(false);
+    }
+  };
+
+  // Validate selected time
+  const validateSelectedTime = (date: string, time: string) => {
+    if (!veterinaryId || !date || !time) {
+      setTimeValidationError(null);
+      setShowSuggestions(false);
+      return;
+    }
+
+    if (availableTimes.length > 0) {
+      const isAvailable = availableTimes.includes(time);
+      
+      if (!isAvailable) {
+        setTimeValidationError(t('common.veterinarian_not_available_at_requested_time'));
+        setShowSuggestions(true);
+      } else {
+        setTimeValidationError(null);
+        setShowSuggestions(false);
+      }
+    } else if (!isLoadingTimes) {
+      setTimeValidationError(t('common.veterinarian_not_available_at_requested_time'));
+      setShowSuggestions(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -94,6 +178,15 @@ export function QuickSchedule({ clients: initialClients }: QuickScheduleProps) {
       showToast({
         type: 'error',
         message: t('common.please_fill_required_fields'),
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!veterinaryId) {
+      showToast({
+        type: 'error',
+        message: 'Veterinary information not found. Please contact support.',
         duration: 3000,
       });
       return;
@@ -116,6 +209,7 @@ export function QuickSchedule({ clients: initialClients }: QuickScheduleProps) {
         },
         credentials: 'same-origin',
         body: JSON.stringify({
+          veterinary_id: veterinaryId, // Auto-fill from receptionist's linked vet (note: veterinary_id, not veterinarian_id)
           client_id: formData.client_id,
           pet_id: formData.pet_id,
           appointment_date: appointmentDate,
@@ -246,6 +340,65 @@ export function QuickSchedule({ clients: initialClients }: QuickScheduleProps) {
               placeholder={t('common.vet_dashboard.form.select_date_time') || 'Select date and time'}
               className="w-full"
             />
+            
+            {/* Loading indicator */}
+            {isLoadingTimes && veterinaryId && selectedDateTime.length > 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                {t('common.loading_available_times') || 'Loading available times...'}
+              </p>
+            )}
+            
+            {/* Time validation error and suggestions */}
+            {timeValidationError && (
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+                  {timeValidationError}
+                </p>
+                
+                {showSuggestions && availableTimes.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('common.available_times_suggestions') || 'Available times:'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableTimes.map((time) => (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={() => {
+                            if (selectedDateTime.length > 0) {
+                              const [hours, minutes] = time.split(':');
+                              const selectedDate = new Date(selectedDateTime[0]);
+                              selectedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                              
+                              setSelectedDateTime([selectedDate]);
+                              setTimeValidationError(null);
+                              setShowSuggestions(false);
+                            }
+                          }}
+                          className="px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                        >
+                          {time}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {availableTimes.length === 0 && !isLoadingTimes && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('common.no_available_times') || 'No available times for this date'}
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Show available times confirmation when time is valid */}
+            {!timeValidationError && availableTimes.length > 0 && selectedDateTime.length > 0 && (
+              <p className="text-sm text-primary-600 dark:text-primary-400 mt-2">
+                {t('common.time_available') || 'This time is available'}
+              </p>
+            )}
           </div>
 
         {/* Appointment Type */}
