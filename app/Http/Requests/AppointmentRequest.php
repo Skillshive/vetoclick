@@ -30,6 +30,21 @@ class AppointmentRequest extends FormRequest
             // Default to false if not provided
             $this->merge(['is_video_conseil' => false]);
         }
+
+        // Auto-fill veterinary_id if not provided and user is receptionist or vet
+        if (!$this->has('veterinary_id') || empty($this->input('veterinary_id'))) {
+            $user = auth()->user();
+            
+            if ($user) {
+                $veterinary = $user->scopedVeterinary();
+                
+                if ($veterinary) {
+                    $this->merge([
+                        'veterinary_id' => $veterinary->uuid,
+                    ]);
+                }
+            }
+        }
     }
 
     /**
