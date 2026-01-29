@@ -42,6 +42,8 @@ export function AppointmentCard({
       ? appointment.consultation.uuid 
       : null
   );
+  const [acceptingAppointment, setAcceptingAppointment] = useState(false);
+  const [refusingAppointment, setRefusingAppointment] = useState(false);
 
   const StatusIcon = () => {
     switch (appointment.status) {
@@ -281,6 +283,103 @@ export function AppointmentCard({
       }
     };
 
+    const handleAcceptAppointment = async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent card click
+      setAcceptingAppointment(true);
+
+      try {
+        const response = await fetch(route('appointments.accept', { uuid: appointment.uuid }), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Accept': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast({
+            type: 'success',
+            message: data.message || t('common.appointment_accepted_success') || 'Appointment accepted successfully',
+            duration: 3000,
+          });
+          // WebSocket will handle the update, no need to reload
+          if (data?.appointment && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('appointment.updated.local', {
+              detail: {
+                appointment: data.appointment,
+                changes: { status: { old: appointment.status, new: 'confirmed' } },
+                source: 'accept',
+              },
+            }));
+          }
+        } else {
+          throw new Error(data.message || data.error || 'Failed to accept appointment');
+        }
+      } catch (error: any) {
+        showToast({
+          type: 'error',
+          message: error.message || t('common.failed_to_accept_appointment') || 'Failed to accept appointment',
+          duration: 3000,
+        });
+      } finally {
+        setAcceptingAppointment(false);
+      }
+    };
+
+    const handleRefuseAppointment = async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent card click
+
+      if (!confirm(t('common.confirm_refuse_appointment') || 'Are you sure you want to refuse this appointment?')) {
+        return;
+      }
+
+      setRefusingAppointment(true);
+
+      try {
+        const response = await fetch(route('appointments.cancel', { uuid: appointment.uuid }), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Accept': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showToast({
+            type: 'success',
+            message: data.message || t('common.appointment_refused_success') || 'Appointment refused successfully',
+            duration: 3000,
+          });
+          // WebSocket will handle the update, no need to reload
+          if (data?.appointment && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('appointment.updated.local', {
+              detail: {
+                appointment: data.appointment,
+                changes: { status: { old: appointment.status, new: 'cancelled' } },
+                source: 'refuse',
+              },
+            }));
+          }
+        } else {
+          throw new Error(data.message || data.error || 'Failed to refuse appointment');
+        }
+      } catch (error: any) {
+        showToast({
+          type: 'error',
+          message: error.message || t('common.failed_to_refuse_appointment') || 'Failed to refuse appointment',
+          duration: 3000,
+        });
+      } finally {
+        setRefusingAppointment(false);
+      }
+    };
+
     const handleCancelAppointment = async (e: React.MouseEvent) => {
       e.stopPropagation(); // Prevent card click
 
@@ -305,7 +404,16 @@ export function AppointmentCard({
             message: t('common.appointment_cancelled') || 'Appointment cancelled successfully',
             duration: 3000,
           });
-          window.location.reload();
+          // WebSocket will handle the update, no need to reload
+          if (data?.appointment && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('appointment.updated.local', {
+              detail: {
+                appointment: data.appointment,
+                changes: { status: { old: appointment.status, new: 'cancelled' } },
+                source: 'cancel',
+              },
+            }));
+          }
         } else {
           throw new Error(data.message || 'Failed to cancel appointment');
         }
@@ -447,7 +555,7 @@ export function AppointmentCard({
               color="primary"
               className="mb-2 text-xs font-semibold"
             >
-              {appointment.appointment_type}
+              {t(appointment.appointment_type)}
             </Badge>
             <p className="text-sm text-gray-500 dark:text-dark-300">{appointment.reason_for_visit}</p>
           </div>
@@ -466,7 +574,7 @@ export function AppointmentCard({
             </div>
           </div>
   
-          {appointment.is_video_conseil && showJoinButton ? (
+          {appointment.is_video_conseil && showJoinButton && appointment.status === 'confirmed' && !isAppointmentTimePast ? (
             <div className="mt-4">
               <Button
                 color="primary"
@@ -488,8 +596,33 @@ export function AppointmentCard({
             </div>
           ) : null}
 
+          {/* Accept/Refuse Buttons for Scheduled Appointments */}
+          {(appointment.status === 'scheduled') && !consultationId && !isAppointmentTimePast ? (
+            <div className="mt-4 flex gap-2">
+              <Button
+                color="primary"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all text-sm font-medium"
+                onClick={handleAcceptAppointment}
+                disabled={acceptingAppointment || refusingAppointment}
+              >
+                <CheckCircleIcon className="size-4" />
+                <span>{acceptingAppointment ? (t("common.accepting") || "Accepting...") : (t("common.accept") || "Accept")}</span>
+              </Button>
+              <Button
+                color="error"
+                variant="outlined"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all text-sm font-medium"
+                onClick={handleRefuseAppointment}
+                disabled={acceptingAppointment || refusingAppointment}
+              >
+                <XCircleIcon className="size-4" />
+                <span>{refusingAppointment ? (t("common.refusing") || "Refusing...") : (t("common.refuse") || "Refuse")}</span>
+              </Button>
+            </div>
+          ) : null}
+
           {/* Action Buttons */}
-          {!consultationId && appointment.status !== 'cancelled' && appointment.status !== 'completed' && !appointment.is_video_conseil && !isAppointmentTimePast ? (
+          {!consultationId && appointment.status === 'confirmed' && appointment.status !== 'completed' && !appointment.is_video_conseil && !isAppointmentTimePast ? (
             <div className="mt-4 flex gap-2">
               <Button
                 color="primary"
