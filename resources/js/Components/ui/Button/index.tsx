@@ -38,10 +38,11 @@ const variants: Record<Variant, string> = {
 
 const primaryVariants: Record<Variant, string> = {
   filled:
-  "bg-[#4DB9AD] text-white hover:bg-[#15A093] focus:bg-[#15A093] active:bg-[#15A093]/90 disabled:bg-[#F0FCFA] disabled:text-[#4DB9AD]/40 dark:disabled:bg-[#1B2441] dark:disabled:text-[#4DB9AD]/60", soft: "text-[#4DB9AD] bg-[#4DB9AD]/[.08] hover:bg-[#4DB9AD]/[.15] focus:bg-[#4DB9AD]/[.15] active:bg-[#4DB9AD]/20 dark:bg-[#4DB9AD]/10 dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/20 dark:focus:bg-[#4DB9AD]/20 dark:active:bg-[#4DB9AD]/25",
+  "bg-[#15A093] text-white hover:bg-[#0F7A70] focus:bg-[#0F7A70] active:bg-[#0F7A70]/90 disabled:bg-[#4DB9AD]/30 disabled:text-white/60 dark:disabled:bg-[#1B2441] dark:disabled:text-[#4DB9AD]/60", 
+  soft: "text-[#15A093] bg-[#15A093]/[.12] hover:bg-[#15A093]/[.20] focus:bg-[#15A093]/[.20] active:bg-[#15A093]/25 dark:bg-[#15A093]/15 dark:text-[#4DB9AD] dark:hover:bg-[#15A093]/25 dark:focus:bg-[#15A093]/25 dark:active:bg-[#15A093]/30",
   outlined:
-    "text-[#4DB9AD] border border-[#4DB9AD] hover:bg-[#4DB9AD]/[.05] focus:bg-[#4DB9AD]/[.05] active:bg-[#4DB9AD]/10 dark:border-[#4DB9AD] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/[.05] dark:focus:bg-[#4DB9AD]/[.05] dark:active:bg-[#4DB9AD]/10",
-  flat: "text-[#4DB9AD] hover:bg-[#4DB9AD]/[.08] focus:bg-[#4DB9AD]/[.08] active:bg-[#4DB9AD]/[.15] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/10 dark:focus:bg-[#4DB9AD]/10 dark:active:bg-[#4DB9AD]/[.15]",
+    "text-[#15A093] border-2 border-[#15A093] hover:bg-[#15A093]/[.08] focus:bg-[#15A093]/[.08] active:bg-[#15A093]/12 dark:border-[#4DB9AD] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/[.08] dark:focus:bg-[#4DB9AD]/[.08] dark:active:bg-[#4DB9AD]/12",
+  flat: "text-[#15A093] hover:bg-[#15A093]/[.12] focus:bg-[#15A093]/[.12] active:bg-[#15A093]/[.20] dark:text-[#4DB9AD] dark:hover:bg-[#4DB9AD]/15 dark:focus:bg-[#4DB9AD]/15 dark:active:bg-[#4DB9AD]/20",
 };
 
 const neutralVariants: Record<Variant, string> = {
