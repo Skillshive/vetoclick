@@ -43,30 +43,50 @@ export default function Index({appointments, filters, vets, clients, statuses, o
     const [acceptError, setAcceptError] = useState<string | null>(null);
     const justAcceptedRef = useRef(false);
 
-    const handleConfirmCancel = () => {
+    const handleConfirmCancel = async () => {
         if (!selectedAppointment) return;
 
         setConfirmCancelLoading(true);
         setCancelError(null);
         setCancelSuccess(false);
 
-        router.delete(route('appointments.cancel', selectedAppointment.uuid), {
-            onSuccess: () => {
+        try {
+            const response = await fetch(route('appointments.cancel', selectedAppointment.uuid), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'Accept': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
                 setCancelModalOpen(false);
                 setCancelSuccess(true);
                 setConfirmCancelLoading(false);
-                showToast({ type: 'success', message: t('common.appointment_cancelled_successfully') });
+                showToast({ 
+                    type: 'success', 
+                    message: data.message || t('common.appointment_cancelled_successfully') || 'Appointment cancelled successfully'
+                });
                 setTimeout(() => {
                     setCancelModalOpen(false);
                     setCancelSuccess(false); 
-                }, 2000); 
-            },
-            onError: (errors: any) => {
-                setCancelError(errors.message || t('common.failed_to_cancel_appointment'));
-                setConfirmCancelLoading(false);
-                showToast({ type: 'error', message: t('common.failed_to_cancel_appointment') });
+                }, 2000);
+                // Reload the page to refresh the appointments list
+                router.reload({ only: ['appointments'] });
+            } else {
+                throw new Error(data.message || data.error || 'Failed to cancel appointment');
             }
-        });
+        } catch (error: any) {
+            setCancelError(error.message || t('common.failed_to_cancel_appointment'));
+            setConfirmCancelLoading(false);
+            showToast({ 
+                type: 'error', 
+                message: error.message || t('common.failed_to_cancel_appointment') || 'Failed to cancel appointment'
+            });
+        }
     };
 
     const handleReport = (appointment: Appointment) => {
