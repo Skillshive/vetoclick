@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useState, useCallback, useEffect } from "react";
 
 import { Page } from "@/components/shared/Page";
 import { Statistics } from "./Statistics";
@@ -12,8 +13,8 @@ import { Card, Avatar, Button } from "@/components/ui";
 import {
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
+import { useDashboardUpdates } from "@/hooks/useDashboardUpdates";
 
 interface Client {
   uuid: string;
@@ -307,8 +308,30 @@ export default function UserDashboard() {
   const { props } = usePage();
   
   const dashboardProps = props as DashboardProps;
-  const upcomingAppointments = dashboardProps.upcomingAppointments || [];
-  const statistics = dashboardProps.statistics || {
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>(
+    dashboardProps.upcomingAppointments || [],
+  );
+  const [statistics, setStatistics] = useState(
+    dashboardProps.statistics || {
+      totalAppointments: 0,
+      upcomingAppointments: 0,
+      completedAppointments: 0,
+      cancelledAppointments: 0,
+      videoConsultations: 0,
+      totalPets: 0,
+    },
+  );
+
+  const mergeAppointment = useCallback(
+    (current: Appointment, incoming: Appointment) => ({
+      ...current,
+      ...incoming,
+      client: { ...current.client, ...incoming.client },
+      pet: { ...current.pet, ...incoming.pet },
+      consultation: incoming.consultation ?? current.consultation,
+    }),
+    [],
+  );
     totalAppointments: 0,
     upcomingAppointments: 0,
     completedAppointments: 0,
@@ -316,6 +339,75 @@ export default function UserDashboard() {
     videoConsultations: 0,
     totalPets: 0,
   };
+
+  // Handle real-time appointment updates via WebSocket
+  const handleAppointmentUpdated = useCallback((updatedAppointment: Appointment, meta?: { raw?: any; changes?: any }) => {
+    setUpcomingAppointments((prev) => {
+      const index = prev.findIndex((apt) => apt.uuid === updatedAppointment.uuid);
+      if (index >= 0) {
+        // Update existing appointment
+        const updated = [...prev];
+        updated[index] = mergeAppointment(updated[index], updatedAppointment);
+        // Remove if cancelled or completed (depending on requirements)
+        const newStatus = meta?.changes?.status?.new || updatedAppointment.status;
+        if (newStatus === 'cancelled') {
+          return updated.filter((apt) => apt.uuid !== updatedAppointment.uuid);
+        }
+        return updated;
+      }
+      // If status is upcoming and not cancelled, add it
+      if (updatedAppointment.status !== 'cancelled' && updatedAppointment.status !== 'completed') {
+        const appointmentDate = updatedAppointment.appointment_date instanceof Date
+          ? updatedAppointment.appointment_date
+          : new Date(updatedAppointment.appointment_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        appointmentDate.setHours(0, 0, 0, 0);
+        
+        if (appointmentDate >= today) {
+          return [...prev, updatedAppointment];
+        }
+      }
+      return prev;
+    });
+  }, [mergeAppointment]);
+
+  const handleAppointmentCreated = useCallback((newAppointment: Appointment) => {
+    setUpcomingAppointments((prev) => {
+      // Check if appointment already exists
+      if (prev.some((apt) => apt.uuid === newAppointment.uuid)) {
+        return prev;
+      }
+      // Only add if it's upcoming (not cancelled/completed)
+      if (newAppointment.status !== 'cancelled' && newAppointment.status !== 'completed') {
+        const appointmentDate = newAppointment.appointment_date instanceof Date
+          ? newAppointment.appointment_date
+          : new Date(newAppointment.appointment_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        appointmentDate.setHours(0, 0, 0, 0);
+        
+        if (appointmentDate >= today) {
+          return [...prev, newAppointment];
+        }
+      }
+      return prev;
+    });
+  }, []);
+
+  // Keep stats in sync with upcoming appointments count
+  useEffect(() => {
+    setStatistics((prevStats) => ({
+      ...prevStats,
+      upcomingAppointments: upcomingAppointments.length,
+    }));
+  }, [upcomingAppointments]);
+
+  // Listen for WebSocket updates
+  useDashboardUpdates({
+    onAppointmentUpdated: handleAppointmentUpdated,
+    onAppointmentCreated: handleAppointmentCreated,
+  });
 
   return (
     <MainLayout>
