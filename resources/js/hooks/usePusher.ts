@@ -78,15 +78,25 @@ export function usePusher(options: UsePusherOptions = {}) {
   callbacksRef.current = options;
 
   useEffect(() => {
+    console.log('[usePusher] Effect triggered', {
+      userId,
+      pusherConfig: pusherConfig ? { cluster: pusherConfig.cluster } : null,
+      isAdmin,
+    });
+
     if (!userId) {
+      console.warn('[usePusher] Skipping - no userId');
       return;
     }
 
     const pusher = initializePusher(userId, pusherConfig);
 
     if (!pusher) {
+      console.error('[usePusher] Failed to initialize Pusher');
       return;
     }
+
+    console.log('[usePusher] Pusher initialized, current connection state:', pusher.connection.state);
 
     // Create wrapper functions that always use the latest callbacks from ref
     const handleAppointmentCreated = (data: PusherEvent) => {
@@ -132,11 +142,11 @@ export function usePusher(options: UsePusherOptions = {}) {
     channelsRef.current.push(appointmentsChannel);
     
     appointmentsChannel.bind('pusher:subscription_succeeded', () => {
-      // Successfully subscribed to appointments channel
+      console.log('[usePusher] Successfully subscribed to appointments channel');
     });
 
     appointmentsChannel.bind('pusher:subscription_error', (err: any) => {
-      // Subscription error for appointments channel
+      console.error('[usePusher] Subscription error for appointments channel:', err);
     });
 
     // Subscribe to admin channel if user is admin
@@ -158,11 +168,14 @@ export function usePusher(options: UsePusherOptions = {}) {
     channelsRef.current.push(userChannel);
     
     userChannel.bind('pusher:subscription_succeeded', () => {
-      // Successfully subscribed to private user channel
+      console.log('[usePusher] Successfully subscribed to private user channel:', `private-user.${userId}`);
     });
 
     userChannel.bind('pusher:subscription_error', (err: any) => {
-      // Subscription error for private user channel
+      console.error('[usePusher] Subscription error for private user channel:', {
+        channel: `private-user.${userId}`,
+        error: err,
+      });
     });
 
     // Listen for notifications on the user channel (AppointmentConfirmed, AppointmentCancelled use user.{userId})
@@ -171,13 +184,10 @@ export function usePusher(options: UsePusherOptions = {}) {
     // Listen for appointment created events on public channel
     appointmentsChannel.bind('appointment.created', handleAppointmentCreated);
 
-    // Listen for appointment updated events on public channel (for admins/general updates only)
-    // Note: Individual users will get their notifications via the private channel
+    // Listen for appointment updated events on public channel for all users.
+    // Receptionists may not receive private events, so use public updates too.
     appointmentsChannel.bind('appointment.updated', (data: PusherEvent) => {
-      // Only handle this if user is admin, otherwise let the private channel handle it
-      if (isAdmin) {
-        handleAppointmentUpdated(data);
-      }
+      handleAppointmentUpdated(data);
     });
 
     // Also listen for notification events on public appointments channel (in case they're broadcast there too)
@@ -294,19 +304,28 @@ export function usePusher(options: UsePusherOptions = {}) {
 
     // Cleanup on unmount
     return () => {
+      console.log('[usePusher] Channel cleanup triggered', {
+        channelCount: channelsRef.current.length,
+        channelNames: channelsRef.current.map(c => c.name),
+        pusherState: pusher.connection.state,
+      });
+      
       channelsRef.current.forEach((channel) => {
-        channel.unbind_all();
-        pusher.unsubscribe(channel.name);
+        try {
+          channel.unbind_all();
+          pusher.unsubscribe(channel.name);
+          console.log('[usePusher] Unsubscribed from channel:', channel.name);
+        } catch (error) {
+          console.error('[usePusher] Error unsubscribing from channel:', channel.name, error);
+        }
       });
       channelsRef.current = [];
+      
+      // Only disconnect if connection is established and we're sure no other components need it
+      // Note: We don't disconnect here to avoid premature disconnection during React Strict Mode
+      // The Pusher instance will remain connected for other components that might need it
     };
   }, [userId, pusherConfig, isAdmin]);
-
-  useEffect(() => {
-    return () => {
-      disconnectPusher();
-    };
-  }, []);
 
   return {
     pusher: getPusherInstance(),

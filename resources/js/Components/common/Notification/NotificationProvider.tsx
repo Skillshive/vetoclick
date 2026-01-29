@@ -55,6 +55,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const { t } = useTranslation();
 
   const [prevNotificationIds, setPrevNotificationIds] = useState<Set<string>>(new Set());
+  const prevNotificationIdsRef = useRef<Set<string>>(new Set());
   // Use ref for immediate synchronous duplicate detection (state updates are async and can cause race conditions)
   const processedAppointmentUpdatesRef = useRef<Set<string>>(new Set());
 
@@ -80,12 +81,29 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
               appointmentUuid: notification.data.appointment?.uuid,
             }));
             
+            const newNotifications = response.notifications.filter(
+              (notif) => !prevNotificationIdsRef.current.has(notif.id),
+            );
+
+            // Trigger local dashboard updates for new appointment notifications (polling fallback)
+            newNotifications.forEach((notification) => {
+              if (notification.data?.appointment && typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('appointment.updated.local', {
+                  detail: {
+                    appointment: notification.data.appointment,
+                    source: 'notification.poll',
+                  },
+                }));
+              }
+            });
+
             // Update the tracking set with all current notification IDs
             setPrevNotificationIds((prevIds) => {
               const newIds = new Set(prevIds);
               response.notifications.forEach(notif => newIds.add(notif.id));
               return newIds;
             });
+            response.notifications.forEach((notif) => prevNotificationIdsRef.current.add(notif.id));
             
             const uniqueNotifications = converted.filter((notification, index, self) =>
               index === self.findIndex((n) => n.id === notification.id)
@@ -431,6 +449,14 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }
     
     const appointment = notificationData.appointment || data.appointment;
+    if (appointment && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('appointment.updated.local', {
+        detail: {
+          appointment,
+          source: 'notification.ws',
+        },
+      }));
+    }
     // Extract notification type from multiple possible sources
     const notifType = notificationData.type || data.type || (data as any).notification?.type || 
                       (data as any).notification?.data?.type || 
