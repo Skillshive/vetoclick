@@ -1,7 +1,7 @@
 import { Appointment } from "@/pages/Appointments/datatable/types";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Avatar, Button, Card } from "@/components/ui";
-import { CheckIcon, XMarkIcon, ArrowUpRightIcon } from "@heroicons/react/24/outline";
+import { Avatar, Button, Box } from "@/components/ui";
+import { CheckIcon, XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { router } from "@inertiajs/react";
 import { useToast } from "@/components/common/Toast/ToastContext";
@@ -25,41 +25,56 @@ function RequestCard({ appointment, onAccept, onReject, isProcessing }: RequestC
   const { t } = useTranslation();
   
   return (
-    <Card className="space-y-4 p-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <Avatar 
-          size={10} 
-          name={appointment.pet.name} 
-          src={appointment.pet.avatar} 
-          initialColor="auto" 
-        />
-
-        <div className="flex-1 min-w-0">
-          <h3 className="dark:text-dark-100 truncate font-medium text-gray-800">
-            {appointment.pet.name}
-          </h3>
-          <p className="dark:text-dark-300 mt-0.5 text-xs text-gray-400">
-            {appointment.pet.species}
-          </p>
-          <p className="dark:text-dark-300 mt-0.5 text-xs text-gray-500">
-            {appointment.client.first_name} {appointment.client.last_name}
-          </p>
+    <Box className="min-w-[280px] max-w-xs border-l-error border-4 border-transparent px-4 py-4 cursor-pointer hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between gap-4">
+        {/* Left: Pet & Client Info */}
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <Avatar
+            size={12}
+            name={appointment.pet.name}
+            src={appointment.pet.avatar}
+            classNames={{ display: "mask is-squircle rounded-lg" }}
+            initialColor="auto"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-base font-medium text-gray-800 dark:text-dark-100">
+              {appointment.pet.name}
+            </p>
+            <p className="dark:text-dark-300 text-xs text-gray-400">
+              {appointment.pet.species}{appointment.pet.breed ? ` • ${appointment.pet.breed}` : ''}
+            </p>
+            <p className="dark:text-dark-300 mt-1 text-sm text-gray-600">
+              {appointment.client.first_name} {appointment.client.last_name}
+            </p>
+          </div>
         </div>
       </div>
-      
-      <div>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          {new Date(appointment.appointment_date).toLocaleDateString()}
-        </p>
-        <p className="dark:text-dark-100 text-xl font-medium text-gray-800">
-          {appointment.start_time}
-        </p>
-        <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-          {appointment.appointment_type}
-        </p>
+
+      {/* Appointment Details */}
+      <div className="mt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <p className="dark:text-dark-100 text-sm font-medium text-gray-800">
+              {t(appointment.appointment_type)}
+            </p>
+            {appointment.reason_for_visit && (
+              <p className="dark:text-dark-300 mt-0.5 text-xs text-gray-500 line-clamp-1">
+                {appointment.reason_for_visit}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
-      
-      <div className="flex justify-between">
+
+      {/* Time & Action Buttons */}
+      <div className="mt-4 flex items-center justify-between border-t border-gray-100 dark:border-dark-600 pt-3">
+        <div className="flex items-center gap-2 text-sm">
+          <ClockIcon className="size-4 text-gray-500 dark:text-gray-400" />
+          <span className="font-semibold text-gray-800 dark:text-dark-100">
+          {appointment.appointment_date} - {appointment.start_time} 
+          </span>
+        </div>
+        
         <div className="flex gap-2">
           <Button
             className="size-7 rounded-full"
@@ -84,9 +99,8 @@ function RequestCard({ appointment, onAccept, onReject, isProcessing }: RequestC
             <XMarkIcon className="size-4" />
           </Button>
         </div>
-        
       </div>
-    </Card>
+    </Box>
   );
 }
 
@@ -98,49 +112,28 @@ export function AppointmentRequests({ appointments }: AppointmentRequestsProps) 
   const [appointmentToReject, setAppointmentToReject] = useState<string | null>(null);
   const [rejectLoading, setRejectLoading] = useState(false);
 
-  const handleAccept = async (appointmentUuid: string) => {
+  const handleAccept = (appointmentUuid: string) => {
     setProcessingId(appointmentUuid);
-    try {
-      const response = await fetch(route('appointments.accept', { uuid: appointmentUuid }), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-        },
-      });
-
-      if (!response.ok) {
-        // Try to parse JSON error, but handle HTML responses
-        let errorMessage = 'Failed to accept appointment';
-        try {
-          const data = await response.json();
-          errorMessage = data.error || data.message || errorMessage;
-        } catch {
-          // If response is not JSON, it's likely an HTML error page
-          errorMessage = `Server error: ${response.status} ${response.statusText}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-
-      showToast({
-        type: 'success',
-        message: data.message || t('common.appointment_accepted') || 'Appointment accepted successfully',
-        duration: 3000,
-      });
-      router.visit(window.location.href, { preserveScroll: true, preserveState: false });
-    } catch (error: any) {
-      showToast({
-        type: 'error',
-        message: error.message || t('common.failed_to_accept_appointment') || 'Failed to accept appointment',
-        duration: 3000,
-      });
-    } finally {
-      setProcessingId(null);
-    }
+    router.post(route('appointments.accept', appointmentUuid), {}, {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        showToast({
+          type: 'success',
+          message: t('common.appointment_accepted') || 'Appointment accepted successfully',
+          duration: 3000,
+        });
+        setProcessingId(null);
+      },
+      onError: (errors: any) => {
+        showToast({
+          type: 'error',
+          message: errors.message || t('common.failed_to_accept_appointment') || 'Failed to accept appointment',
+          duration: 3000,
+        });
+        setProcessingId(null);
+      },
+    });
   };
 
   const openRejectModal = (appointmentUuid: string) => {
@@ -159,40 +152,36 @@ export function AppointmentRequests({ appointments }: AppointmentRequestsProps) 
     if (!appointmentToReject) return;
 
     setRejectLoading(true);
+
     try {
-      const response = await fetch(route('appointments.cancel', { uuid: appointmentToReject }), {
+      const response = await fetch(route('appointments.cancel', appointmentToReject), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json',
         },
       });
 
-      if (!response.ok) {
-        // Try to parse JSON error, but handle HTML responses
-        let errorMessage = 'Failed to reject appointment';
-        try {
-          const data = await response.json();
-          errorMessage = data.error || data.message || errorMessage;
-        } catch {
-          // If response is not JSON, it's likely an HTML error page
-          errorMessage = `Server error: ${response.status} ${response.statusText}`;
-        }
-        throw new Error(errorMessage);
-      }
-
       const data = await response.json();
 
-      showToast({
-        type: 'success',
-        message: data.message || t('common.appointment_rejected') || 'Appointment rejected successfully',
-        duration: 3000,
-      });
-      setRejectModalOpen(false);
-      setAppointmentToReject(null);
-      router.visit(window.location.href, { preserveScroll: true, preserveState: false });
+      if (response.ok) {
+        showToast({
+          type: 'success',
+          message: data.message || t('common.appointment_rejected') || 'Appointment rejected successfully',
+          duration: 3000,
+        });
+        setRejectModalOpen(false);
+        setAppointmentToReject(null);
+        // Trigger a page reload or update via WebSocket if needed
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('appointment.cancelled', {
+            detail: { appointmentUuid: appointmentToReject }
+          }));
+        }
+      } else {
+        throw new Error(data.message || data.error || 'Failed to reject appointment');
+      }
     } catch (error: any) {
       showToast({
         type: 'error',
@@ -218,7 +207,7 @@ export function AppointmentRequests({ appointments }: AppointmentRequestsProps) 
           {appointments.length} {t("common.pending") || "pending"}
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
+      <div className="mt-3 hide-scrollbar flex flex-nowrap gap-4 overflow-x-auto overflow-y-hidden pb-2">
         {appointments.map((appointment) => (
           <RequestCard
             key={appointment.uuid}
