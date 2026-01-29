@@ -21,14 +21,11 @@ class ClientService implements ServiceInterface
         $user = Auth::user();
 
         if ($user) {
-            if (!$user->relationLoaded('veterinary')) {
-                $user->load('veterinary');
-            }
-            
-            $isVeterinarian = $user->hasRole('veterinarian') || $user->veterinary;
-            
-            if ($isVeterinarian && $user->veterinary) {
-                $veterinarianId = $user->veterinary->id;
+            // Resolve the veterinary this user belongs to (vet or receptionist)
+            $veterinary = $user->scopedVeterinary();
+
+            if ($veterinary) {
+                $veterinarianId = $veterinary->id;
                 
                $query->where(function($q) use ($veterinarianId) {
                     $q->where('veterinarian_id', $veterinarianId)
