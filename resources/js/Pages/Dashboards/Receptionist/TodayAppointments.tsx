@@ -1,6 +1,6 @@
 import { Appointment } from "@/pages/Appointments/datatable/types";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Avatar, Badge, Box, Pagination } from "@/components/ui";
+import { Avatar, Badge, Box } from "@/components/ui";
 import { 
   VideoCameraIcon,
   CheckCircleIcon,
@@ -17,8 +17,6 @@ interface TodayAppointmentsProps {
 
 export function TodayAppointments({ appointments }: TodayAppointmentsProps) {
   const { t } = useTranslation();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
 
   // Sort appointments by status priority and time
   const sortedAppointments = useMemo(() => {
@@ -44,15 +42,6 @@ export function TodayAppointments({ appointments }: TodayAppointmentsProps) {
       return timeA.localeCompare(timeB);
     });
   }, [appointments]);
-
-  // Paginate appointments
-  const paginatedAppointments = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return sortedAppointments.slice(startIndex, endIndex);
-  }, [sortedAppointments, currentPage]);
-
-  const totalPages = Math.ceil(sortedAppointments.length / itemsPerPage);
 
   const getStatusColor = (status: string): "primary" | "success" | "error" | "secondary" | "info" | "neutral" | "warning" => {
     switch (status) {
@@ -104,7 +93,7 @@ export function TodayAppointments({ appointments }: TodayAppointmentsProps) {
           {t("common.todays_schedule") || "Today's Schedule"}
         </h2>
         <span className="text-xs-plus text-gray-500 dark:text-gray-400">
-          {appointments.length} {t("common.appointments") || "appointments"}
+          {appointments.length} {t("common.appointments_breadcrumb") || "appointments"}
         </span>
       </div>
 
@@ -117,8 +106,8 @@ export function TodayAppointments({ appointments }: TodayAppointmentsProps) {
         </Box>
       ) : (
         <>
-          <div className="mt-3 space-y-3">
-            {paginatedAppointments.map((appointment) => {
+          <div className="mt-3 hide-scrollbar flex flex-nowrap gap-4 overflow-x-auto overflow-y-hidden pb-2">
+            {sortedAppointments.map((appointment) => {
               const statusColor = getStatusColor(appointment.status);
               
               return (
@@ -126,7 +115,7 @@ export function TodayAppointments({ appointments }: TodayAppointmentsProps) {
                   key={appointment.uuid}
                   className={clsx(
                     `this:${statusColor}`,
-                    "border-l-this dark:border-l-this-light border-4 border-transparent px-4 py-4 cursor-pointer hover:shadow-md transition-shadow"
+                    "min-w-[280px] max-w-xs border-l-this dark:border-l-this-light border-4 border-transparent px-4 py-4 cursor-pointer hover:shadow-md transition-shadow"
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -161,7 +150,7 @@ export function TodayAppointments({ appointments }: TodayAppointmentsProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <p className="dark:text-dark-100 text-sm font-medium text-gray-800">
-                          {appointment.appointment_type}
+                          {t(appointment.appointment_type)}
                         </p>
                         {appointment.reason_for_visit && (
                           <p className="dark:text-dark-300 mt-0.5 text-xs text-gray-500 line-clamp-1">
@@ -184,29 +173,17 @@ export function TodayAppointments({ appointments }: TodayAppointmentsProps) {
                       </span>
                     </div>
                     
-                    {appointment.is_video_conseil && (
-                      <Badge color="info" variant="soft" className="text-xs">
+                    {appointment.is_video_conseil ? (
+                      <Badge color="primary" variant="soft" className="text-xs">
                         <VideoCameraIcon className="size-3 mr-1" />
                         {t('common.video') || 'Video'}
                       </Badge>
-                    )}
+                    ) : null}
                   </div>
                 </Box>
               );
             })}
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-5 flex justify-center">
-              <Pagination
-                total={totalPages}
-                value={currentPage}
-                onChange={setCurrentPage}
-                siblings={1}
-              />
-            </div>
-          )}
         </>
       )}
     </div>
