@@ -3,16 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
-use App\Models\Client;
 use App\Models\Veterinary;
+use App\Services\ClientService;
 use App\Http\Resources\AppointmentResource;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
 
 class ReceptionistDashboardController extends Controller
 {
+    /**
+     * @var ClientService
+     */
+    protected ClientService $clientService;
+
+    public function __construct(ClientService $clientService)
+    {
+        $this->clientService = $clientService;
+    }
+
     /**
      * Display the receptionist dashboard
      */
@@ -50,11 +60,18 @@ class ReceptionistDashboardController extends Controller
                 ->count(),
         ];
 
-        // Get all clients for the quick schedule form
-        $clients = Client::orderBy('first_name')
-            ->get()
+        // Get all clients for the quick schedule form, limited to the veterinarian
+        // that the current user (receptionist or vet) is associated with.
+        //
+        // This reuses the business logic encapsulated in ClientService::getAllClients(),
+        // which already scopes clients based on the authenticated user's veterinary
+        // relationships and related consultations/appointments.
+        $clientModels = $this->clientService->getAllClients();
+
+        $clients = $clientModels
+            ->sortBy('first_name')
             ->mapWithKeys(function ($client) {
-                return [$client->uuid => $client->first_name . ' ' . $client->last_name];
+                return [$client->uuid => trim(($client->first_name ?? '') . ' ' . ($client->last_name ?? ''))];
             });
 
         // Get all veterinarians for the quick schedule form
@@ -71,12 +88,18 @@ class ReceptionistDashboardController extends Controller
             })
             ->values();
 
+        // Get the veterinary ID for the current user (receptionist or vet)
+        $user = Auth::user();
+        $veterinary = $user?->scopedVeterinary();
+        $veterinaryId = $veterinary?->uuid ?? null;
+
         return Inertia::render('Dashboards/Receptionist/index', [
             'todayAppointments' => AppointmentResource::collection($todayAppointments)->toArray(request()),
             'pendingAppointments' => AppointmentResource::collection($pendingAppointments)->toArray(request()),
             'stats' => $stats,
             'clients' => $clients,
             'veterinarians' => $veterinarians,
+            'veterinaryId' => $veterinaryId,
         ]);
     }
 }
