@@ -1,180 +1,233 @@
-// Local Imports
-import { Button, Card, Input, Pagination, PaginationItems, PaginationFirst, PaginationLast, PaginationNext, PaginationPrevious } from "@/components/ui";
+import { useEffect, useRef, useState } from "react";
+import MainLayout from "@/Layouts/MainLayout";
+import { DataTable, DataTableRef } from "@/Components/shared/table/DataTable";
 import { useTranslation } from "@/hooks/useTranslation";
-import { HiPlus } from "react-icons/hi2";
-import { router } from "@inertiajs/react";
-import { UserCard } from "./partials/UserCard";
-import MainLayout from "@/layouts/MainLayout";
-import { Page } from "@/components/shared/Page";
-import { User, UsersProps } from "./types";
-import UserFormModal from "@/components/modals/UserFormModal";
-import { useState } from "react";
 import { useToast } from "@/Components/common/Toast/ToastContext";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import UserFormModal from "@/Components/modals/UserFormModal";
+import { router } from "@inertiajs/react";
 
+import { useUserTable } from "./datatable/hooks";
+import { createColumns } from "./datatable/columns";
+import { Toolbar } from "./datatable/Toolbar";
+import type { User, UsersDatatableProps } from "./datatable/types";
+
+declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 export default function Index({
-   users,
-   roles = [],
-   filters = {}
-}: UsersProps) {
-       const [isModalOpen, setIsModalOpen] = useState(false);
-         const [selectedUser, setSelectedUser] = useState<User | null>(null);
-       const [searchQuery, setSearchQuery] = useState(filters.search || '');
-       const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-       const { showToast } = useToast();
+  users,
+  roles = [],
+  veterinarians = [],
+  filters,
+  old,
+  errors,
+}: UsersDatatableProps) {
+  const { t } = useTranslation();
+  const { showToast } = useToast();
+  const tableRef = useRef<DataTableRef<User>>(null);
+  const [rowSelection, setRowSelection] = useState({});
 
-   const { t } = useTranslation();
+  const {
+    users: tableData,
+    isModalOpen,
+    setIsModalOpen,
+    selectedUser,
+    setSelectedUser,
 
-   const handleDeleteUser = async (user: User) => {
-     // @ts-ignore
-     router.delete(route('users.destroy', user.uuid), {
-       onSuccess: () => {
-         showToast({
-           type: 'success',
-           message: t('common.user_deleted_success'),
-           duration: 3000,
-         });
-         // Refresh the page to update the user list
-         router.visit(window.location.href, {
-           preserveState: false,
-           preserveScroll: true
-         });
-       },
-       onError: () => {
-         showToast({
-           type: 'error',
-           message: t('common.user_delete_error'),
-           duration: 3000,
-         });
-       }
-     });
-   };
-   
-  const usersList = users?.data.data || [];
-  const meta = users?.meta || null;
-  
-  const breadcrumbs: BreadcrumbItem[] = [
-    { title: t('common.users'), path: "/" },
-    { title: t('common.users_management')},
-  ];
+    // Single delete modal
+    singleDeleteModalOpen,
+    confirmSingleDeleteLoading,
+    singleDeleteSuccess,
+    setSingleDeleteSuccess,
+    selectedRowForDelete,
+    openSingleDeleteModal,
+    closeSingleDeleteModal,
+
+    // Bulk delete modal
+    bulkDeleteModalOpen,
+    confirmBulkDeleteLoading,
+    setConfirmBulkDeleteLoading,
+    setBulkDeleteModalOpen,
+
+    tableSettings,
+    globalFilter,
+    setGlobalFilter,
+    sorting,
+    setSorting,
+    columnVisibility,
+    setColumnVisibility,
+    columnPinning,
+    setColumnPinning,
+    tableMeta,
+  } = useUserTable({
+    initialData: users as any,
+    initialFilters: filters,
+  });
+
+  const columns = createColumns({
+    setSelectedUser,
+    setIsModalOpen,
+    onDeleteRow: openSingleDeleteModal,
+    t,
+  });
+
+  const pagination = {
+    pageIndex: (users.meta?.current_page || 1) - 1,
+    pageSize: filters.per_page || 12,
+    total: users.meta?.total || 0,
+    onChange: ({ pageIndex, pageSize }: { pageIndex: number; pageSize: number }) => {
+      const sortBy = sorting.length > 0 ? sorting[0].id : "created_at";
+      const sortDirection = sorting.length > 0 ? (sorting[0].desc ? "desc" : "asc") : "desc";
+      const search = globalFilter?.trim() ? globalFilter : undefined;
+
+      router.visit(
+        route("users.index", {
+          page: pageIndex + 1,
+          per_page: pageSize,
+          search,
+          sort_by: sortBy,
+          sort_direction: sortDirection,
+        }),
+        {
+          preserveScroll: true,
+          preserveState: false,
+          replace: true,
+        },
+      );
+    },
+  };
+
+  const handleSingleDeleteRowWithToast = () => {
+    tableMeta.deleteRow?.(selectedRowForDelete);
+    setTimeout(() => {
+      closeSingleDeleteModal();
+      showToast({
+        type: "success",
+        message: t("common.user_deleted_success"),
+        duration: 3000,
+      });
+    }, 350);
+  };
+
+  const handleBulkDeleteWithToast = async () => {
+    const selectedRows = tableRef.current?.table.getSelectedRowModel().rows || [];
+    if (!selectedRows.length) return;
+
+    setConfirmBulkDeleteLoading(true);
+    try {
+      await tableMeta.deleteRows?.(selectedRows);
+      setRowSelection({});
+      showToast({
+        type: "success",
+        message: t("common.users_deleted_success") || `${selectedRows.length} users deleted successfully`,
+        duration: 3000,
+      });
+      setBulkDeleteModalOpen(false);
+    } finally {
+      setConfirmBulkDeleteLoading(false);
+    }
+  };
+
+  // Close single delete modal after success "flash"
+  useEffect(() => {
+    if (singleDeleteSuccess) {
+      setTimeout(() => {
+        closeSingleDeleteModal();
+        setSingleDeleteSuccess(false);
+      }, 1200);
+    }
+  }, [singleDeleteSuccess]);
 
   return (
     <MainLayout>
-            <Page title={t('common.users')}>
-          <div className="transition-content px-(--margin-x) pb-6 my-5">
-      {/* Header with Search and Create Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('common.manage_users')}
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-        <Input
-              classNames={{
-                input: "text-xs-plus h-9 rounded-full",
-                root: "max-sm:hidden",
-              }}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                // Clear existing timeout
-                if (searchTimeout) {
-                  clearTimeout(searchTimeout);
+      <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
+        <div className="transition-content w-full pb-5">
+          <DataTable<User>
+            ref={tableRef}
+            data={tableData?.data?.data || []}
+            columns={columns}
+            pagination={pagination as any}
+            sorting={sorting}
+            onSortingChange={setSorting}
+            globalFilter={globalFilter}
+            onGlobalFilterChange={setGlobalFilter}
+            tableSettings={tableSettings}
+            enableRowSelection={true}
+            rowSelection={rowSelection}
+            onRowSelectionChange={setRowSelection}
+            bulkActions={{
+              onDelete: () => {
+                const selectedRows = tableRef.current?.table.getSelectedRowModel().rows;
+                if (selectedRows && selectedRows.length > 0) {
+                  setBulkDeleteModalOpen(true);
                 }
-                // Set new timeout for debounced search
-                const timeout = setTimeout(() => {
-                  router.visit(route('users.index') as any, {
-                    data: { search: e.target.value, page: 1 },
-                    preserveState: true,
-                    preserveScroll: true,
-                  });
-                }, 500);
-                setSearchTimeout(timeout);
-              }}              placeholder={t('common.search_users')}
-              className=""
-              prefix={<MagnifyingGlassIcon className="size-4.5" />}
-            />
-          
-          <Button
-            onClick={() => {
-              setSelectedUser(null);
-              setIsModalOpen(true);
+              },
+              deleteLabel: t("common.delete"),
             }}
-            variant="filled"
-            color="primary"
-            className="h-8 gap-2 rounded-md px-3"
-          >
-            <HiPlus className="w-4 h-4" />
-            {/* <span>{t('common.create_users')}</span> */}
-          </Button>
+            slots={{
+              toolbar: (table) => (
+                <Toolbar
+                  table={table}
+                  globalFilter={globalFilter}
+                  setGlobalFilter={setGlobalFilter}
+                  sorting={sorting}
+                  setSelectedUser={setSelectedUser}
+                  setIsModalOpen={setIsModalOpen}
+                />
+              ),
+            }}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={setColumnVisibility}
+            columnPinning={columnPinning}
+            onColumnPinningChange={setColumnPinning}
+            meta={tableMeta}
+          />
         </div>
       </div>
 
-      {/* users Grid */}
-      {usersList.length === 0 ? (
-        <Card className="p-6 text-center">
-          <p className="text-gray-500">{t('common.no_users_found')}</p>
-        </Card>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6">
-            {usersList.map((user) => (
-              <UserCard
-                key={user.uuid}
-                user={user}
-                onEdit= {() => {
-            setSelectedUser(user);
-            setIsModalOpen(true);
-          }}
-                onDelete={() => handleDeleteUser(user)}
-              />
-            ))}
-          </div>
+      {/* Single Delete Confirmation Modal */}
+      <ConfirmModal
+        show={singleDeleteModalOpen}
+        onClose={closeSingleDeleteModal}
+        messages={{
+          pending: {
+            description: t("common.confirm_delete_user", {
+              name: selectedRowForDelete?.original?.name || "",
+            }),
+          },
+        }}
+        onOk={handleSingleDeleteRowWithToast}
+        confirmLoading={confirmSingleDeleteLoading}
+        state="pending"
+      />
 
-          {/* Pagination */}
-          {meta && meta.last_page > 1 && (
-            <div className="mt-6 flex justify-center">
-              <Pagination
-                total={meta.last_page}
-                value={meta.current_page}
-                onChange={(page) => {
-                  router.visit(route('users.index') as any, {
-                    data: { 
-                      page: page, 
-                      per_page: meta.per_page,
-                      search: searchQuery 
-                    },
-                    preserveState: true,
-                    preserveScroll: true,
-                  });
-                }}
-                className="flex items-center gap-1"
-              >
-                <PaginationPrevious />
-                <PaginationItems />
-                <PaginationNext />
-              </Pagination>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-    </Page>
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmModal
+        show={bulkDeleteModalOpen}
+        onClose={() => setBulkDeleteModalOpen(false)}
+        messages={{
+          pending: {
+            description:
+              t("common.confirm_delete_users") ||
+              "Are you sure you want to delete the selected users?",
+          },
+        }}
+        onOk={handleBulkDeleteWithToast}
+        confirmLoading={confirmBulkDeleteLoading}
+        state="pending"
+      />
 
-         <UserFormModal
-                isOpen={isModalOpen}
-                onClose={() => {
-                    setIsModalOpen(false);
-                    setSelectedUser(null);
-                }}
-                user={selectedUser}
-                roles={roles}
-            />
+      {/* User Form Modal */}
+      <UserFormModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser as any}
+        roles={roles}
+        veterinarians={veterinarians}
+      />
     </MainLayout>
   );
 }

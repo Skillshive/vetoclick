@@ -25,6 +25,7 @@ export interface UserFormData {
   email: string;
   image?: File | null;
   role?: string; // Single role UUID
+  veterinarian_id?: string; // Veterinarian UUID for receptionist role
   created_at: string;
 }
 

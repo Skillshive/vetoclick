@@ -7,7 +7,7 @@ import { Avatar, Button, Card, Badge } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getImageUrl } from "@/utils/imageHelper";
 import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
-import { User } from "../types";
+import { User } from "@/pages/Users/types";
 
 export function UserCard({
   user,
