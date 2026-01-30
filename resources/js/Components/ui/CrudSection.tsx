@@ -1,5 +1,5 @@
 import { useState, ReactNode } from 'react';
-import { HOSPILOG_COLORS } from '@/constants/colors';
+import { Vetoclick_COLORS } from '@/constants/colors';
 import { PlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Input, Button } from '@/components/ui';
 import { GenericCard } from '@/components/ui/GenericCard';
@@ -97,8 +97,8 @@ export function CrudSection<T>({
     return (
       <GenericCard
         avatarInitial={avatarValue}
-        avatarColor={HOSPILOG_COLORS.primary}
-        avatarTextColor={HOSPILOG_COLORS.white}
+        avatarColor={Vetoclick_COLORS.primary}
+        avatarTextColor={Vetoclick_COLORS.white}
         title={titleValue}
         subtitle={subtitleValue}
         description={descriptionValue}
@@ -145,8 +145,8 @@ export function CrudSection<T>({
             type="button"
             onClick={onAdd}
             style={{
-              backgroundColor: HOSPILOG_COLORS.primary,
-              color: HOSPILOG_COLORS.white,
+              backgroundColor: Vetoclick_COLORS.primary,
+              color: Vetoclick_COLORS.white,
               height: '2.25rem', // h-9
               padding: '0 1rem',
               display: 'flex',
@@ -203,7 +203,7 @@ export function CrudSection<T>({
                     <button
                       key={l + 1}
                       className={`px-3 py-1 rounded-full border text-sm ${current === l + 1 ? 'bg-primary text-white' : ''}`}
-                      style={current === l + 1 ? { backgroundColor: HOSPILOG_COLORS.primary, color: HOSPILOG_COLORS.white } : {}}
+                      style={current === l + 1 ? { backgroundColor: Vetoclick_COLORS.primary, color: Vetoclick_COLORS.white } : {}}
                       onClick={() => onPageChange && onPageChange(l + 1)}
                     >
                       {l + 1}
@@ -217,7 +217,7 @@ export function CrudSection<T>({
                 <button
                   key={i}
                   className={`px-3 py-1 rounded-full border text-sm ${current === i ? 'bg-primary text-white' : ''}`}
-                  style={current === i ? { backgroundColor: HOSPILOG_COLORS.primary, color: HOSPILOG_COLORS.white } : {}}
+                  style={current === i ? { backgroundColor: Vetoclick_COLORS.primary, color: Vetoclick_COLORS.white } : {}}
                   onClick={() => onPageChange && onPageChange(i)}
                   disabled={current === i}
                 >

@@ -21,12 +21,9 @@ import { Appointment } from "@/pages/Appointments/datatable/types"; // Ensure th
 import "./main.css";
 import { useTranslation } from '@/hooks/useTranslation';
 import { Spinner, Button, Badge, Input } from '@/components/ui';
-import { ConfirmModal } from '@/components/shared/ConfirmModal';
 import { DatePicker } from '@/components/shared/form/Datepicker';
 import ReactSelect from '@/components/ui/ReactSelect';
-import { router } from '@inertiajs/react';
 import { useToast } from '@/Components/common/Toast/ToastContext';
-import { CalendarIcon } from '@heroicons/react/24/outline';
 import { vaccinationSchema } from '@/schemas/vaccinationSchema';
 
 type TranslateFn = (key: string, replacements?: Record<string, string | number>) => string;
@@ -39,7 +36,6 @@ interface MedicalHistoryData {
     prescriptions: any[];
 }
 
-// --- Helper Component for Pet/Client Details ---
 const DetailItem = ({ label, value, className = '' }: { label: string, value: string, className?: string }) => (
     <div className={`${className}`}>
         <dt className="text-sm font-medium text-gray-500">{label}</dt>
@@ -47,7 +43,6 @@ const DetailItem = ({ label, value, className = '' }: { label: string, value: st
     </div>
 );
 
-// --- Updated Tab Content Components with real data ---
 const RecentConsultations = ({ consultations, loading, t }: { consultations?: any[], loading: boolean, t: TranslateFn }) => (
     <div className="bg-white rounded-lg border shadow-sm">
         <div className="flex justify-between items-center p-4 border-b">
@@ -101,7 +96,7 @@ const RecentConsultations = ({ consultations, loading, t }: { consultations?: an
                                     {new Date(consultation.date).toLocaleDateString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {consultation.appointment_type || 'N/A'}
+                                    {t(consultation.appointment_type)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getStatusBadge()}
@@ -112,7 +107,7 @@ const RecentConsultations = ({ consultations, loading, t }: { consultations?: an
                                             {t('common.video') || 'Video'}
                                         </Badge>
                                     ) : (
-                                        <Badge color="info" className="text-xs">
+                                        <Badge color="primary" className="text-xs">
                                             {t('common.in_person') || 'In-Person'}
                                         </Badge>
                                     )}

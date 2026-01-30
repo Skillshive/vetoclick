@@ -1,5 +1,5 @@
-export const APP_NAME = "Hospilog";
-export const APP_KEY = "hospilog";
+export const APP_NAME = "Vetoclick";
+export const APP_KEY = "Vetoclick";
 
 // Redirect Paths
 export const REDIRECT_URL_KEY = "redirect";

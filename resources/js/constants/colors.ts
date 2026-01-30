@@ -199,14 +199,14 @@ const colors = {
 
 export { twColors, colors };
 
-export const HOSPILOG_COLORS = {
+export const Vetoclick_COLORS = {
   primary: "#1B2441",      // Dark Navy Blue
   secondary: "#4DB9AD",    // Teal
   white: "#ffffff",
   black: "#000000"
 };
 
-export const HOSPILOG_INITIALS_COLORS = [
+export const Vetoclick_INITIALS_COLORS = [
   "#1BA3B8", // Primary dark teal
   "#17959F", // Darker teal variation
   "#0F8A9D", // Deep teal shadows
