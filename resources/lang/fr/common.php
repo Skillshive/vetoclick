@@ -223,6 +223,11 @@ return [
     'rows_per_page' => 'Lignes par page',
     'showing' => 'Affichage de',
     'to' => 'à',
+    'session' => 'Session',
+    'unsaved_changes' => 'Modifications non enregistrées',
+    'unsaved_changes_message' => 'Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir changer de jour ?',
+    'discard' => 'Ignorer',
+    'save_changes' => 'Enregistrer les modifications',
     'results' => 'résultats',
     'no_data' => 'Aucune donnée disponible',
     'loading_data' => 'Chargement des données...',
@@ -603,6 +608,8 @@ return [
     'user_delete_error' => 'Échec de la suppression de l\'utilisateur',
     'user_not_found' => 'Utilisateur introuvable',
     'confirm_delete_user' => 'Êtes-vous sûr de vouloir supprimer l\'utilisateur ":name" ? Une fois supprimé, il ne peut pas être restauré.',
+    'confirm_delete_users' => 'Êtes-vous sûr de vouloir supprimer les utilisateurs sélectionnés ? Une fois supprimés, ils ne peuvent pas être restaurés.',
+    'users_deleted_success' => 'Utilisateurs supprimés avec succès',
 
     // User modal specific translations
     'edit_user_modal' => 'Modifier l\'utilisateur',
@@ -1087,6 +1094,9 @@ return [
         'updating' => 'Mise à jour...',
         'update_password' => 'Mettre à jour le mot de passe',
         'password_updated_successfully' => 'Mot de passe mis à jour avec succès',
+        'morning' => 'Matin',
+        'noon' => 'Midi',
+        'afternoon' => 'Après-midi',
     ],
 
     // Appearance settings translations
@@ -1224,6 +1234,11 @@ return [
             'waiting' => 'En attente...',
             'until_call' => "jusqu'à l'ouverture de l'appel",
         ],
+        'recent_activity' => 'Activité Récente',
+        'appointment_with' => 'Rendez-vous avec',
+        'consultation_with' => 'Consultation avec',
+        'veterinarian' => 'Vétérinaire',
+        'no_recent_activity' => 'Aucune activité récente',
     ],
     'vet_dashboard' => [
         'page_title' => 'Tableau de Bord Analytique CRM',

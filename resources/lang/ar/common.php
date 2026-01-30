@@ -223,6 +223,11 @@ return [
     'rows_per_page' => 'صفوف لكل صفحة',
     'showing' => 'إظهار',
     'to' => 'إلى',
+    'session' => 'الجلسة',
+    'unsaved_changes' => 'تغييرات غير محفوظة',
+    'unsaved_changes_message' => 'لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد التبديل بين الأيام؟',
+    'discard' => 'تجاهل',
+    'save_changes' => 'حفظ التغييرات',
     'results' => 'نتائج',
     'no_data' => 'لا توجد بيانات متاحة',
     'loading_data' => 'جاري تحميل البيانات...',
@@ -580,6 +585,8 @@ return [
     'user_delete_error' => 'فشل في حذف المستخدم',
     'user_not_found' => 'المستخدم غير موجود',
     'confirm_delete_user' => 'هل أنت متأكد أنك تريد حذف المستخدم ":name"؟ بمجرد الحذف، لا يمكن استعادته.',
+    'confirm_delete_users' => 'هل أنت متأكد أنك تريد حذف المستخدمين المحددين؟ بمجرد الحذف، لا يمكن استعادته.',
+    'users_deleted_success' => 'تم حذف المستخدمين بنجاح',
 
     // User modal specific translations
     'edit_user_modal' => 'تعديل مستخدم',
@@ -986,6 +993,9 @@ return [
         'updating' => 'جاري التحديث...',
         'update_password' => 'تحديث كلمة المرور',
         'password_updated_successfully' => 'تم تحديث كلمة المرور بنجاح',
+        'morning' => 'صباح',
+        'noon' => 'ظهر',
+        'afternoon' => 'بعد الظهر',
     ],
 
     // Appearance settings translations
@@ -1113,6 +1123,11 @@ return [
             'waiting' => 'في الانتظار...',
             'until_call' => 'حتى يفتح الاتصال',
         ],
+        'recent_activity' => 'النشاط الأخير',
+        'appointment_with' => 'موعد مع',
+        'consultation_with' => 'استشارة مع',
+        'veterinarian' => 'طبيب بيطري',
+        'no_recent_activity' => 'لا يوجد نشاط حديث',
     ],
     'vet_dashboard' => [
         'projects' => [
