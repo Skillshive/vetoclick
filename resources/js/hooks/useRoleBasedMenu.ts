@@ -47,14 +47,14 @@ export const useRoleBasedMenu = () => {
     };
 
     const filterMenuByPermissions = (menuItems: MenuItem[]): MenuItem[] => {        
-        return menuItems.filter(item => {
+        return menuItems.map(item => {
             // Check if item has permission requirements
             if (item.permission && !hasPermission(item.permission)) {
-                return false;
+                return null;
             }
 
             if (item.permissions && !hasAnyPermission(item.permissions)) {
-                return false;
+                return null;
             }
 
             // If item is a group, filter its submenu
@@ -63,15 +63,34 @@ export const useRoleBasedMenu = () => {
 
                 // If no submenu items are visible, hide the group
                 if (filteredSubmenu.length === 0) {
-                    return false;
+                    return null;
+                }
+
+                // If appointments group has only one child and user only has appointments.view,
+                // convert it to a single item
+                if (item.id === 'appointments' && filteredSubmenu.length === 1) {
+                    const singleChild = filteredSubmenu[0];
+                    // Check if user only has appointments.view (not appointments.calendar)
+                    const hasViewPermission = hasPermission('appointments.view');
+                    const hasCalendarPermission = hasPermission('appointments.calendar');
+                    
+                    if (hasViewPermission && !hasCalendarPermission && singleChild.id === 'allAppointments') {
+                        // Convert group to single item
+                        return {
+                            ...item,
+                            type: 'item' as const,
+                            path: singleChild.path,
+                            submenu: undefined,
+                        };
+                    }
                 }
 
                 // Update the item with filtered submenu
                 item.submenu = filteredSubmenu;
             }
 
-            return true;
-        });
+            return item;
+        }).filter((item): item is MenuItem => item !== null);
     };
 
     const getMenuItems = (): MenuItem[] => {
