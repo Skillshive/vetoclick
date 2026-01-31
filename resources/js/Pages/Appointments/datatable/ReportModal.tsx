@@ -20,8 +20,11 @@ export function ReportModal({ show, onClose, appointment }: ReportModalProps) {
   const { showToast } = useToast();
   const handleReport = () => {
     if (appointment) {
+      const year = startDate.getFullYear();
+      const month = String(startDate.getMonth() + 1).padStart(2, '0');
+      const day = String(startDate.getDate()).padStart(2, '0');
       router.post(route('appointments.report', appointment.uuid), {
-        appointment_date: startDate.toISOString().split('T')[0],
+        appointment_date: `${year}-${month}-${day}`,
         start_time: startDate.toTimeString().split(' ')[0],
       }, {
         onSuccess: () => {
