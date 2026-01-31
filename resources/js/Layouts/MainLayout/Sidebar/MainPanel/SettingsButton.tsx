@@ -6,52 +6,10 @@ import SettingIcon from "@/assets/dualicons/setting.svg?react";
 export function SettingsButton() {
   const { setActiveSegmentPath, open, isExpanded } = useSidebarContext();
   const { t } = useTranslation();
-  const { hasPermission, hasAnyRole } = useRoleBasedMenu();
   const pathname = window.location.pathname;
 
-  // Check if user is admin or super-admin - always show settings for them
-  const isAdmin = hasAnyRole(['admin', 'super-admin']);
-  const isVeterinarian = hasAnyRole(['veterinarian']);
-
-  // Settings menu items with permission checks
-  const allSettingsItems = [
-    { 
-      permission: "settings.view",
-      roles: ["admin", "super-admin", "veterinarian"]
-    },
-    { 
-      permission: "holidays.view",
-      roles: ["super-admin", "veterinarian"]
-    },
-    { 
-      permission: "availability.view",
-      roles: ["super-admin", "veterinarian"]
-    },
-    { 
-      permission: "roles.view",
-      roles: ["admin", "super-admin"]
-    },
-    { 
-      permission: "subscription-plans.view",
-      roles: ["admin", "super-admin"]
-    }
-  ];
-
-  const settingsItems = allSettingsItems.filter(item => {
-    if (item.permission && hasPermission(item.permission)) {
-      return true;
-    }
-    if (item.roles && item.roles.length > 0 && hasAnyRole(item.roles)) {
-      return true;
-    }
-    return false;
-  });
-
-  const shouldShowSettings = isAdmin || isVeterinarian || settingsItems.length > 1;
-  
-  if (!shouldShowSettings) {
-    return null;
-  }
+  // Always show settings button for all users
+  // The PrimePanel will filter settings items based on permissions
 
   const isSettingsActive = pathname.startsWith('/settings/') || 
                           pathname === '/roles' || 
