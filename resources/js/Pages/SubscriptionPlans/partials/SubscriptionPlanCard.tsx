@@ -188,25 +188,25 @@ export function SubscriptionPlanCard({ plan, onEdit, onDelete, onToggle, isToggl
       {(plan.max_clients || plan.max_pets || plan.max_appointments) && (
         <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
           {plan.max_clients && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-200 dark:border-blue-800">
-              <UsersIcon className="size-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-full border border-primary-200 dark:border-primary-800">
+              <UsersIcon className="size-4 text-primary-600 dark:text-primary-400" />
+              <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
                 {plan.max_clients === -1 ? '∞' : plan.max_clients}
               </span>
             </div>
           )}
           {plan.max_pets && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-full border border-purple-200 dark:border-purple-800">
-              <FaPaw className="size-3.5 text-purple-600 dark:text-purple-400" />
-              <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-full border border-primary-200 dark:border-primary-800">
+              <FaPaw className="size-3.5 text-primary-600 dark:text-primary-400" />
+              <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
                 {plan.max_pets === -1 ? '∞' : plan.max_pets}
               </span>
             </div>
           )}
           {plan.max_appointments && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-full border border-green-200 dark:border-green-800">
-              <CalendarIcon className="size-4 text-green-600 dark:text-green-400" />
-              <span className="text-xs font-medium text-green-700 dark:text-green-300">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-full border border-primary-200 dark:border-primary-800">
+              <CalendarIcon className="size-4 text-primary-600 dark:text-primary-400" />
+              <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
                 {plan.max_appointments === -1 ? '∞' : plan.max_appointments}
               </span>
             </div>
