@@ -438,7 +438,7 @@ export default function Show({ pet, consultations: initialConsultations, vaccina
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <h4 className="font-semibold text-gray-800 dark:text-gray-200">
-                                {consultation.appointment_type || t('common.consultation') || 'Consultation'}
+                                {t(consultation.appointment_type)}
                               </h4>
                               {consultation.is_video_conseil  ? (
                                 <Badge color="info" variant="soft" className="text-xs">
