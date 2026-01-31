@@ -22,6 +22,8 @@ interface OverlayNotification {
   time: string;
   appointmentId?: string;
   appointmentUuid?: string;
+  appointment?: any;
+  rawData?: any;
 }
 
 interface NotificationContextType {
@@ -68,18 +70,33 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       getLatestNotifications(10)
         .then((response) => {
           if (response.success && response.notifications) {
-            const converted = response.notifications.map((notification) => ({
-              id: notification.id, // Use the actual notification ID from database
-              title: notification.data.title ? tRef.current(notification.data.title) : tRef.current('common.notification'),
-              description: notification.data.message ? tRef.current(notification.data.message) : '',
-              type: (notification.data.type === 'appointment_confirmed' || notification.data.type === 'appointment.confirmed' ? 'task' :
-                     notification.data.type === 'appointment_cancelled' || notification.data.type === 'appointment.cancelled' ? 'security' :
-                     notification.data.type === 'appointment_reminder' || notification.data.type === 'appointment.reminder' ? 'task' :
-                     'message') as NotificationType,
-              time: formatTimeAgo(new Date(notification.created_at)),
-              appointmentId: notification.data.appointment?.id?.toString(),
-              appointmentUuid: notification.data.appointment?.uuid,
-            }));
+            const converted = response.notifications.map((notification) => {
+              const appointment = notification.data.appointment;
+              const replacements = appointment ? {
+                vetName: appointment.veterinary?.name || 
+                         (appointment.veterinary?.user?.firstname && appointment.veterinary?.user?.lastname
+                           ? `${appointment.veterinary.user.firstname} ${appointment.veterinary.user.lastname}`
+                           : 'the veterinarian'),
+                petName: appointment.pet?.name || 'your pet',
+                date: appointment.appointment_date ? new Date(appointment.appointment_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
+                time: appointment.start_time ? (typeof appointment.start_time === 'string' ? appointment.start_time.substring(0, 5) : appointment.start_time) : '',
+              } : {};
+              
+              return {
+                id: notification.id, // Use the actual notification ID from database
+                title: notification.data.title ? (notification.data.title.startsWith('common.') ? tRef.current(notification.data.title) : notification.data.title) : tRef.current('common.notification'),
+                description: notification.data.message ? (notification.data.message.startsWith('common.') ? tRef.current(notification.data.message, replacements) : notification.data.message) : '',
+                type: (notification.data.type === 'appointment_confirmed' || notification.data.type === 'appointment.confirmed' ? 'task' :
+                       notification.data.type === 'appointment_cancelled' || notification.data.type === 'appointment.cancelled' ? 'security' :
+                       notification.data.type === 'appointment_reminder' || notification.data.type === 'appointment.reminder' ? 'task' :
+                       'message') as NotificationType,
+                time: formatTimeAgo(new Date(notification.created_at)),
+                appointmentId: appointment?.id?.toString(),
+                appointmentUuid: appointment?.uuid,
+                appointment: appointment,
+                rawData: notification.data,
+              };
+            });
             
             const newNotifications = response.notifications.filter(
               (notif) => !prevNotificationIdsRef.current.has(notif.id),
@@ -514,6 +531,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       time: 'Just now',
       appointmentId: appointment?.id?.toString(),
       appointmentUuid: appointment?.uuid,
+      appointment: appointment,
+      rawData: notificationData,
     };
 
     setOverlayNotifications((prev) => {

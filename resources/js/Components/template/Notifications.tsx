@@ -43,6 +43,8 @@ interface Notification {
   description: string;
   type: NotificationType;
   time: string;
+  appointment?: any;
+  rawData?: any;
 }
 
 interface NotificationItemProps {
@@ -75,7 +77,7 @@ const types: Record<NotificationType, NotificationTypeInfo> = {
 
 export function Notifications() {
   const { overlayNotifications, removeOverlayNotification } = useNotification();
-
+  const { t } = useTranslation();
   // Convert overlay notifications to the format expected by this component
   const notifications: Notification[] = overlayNotifications.map((notif) => ({
     id: notif.id,
@@ -83,6 +85,10 @@ export function Notifications() {
     description: notif.description,
     type: notif.type,
     time: notif.time,
+    appointment: (notif as any).appointment,
+    appointmentId: (notif as any).appointmentId,
+    appointmentUuid: (notif as any).appointmentUuid,
+    rawData: (notif as any).rawData,
   }));
 
 
@@ -133,7 +139,7 @@ export function Notifications() {
                 <div className="flex items-center justify-between px-4 p-2">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-gray-800 dark:text-dark-100">
-                      Notifications
+                      {t('common.notifications')}
                     </h3>
                     {notifications.length > 0 && (
                       <Badge
@@ -192,23 +198,85 @@ function Empty() {
 }
 
 function NotificationItem({ data, remove }: NotificationItemProps) {
+  const { t } = useTranslation();
   const Icon = types[data.type].Icon;
+  
+  // Translate title and message, handling appointment data if present
+  const getTranslatedTitle = () => {
+    // If title is a translation key (starts with 'common.'), translate it
+    if (data.title?.startsWith('common.')) {
+      return t(data.title);
+    }
+    // Otherwise, it's already translated
+    return data.title;
+  };
+  
+  const getTranslatedMessage = () => {
+    // If description is a translation key (starts with 'common.'), translate it with replacements
+    if (data.description?.startsWith('common.')) {
+      // If we have appointment data, use it for replacements
+      if (data.appointment || data.rawData?.appointment) {
+        const appointment = data.appointment || data.rawData?.appointment;
+        const replacements: Record<string, string> = {};
+        
+        // Get vet name
+        if (appointment.veterinary?.name) {
+          replacements.vetName = appointment.veterinary.name;
+        } else if (appointment.veterinary?.user?.firstname && appointment.veterinary?.user?.lastname) {
+          replacements.vetName = `${appointment.veterinary.user.firstname} ${appointment.veterinary.user.lastname}`;
+        } else {
+          replacements.vetName = 'the veterinarian';
+        }
+        
+        // Get pet name
+        if (appointment.pet?.name) {
+          replacements.petName = appointment.pet.name;
+        } else {
+          replacements.petName = 'your pet';
+        }
+        
+        // Get date
+        if (appointment.appointment_date) {
+          const date = new Date(appointment.appointment_date);
+          replacements.date = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+        
+        // Get time
+        if (appointment.start_time) {
+          if (typeof appointment.start_time === 'string') {
+            replacements.time = appointment.start_time.substring(0, 5); // Extract HH:mm from HH:mm:ss
+          } else {
+            replacements.time = appointment.start_time;
+          }
+        }
+        
+        return t(data.description, replacements);
+      }
+      // No appointment data, just translate without replacements
+      return t(data.description);
+    }
+    // Already translated, return as-is
+    return data.description;
+  };
+  
   return (
-    <div className="group flex items-center justify-between gap-3">
+    <div className="group flex items-center justify-between gap-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-3 border border-primary-100 dark:border-primary-800">
       <div className="flex min-w-0 gap-3">
         <Avatar
           size={10}
-          initialColor={types[data.type].color}
+          initialColor="primary"
           classNames={{ display: "rounded-lg" }}
         >
-          <Icon className="size-4.5" />
+          <Icon className="size-4.5 text-white" />
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="-mt-0.5 font-medium text-gray-800 dark:text-dark-100">
-            {data.title}
+          <p className="-mt-0.5 font-medium text-primary-900 dark:text-primary-100">
+            {getTranslatedTitle()}
           </p>
-          <div className="mt-0.5 text-xs break-words">{data.description}</div>
-          <div className="mt-1 text-xs text-gray-400 dark:text-dark-300">
+          <div className="mt-0.5 text-xs break-words text-primary-800 dark:text-primary-200">
+            {getTranslatedMessage()}
+          </div>
+          <div className="mt-1 text-xs text-primary-600 dark:text-primary-400">
             {data.time}
           </div>
         </div>
@@ -217,7 +285,7 @@ function NotificationItem({ data, remove }: NotificationItemProps) {
         variant="flat"
         isIcon
         onClick={() => remove(data.id)}
-        className="size-7 rounded-full opacity-0 group-hover:opacity-100 ltr:-mr-2 rtl:-ml-2"
+        className="size-7 rounded-full opacity-0 group-hover:opacity-100 ltr:-mr-2 rtl:-ml-2 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-800"
       >
         <ArchiveBoxXMarkIcon className="size-4" />
       </Button>
