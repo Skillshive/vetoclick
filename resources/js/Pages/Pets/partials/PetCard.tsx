@@ -12,7 +12,7 @@ import { Fragment } from "react";
 import clsx from "clsx";
 
 // Local Imports
-import { Avatar, Button, Card } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPetAvatarUrl } from "@/utils/imageHelper";
 import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
@@ -147,21 +147,15 @@ export function PetCard({
       </div>
 
       {/* Card Content */}
-      <div className="flex gap-6 pr-10">
+      <div className="flex gap-6 pr-10 items-stretch">
         {/* Left Section - Profile Picture */}
-        <div className="flex-shrink-0">
-          <div className="w-28 h-28 rounded-xl bg-gray-50 dark:bg-dark-600 overflow-hidden border border-gray-100 dark:border-dark-500">
-            <Avatar
-              size={24}
-              src={getPetAvatarUrl(pet)}
-              name={pet.name}
-              classNames={{ 
-                display: "w-full h-full rounded-xl object-cover",
-                root: "w-full h-full"
-              }}
-              initialColor="auto"
-            />
-          </div>
+        <div className="flex-shrink-0 w-28">
+          <div 
+            className="w-full h-full rounded-xl bg-gray-50 dark:bg-dark-600 overflow-hidden border border-gray-100 dark:border-dark-500 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${getPetAvatarUrl(pet)})`
+            }}
+          />
         </div>
 
         {/* Right Section - Details */}
