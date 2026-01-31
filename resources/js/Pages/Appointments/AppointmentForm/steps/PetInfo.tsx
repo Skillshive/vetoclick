@@ -599,7 +599,14 @@ export function PetInfo({
                   onChange={(dates: Date[]) => {
                     const date = dates[0] || null;
                     setDob(date);
-                    field.onChange(date ? date.toISOString().split('T')[0] : '');
+                    if (date) {
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      field.onChange(`${year}-${month}-${day}`);
+                    } else {
+                      field.onChange('');
+                    }
                   }}
                   placeholder={t('common.select_date')}
                   options={{

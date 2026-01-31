@@ -465,7 +465,10 @@ export function AppointmentDetails({
             onChange={(dates: Date[]) => {
               if (dates && dates.length > 0) {
                 const date = dates[0];
-                const dateStr = date.toISOString().split('T')[0];
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
                 const timeStr = date.toTimeString().split(' ')[0].substring(0, 5);
                 setValue('appointment_date', dateStr);
                 setValue('start_time', timeStr);
