@@ -6,6 +6,13 @@ import AppointmentIcon from "@/assets/dualicons/calendar.svg?react";
 import UserGroupIcon from "@/assets/dualicons/users.svg?react";
 import BoxIcon from "@/assets/dualicons/box.svg?react";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
+import { 
+  UserIcon, 
+  PaintBrushIcon, 
+  CalendarIcon,
+  CalendarDaysIcon,
+  CreditCardIcon,
+} from "@heroicons/react/24/outline";
 
 const menuConfig: MenuConfig[] = [
   {
@@ -39,20 +46,20 @@ const menuConfig: MenuConfig[] = [
     ],
   },
   {
-    id: 'animals',
-    title: 'common.menu.animals_management',
+    id: 'pets',
+    title: 'common.menu.pets',
     icon: PetIcon,
-    type: 'group',
+    path: route('pets.index'),
+    type: 'item',
+    permission: 'pets.view',
+  },
+  {
+    id: 'pets',
+    title: 'common.menu.species',
+    icon: PetIcon,
+    path: route('species.index'),
+    type: 'item',
     permission: 'species.view',
-    children: [
-      {
-        id: 'allAnimals',
-        title: 'common.menu.species',
-        path: route('species.index'),
-        type: 'item',
-        permission: 'species.view',
-      }
-    ],
   },
   {
     id: 'stock',
@@ -125,7 +132,7 @@ const menuConfig: MenuConfig[] = [
     id: 'Blogs',
     title: 'common.menu.blogs_management',
     icon: LampIcon,
-    type: 'collapse',
+    type: 'group',
     permission: 'blogs.view',
     children: [
       {
@@ -146,26 +153,59 @@ const menuConfig: MenuConfig[] = [
   },
   {
     id: 'users',
+    title: 'common.menu.clients_list',
+    icon: UserGroupIcon,
+    path: route('clients.index'),
+    type: 'item',
+    permission: 'clients.view',
+  },
+  {
+    id: 'users',
     title: 'common.menu.users_management',
     icon: UserGroupIcon,
     type: 'group',
-    permissions: ['users.view', 'clients.view'],
+    permission: 'users.view',
     children: [
       {
-        id: 'usersList',
+        id: 'allUsers',
         title: 'common.menu.users_list',
         path: route('users.index'),
         type: 'item',
         permission: 'users.view',
       },
       {
-        id: 'clientsList',
-        title: 'common.menu.clients_list',
-        path: route('clients.index'),
+        id: 'roles',
+        title: 'common.prime_panel.roles',
+        path: route('roles.index'),
         type: 'item',
-        permission: 'clients.view',
+        permission: 'roles.view',
       },
     ],
+  },
+ 
+  {
+    id: 'settings-holidays',
+    title: 'common.prime_panel.holidays',
+    icon: CalendarIcon,
+    path: route('settings.holidays') || '/settings/holidays',
+    type: 'item',
+    permission: 'holidays.view',
+  },
+  {
+    id: 'settings-availabilities',
+    title: 'common.prime_panel.availabilities',
+    icon: CalendarDaysIcon,
+    path: route('settings.availabilities') || '/settings/availabilities',
+    type: 'item',
+    permission: 'availability.view',
+  },
+  {
+    id: 'subscription-plans',
+    title: 'common.prime_panel.subscription_plans',
+    icon: CreditCardIcon,
+    path: route('subscription-plans.index') || '/subscription-plans',
+    type: 'item',
+    permission: 'subscription-plans.view',
   },
 ];
 
