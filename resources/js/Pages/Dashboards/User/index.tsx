@@ -12,6 +12,8 @@ import { Appointment } from "@/pages/Appointments/datatable/types";
 import { Card, Avatar, Button } from "@/components/ui";
 import {
   DocumentTextIcon,
+  UserIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { Loader } from "lucide-react";
 import { useDashboardUpdates } from "@/hooks/useDashboardUpdates";
@@ -80,6 +82,7 @@ function MyDoctorsPanel() {
           </div>
         ) : doctors.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center py-4">
+            <UserIcon className="h-9 w-9 mb-2 text-gray-300 dark:text-dark-500" />
             <div className="text-center text-xs text-gray-500 dark:text-dark-400">
               {t("common.user_dashboard.no_doctors") || "No doctors found"}
             </div>
@@ -268,6 +271,7 @@ function RecentActivityPanel() {
           </div>
         ) : activities.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center py-4">
+            <ClockIcon className="h-9 w-9 mb-2 text-gray-300 dark:text-dark-500" />
             <div className="text-center text-xs text-gray-500 dark:text-dark-400">
               {t("common.user_dashboard.no_recent_activity") || "No recent activity"}
             </div>
@@ -332,13 +336,6 @@ export default function UserDashboard() {
     }),
     [],
   );
-    totalAppointments: 0,
-    upcomingAppointments: 0,
-    completedAppointments: 0,
-    cancelledAppointments: 0,
-    videoConsultations: 0,
-    totalPets: 0,
-  };
 
   // Handle real-time appointment updates via WebSocket
   const handleAppointmentUpdated = useCallback((updatedAppointment: Appointment, meta?: { raw?: any; changes?: any }) => {
