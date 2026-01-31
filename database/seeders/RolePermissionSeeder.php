@@ -367,7 +367,7 @@ class RolePermissionSeeder extends Seeder
             'appointments.create',
             'appointments.request',
             'appointments.cancel',
-            
+            'appointments.create_from_page',
             // Medical Management (own medical records)
             'consultations.view',
 
