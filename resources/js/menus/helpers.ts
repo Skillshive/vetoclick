@@ -11,6 +11,7 @@ export const createMenuFromConfig = (config: MenuConfig[]): MenuItem[] => {
             type: item.type || 'item',
             permission: item.permission,
             permissions: item.permissions,
+            roles: item.roles,
         };
 
         // Handle children for dropdowns
