@@ -16,15 +16,15 @@ import type { Role, RolesDatatableProps } from "./datatable/types";
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
 export default function Index({
-  roles,
-  permissions = [],
-  permissionGroups = [],
+   roles,
+   permissions = [],
+   permissionGroups = [],
   filters,
   old,
   errors,
 }: RolesDatatableProps) {
   const { t } = useTranslation();
-  const { showToast } = useToast();
+    const { showToast } = useToast();
   const tableRef = useRef<DataTableRef<Role>>(null);
   const [rowSelection, setRowSelection] = useState({});
 
@@ -113,11 +113,11 @@ export default function Index({
     tableMeta.deleteRow?.(selectedRowForDelete);
     setTimeout(() => {
       closeSingleDeleteModal();
-      showToast({
+                    showToast({
         type: "success",
         message: t("common.role_deleted_success"),
-        duration: 3000,
-      });
+                        duration: 3000,
+                    });
     }, 350);
   };
 
@@ -141,12 +141,12 @@ export default function Index({
     }
 
     if (deletableRows.length < selectedRows.length) {
-      showToast({
+                    showToast({
         type: "info",
         message: t("common.some_roles_protected") || `${selectedRows.length - deletableRows.length} protected role(s) were skipped`,
-        duration: 3000,
-      });
-    }
+                        duration: 3000,
+                    });
+                }
 
     setConfirmBulkDeleteLoading(true);
     try {
@@ -173,8 +173,8 @@ export default function Index({
     }
   }, [singleDeleteSuccess]);
 
-  return (
-    <MainLayout>
+    return (
+        <MainLayout>
       <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
         <div className="transition-content w-full pb-5">
           <DataTable<Role>
@@ -195,7 +195,7 @@ export default function Index({
                 const selectedRows = tableRef.current?.table.getSelectedRowModel().rows;
                 if (selectedRows && selectedRows.length > 0) {
                   setBulkDeleteModalOpen(true);
-                }
+                  }
               },
               deleteLabel: t("common.delete"),
             }}
@@ -228,8 +228,8 @@ export default function Index({
             onColumnPinningChange={setColumnPinning}
             meta={tableMeta}
           />
-        </div>
-      </div>
+                        </div>
+                    </div>
 
       {/* Single Delete Confirmation Modal */}
       <ConfirmModal
@@ -264,16 +264,16 @@ export default function Index({
       />
 
       {/* Role Form Modal */}
-      <RoleFormModal
+            <RoleFormModal
         isOpen={isModalOpen && (!selectedRole || !isRoleProtected(selectedRole.name))}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedRole(null);
-        }}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedRole(null);
+                }}
         role={selectedRole && !isRoleProtected(selectedRole.name) ? (selectedRole as any) : null}
-        permissions={permissions}
-        permissionGroups={permissionGroups}
-      />
-    </MainLayout>
-  );
+                permissions={permissions}
+                permissionGroups={permissionGroups}
+            />
+        </MainLayout>
+    );
 }
