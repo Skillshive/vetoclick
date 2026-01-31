@@ -17,6 +17,7 @@ import {
   ClockIcon,
   UserIcon,
   VideoCameraIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import axios from 'axios';
@@ -282,7 +283,7 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
     const view = api.view;
     
     if (currentView === 'dayGridMonth') {
-      return format(view.activeStart, 'MMMM yyyy');
+      return format(view.activeStart, 'MMMM yyyy').toUpperCase();
     } else if (currentView === 'timeGridWeek') {
       const start = format(view.activeStart, 'MMM d');
       const end = format(view.activeEnd, 'MMM d, yyyy');
@@ -292,70 +293,46 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
     }
   };
 
+  const formatMonthYear = () => {
+    if (!calendarRef.current) return '';
+    const api = calendarRef.current.getApi();
+    const view = api.view;
+    return format(view.activeStart, 'MMMM yyyy').toUpperCase();
+  };
+
   return (
     <MainLayout>
       <Page title={t('common.calendar') || 'Calendar'}>
         <div className="transition-content px-(--margin-x) pb-6 mt-4">
-          {/* Header Controls */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                {t('common.calendar') || 'Calendar'}
-              </h2>
-              {loading && (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
-              )}
-            </div>
-            
+          {/* Calendar Header - Matching Image Design */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            {/* Left Side: Today Button and Navigation */}
             <div className={`flex items-center gap-2 ${isRtl ? rtlClasses.flexRowReverse : rtlClasses.flexRow}`}>
-              {/* View Toggle Buttons */}
-              <div className={`flex items-center gap-1 bg-gray-100 dark:bg-dark-700 rounded-lg p-1 ${isRtl ? rtlClasses.flexRowReverse : rtlClasses.flexRow}`}>
-                <Button
-                  variant={currentView === 'dayGridMonth' ? 'filled' : 'outlined'}
-                  onClick={() => handleViewChange('dayGridMonth')}
-                  className="!px-3 !py-1.5 text-xs"
-                >
-                  {t('common.month') || 'Month'}
-                </Button>
-                <Button
-                  variant={currentView === 'timeGridWeek' ? 'filled' : 'outlined'}
-                  onClick={() => handleViewChange('timeGridWeek')}
-                  className="!px-3 !py-1.5 text-xs"
-                >
-                  {t('common.week') || 'Week'}
-                </Button>
-                <Button
-                  variant={currentView === 'timeGridDay' ? 'filled' : 'outlined'}
-                  onClick={() => handleViewChange('timeGridDay')}
-                  className="!px-3 !py-1.5 text-xs"
-                >
-                  {t('common.day') || 'Day'}
-                </Button>
-              </div>
+              {/* Today Button */}
+              <button
+                onClick={handleToday}
+                className="px-4 h-9 rounded-lg text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white transition-colors"
+              >
+                {t('common.today') || 'Today'}
+              </button>
 
-              {/* Navigation Buttons - Modern Design */}
-              <div className={`flex items-center gap-2 bg-white dark:bg-dark-700 rounded-lg border border-gray-200 dark:border-dark-500 p-1 ${isRtl ? rtlClasses.flexRowReverse : rtlClasses.flexRow}`}>
+              {/* Navigation Arrows */}
+              <div className="flex items-center gap-1">
                 <button
                   onClick={handlePrev}
                   aria-label={isRtl ? 'Next' : 'Previous'}
-                  className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors text-gray-600 dark:text-gray-300"
+                  className="flex items-center justify-center w-9 h-9 rounded-lg bg-white dark:bg-dark-700 border border-gray-200 dark:border-dark-500 hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors text-gray-700 dark:text-gray-300"
                 >
                   {isRtl ? (
                     <ChevronRightIcon className="size-5" />
                   ) : (
                     <ChevronLeftIcon className="size-5" />
                   )}
-                </button>
-                <button
-                  onClick={handleToday}
-                  className="px-4 h-8 rounded-md text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white transition-colors"
-                >
-                  {t('common.today') || 'Today'}
                 </button>
                 <button
                   onClick={handleNext}
                   aria-label={isRtl ? 'Previous' : 'Next'}
-                  className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors text-gray-600 dark:text-gray-300"
+                  className="flex items-center justify-center w-9 h-9 rounded-lg bg-white dark:bg-dark-700 border border-gray-200 dark:border-dark-500 hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors text-gray-700 dark:text-gray-300"
                 >
                   {isRtl ? (
                     <ChevronLeftIcon className="size-5" />
@@ -365,14 +342,60 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
                 </button>
               </div>
             </div>
+
+            {/* Center: Month/Year Display */}
+            <div className="flex-1 flex justify-center">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                {formatMonthYear()}
+              </h2>
+            </div>
+
+            {/* Right Side: View Buttons and Settings */}
+            <div className={`flex items-center gap-2 ${isRtl ? rtlClasses.flexRowReverse : rtlClasses.flexRow}`}>
+              {/* View Toggle Buttons */}
+              <div className={`flex items-center gap-1 bg-gray-100 dark:bg-dark-700 rounded-lg p-1 ${isRtl ? rtlClasses.flexRowReverse : rtlClasses.flexRow}`}>
+                <button
+                  onClick={() => handleViewChange('dayGridMonth')}
+                  className={`px-3 h-8 rounded-md text-xs font-medium transition-colors ${
+                    currentView === 'dayGridMonth'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+                  }`}
+                >
+                  {t('common.month') || 'Month'}
+                </button>
+                <button
+                  onClick={() => handleViewChange('timeGridWeek')}
+                  className={`px-3 h-8 rounded-md text-xs font-medium transition-colors ${
+                    currentView === 'timeGridWeek'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+                  }`}
+                >
+                  {t('common.week') || 'Week'}
+                </button>
+                <button
+                  onClick={() => handleViewChange('timeGridDay')}
+                  className={`px-3 h-8 rounded-md text-xs font-medium transition-colors ${
+                    currentView === 'timeGridDay'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+                  }`}
+                >
+                  {t('common.day') || 'Day'}
+                </button>
+              </div>
+
+            
+            </div>
           </div>
 
-          {/* Date Display */}
-          <div className="mb-4">
-            <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-              {formatDateRange()}
-            </p>
-          </div>
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="flex justify-center mb-4">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+            </div>
+          )}
 
           {/* Calendar */}
           <Card className="p-4 sm:p-6 hover:shadow-lg transition-all duration-200">
