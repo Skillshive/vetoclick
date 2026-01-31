@@ -79,9 +79,26 @@ export const AppointmentForm = () => {
     if (selectedClient) {
       const fetchPets = async () => {
         try {
-          const response = await axios.get(route('clients.pets', { uuid: selectedClient }));
-          setPets(response.data);
+          const response = await fetch(route('clients.pets', { uuid: selectedClient }), {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            credentials: 'same-origin',
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch pets');
+          }
+
+          const data = await response.json();
+          setPets(data);
         } catch (error) {
+          console.error('Error fetching pets:', error);
+          setPets([]);
         }
       };
       fetchPets();
