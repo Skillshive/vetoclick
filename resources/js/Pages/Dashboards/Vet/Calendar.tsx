@@ -9,8 +9,7 @@ import { Page } from '@/components/shared/Page';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRTL } from '@/hooks/useRTL';
 import { router } from '@inertiajs/react';
-// @ts-ignore - Modal.jsx doesn't have TypeScript definitions
-import Modal from '@/Components/Modal';
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -18,6 +17,7 @@ import {
   UserIcon,
   VideoCameraIcon,
   Cog6ToothIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { enUS, fr, ar } from 'date-fns/locale';
@@ -694,233 +694,137 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
           </Card>
 
           {/* Event Modal */}
-          <Modal
-            show={showEventModal}
-            maxWidth="2xl"
-            closeable={true}
-            onClose={() => setShowEventModal(false)}
-          >
-            {selectedEvent && (
-              <>
-                <div className="border-b border-gray-200 dark:border-dark-500 px-6 py-4 flex items-start justify-between">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                      {selectedEvent.title}
-                    </h3>
-                    {selectedEvent.extendedProps.pet?.species && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        {selectedEvent.extendedProps.pet.species}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setShowEventModal(false)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          <Transition show={showEventModal}>
+            <Dialog as="div" className="relative z-50" onClose={() => setShowEventModal(false)}>
+              <TransitionChild
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black/25 dark:bg-black/50" />
+              </TransitionChild>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <TransitionChild
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                    <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-dark-700 p-6 text-left align-middle shadow-xl transition-all">
+                      {selectedEvent ? (() => {
+                        const now = new Date();
+                        const startTime = new Date(selectedEvent.start);
+                        const endTime = new Date(selectedEvent.end);
+                        const isDuringMeeting = now >= startTime && now <= endTime;
+                        
+                        return (
+                          <>
+                            <DialogTitle className="flex items-center justify-between mb-4">
+                              <div>
+                                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                  {selectedEvent.title}
+                                </h3>
+                                {selectedEvent.extendedProps.pet?.species ? (
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    {selectedEvent.extendedProps.pet.species}
+                                  </p>
+                                ) : null}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShowEventModal(false)}
+                                className="rounded-md p-1 hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors"
+                              >
+                                <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                              </button>
+                            </DialogTitle>
+
+                            <div className="space-y-4">
+                              {/* Date & Time */}
+                              <div className="flex items-center gap-2 text-base">
+                                <ClockIcon className="size-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                                <span className="text-gray-700 dark:text-gray-300">
+                                  {format(new Date(selectedEvent.start), 'EEEE, MMMM d, yyyy', { locale: dateFnsLocale })}
+                                </span>
+                                <span className="text-gray-400 dark:text-gray-500">•</span>
+                                <span className="text-gray-900 dark:text-gray-100 font-semibold">
+                                  {format(new Date(selectedEvent.start), 'HH:mm')} - {format(new Date(selectedEvent.end), 'HH:mm')}
+                                </span>
+                              </div>
+
+                              {/* Client */}
+                              {selectedEvent.extendedProps.client ? (
+                                <div className="flex items-center gap-2 text-base">
+                                  <UserIcon className="size-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                                  <span className="text-gray-600 dark:text-gray-400">{t('common.client')}:</span>
+                                  <span className="text-gray-900 dark:text-gray-100 font-semibold">{selectedEvent.extendedProps.client.name}</span>
+                                </div>
+                              ) : null}
+
+                              {/* Appointment Type & Status */}
+                              <div className="flex items-center justify-between gap-4 pt-2 border-t border-gray-200 dark:border-dark-500">
+                                {selectedEvent.extendedProps.appointment_type ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-600 dark:text-gray-400 text-sm">{t('common.appointment_type')}:</span>
+                                    <span className="text-gray-900 dark:text-gray-100 font-semibold">
+                                      {translateAppointmentType(selectedEvent.extendedProps.appointment_type)}
+                                    </span>
+                                  </div>
+                                ) : null}
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  {selectedEvent.extendedProps.status ? (
+                                    <Badge color={getStatusColor(selectedEvent.extendedProps.status)}>
+                                      {translateStatus(selectedEvent.extendedProps.status)}
+                                    </Badge>
+                                  ) : null}
+                                  {selectedEvent.extendedProps.is_video ? (
+                                    <Badge color="info" className="flex items-center gap-1">
+                                      <VideoCameraIcon className="size-3" />
+                                      {t('common.video_consultation')}
+                                    </Badge>
+                                  ) : null}
+                                </div>
+                              </div>
+
+                              {/* Reason for Visit */}
+                              {selectedEvent.extendedProps.reason ? (
+                                <div className="pt-2 border-t border-gray-200 dark:border-dark-500">
+                                  <span className="text-gray-600 dark:text-gray-400 text-sm block mb-2">{t('common.reason_for_visit')}</span>
+                                  <p className="text-gray-900 dark:text-gray-100 leading-relaxed">{selectedEvent.extendedProps.reason}</p>
+                                </div>
+                              ) : null}
+
+                              {/* Video Meeting Link - Only show during appointment time */}
+                              {selectedEvent.extendedProps.is_video && selectedEvent.extendedProps.video_join_url && isDuringMeeting ? (
+                                <div className="pt-2 border-t border-gray-200 dark:border-dark-500">
+                                  <a
+                                    href={selectedEvent.extendedProps.video_join_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline font-semibold"
+                                  >
+                                    <VideoCameraIcon className="size-5" />
+                                    {t('common.join_video_meeting')}
+                                  </a>
+                                </div>
+                              ) : null}
+                            </div>
+                          </>
+                        );
+                      })() : null}
+                    </DialogPanel>
+                  </TransitionChild>
                 </div>
-
-                <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                  {/* Date & Time */}
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-600 rounded-lg">
-                    <ClockIcon className="size-5 text-primary-600 dark:text-primary-400 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('common.date_time') || 'Date & Time'}</p>
-                      <p className="text-base text-gray-800 dark:text-gray-200">
-                        {format(new Date(selectedEvent.start), 'EEEE, MMMM d, yyyy')}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {format(new Date(selectedEvent.start), 'HH:mm')} - {format(new Date(selectedEvent.end), 'HH:mm')}
-                        {selectedEvent.extendedProps.duration_minutes && selectedEvent.extendedProps.duration_minutes > 0 && (
-                          <span className="ml-2">({selectedEvent.extendedProps.duration_minutes} {t('common.minutes') || 'min'})</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Client Information */}
-                  {selectedEvent.extendedProps.client && (
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-600 rounded-lg">
-                      <UserIcon className="size-5 text-primary-600 dark:text-primary-400 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('common.client') || 'Client'}</p>
-                        <p className="text-base text-gray-800 dark:text-gray-200">
-                          {selectedEvent.extendedProps.client.name}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Pet Information */}
-                  {selectedEvent.extendedProps.pet && (
-                    <div className="p-3 bg-gray-50 dark:bg-dark-600 rounded-lg">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t('common.pet_information') || 'Pet Information'}</p>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <p className="text-gray-500 dark:text-gray-400">{t('common.name') || 'Name'}</p>
-                          <a onClick={() => {
-                        router.visit(route('pets.show', selectedEvent.extendedProps.pet?.uuid));
-                        setShowEventModal(false);
-                      }} className="text-gray-800 dark:text-gray-200 font-medium hover:underline cursor-pointer">{selectedEvent.extendedProps.pet.name}</a>
-                        </div>
-                        {selectedEvent.extendedProps.pet.species && (
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('common.species') || 'Species'}</p>
-                            <p className="text-gray-800 dark:text-gray-200 font-medium">{selectedEvent.extendedProps.pet.species}</p>
-                          </div>
-                        )}
-                        {selectedEvent.extendedProps.pet.breed && (
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('common.breed') || 'Breed'}</p>
-                            <p className="text-gray-800 dark:text-gray-200 font-medium">{selectedEvent.extendedProps.pet.breed}</p>
-                          </div>
-                        )}
-                        {selectedEvent.extendedProps.pet.microchip && (
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('common.microchip') || 'Microchip'}</p>
-                            <p className="text-gray-800 dark:text-gray-200 font-medium">
-                              {selectedEvent.extendedProps.pet.microchip !== 'common.microchip' 
-                                ? selectedEvent.extendedProps.pet.microchip 
-                                : 'N/A'}
-                            </p>
-                          </div>
-                        )}
-                        {selectedEvent.extendedProps.pet.weight_kg && selectedEvent.extendedProps.pet.weight_kg > 0 && (
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('common.weight') || 'Weight'}</p>
-                            <p className="text-gray-800 dark:text-gray-200 font-medium">{selectedEvent.extendedProps.pet.weight_kg} kg</p>
-                          </div>
-                        )}
-                        {selectedEvent.extendedProps.pet.color && (
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('common.color') || 'Color'}</p>
-                            <p className="text-gray-800 dark:text-gray-200 font-medium">{selectedEvent.extendedProps.pet.color}</p>
-                          </div>
-                        )}
-                        {selectedEvent.extendedProps.pet.dob && (
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('common.date_of_birth') || 'Date of Birth'}</p>
-                            <p className="text-gray-800 dark:text-gray-200 font-medium">
-                              {format(new Date(selectedEvent.extendedProps.pet.dob), 'MMM d, yyyy')}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Appointment Type & Status */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.appointment_type') || 'Appointment Type'}</p>
-                      <p className="text-base text-gray-800 dark:text-gray-200">
-                        {selectedEvent.extendedProps.appointment_type 
-                          ? translateAppointmentType(selectedEvent.extendedProps.appointment_type)
-                          : 'N/A'}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {selectedEvent.extendedProps.status  ? (
-                        <Badge color={getStatusColor(selectedEvent.extendedProps.status)}>
-                          {translateStatus(selectedEvent.extendedProps.status)}
-                        </Badge>
-                      ) : null}
-                      {selectedEvent.extendedProps.is_video  ? (
-                        <Badge color="info" className="flex items-center gap-1">
-                          <VideoCameraIcon className="size-3" />
-                          {t('common.video_consultation') || 'Video Consultation'}
-                        </Badge>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {/* Reason for Visit */}
-                  {selectedEvent.extendedProps.reason  ? (
-                    <div className="p-3 bg-gray-50 dark:bg-dark-600 rounded-lg">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.reason_for_visit') || 'Reason for Visit'}</p>
-                      <p className="text-base text-gray-800 dark:text-gray-200">
-                        {selectedEvent.extendedProps.reason}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {/* Appointment Notes */}
-                  {selectedEvent.extendedProps.appointment_notes  ? (
-                    <div className="p-3 bg-gray-50 dark:bg-dark-600 rounded-lg">
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.appointment_notes') || 'Appointment Notes'}</p>
-                      <p className="text-base text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                        {selectedEvent.extendedProps.appointment_notes}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {/* Consultation Status
-                  {selectedEvent.extendedProps.consultation && (
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">{t('common.consultation') || 'Consultation'}</p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
-                        {t('common.status') || 'Status'}: <span className="font-medium">
-                          {getStatusBadge(selectedEvent.extendedProps.consultation.status)}
-                        </span>
-                      </p>
-                    </div>
-                  )} */}
-
-                  {/* Video Meeting Link */}
-                  {selectedEvent.extendedProps.is_video && selectedEvent.extendedProps.video_join_url  ? (
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <p className="text-sm font-medium text-green-700 dark:text-green-300 mb-2">{t('common.video_meeting') || 'Video Meeting'}</p>
-                      <a
-                        href={selectedEvent.extendedProps.video_join_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-green-600 dark:text-green-400 hover:underline flex items-center gap-2"
-                      >
-                        <VideoCameraIcon className="size-4" />
-                        {t('common.join_video_meeting') || 'Join Video Meeting'}
-                      </a>
-                    </div>
-                  ) : null}
-
-                  {/* Action Buttons
-                  <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-dark-500">
-                    <Button
-                      variant="filled"
-                      color="primary"
-                      onClick={() => {
-                        router.visit(route('appointments.index'));
-                        setShowEventModal(false);
-                      }}
-                      className="flex-1"
-                    >
-                      {t('common.view_full_details') || 'View Full Details'}
-                    </Button>
-                    {selectedEvent.extendedProps.pet?.uuid && (
-                      <Button
-                        variant="outlined"
-                        onClick={() => {
-                        router.visit(route('pets.show', selectedEvent.extendedProps.pet.uuid));
-                        setShowEventModal(false);
-                      }}
-                      className="flex-1"
-                    >
-                      {t('common.view_pet_profile') || 'View Pet Profile'}
-                      </Button>
-                    )}
-                    <Button
-                      variant="outlined"
-                      onClick={() => setShowEventModal(false)}
-                    >
-                      {t('common.close') || 'Close'}
-                    </Button>
-                  </div> */}
-                </div>
-              </>
-            )}
-          </Modal>
+              </div>
+            </Dialog>
+          </Transition>
         </div>
       </Page>
     </MainLayout>
