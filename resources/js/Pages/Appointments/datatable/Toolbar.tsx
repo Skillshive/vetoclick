@@ -136,7 +136,7 @@ export function Toolbar({
         >
           <div className="flex shrink-0 space-x-2">
             <SearchInput table={table} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-            <Filters table={table} clients={clients} statuses={statuses} />
+            <Filters table={table} clients={clients} statuses={statuses} isClient={isClient} />
           </div>
 
           <div className="flex shrink-0 space-x-2">
@@ -213,11 +213,13 @@ function SearchInput({
 function Filters({ 
   table, 
   clients,
-  statuses
+  statuses,
+  isClient
 }: { 
   table: Table<Appointment>; 
   clients: Client[];
   statuses: { [key: number]: string };
+  isClient: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -266,6 +268,7 @@ function Filters({
 
   return (
     <>
+      {!isClient && (
       <ServerSideFilter
         options={clientOptions}
         title={t('common.filter_client')}
@@ -274,6 +277,7 @@ function Filters({
         currentValue={urlParams.get('client')?.split(',') || []}
         icon={<UserIcon className="size-4" />}
       />
+      )}
 
       <ServerSideFilter
         options={statusOptions}
