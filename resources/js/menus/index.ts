@@ -11,6 +11,7 @@ export interface MenuItem {
     childs?: MenuItem[]; // Added for collapse type items
     permission?: string; // Optional permission required to view this menu item
     permissions?: string[]; // Multiple permissions (any of them grants access)
+    roles?: string[]; // Optional roles that can access this menu item
     level?: number; // Track nesting level
 }
 
@@ -24,6 +25,7 @@ export interface MenuConfig {
     children?: MenuConfig[]; // Array of child menu items for dropdowns
     permission?: string;
     permissions?: string[];
+    roles?: string[]; // Optional roles that can access this menu item
 }
 
 // Re-export helper function
