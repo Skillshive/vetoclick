@@ -1,4 +1,5 @@
 import { Link } from "@inertiajs/react";
+import { useEffect } from "react";
 // Local Imports
 import { ScrollShadow } from "@/components/ui";
 import { NavigationTree } from "@/@types/navigation";
@@ -12,11 +13,29 @@ export interface MenuProps {
 }
 
 export function Menu({}: MenuProps) {
-  const { isExpanded, open, close, setActiveSegmentPath: setSidebarActiveSegment } = useSidebarContext();
+  const { isExpanded, open, close, setActiveSegmentPath: setSidebarActiveSegment, activeSegmentPath } = useSidebarContext();
   const { menuItems } = useRoleBasedMenu();
   const { t } = useTranslation();
 
+  // Check if all menu items are type "item" (no groups or collapses)
+  const allItemsAreTypeItem = menuItems.length > 0 && menuItems.every(item => item.type === "item");
+  
+  // Don't close sidebar if settings is active
+  const isSettingsActive = activeSegmentPath === 'settings';
+
+  // Close sidebar if it's open and all items are type "item", but not if settings is active
+  useEffect(() => {
+    if (allItemsAreTypeItem && isExpanded && !isSettingsActive) {
+      close();
+      setSidebarActiveSegment('');
+    }
+  }, [allItemsAreTypeItem, isExpanded, isSettingsActive, close, setSidebarActiveSegment]);
+
   const handleSegmentSelect = (path: string) => {
+    if (allItemsAreTypeItem) {
+      close();
+      return; // Disable sidebar opening when all items are type "item"
+    }
     setSidebarActiveSegment(path);
     if (!isExpanded) {
       open();
@@ -24,6 +43,10 @@ export function Menu({}: MenuProps) {
   };
 
   const handleMouseEnter = (path: string) => {
+    if (allItemsAreTypeItem) {
+      close();
+      return; // Disable hover when all items are type "item"
+    }
     setSidebarActiveSegment(path);
     if (!isExpanded) {
       open();
@@ -61,7 +84,7 @@ export function Menu({}: MenuProps) {
               icon={item.icon}
               component={isLink ? Link : "button"}
               href={isLink ? item.path : undefined}
-              onClick={() => {
+              onClick={allItemsAreTypeItem ? undefined : () => {
               if (!isLink) {
                 handleSegmentSelect(item.path || item.id);
               } else {
@@ -69,10 +92,11 @@ export function Menu({}: MenuProps) {
                 close();
               }
               }}
-              onMouseEnter={() => {
+              onMouseEnter={allItemsAreTypeItem ? undefined : () => {
               if (!isLink) handleMouseEnter(item.path || item.id);
               }}
               isActive={isActive}
+              disableHover={allItemsAreTypeItem}
             />
             );
         })

@@ -43,43 +43,15 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
       icon: UserIcon, 
       href: "/settings/general",
       permission: "settings.view",
-      roles: ["admin", "super-admin", "veterinarian"]
+      roles: ["admin", "super-admin", "veterinarian","client",'receptionist']
     },
     { 
       name: t("common.prime_panel.appearance"), 
       icon: PaintBrushIcon, 
       href: "/settings/appearance",
       permission: "settings.view",
-      roles: ["admin", "super-admin", "veterinarian"]
+      roles: ["admin", "super-admin", "veterinarian","client",'receptionist']
     },
-    { 
-      name: t("common.prime_panel.holidays"), 
-      icon: CalendarIcon, 
-      href: "/settings/holidays",
-      permission: "holidays.view",
-      roles: ["super-admin", "veterinarian"]
-    },
-    { 
-      name: t("common.prime_panel.availabilities"), 
-      icon: CalendarDaysIcon, 
-      href: "/settings/availabilities",
-      permission: "availability.view",
-      roles: ["super-admin", "veterinarian"]
-    },
-    { 
-      name: t("common.prime_panel.roles"), 
-      icon: UserGroupIcon, 
-      href: "/roles",
-      permission: "roles.view",
-      roles: ["admin", "super-admin"]
-    },
-    { 
-      name: t("common.prime_panel.subscription_plans"), 
-      icon: CreditCardIcon, 
-      href: "/subscription-plans",
-      permission: "subscription-plans.view",
-      roles: ["admin", "super-admin"]
-    }
   ];
 
   // Filter settings items based on permissions and roles
@@ -96,11 +68,7 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
   });
 
   // Check if we're showing settings menu
-  const isPathSettings = pathname.startsWith('/settings/') || 
-                        pathname === '/roles' || 
-                        pathname.startsWith('/roles/') ||
-                        pathname === '/subscription-plans' || 
-                        pathname.startsWith('/subscription-plans/');
+  const isPathSettings = pathname.startsWith('/settings/');
   
   // If activeSegmentPath is explicitly set to something other than 'settings', use that
   // Otherwise, determine based on pathname

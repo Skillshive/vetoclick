@@ -23,6 +23,7 @@ export interface ItemProps {
   onMouseLeave?: () => void;
   onKeyDown?: ComponentPropsWithoutRef<"button">["onKeyDown"];
   info?: { val?: string; color?: ColorType };
+  disableHover?: boolean;
 }
 
 export function Item({
@@ -37,19 +38,24 @@ export function Item({
   info,
   href,
   to,
+  disableHover = false,
   ...rest
 }: ItemProps) {
 const IconComponent = icon;
+  const isLink = href || to;
 
   if (!IconComponent) {
     return (
       <div
         data-root-menu-item
         className={clsx(
-          "relative flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg outline-hidden transition-colors duration-200",
+          "relative flex size-11 shrink-0 items-center justify-center rounded-lg outline-hidden transition-colors duration-200",
+          disableHover ? "cursor-default pointer-events-none" : "cursor-pointer",
           isActive
             ? "bg-primary-600/10 text-primary-600 dark:bg-primary-400/15 dark:text-primary-400"
-            : "hover:bg-primary-600/20 focus:bg-primary-600/20 active:bg-primary-600/25 dark:text-dark-200 dark:hover:bg-dark-300/20 dark:focus:bg-dark-300/20 dark:active:bg-dark-300/25 text-gray-500",
+            : disableHover
+              ? "text-gray-500 dark:text-dark-200"
+              : "hover:bg-primary-600/20 focus:bg-primary-600/20 active:bg-primary-600/25 dark:text-dark-200 dark:hover:bg-dark-300/20 dark:focus:bg-dark-300/20 dark:active:bg-dark-300/25 text-gray-500",
         )}
       >
         <div className="size-7 bg-gray-300 rounded" />
@@ -67,10 +73,13 @@ const IconComponent = icon;
       data-tooltip-content={title}
       data-tooltip-place="right"
       className={clsx(
-        "relative flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg outline-hidden transition-colors duration-200",
+        "relative flex size-11 shrink-0 items-center justify-center rounded-lg outline-hidden transition-colors duration-200",
+        disableHover && !isLink ? "cursor-default pointer-events-none" : "cursor-pointer",
         isActive
           ? "bg-primary-600/10 text-primary-600 dark:bg-primary-400/15 dark:text-primary-400"
-          : "hover:bg-primary-600/20 focus:bg-primary-600/20 active:bg-primary-600/25 dark:text-dark-200 dark:hover:bg-dark-300/20 dark:focus:bg-dark-300/20 dark:active:bg-dark-300/25 text-gray-500",
+          : disableHover
+            ? "text-gray-500 dark:text-dark-200"
+            : "hover:bg-primary-600/20 focus:bg-primary-600/20 active:bg-primary-600/25 dark:text-dark-200 dark:hover:bg-dark-300/20 dark:focus:bg-dark-300/20 dark:active:bg-dark-300/25 text-gray-500",
       )}
       onKeyDown={createScopedKeydownHandler({
         siblingSelector: "[data-root-menu-item]",
