@@ -23,7 +23,7 @@ class BreedService implements ServiceInterface
      */
     public function getAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Breed::with(['species', 'image'])->paginate($perPage);
+        return Breed::with(['species', 'image'])->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**
@@ -120,6 +120,7 @@ class BreedService implements ServiceInterface
     {
         return Breed::with(['species', 'image'])
             ->where('breed_name', 'LIKE', "%{$name}%")
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
@@ -130,6 +131,7 @@ class BreedService implements ServiceInterface
     {
         return Breed::with(['species', 'image'])
             ->where('species_id', $speciesId)
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 

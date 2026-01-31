@@ -25,7 +25,7 @@ class SpeciesResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'breeds' => $this->when($this->relationLoaded('breeds'), function () use ($perPage, $currentPage) {
-                $breeds = $this->breeds()->paginate($perPage, ['*'], 'page', $currentPage);
+                $breeds = $this->breeds()->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $currentPage);
                 return [
                     'data' => BreedResource::collection($breeds->items()),
                     'meta' => [
