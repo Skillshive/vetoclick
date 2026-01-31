@@ -20,6 +20,8 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
+import { enUS, fr, ar } from 'date-fns/locale';
+import type { Locale } from 'date-fns';
 import axios from 'axios';
 import allLocales from '@fullcalendar/core/locales-all';
 
@@ -92,6 +94,19 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
   };
   
   const calendarLocale = getFullCalendarLocale();
+  
+  // Get date-fns locale based on current locale
+  const getDateFnsLocale = () => {
+    const baseLocale = locale?.split('-')[0]?.toLowerCase() || 'en';
+    const localeMap: Record<string, Locale> = {
+      'ar': ar,
+      'en': enUS,
+      'fr': fr,
+    };
+    return localeMap[baseLocale] || localeMap[locale?.toLowerCase() || ''] || enUS;
+  };
+  
+  const dateFnsLocale = getDateFnsLocale();
   const [currentView, setCurrentView] = useState<ViewType>('timeGridWeek');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
@@ -122,7 +137,68 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
       });
 
       if (response.data.events) {
-        setEvents(response.data.events);
+        // Process events to apply primary colors based on status
+        const processedEvents = response.data.events.map((event: CalendarEvent) => {
+          const status = event.extendedProps?.status;
+          
+          // Helper to get CSS variable color value
+          const getCSSVariableColor = (variableName: string, fallback: string = 'rgb(77, 185, 173)') => {
+            if (typeof window !== 'undefined') {
+              const root = document.documentElement;
+              const colorValue = getComputedStyle(root).getPropertyValue(variableName).trim();
+              if (colorValue) {
+                // If it's already in rgb format, return as is
+                if (colorValue.startsWith('rgb')) {
+                  return colorValue;
+                }
+                // If it's just numbers (RGB values), format as rgb()
+                if (/^\d+\s+\d+\s+\d+$/.test(colorValue)) {
+                  return `rgb(${colorValue})`;
+                }
+                return colorValue;
+              }
+            }
+            return fallback;
+          };
+
+          // Override colors based on status
+          if (status === 'completed') {
+            const primaryColor = getCSSVariableColor('--color-primary', 'rgb(77, 185, 173)');
+            return {
+              ...event,
+              backgroundColor: primaryColor,
+              borderColor: primaryColor,
+            };
+          } else if (status === 'confirmed' || status === 'scheduled') {
+            const primary500Color = getCSSVariableColor('--color-primary-500', 'rgb(77, 185, 173)');
+            return {
+              ...event,
+              backgroundColor: primary500Color,
+              borderColor: primary500Color,
+            };
+          }
+          
+          // Handle backend color strings like 'primary' or 'primary-500'
+          if (event.backgroundColor === 'primary') {
+            const primaryColor = getCSSVariableColor('--color-primary', 'rgb(77, 185, 173)');
+            return {
+              ...event,
+              backgroundColor: primaryColor,
+              borderColor: primaryColor,
+            };
+          } else if (event.backgroundColor === 'primary-500') {
+            const primary500Color = getCSSVariableColor('--color-primary-500', 'rgb(77, 185, 173)');
+            return {
+              ...event,
+              backgroundColor: primary500Color,
+              borderColor: primary500Color,
+            };
+          }
+          
+          return event;
+        });
+        
+        setEvents(processedEvents);
       }
     } catch (error) {
       console.error('Error fetching calendar events:', error);
@@ -283,13 +359,13 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
     const view = api.view;
     
     if (currentView === 'dayGridMonth') {
-      return format(view.activeStart, 'MMMM yyyy').toUpperCase();
+      return format(view.activeStart, 'MMMM yyyy', { locale: dateFnsLocale }).toUpperCase();
     } else if (currentView === 'timeGridWeek') {
-      const start = format(view.activeStart, 'MMM d');
-      const end = format(view.activeEnd, 'MMM d, yyyy');
+      const start = format(view.activeStart, 'MMM d', { locale: dateFnsLocale });
+      const end = format(view.activeEnd, 'MMM d, yyyy', { locale: dateFnsLocale });
       return `${start} - ${end}`;
     } else {
-      return format(view.activeStart, 'EEEE, MMMM d, yyyy');
+      return format(view.activeStart, 'EEEE, MMMM d, yyyy', { locale: dateFnsLocale });
     }
   };
 
@@ -297,7 +373,7 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
     if (!calendarRef.current) return '';
     const api = calendarRef.current.getApi();
     const view = api.view;
-    return format(view.activeStart, 'MMMM yyyy').toUpperCase();
+    return format(view.activeStart, 'MMMM yyyy', { locale: dateFnsLocale }).toUpperCase();
   };
 
   return (
@@ -472,11 +548,11 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
 
                 /* Today Highlight */
                 .calendar-container .fc-day-today {
-                  background-color: rgba(77, 185, 173, 0.05) !important;
+                  background-color: rgb(var(--color-primary) / 0.05) !important;
                 }
 
                 html.dark .calendar-container .fc-day-today {
-                  background-color: rgba(77, 185, 173, 0.1) !important;
+                  background-color: rgb(var(--color-primary) / 0.1) !important;
                 }
 
                 /* Events */
@@ -518,8 +594,8 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
 
                 /* Selection */
                 .calendar-container .fc-highlight {
-                  background-color: rgba(77, 185, 173, 0.15);
-                  border: 1px dashed #4DB9AD;
+                  background-color: rgb(var(--color-primary) / 0.15);
+                  border: 1px dashed rgb(var(--color-primary));
                 }
 
                 /* Scrollbar */
@@ -534,19 +610,19 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
 
                 /* More Link */
                 .calendar-container .fc-more-link {
-                  color: #4DB9AD;
+                  color: rgb(var(--color-primary));
                   font-weight: 500;
                   font-size: 0.75rem;
                 }
 
                 .calendar-container .fc-more-link:hover {
-                  color: #15A093;
+                  color: rgb(var(--color-primary));
                 }
 
                 /* Button Styling */
                 .calendar-container .fc-button {
-                  background-color: #4DB9AD;
-                  border-color: #4DB9AD;
+                  background-color: rgb(var(--color-primary));
+                  border-color: rgb(var(--color-primary));
                   color: white;
                   font-weight: 500;
                   padding: 6px 12px;
@@ -555,8 +631,8 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
                 }
 
                 .calendar-container .fc-button:hover {
-                  background-color: #15A093;
-                  border-color: #15A093;
+                  background-color: rgb(var(--color-primary));
+                  border-color: rgb(var(--color-primary));
                 }
 
                 .calendar-container .fc-button:disabled {
@@ -576,7 +652,7 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
                 }
 
                 .calendar-container .fc-day-today .fc-daygrid-day-number {
-                  background-color: #4DB9AD;
+                  background-color: rgb(var(--color-primary));
                   color: white;
                   border-radius: 50%;
                   width: 28px;
@@ -611,7 +687,7 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
                 eventTimeFormat={{
                   hour: '2-digit',
                   minute: '2-digit',
-                  hour12: true,
+                  hour12: false,
                 }}
               />
             </div>
@@ -657,7 +733,7 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
                         {format(new Date(selectedEvent.start), 'EEEE, MMMM d, yyyy')}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {format(new Date(selectedEvent.start), 'h:mm a')} - {format(new Date(selectedEvent.end), 'h:mm a')}
+                        {format(new Date(selectedEvent.start), 'HH:mm')} - {format(new Date(selectedEvent.end), 'HH:mm')}
                         {selectedEvent.extendedProps.duration_minutes && selectedEvent.extendedProps.duration_minutes > 0 && (
                           <span className="ml-2">({selectedEvent.extendedProps.duration_minutes} {t('common.minutes') || 'min'})</span>
                         )}

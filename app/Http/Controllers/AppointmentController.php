@@ -1120,9 +1120,10 @@ class AppointmentController extends Controller
                 $end = $date->copy()->setTimeFromTimeString($appointment->end_time);
 
                 // Determine color based on status
+                // Colors will be processed in frontend to use CSS variables
                 $color = match($appointment->status) {
-                    'scheduled', 'confirmed' => '#4DB9AD',
-                    'completed' => '#10b981',
+                    'scheduled', 'confirmed' => 'primary-500', // Will be converted to CSS variable in frontend
+                    'completed' => 'primary', // Will be converted to CSS variable in frontend
                     'cancelled', 'canceled' => '#ef4444',
                     'pending' => '#f59e0b',
                     default => '#6b7280',
