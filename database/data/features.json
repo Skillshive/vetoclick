@@ -7,88 +7,103 @@
       "fr": "Gestion des clients"
     },
     "description": {
-      "en": "Tools for managing client relationships and communications",
-      "ar": "أدوات إدارة علاقات العملاء والتواصل",
-      "fr": "Outils pour gérer les relations clients et les communications"
+      "en": "Complete client and pet management system",
+      "ar": "نظام إدارة شامل للعملاء والحيوانات الأليفة",
+      "fr": "Système complet de gestion des clients et animaux"
     },
     "icon": "users",
     "color": "blue",
     "sort_order": 1,
     "features": [
       {
-        "slug": "client-import-export",
+        "slug": "client-management",
         "name": {
-          "en": "Import/Export Clients",
-          "ar": "استيراد/تصدير العملاء",
-          "fr": "Import/Export des clients"
+          "en": "Manage Clients",
+          "ar": "إدارة العملاء",
+          "fr": "Gérer les clients"
         },
         "description": {
-          "en": "Import and export client data in various formats",
-          "ar": "استيراد وتصدير بيانات العملاء بصيغ مختلفة",
-          "fr": "Importer et exporter les données clients dans différents formats"
+          "en": "Manage client profiles, contacts, and information",
+          "ar": "إدارة ملفات العملاء وجهات الاتصال والمعلومات",
+          "fr": "Gérer les profils clients, contacts et informations"
         },
-        "icon": "download",
-        "color": "green"
+        "icon": "user-group",
+        "color": "blue"
       },
       {
-        "slug": "video-calls",
+        "slug": "pet-management",
         "name": {
-          "en": "Video Calls",
-          "ar": "المكالمات المرئية",
-          "fr": "Appels vidéo"
+          "en": "Manage Pets",
+          "ar": "إدارة الحيوانات الأليفة",
+          "fr": "Gérer les animaux"
         },
         "description": {
-          "en": "Conduct video calls with clients",
-          "ar": "إجراء مكالمات مرئية مع العملاء",
-          "fr": "Effectuer des appels vidéo avec les clients"
+          "en": "Manage pet profiles, medical history, and records",
+          "ar": "إدارة ملفات الحيوانات الأليفة والتاريخ الطبي والسجلات",
+          "fr": "Gérer les profils des animaux, historique médical et dossiers"
         },
-        "icon": "video",
-        "color": "purple"
+        "icon": "paw",
+        "color": "orange"
       }
     ]
   },
   {
-    "slug": "appointment-management",
+    "slug": "appointment-scheduling",
     "name": {
-      "en": "Appointment Management",
-      "ar": "إدارة المواعيد",
-      "fr": "Gestion des rendez-vous"
+      "en": "Appointment Scheduling",
+      "ar": "جدولة المواعيد",
+      "fr": "Planification des rendez-vous"
     },
     "description": {
-      "en": "Schedule and manage appointments efficiently",
-      "ar": "جدولة وإدارة المواعيد بكفاءة",
-      "fr": "Planifier et gérer les rendez-vous efficacement"
+      "en": "Complete appointment and scheduling system",
+      "ar": "نظام كامل للمواعيد والجدولة",
+      "fr": "Système complet de rendez-vous et planification"
     },
     "icon": "calendar",
     "color": "green",
     "sort_order": 2,
     "features": [
       {
-        "slug": "calendar-sync",
+        "slug": "appointment-management",
         "name": {
-          "en": "Calendar Sync",
-          "ar": "مزامنة التقويم",
-          "fr": "Synchronisation calendrier"
+          "en": "Appointment Management",
+          "ar": "إدارة المواعيد",
+          "fr": "Gestion des rendez-vous"
         },
         "description": {
-          "en": "Sync with external calendar applications",
-          "ar": "المزامنة مع تطبيقات التقويم الخارجية",
-          "fr": "Synchroniser avec les applications de calendrier externes"
+          "en": "Schedule, manage, and track appointments",
+          "ar": "جدولة وإدارة وتتبع المواعيد",
+          "fr": "Planifier, gérer et suivre les rendez-vous"
+        },
+        "icon": "calendar-days",
+        "color": "blue"
+      },
+      {
+        "slug": "calendar-sync",
+        "name": {
+          "en": "Calendar Integration",
+          "ar": "تكامل التقويم",
+          "fr": "Intégration calendrier"
+        },
+        "description": {
+          "en": "Sync with external calendars (Google, Outlook, etc.)",
+          "ar": "المزامنة مع التقويمات الخارجية (Google، Outlook، إلخ)",
+          "fr": "Synchroniser avec calendriers externes (Google, Outlook, etc.)"
         },
         "icon": "sync",
-        "color": "blue"
+        "color": "purple"
       },
       {
         "slug": "appointment-reminders",
         "name": {
-          "en": "Appointment Reminders",
-          "ar": "تذكيرات المواعيد",
-          "fr": "Rappels de rendez-vous"
+          "en": "Automated Reminders",
+          "ar": "التذكيرات التلقائية",
+          "fr": "Rappels automatiques"
         },
         "description": {
-          "en": "Automated reminders for upcoming appointments",
-          "ar": "تذكيرات تلقائية للمواعيد القادمة",
-          "fr": "Rappels automatiques pour les rendez-vous à venir"
+          "en": "Automatic appointment reminders via SMS and email",
+          "ar": "تذكيرات تلقائية للمواعيد عبر الرسائل النصية والبريد الإلكتروني",
+          "fr": "Rappels automatiques de rendez-vous par SMS et email"
         },
         "icon": "bell",
         "color": "orange"
@@ -106,6 +121,54 @@
           "fr": "Configurer des horaires de rendez-vous récurrents"
         },
         "icon": "repeat",
+        "color": "indigo"
+      },
+      {
+        "slug": "availability-management",
+        "name": {
+          "en": "Availability & Holidays",
+          "ar": "التوفر والعطلات",
+          "fr": "Disponibilité et jours fériés"
+        },
+        "description": {
+          "en": "Manage veterinarian availability and clinic holidays",
+          "ar": "إدارة توفر الأطباء البيطريين وعطلات العيادة",
+          "fr": "Gérer la disponibilité des vétérinaires et jours fériés"
+        },
+        "icon": "calendar-x",
+        "color": "red"
+      }
+    ]
+  },
+  {
+    "slug": "video-consultations",
+    "name": {
+      "en": "Video Consultations",
+      "ar": "الاستشارات المرئية",
+      "fr": "Consultations vidéo"
+    },
+    "description": {
+      "en": "Online video consultation system",
+      "ar": "نظام الاستشارات المرئية عبر الإنترنت",
+      "fr": "Système de consultation vidéo en ligne"
+    },
+    "icon": "video",
+    "color": "purple",
+    "sort_order": 3,
+    "features": [
+      {
+        "slug": "video-calls",
+        "name": {
+          "en": "Video Calls with Clients",
+          "ar": "مكالمات الفيديو مع العملاء",
+          "fr": "Appels vidéo avec clients"
+        },
+        "description": {
+          "en": "Conduct secure video consultations with clients",
+          "ar": "إجراء استشارات فيديو آمنة مع العملاء",
+          "fr": "Effectuer des consultations vidéo sécurisées avec les clients"
+        },
+        "icon": "video-camera",
         "color": "purple"
       }
     ]
@@ -118,62 +181,218 @@
       "fr": "Dossiers médicaux"
     },
     "description": {
-      "en": "Comprehensive medical record management",
-      "ar": "إدارة شاملة للسجلات الطبية",
-      "fr": "Gestion complète des dossiers médicaux"
+      "en": "Complete medical record management system",
+      "ar": "نظام إدارة السجلات الطبية الكامل",
+      "fr": "Système complet de gestion des dossiers médicaux"
     },
     "icon": "file-medical",
     "color": "red",
-    "sort_order": 3,
+    "sort_order": 4,
     "features": [
+      {
+        "slug": "consultation-management",
+        "name": {
+          "en": "Consultation Management",
+          "ar": "إدارة الاستشارات",
+          "fr": "Gestion des consultations"
+        },
+        "description": {
+          "en": "Record and manage medical consultations",
+          "ar": "تسجيل وإدارة الاستشارات الطبية",
+          "fr": "Enregistrer et gérer les consultations médicales"
+        },
+        "icon": "stethoscope",
+        "color": "blue"
+      },
       {
         "slug": "digital-prescriptions",
         "name": {
           "en": "Digital Prescriptions",
-          "ar": "الوصفات الرقمية",
+          "ar": "الوصفات الطبية الرقمية",
           "fr": "Ordonnances numériques"
         },
         "description": {
-          "en": "Create and manage digital prescriptions",
-          "ar": "إنشاء وإدارة الوصفات الرقمية",
-          "fr": "Créer et gérer des ordonnances numériques"
+          "en": "Create, manage and track digital prescriptions",
+          "ar": "إنشاء وإدارة وتتبع الوصفات الطبية الرقمية",
+          "fr": "Créer, gérer et suivre les ordonnances numériques"
         },
         "icon": "prescription",
         "color": "green"
+      },
+      {
+        "slug": "vaccination-tracking",
+        "name": {
+          "en": "Vaccination Tracking",
+          "ar": "تتبع التطعيمات",
+          "fr": "Suivi des vaccinations"
+        },
+        "description": {
+          "en": "Track vaccination records and schedules",
+          "ar": "تتبع سجلات وجداول التطعيمات",
+          "fr": "Suivre les dossiers et calendriers de vaccination"
+        },
+        "icon": "syringe",
+        "color": "purple"
+      },
+      {
+        "slug": "medical-history",
+        "name": {
+          "en": "Medical History & Notes",
+          "ar": "التاريخ الطبي والملاحظات",
+          "fr": "Historique médical et notes"
+        },
+        "description": {
+          "en": "Complete medical history, notes, and allergy tracking",
+          "ar": "التاريخ الطبي الكامل والملاحظات وتتبع الحساسية",
+          "fr": "Historique médical complet, notes et suivi des allergies"
+        },
+        "icon": "notes",
+        "color": "orange"
       }
     ]
   },
   {
-    "slug": "billing-finance",
+    "slug": "inventory-stock",
     "name": {
-      "en": "Billing & Finance",
-      "ar": "الفواتير والمالية",
-      "fr": "Facturation et finance"
+      "en": "Inventory & Stock Management",
+      "ar": "إدارة المخزون والمستودعات",
+      "fr": "Gestion des stocks et inventaire"
     },
     "description": {
-      "en": "Financial management and billing tools",
-      "ar": "أدوات الإدارة المالية والفواتير",
-      "fr": "Outils de gestion financière et de facturation"
+      "en": "Complete inventory and stock control system",
+      "ar": "نظام كامل لإدارة المخزون والتحكم في المستودعات",
+      "fr": "Système complet de gestion des stocks et contrôle d'inventaire"
+    },
+    "icon": "box",
+    "color": "brown",
+    "sort_order": 5,
+    "features": [
+      {
+        "slug": "product-management",
+        "name": {
+          "en": "Product Management",
+          "ar": "إدارة المنتجات",
+          "fr": "Gestion des produits"
+        },
+        "description": {
+          "en": "Manage products, medications, and supplies catalog",
+          "ar": "إدارة كتالوج المنتجات والأدوية والمستلزمات",
+          "fr": "Gérer le catalogue de produits, médicaments et fournitures"
+        },
+        "icon": "package",
+        "color": "blue"
+      },
+      {
+        "slug": "stock-tracking",
+        "name": {
+          "en": "Stock Tracking",
+          "ar": "تتبع المخزون",
+          "fr": "Suivi des stocks"
+        },
+        "description": {
+          "en": "Real-time stock levels, lots, and inventory tracking",
+          "ar": "مستويات المخزون في الوقت الفعلي وتتبع الدفعات والمخزون",
+          "fr": "Niveaux de stock en temps réel, lots et suivi d'inventaire"
+        },
+        "icon": "barcode",
+        "color": "green"
+      },
+      {
+        "slug": "low-stock-alerts",
+        "name": {
+          "en": "Low Stock Alerts",
+          "ar": "تنبيهات المخزون المنخفض",
+          "fr": "Alertes de stock faible"
+        },
+        "description": {
+          "en": "Automatic alerts for low stock levels",
+          "ar": "تنبيهات تلقائية لمستويات المخزون المنخفضة",
+          "fr": "Alertes automatiques pour niveaux de stock faibles"
+        },
+        "icon": "alert",
+        "color": "orange"
+      }
+    ]
+  },
+  {
+    "slug": "ordering-suppliers",
+    "name": {
+      "en": "Ordering & Supplier System",
+      "ar": "نظام الطلبات والموردين",
+      "fr": "Système de commandes et fournisseurs"
+    },
+    "description": {
+      "en": "Complete ordering and supplier management",
+      "ar": "إدارة كاملة للطلبات والموردين",
+      "fr": "Gestion complète des commandes et fournisseurs"
+    },
+    "icon": "truck",
+    "color": "indigo",
+    "sort_order": 6,
+    "features": [
+      {
+        "slug": "supplier-management",
+        "name": {
+          "en": "Supplier Management",
+          "ar": "إدارة الموردين",
+          "fr": "Gestion des fournisseurs"
+        },
+        "description": {
+          "en": "Manage supplier contacts, information, and relationships",
+          "ar": "إدارة جهات اتصال الموردين والمعلومات والعلاقات",
+          "fr": "Gérer les contacts fournisseurs, informations et relations"
+        },
+        "icon": "building",
+        "color": "blue"
+      },
+      {
+        "slug": "purchase-orders",
+        "name": {
+          "en": "Purchase Orders",
+          "ar": "أوامر الشراء",
+          "fr": "Bons de commande"
+        },
+        "description": {
+          "en": "Create and manage purchase orders to suppliers",
+          "ar": "إنشاء وإدارة أوامر الشراء للموردين",
+          "fr": "Créer et gérer les bons de commande aux fournisseurs"
+        },
+        "icon": "shopping-cart",
+        "color": "green"
+      },
+      {
+        "slug": "order-tracking",
+        "name": {
+          "en": "Order Tracking",
+          "ar": "تتبع الطلبات",
+          "fr": "Suivi des commandes"
+        },
+        "description": {
+          "en": "Track order status from placement to delivery",
+          "ar": "تتبع حالة الطلب من الإنشاء إلى التسليم",
+          "fr": "Suivre le statut des commandes de la création à la livraison"
+        },
+        "icon": "package-check",
+        "color": "purple"
+      }
+    ]
+  },
+  {
+    "slug": "billing-invoicing",
+    "name": {
+      "en": "Billing & Invoicing",
+      "ar": "الفواتير والمحاسبة",
+      "fr": "Facturation et comptabilité"
+    },
+    "description": {
+      "en": "Complete billing and financial management",
+      "ar": "إدارة مالية ومحاسبية كاملة",
+      "fr": "Gestion financière et comptable complète"
     },
     "icon": "credit-card",
     "color": "green",
-    "sort_order": 4,
+    "sort_order": 7,
     "features": [
-      {
-        "slug": "invoicing",
-        "name": {
-          "en": "Invoicing",
-          "ar": "الفواتير",
-          "fr": "Facturation"
-        },
-        "description": {
-          "en": "Create and manage invoices",
-          "ar": "إنشاء وإدارة الفواتير",
-          "fr": "Créer et gérer les factures"
-        },
-        "icon": "receipt",
-        "color": "blue"
-      },
       {
         "slug": "payment-tracking",
         "name": {
@@ -182,11 +401,11 @@
           "fr": "Suivi des paiements"
         },
         "description": {
-          "en": "Track payment status and history",
-          "ar": "تتبع حالة وتاريخ المدفوعات",
-          "fr": "Suivre le statut et l'historique des paiements"
+          "en": "Track payments and payment history",
+          "ar": "تتبع المدفوعات وتاريخ الدفع",
+          "fr": "Suivre les paiements et l'historique des paiements"
         },
-        "icon": "money-bill",
+        "icon": "money",
         "color": "green"
       },
       {
@@ -197,30 +416,30 @@
           "fr": "Rapports financiers"
         },
         "description": {
-          "en": "Generate comprehensive financial reports",
-          "ar": "إنتاج تقارير مالية شاملة",
-          "fr": "Générer des rapports financiers complets"
+          "en": "Generate comprehensive financial reports and analytics",
+          "ar": "إنشاء تقارير وتحليلات مالية شاملة",
+          "fr": "Générer des rapports financiers et analyses complètes"
         },
-        "icon": "chart-line",
+        "icon": "chart-bar",
         "color": "purple"
       }
     ]
   },
   {
-    "slug": "communication",
+    "slug": "communication-tools",
     "name": {
-      "en": "Communication",
-      "ar": "التواصل",
-      "fr": "Communication"
+      "en": "Communication Tools",
+      "ar": "أدوات التواصل",
+      "fr": "Outils de communication"
     },
     "description": {
-      "en": "Communication tools and notifications",
-      "ar": "أدوات التواصل والإشعارات",
-      "fr": "Outils de communication et notifications"
+      "en": "Multi-channel communication with clients",
+      "ar": "التواصل متعدد القنوات مع العملاء",
+      "fr": "Communication multicanal avec les clients"
     },
-    "icon": "comments",
-    "color": "purple",
-    "sort_order": 5,
+    "icon": "message",
+    "color": "blue",
+    "sort_order": 8,
     "features": [
       {
         "slug": "sms-notifications",
@@ -230,42 +449,141 @@
           "fr": "Notifications SMS"
         },
         "description": {
-          "en": "Send SMS notifications to clients",
-          "ar": "إرسال إشعارات الرسائل النصية للعملاء",
-          "fr": "Envoyer des notifications SMS aux clients"
+          "en": "Send SMS notifications and reminders to clients",
+          "ar": "إرسال إشعارات وتذكيرات عبر الرسائل النصية للعملاء",
+          "fr": "Envoyer des notifications SMS et rappels aux clients"
         },
-        "icon": "sms",
+        "icon": "phone",
+        "color": "blue"
+      }
+    ]
+  },
+  {
+    "slug": "content-management",
+    "name": {
+      "en": "Content & Blog Management",
+      "ar": "إدارة المحتوى والمدونات",
+      "fr": "Gestion du contenu et blogs"
+    },
+    "description": {
+      "en": "Educational content and blog system",
+      "ar": "نظام المحتوى التعليمي والمدونات",
+      "fr": "Système de contenu éducatif et blogs"
+    },
+    "icon": "newspaper",
+    "color": "yellow",
+    "sort_order": 9,
+    "features": [
+      {
+        "slug": "blog-management",
+        "name": {
+          "en": "Blog Management",
+          "ar": "إدارة المدونات",
+          "fr": "Gestion des blogs"
+        },
+        "description": {
+          "en": "Create and manage blog posts and articles",
+          "ar": "إنشاء وإدارة منشورات المدونة والمقالات",
+          "fr": "Créer et gérer les articles de blog"
+        },
+        "icon": "edit",
         "color": "blue"
       },
       {
-        "slug": "email-marketing",
+        "slug": "educational-content",
         "name": {
-          "en": "Email Marketing",
-          "ar": "التسويق عبر البريد الإلكتروني",
-          "fr": "Marketing par email"
+          "en": "Educational Content",
+          "ar": "المحتوى التعليمي",
+          "fr": "Contenu éducatif"
         },
         "description": {
-          "en": "Send marketing emails to clients",
-          "ar": "إرسال رسائل تسويقية للعملاء",
-          "fr": "Envoyer des emails marketing aux clients"
+          "en": "Share educational content with clients",
+          "ar": "مشاركة المحتوى التعليمي مع العملاء",
+          "fr": "Partager du contenu éducatif avec les clients"
         },
-        "icon": "envelope",
-        "color": "orange"
+        "icon": "book",
+        "color": "purple"
+      }
+    ]
+  },
+  {
+    "slug": "user-role-management",
+    "name": {
+      "en": "User & Role Management",
+      "ar": "إدارة المستخدمين والأدوار",
+      "fr": "Gestion des utilisateurs et rôles"
+    },
+    "description": {
+      "en": "Staff and permission management",
+      "ar": "إدارة الموظفين والصلاحيات",
+      "fr": "Gestion du personnel et permissions"
+    },
+    "icon": "shield",
+    "color": "gray",
+    "sort_order": 10,
+    "features": [
+      {
+        "slug": "staff-management",
+        "name": {
+          "en": "Staff Management",
+          "ar": "إدارة الموظفين",
+          "fr": "Gestion du personnel"
+        },
+        "description": {
+          "en": "Manage veterinarians, receptionists, and staff",
+          "ar": "إدارة الأطباء البيطريين والموظفين",
+          "fr": "Gérer les vétérinaires, réceptionnistes et personnel"
+        },
+        "icon": "users",
+        "color": "blue"
       },
       {
-        "slug": "push-notifications",
+        "slug": "role-permissions",
         "name": {
-          "en": "Push Notifications",
-          "ar": "الإشعارات الفورية",
-          "fr": "Notifications push"
+          "en": "Roles & Permissions",
+          "ar": "الأدوار والصلاحيات",
+          "fr": "Rôles et permissions"
         },
         "description": {
-          "en": "Send push notifications",
-          "ar": "إرسال إشعارات فورية",
-          "fr": "Envoyer des notifications push"
+          "en": "Configure roles and assign permissions",
+          "ar": "تكوين الأدوار وتعيين الصلاحيات",
+          "fr": "Configurer les rôles et attribuer les permissions"
         },
-        "icon": "notification",
-        "color": "green"
+        "icon": "key",
+        "color": "purple"
+      }
+    ]
+  },
+  {
+    "slug": "system-settings",
+    "name": {
+      "en": "System Settings",
+      "ar": "إعدادات النظام",
+      "fr": "Paramètres système"
+    },
+    "description": {
+      "en": "System configuration and management",
+      "ar": "تكوين وإدارة النظام",
+      "fr": "Configuration et gestion du système"
+    },
+    "icon": "cog",
+    "color": "gray",
+    "sort_order": 11,
+    "features": [
+      {
+        "slug": "system-configuration",
+        "name": {
+          "en": "System Configuration",
+          "ar": "تكوين النظام",
+          "fr": "Configuration système"
+        },
+        "description": {
+          "en": "Configure system settings and preferences",
+          "ar": "تكوين إعدادات وتفضيلات النظام",
+          "fr": "Configurer les paramètres et préférences système"
+        },
+        "icon": "settings",
+        "color": "blue"
       }
     ]
   }

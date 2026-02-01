@@ -101,9 +101,6 @@ export function Features({
         {/* Predefined Features */}
         {featureGroups.length > 0 && (
           <div>
-            <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-               {t('common.available_features')}
-            </h4>
             <div className="space-y-4">
               {featureGroups.map((group) => {
                 const groupFeatures = allFeatures.filter(feature => feature.group?.uuid === group.uuid);
