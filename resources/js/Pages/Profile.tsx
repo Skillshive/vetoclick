@@ -203,7 +203,7 @@ console.log('page?.props?.flash',page?.props?.flash);
           endTime: slot.end_time,
           startRecur: getStartOfWeek(),
           endRecur: getEndOfWeek(),
-          backgroundColor: slot.is_available ? '#4CAF50' : '#9e9e9e',
+          backgroundColor: slot.is_available ? '#15A093' : '#9e9e9e',
         }));
         setAvailabilitySlots(formattedSlots);
       }
@@ -240,7 +240,7 @@ console.log('page?.props?.flash',page?.props?.flash);
           endTime,
           startRecur: getStartOfWeek(),
           endRecur: getEndOfWeek(),
-          backgroundColor: '#4CAF50'
+          backgroundColor: '#15A093'
         }]);
         
         showToast({
