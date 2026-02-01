@@ -59,6 +59,6 @@ Route::prefix('appointments')->controller(AppointmentController::class)->group(f
     Route::post('/{uuid}/update', 'update');
 });
 
-Route::post('/clients', [ClientController::class, 'store'])->name('clients.store')->middleware(['auth', 'verified']);
+Route::post('/clients', [ClientController::class, 'store'])->name('api.clients.store')->middleware(['auth', 'verified']);
 Route::get('/clients/{uuid}/pets', [PetController::class, 'getByClient'])->name('clients.pets');
 Route::get('/veterinarians', [VeterinarianController::class, 'index'])->name('veterinarians.all');
