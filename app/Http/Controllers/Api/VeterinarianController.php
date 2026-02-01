@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Veterinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class VeterinarianController extends Controller
 {
@@ -29,7 +30,14 @@ class VeterinarianController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Veterinary::with(['user', 'user.image', 'availabilitySchedules'])
+        $query = Veterinary::with([
+            'user', 
+            'user.image', 
+            'availabilitySchedules', 
+            'holidays' => function($query) {
+                $query->whereNull('deleted_at');
+            }
+        ])
             ->whereNotNull('address')
             ->where('address', '!=', '')
             ->whereNotNull('consultation_price')
@@ -122,6 +130,19 @@ class VeterinarianController extends Controller
             // Calculate availability based on actual schedule
             $availability = $this->calculateAvailability($vet);
 
+            // Get holiday info if on holiday
+            $holidayInfo = null;
+            if ($availability === 'On Holiday') {
+                $holiday = $this->getCurrentHoliday($vet);
+                if ($holiday) {
+                    $holidayInfo = [
+                        'start_date' => $holiday->start_date->format('Y-m-d'),
+                        'end_date' => $holiday->end_date->format('Y-m-d'),
+                        'reason' => $holiday->reason,
+                    ];
+                }
+            }
+
             return [
                 'uuid' => $vet->uuid,
                 'name' => $fullName,
@@ -133,6 +154,7 @@ class VeterinarianController extends Controller
                 'lat' => $lat,
                 'lng' => $lng,
                 'availability' => $availability,
+                'holiday' => $holidayInfo,
                 'price' => $vet->consultation_price ?? 0,
                 'distance' => $distance ? round($distance, 1) : null,
                 'address' => $vet->address,
@@ -197,10 +219,81 @@ class VeterinarianController extends Controller
     }
 
     /**
+     * Check if vet is currently on holiday
+     */
+    private function isOnHoliday($vet)
+    {
+        // Ensure holidays are loaded (excluding soft-deleted ones)
+        if (!$vet->relationLoaded('holidays')) {
+            $vet->load(['holidays' => function($query) {
+                $query->whereNull('deleted_at');
+            }]);
+        }
+        
+        $today = Carbon::now('Africa/Casablanca')->startOfDay();
+        
+        // Use the eager-loaded holidays collection and check if any holiday is active
+        foreach ($vet->holidays as $holiday) {
+            // Skip soft-deleted holidays
+            if ($holiday->deleted_at) {
+                continue;
+            }
+            
+            $startDate = Carbon::parse($holiday->start_date)->startOfDay();
+            $endDate = Carbon::parse($holiday->end_date)->endOfDay();
+            
+            // Check if today falls within the holiday range (inclusive)
+            if ($today->gte($startDate) && $today->lte($endDate)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get current holiday details if vet is on holiday
+     */
+    private function getCurrentHoliday($vet)
+    {
+        // Ensure holidays are loaded (excluding soft-deleted ones)
+        if (!$vet->relationLoaded('holidays')) {
+            $vet->load(['holidays' => function($query) {
+                $query->whereNull('deleted_at');
+            }]);
+        }
+        
+        $today = Carbon::now('Africa/Casablanca')->startOfDay();
+        
+        // Use the eager-loaded holidays collection
+        foreach ($vet->holidays as $holiday) {
+            // Skip soft-deleted holidays
+            if ($holiday->deleted_at) {
+                continue;
+            }
+            
+            $startDate = Carbon::parse($holiday->start_date)->startOfDay();
+            $endDate = Carbon::parse($holiday->end_date)->endOfDay();
+            
+            // Check if today falls within the holiday range (inclusive)
+            if ($today->gte($startDate) && $today->lte($endDate)) {
+                return $holiday;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
      * Calculate availability based on vet's schedule
      */
     private function calculateAvailability($vet)
     {
+        // Check if vet is on holiday first
+        if ($this->isOnHoliday($vet)) {
+            return 'On Holiday';
+        }
+
         $schedules = $vet->availabilitySchedules()->where('is_break', false)->get();
         
         // If no schedules, return closed
