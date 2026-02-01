@@ -291,6 +291,9 @@ class RolePermissionSeeder extends Seeder
             'permissions.create',
             'permissions.edit',
             'permissions.delete',
+            'pets.view',
+            'pets.create',
+            'pets.edit',
             
             // Subscription Plans
             'subscription-plans.view',
@@ -354,26 +357,26 @@ class RolePermissionSeeder extends Seeder
             // System Management
             'notifications.view',
             'notifications.delete',
+            'settings.view',
+            'settings.edit'
         ]);
 
         $clientRole->givePermissionTo([
-            // Client Management (own data)
             'pets.view',
             'pets.create',
             'pets.edit',
             
-            // Appointment Management (own appointments)
             'appointments.view',
             'appointments.create',
             'appointments.request',
             'appointments.cancel',
             'appointments.create_from_page',
-            // Medical Management (own medical records)
             'consultations.view',
 
-            // System Management
             'notifications.view',
             'notifications.delete',
+            'settings.view',
+            'settings.edit'
         ]);
     }
 }
