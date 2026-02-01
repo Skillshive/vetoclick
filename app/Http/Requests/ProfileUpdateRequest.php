@@ -55,6 +55,7 @@ class ProfileUpdateRequest extends FormRequest
                 'address' => ['nullable', 'string', 'max:500', new ValidAddress()],
                 'city' => ['nullable', 'string', 'max:255'],
                 'consultation_price' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
+                'accepts_video_calls' => ['nullable', 'boolean'],
             ]);
         }
 
