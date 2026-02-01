@@ -181,6 +181,7 @@ class AdminDashboardController extends Controller
                 'veterinarians.address',
                 'veterinarians.city',
                 'veterinarians.consultation_price',
+                'veterinarians.accepts_video_calls',
                 'veterinarians.subscription_plan_id',
                 'veterinarians.subscription_status',
                 'veterinarians.subscription_start_date',
