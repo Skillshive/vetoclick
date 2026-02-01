@@ -18,16 +18,16 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $vet = User::create(
-            ['firstname' => 'Jhon',
-            'lastname' => 'Doe',
-            'email' => 'admin@gmail.com',
+            ['firstname' => 'Veterinarian',
+            'lastname' => 'Veterinarian',
+            'email' => 'veterinarian@gmail.com',
             'password' => bcrypt('Password1234!234'),
         ]
         );
-        $user = User::create(
-            ['firstname' => 'Abdellah',
-            'lastname' => 'Bounafaa',
-            'email' => 'abdellahbounafaa@gmail.com',
+        $admin = User::create(
+            ['firstname' => 'Admin',
+            'lastname' => 'Admin',
+            'email' => 'admin@gmail.com',
             'password' => bcrypt('Password1234!234'),
         ]
         );
@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
 
         // Assign veterinarian role to the user
         $vet->assignRole('veterinarian');
-        $user->assignRole('admin');
+        $admin->assignRole('admin');
 
         // Seed other data
         $this->call([
@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
             ProductCategorySeeder::class,
             ProductSeeder::class,
             CategoryBlogSeeder::class,
-            BlogSeeder::class,
+           // BlogSeeder::class,
             FeatureGroupSeeder::class,
             SubscriptionPlanSeeder::class,
             ClientSeeder::class,
