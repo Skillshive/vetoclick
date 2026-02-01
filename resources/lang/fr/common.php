@@ -1840,6 +1840,7 @@ return [
     'noon_session_must_include_noon' => 'Noon session must include 12:00 PM (start before or at noon, end after noon)',
     'availability_updated_successfully' => 'Availability updated successfully',
     'failed_to_update_availability' => 'Failed to update availability',
-    'reason' => 'Reason',
-    'profile_updated_successfully' => 'Profile updated successfully',
+    'reason' => 'Raison',
+    'profile_updated_successfully' => 'Profil mis à jour avec succès',
+    'on_holiday' => 'En Vacances',
 ];

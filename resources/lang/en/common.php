@@ -2192,4 +2192,5 @@ return [
     'meeting_is_not_available_at_this_time' => 'Meeting is not available at this time',
     'checking' => 'Checking...',
     'profile_updated_successfully' => 'Profile updated successfully',
+    'on_holiday' => 'On Holiday',
 ];
