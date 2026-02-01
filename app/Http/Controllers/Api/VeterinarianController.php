@@ -10,6 +10,21 @@ use Illuminate\Support\Facades\DB;
 class VeterinarianController extends Controller
 {
     /**
+     * Get unique specializations from all veterinarians
+     */
+    public function getSpecializations()
+    {
+        $specializations = Veterinary::whereNotNull('specialization')
+            ->where('specialization', '!=', '')
+            ->distinct()
+            ->pluck('specialization')
+            ->sort()
+            ->values();
+
+        return response()->json($specializations);
+    }
+
+    /**
      * Get list of veterinarians with search and filter support
      */
     public function index(Request $request)
@@ -53,6 +68,14 @@ class VeterinarianController extends Controller
             $city = trim($request->city);
             if (!empty($city)) {
                 $query->where('city', 'like', "%{$city}%");
+            }
+        }
+
+        // Filter by video consultation availability
+        if ($request->has('video_conseil') && $request->video_conseil) {
+            $videoConseil = filter_var($request->video_conseil, FILTER_VALIDATE_BOOLEAN);
+            if ($videoConseil) {
+                $query->where('accepts_video_calls', true);
             }
         }
 
@@ -116,7 +139,7 @@ class VeterinarianController extends Controller
                 'city' => $vet->city ?? null,
                 'phone' => $user->phone ?? null,
                 'images' => $avatarUrl ? [$avatarUrl] : [],
-                'videoConseil' => false, // Placeholder - add to database if needed
+                'videoConseil' => (bool) $vet->accepts_video_calls,
                 'acceptsInsurance' => true, // Placeholder
                 'nextAvailable' => 'Today', // Placeholder - should be calculated
                 'services' => $this->getServicesForSpecialization($vet->specialization),
