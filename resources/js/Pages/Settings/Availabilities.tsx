@@ -514,7 +514,7 @@ export default function Availabilities() {
           ) : (
             <div className="space-y-6">
               {/* Day Selector */}
-              <div className={`flex flex-wrap gap-2 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div className={`flex flex-wrap gap-2 ${isRtl ? '' : 'justify-start'}`}>
                 {DAYS.map(day => (
                   <button
                     key={day.value}
@@ -706,7 +706,7 @@ export default function Availabilities() {
               </div>
 
               {/* Action Buttons */}
-              <div className={`flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-dark-700 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div className={`flex gap-3 pt-4 border-t border-gray-200 dark:border-dark-700 ${isRtl ? 'justify-end' : 'justify-end'}`}>
                 <Button
                   type="button"
                   variant="outlined"
