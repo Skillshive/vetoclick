@@ -269,6 +269,9 @@ class RolePermissionSeeder extends Seeder
             'clients.create',
             'clients.edit',
             'clients.delete',
+            'pets.view',
+            'pets.create',
+            'pets.edit',
         ])->get();
         
         $adminRole->givePermissionTo($adminPermissions);
