@@ -70,5 +70,10 @@ class Veterinary extends Model
     public function subscriptionPlan(){
         return $this->belongsTo(SubscriptionPlan::class);
     }
+
+    public function holidays()
+    {
+        return $this->hasMany(Holiday::class, 'veterinarian_id');
+    }
   
 }
