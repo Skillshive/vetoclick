@@ -28,7 +28,12 @@ class Veterinary extends Model
         'consultation_price',
         'subscription_plan_id', 'subscription_status', 'subscription_start_date',
         'subscription_end_date',
-        'city'
+        'city',
+        'accepts_video_calls'
+    ];
+
+    protected $casts = [
+        'accepts_video_calls' => 'boolean',
     ];
 
     // Relations
