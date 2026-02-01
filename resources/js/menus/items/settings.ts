@@ -7,6 +7,7 @@ import UserGroupIcon from "@/assets/dualicons/users.svg?react";
 import BoxIcon from "@/assets/dualicons/box.svg?react";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
 import Calendar from "@/assets/dualicons/schedul.svg?react";
+import Money from "@/assets/dualicons/money.svg?react";
 import { 
   UserIcon, 
   PaintBrushIcon, 
@@ -210,7 +211,7 @@ const menuConfig: MenuConfig[] = [
   {
     id: 'subscription-plans',
     title: 'common.prime_panel.subscription_plans',
-    icon: CreditCardIcon,
+    icon: Money,
     path: route('subscription-plans.index') || '/subscription-plans',
     type: 'item',
     permission: 'subscription-plans.view',
