@@ -577,6 +577,7 @@ return [
             "orders_management" => "Orders Management",
             "clients_list" => "Clients",
             'calendar_appointments' => "Calendar",
+            "pets" => "Pets",
     ],
 
     // Category Blogs specific translations
@@ -1305,6 +1306,7 @@ return [
         'my_doctors' => 'My Doctors',
         'consultations' => 'Consultations',
         'no_prescriptions' => 'No prescriptions',
+        'no_doctors' => 'No doctors found',
     ],
     'vet_dashboard' => [
         'page_title' => 'CRM Analytics Dashboard',
@@ -2170,5 +2172,21 @@ return [
 'availability_updated_successfully' => 'Availability updated successfully',
 'failed_to_update_availability' => 'Failed to update availability',
 'duplicate_slot_error' => 'Duplicate slot found with the same time range',
+'reason' => 'Reason',
 
+    // Meeting availability translations
+    'hour' => 'hour',
+    'hours' => 'hours',
+    'minute' => 'minute',
+    'minutes' => 'minutes',
+    'second' => 'second',
+    'seconds' => 'seconds',
+    'meeting_will_be_available_in_hours_minutes' => 'Meeting will be available in :hours :hoursUnit :minutes :minutesUnit',
+    'meeting_will_be_available_in_hours' => 'Meeting will be available in :hours :hoursUnit',
+    'meeting_will_be_available_in_minutes_seconds' => 'Meeting will be available in :minutes :minutesUnit :seconds :secondsUnit',
+    'meeting_will_be_available_in_minutes' => 'Meeting will be available in :minutes :minutesUnit',
+    'meeting_will_be_available_in_seconds' => 'Meeting will be available in :seconds :secondsUnit',
+    'meeting_time_has_passed' => 'Meeting time has passed',
+    'meeting_is_not_available_at_this_time' => 'Meeting is not available at this time',
+    'checking' => 'Checking...',
 ];

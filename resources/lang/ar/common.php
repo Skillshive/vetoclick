@@ -1860,4 +1860,20 @@ return [
 'total_sold' => 'إجمالي المبيعات',
 'no_notifications_yet' => 'لا توجد إشعارات جديدة بعد',
 'blog_retrieve_error' => 'فشل استرداد المدونة',
+
+    // Meeting availability translations
+    'hour' => 'ساعة',
+    'hours' => 'ساعات',
+    'minute' => 'دقيقة',
+    'minutes' => 'دقائق',
+    'second' => 'ثانية',
+    'seconds' => 'ثواني',
+    'meeting_will_be_available_in_hours_minutes' => 'سيكون الاجتماع متاحًا خلال :hours :hoursUnit :minutes :minutesUnit',
+    'meeting_will_be_available_in_hours' => 'سيكون الاجتماع متاحًا خلال :hours :hoursUnit',
+    'meeting_will_be_available_in_minutes_seconds' => 'سيكون الاجتماع متاحًا خلال :minutes :minutesUnit :seconds :secondsUnit',
+    'meeting_will_be_available_in_minutes' => 'سيكون الاجتماع متاحًا خلال :minutes :minutesUnit',
+    'meeting_will_be_available_in_seconds' => 'سيكون الاجتماع متاحًا خلال :seconds :secondsUnit',
+    'meeting_time_has_passed' => 'لقد انتهى وقت الاجتماع',
+    'meeting_is_not_available_at_this_time' => 'الاجتماع غير متاح في هذا الوقت',
+    'checking' => 'جارٍ التحقق...',
 ];

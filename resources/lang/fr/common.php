@@ -1998,4 +1998,20 @@ return [
     'appointment_updated_message' => 'Votre rendez-vous avec :vetName pour :petName le :date à :time a été mis à jour.',
     'appointment_reminder_message' => 'N\'oubliez pas votre rendez-vous avec :vetName pour :petName le :date à :time.',
     'appointment_no_show_message' => 'Le rendez-vous avec :vetName pour :petName le :date à :time a été marqué comme absence.',
+
+    // Meeting availability translations
+    'hour' => 'heure',
+    'hours' => 'heures',
+    'minute' => 'minute',
+    'minutes' => 'minutes',
+    'second' => 'seconde',
+    'seconds' => 'secondes',
+    'meeting_will_be_available_in_hours_minutes' => 'La réunion sera disponible dans :hours :hoursUnit :minutes :minutesUnit',
+    'meeting_will_be_available_in_hours' => 'La réunion sera disponible dans :hours :hoursUnit',
+    'meeting_will_be_available_in_minutes_seconds' => 'La réunion sera disponible dans :minutes :minutesUnit :seconds :secondsUnit',
+    'meeting_will_be_available_in_minutes' => 'La réunion sera disponible dans :minutes :minutesUnit',
+    'meeting_will_be_available_in_seconds' => 'La réunion sera disponible dans :seconds :secondsUnit',
+    'meeting_time_has_passed' => 'L\'heure de la réunion est passée',
+    'meeting_is_not_available_at_this_time' => 'La réunion n\'est pas disponible en ce moment',
+    'checking' => 'Vérification...',
 ];
