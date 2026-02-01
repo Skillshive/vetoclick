@@ -200,26 +200,45 @@ export function AppointmentCard({
             if (totalMinutes > 60) {
               const hours = Math.floor(totalMinutes / 60);
               const remainingMinutes = Math.floor(totalMinutes % 60);
-              const hoursUnit = hours === 1 ? 'hour' : 'hours';
-              const minutesUnit = remainingMinutes === 1 ? 'minute' : 'minutes';
+              const hoursUnit = hours === 1 ? t('common.hour') || 'hour' : t('common.hours') || 'hours';
+              const minutesUnit = remainingMinutes === 1 ? t('common.minute') || 'minute' : t('common.minutes') || 'minutes';
               
               if (remainingMinutes > 0) {
-                message = `Meeting will be available in ${hours} ${hoursUnit} ${remainingMinutes} ${minutesUnit}`;
+                message = t('common.meeting_will_be_available_in_hours_minutes', { 
+                  hours, 
+                  minutes: remainingMinutes,
+                  hoursUnit,
+                  minutesUnit
+                }) || `Meeting will be available in ${hours} ${hoursUnit} ${remainingMinutes} ${minutesUnit}`;
               } else {
-                message = `Meeting will be available in ${hours} ${hoursUnit}`;
+                message = t('common.meeting_will_be_available_in_hours', { 
+                  hours,
+                  hoursUnit
+                }) || `Meeting will be available in ${hours} ${hoursUnit}`;
               }
             } else {
               const minutes = Math.floor(totalMinutes);
               const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-              const minutesUnit = minutes === 1 ? 'minute' : 'minutes';
-              const secondsUnit = seconds === 1 ? 'second' : 'seconds';
+              const minutesUnit = minutes === 1 ? t('common.minute') || 'minute' : t('common.minutes') || 'minutes';
+              const secondsUnit = seconds === 1 ? t('common.second') || 'second' : t('common.seconds') || 'seconds';
               
               if (minutes > 0 && seconds > 0) {
-                message = `Meeting will be available in ${minutes} ${minutesUnit} ${seconds} ${secondsUnit}`;
+                message = t('common.meeting_will_be_available_in_minutes_seconds', { 
+                  minutes, 
+                  seconds,
+                  minutesUnit,
+                  secondsUnit
+                }) || `Meeting will be available in ${minutes} ${minutesUnit} ${seconds} ${secondsUnit}`;
               } else if (minutes > 0) {
-                message = `Meeting will be available in ${minutes} ${minutesUnit}`;
+                message = t('common.meeting_will_be_available_in_minutes', { 
+                  minutes,
+                  minutesUnit
+                }) || `Meeting will be available in ${minutes} ${minutesUnit}`;
               } else {
-                message = `Meeting will be available in ${seconds} ${secondsUnit}`;
+                message = t('common.meeting_will_be_available_in_seconds', { 
+                  seconds,
+                  secondsUnit
+                }) || `Meeting will be available in ${seconds} ${secondsUnit}`;
               }
             }
             
@@ -231,7 +250,7 @@ export function AppointmentCard({
               setTimeRemainingMessage(null);
             } else {
               setCanAccessMeeting(false);
-              setTimeRemainingMessage('Meeting time has passed');
+              setTimeRemainingMessage(t('common.meeting_time_has_passed') || 'Meeting time has passed');
             }
           }
         } catch (error) {
@@ -475,7 +494,7 @@ export function AppointmentCard({
       if (!appointment.video_join_url) {
         showToast({
           type: 'error',
-          message: 'Meeting link not available',
+          message: t('common.meeting_link_not_available') || 'Meeting link not available',
           duration: 3000,
         });
         return;
@@ -484,7 +503,7 @@ export function AppointmentCard({
       if (canAccessMeeting === false) {
         showToast({
           type: 'error',
-          message: timeRemainingMessage || 'Meeting is not available at this time',
+          message: timeRemainingMessage || t('common.meeting_is_not_available_at_this_time') || 'Meeting is not available at this time',
           duration: 5000,
         });
         return;
