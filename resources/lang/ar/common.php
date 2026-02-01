@@ -389,6 +389,7 @@ return [
     'enter_specialization' => 'أدخل التخصص',
     'consultation_price' => 'سعر الاستشارة',
     'enter_consultation_price' => 'أدخل سعر الاستشارة',
+    'accepts_video_calls' => 'يقبل المكالمات المرئية',
     'years_experience' => 'سنوات الخبرة',
     'enter_years_experience' => 'أدخل سنوات الخبرة',
     'address' => 'العنوان',
@@ -1839,5 +1840,6 @@ return [
     'noon_session_must_include_noon' => 'Noon session must include 12:00 PM (start before or at noon, end after noon)',
     'availability_updated_successfully' => 'Availability updated successfully',
     'failed_to_update_availability' => 'Failed to update availability',
-    'reason' => 'Reason'
+    'reason' => 'Reason',
+    'profile_updated_successfully' => 'Profile updated successfully',
 ];

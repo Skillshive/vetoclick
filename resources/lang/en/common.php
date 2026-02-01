@@ -273,6 +273,7 @@ return [
     'enter_years_experience' => 'Enter years of experience',
     'consultation_price' => 'Consultation Price',
     'enter_consultation_price' => 'Enter consultation price',
+    'accepts_video_calls' => 'Accepts Video Calls',
     'address' => 'Address',
     'enter_address' => 'Enter address',
     'validating_address' => 'Validating address',
@@ -2190,4 +2191,5 @@ return [
     'meeting_time_has_passed' => 'Meeting time has passed',
     'meeting_is_not_available_at_this_time' => 'Meeting is not available at this time',
     'checking' => 'Checking...',
+    'profile_updated_successfully' => 'Profile updated successfully',
 ];

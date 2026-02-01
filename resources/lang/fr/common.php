@@ -389,6 +389,7 @@ return [
     'enter_specialization' => 'Entrez la spécialisation',
     'consultation_price' => 'Prix de consultation',
     'enter_consultation_price' => 'Entrez le prix de consultation',
+    'accepts_video_calls' => 'Accepte les appels vidéo',
     'years_experience' => 'Années d\'expérience',
     'enter_years_experience' => 'Entrez les années d\'expérience',
     'address' => 'Adresse',
@@ -1839,5 +1840,6 @@ return [
     'noon_session_must_include_noon' => 'Noon session must include 12:00 PM (start before or at noon, end after noon)',
     'availability_updated_successfully' => 'Availability updated successfully',
     'failed_to_update_availability' => 'Failed to update availability',
-    'reason' => 'Reason'
+    'reason' => 'Reason',
+    'profile_updated_successfully' => 'Profile updated successfully',
 ];
