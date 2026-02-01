@@ -510,6 +510,10 @@ class AppointmentController extends Controller
                 ]);
             }
 
+            // Auto-create consultation when user joins
+            $appointment->refresh();
+            $this->autoCreateConsultationOnJoin($appointment);
+
             // Redirect to VetoClick Meet
             return redirect($appointment->video_join_url);
         } catch (Exception $e) {
@@ -599,6 +603,57 @@ class AppointmentController extends Controller
                 'can_access' => false,
                 'message' => __('common.failed_to_check_meeting_access')
             ], 500);
+        }
+    }
+
+    /**
+     * Automatically create consultation when user joins meeting
+     */
+    private function autoCreateConsultationOnJoin(Appointment $appointment): ?Consultation
+    {
+        try {
+            // Only create consultation if meeting has started
+            if (!$appointment->meeting_started_at) {
+                return null;
+            }
+
+            // Check if consultation already exists
+            if ($appointment->consultation) {
+                \Illuminate\Support\Facades\Log::info('Consultation already exists', [
+                    'appointment_uuid' => $appointment->uuid,
+                    'consultation_id' => $appointment->consultation->id
+                ]);
+                return $appointment->consultation;
+            }
+
+            // Get veterinarian_id from appointment
+            $veterinarian = $appointment->veterinary ? $appointment->veterinary->id : null;
+
+            // Create consultation from appointment
+            $consultation = Consultation::create([
+                'veterinarian_id' => $veterinarian,
+                'appointment_id' => $appointment->id,
+                'client_id' => $appointment->client_id,
+                'pet_id' => $appointment->pet_id,
+                'conseil_date' => $appointment->appointment_date,
+                'start_time' => $appointment->start_time,
+                'end_time' => $appointment->end_time,
+                'status' => ConsultationStatus::IN_PROGRESS->value,
+            ]);
+
+            \Illuminate\Support\Facades\Log::info('Consultation auto-created on join', [
+                'appointment_uuid' => $appointment->uuid,
+                'consultation_id' => $consultation->id,
+                'consultation_uuid' => $consultation->uuid
+            ]);
+
+            return $consultation;
+        } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to auto-create consultation on join', [
+                'appointment_uuid' => $appointment->uuid,
+                'error' => $e->getMessage()
+            ]);
+            return null;
         }
     }
 
@@ -910,6 +965,9 @@ class AppointmentController extends Controller
                     'client_attended_meeting' => $appointment->client_attended_meeting,
                     'client_joined_at' => $appointment->client_joined_at
                 ]);
+                
+                // Auto-create consultation when user joins
+                $this->autoCreateConsultationOnJoin($appointment);
                 
                 // Schedule recording download jobs based on appointment end time (fallback if endMeetingOnLeave isn't called)
                 // Only schedule if meeting just started (first time)
