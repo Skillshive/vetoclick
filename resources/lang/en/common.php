@@ -578,6 +578,7 @@ return [
             "clients_list" => "Clients",
             'calendar_appointments' => "Calendar",
             "pets" => "Pets",
+            'schedule_settings' => "Schedule Settings",
     ],
 
     // Category Blogs specific translations

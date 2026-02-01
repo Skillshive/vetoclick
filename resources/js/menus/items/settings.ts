@@ -6,12 +6,14 @@ import AppointmentIcon from "@/assets/dualicons/calendar.svg?react";
 import UserGroupIcon from "@/assets/dualicons/users.svg?react";
 import BoxIcon from "@/assets/dualicons/box.svg?react";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
+import Calendar from "@/assets/dualicons/schedul.svg?react";
 import { 
   UserIcon, 
   PaintBrushIcon, 
   CalendarIcon,
   CalendarDaysIcon,
   CreditCardIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 const menuConfig: MenuConfig[] = [
@@ -182,22 +184,28 @@ const menuConfig: MenuConfig[] = [
       },
     ],
   },
- 
   {
-    id: 'settings-holidays',
-    title: 'common.prime_panel.holidays',
-    icon: CalendarIcon,
-    path: route('settings.holidays') || '/settings/holidays',
-    type: 'item',
+    id: 'schedule-settings',
+    title: 'common.menu.schedule_settings',
+    icon: Calendar,
+    type: 'group',
     permission: 'holidays.view',
-  },
-  {
-    id: 'settings-availabilities',
-    title: 'common.prime_panel.availabilities',
-    icon: CalendarDaysIcon,
-    path: route('settings.availabilities') || '/settings/availabilities',
-    type: 'item',
-    permission: 'availability.view',
+    children: [
+      {
+        id: 'settings-holidays',
+        title: 'common.prime_panel.holidays',
+        path: route('settings.holidays') || '/settings/holidays',
+        type: 'item',
+        permission: 'holidays.view',
+      },
+      {
+        id: 'settings-availabilities',
+        title: 'common.prime_panel.availabilities',
+        path: route('settings.availabilities') || '/settings/availabilities',
+        type: 'item',
+        permission: 'availability.view',
+      },
+    ],
   },
   {
     id: 'subscription-plans',

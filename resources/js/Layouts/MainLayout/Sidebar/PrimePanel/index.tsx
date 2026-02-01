@@ -123,7 +123,7 @@ export function PrimePanel({ currentSegment, pathname, close }: PrimePanelProps)
         )}
       >
         <div className="relative flex h-16 w-full aspect-square shrink-0 items-center gap-2 pl-4 pr-1 rtl:pl-1 rtl:pr-4">
-        {(currentMenuItem?.icon || (isSettingsActive && settingsItems.length > 1)) && <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20"  style={{ borderRadius: '50%', padding: currentMenuItem?.id === 'appointments' ? '6px' : undefined }}>
+        {(currentMenuItem?.icon || (isSettingsActive && settingsItems.length > 1)) && <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20"  style={{ borderRadius: '50%', padding: (currentMenuItem?.id === 'appointments' || currentMenuItem?.id === 'schedule-settings') ? '6px' : undefined }}>
             {isSettingsActive && settingsItems.length > 1 ? (
               <SettingIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             ) : (
