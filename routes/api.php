@@ -61,4 +61,5 @@ Route::prefix('appointments')->controller(AppointmentController::class)->group(f
 
 Route::post('/clients', [ClientController::class, 'store'])->name('api.clients.store')->middleware(['auth', 'verified']);
 Route::get('/clients/{uuid}/pets', [PetController::class, 'getByClient'])->name('clients.pets');
+Route::get('/veterinarians/specializations', [VeterinarianController::class, 'getSpecializations'])->name('veterinarians.specializations');
 Route::get('/veterinarians', [VeterinarianController::class, 'index'])->name('veterinarians.all');
