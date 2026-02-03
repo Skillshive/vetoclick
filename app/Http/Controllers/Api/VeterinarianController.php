@@ -135,9 +135,9 @@ class VeterinarianController extends Controller
             if ($availability === 'On Holiday') {
                 $holiday = $this->getCurrentHoliday($vet);
                 if ($holiday) {
-                    // Get the day after holiday ends
-                    $availableFromDate = Carbon::parse($holiday->end_date)->addDay()->startOfDay();
-                    $dayOfWeek = strtolower($availableFromDate->format('l'));
+                    // Available right after holiday ends (no need to add a day)
+                    $availableFromDateTime = Carbon::parse($holiday->end_date);
+                    $dayOfWeek = strtolower($availableFromDateTime->format('l'));
                     
                     // Get availability start time for that day
                     $availabilityStartTime = $this->getAvailabilityStartTimeForDay($vet, $dayOfWeek);
@@ -145,8 +145,8 @@ class VeterinarianController extends Controller
                     $holidayInfo = [
                         'start_date' => $holiday->start_date->format('Y-m-d H:i:s'),
                         'end_date' => $holiday->end_date->format('Y-m-d H:i:s'),
-                        'available_from_date' => $availableFromDate->format('Y-m-d'),
-                        'available_from_time' => $availabilityStartTime, // e.g., "09:00:00" or null
+                        'available_from_date' => $availableFromDateTime->format('Y-m-d'),
+                        'available_from_time' => $availableFromDateTime->format('H:i:s'), // Use actual end time instead of schedule
                     ];
                 }
             }
@@ -227,7 +227,7 @@ class VeterinarianController extends Controller
     }
 
     /**
-     * Check if vet is currently on holiday
+     * Check if vet is currently on holiday (datetime-based check)
      */
     private function isOnHoliday($vet)
     {
@@ -238,7 +238,7 @@ class VeterinarianController extends Controller
             }]);
         }
         
-        $today = Carbon::now('Africa/Casablanca')->startOfDay();
+        $now = Carbon::now('Africa/Casablanca');
         
         // Use the eager-loaded holidays collection and check if any holiday is active
         foreach ($vet->holidays as $holiday) {
@@ -247,11 +247,11 @@ class VeterinarianController extends Controller
                 continue;
             }
             
-            $startDate = Carbon::parse($holiday->start_date)->startOfDay();
-            $endDate = Carbon::parse($holiday->end_date)->endOfDay();
+            $startDate = Carbon::parse($holiday->start_date);
+            $endDate = Carbon::parse($holiday->end_date);
             
-            // Check if today falls within the holiday range (inclusive)
-            if ($today->gte($startDate) && $today->lte($endDate)) {
+            // Check if current time falls within the holiday range (inclusive)
+            if ($now->gte($startDate) && $now->lte($endDate)) {
                 return true;
             }
         }
@@ -271,7 +271,7 @@ class VeterinarianController extends Controller
             }]);
         }
         
-        $today = Carbon::now('Africa/Casablanca')->startOfDay();
+        $now = Carbon::now('Africa/Casablanca');
         
         // Use the eager-loaded holidays collection
         foreach ($vet->holidays as $holiday) {
@@ -280,11 +280,11 @@ class VeterinarianController extends Controller
                 continue;
             }
             
-            $startDate = Carbon::parse($holiday->start_date)->startOfDay();
-            $endDate = Carbon::parse($holiday->end_date)->endOfDay();
+            $startDate = Carbon::parse($holiday->start_date);
+            $endDate = Carbon::parse($holiday->end_date);
             
-            // Check if today falls within the holiday range (inclusive)
-            if ($today->gte($startDate) && $today->lte($endDate)) {
+            // Check if current time falls within the holiday range (inclusive)
+            if ($now->gte($startDate) && $now->lte($endDate)) {
                 return $holiday;
             }
         }
@@ -387,5 +387,48 @@ class VeterinarianController extends Controller
         
         // Return the earliest start time for that day
         return $schedules->first()->start_time;
+    }
+
+    /**
+     * Get holidays for a specific veterinarian (public endpoint for appointment booking)
+     */
+    public function getHolidays(string $uuid)
+    {
+        try {
+            $vet = Veterinary::where('uuid', $uuid)->first();
+
+            if (!$vet) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Veterinarian not found'
+                ], 404);
+            }
+
+            // Get all active (non-deleted) holidays for this veterinarian
+            $holidays = $vet->holidays()
+                ->whereNull('deleted_at')
+                ->where('end_date', '>=', now()) // Only return current and future holidays
+                ->orderBy('start_date', 'asc')
+                ->get()
+                ->map(function ($holiday) {
+                    return [
+                        'start_date' => $holiday->start_date->format('Y-m-d H:i:s'),
+                        'end_date' => $holiday->end_date->format('Y-m-d H:i:s'),
+                        'reason' => $holiday->reason,
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $holidays
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch holidays',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 }
