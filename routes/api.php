@@ -63,3 +63,4 @@ Route::post('/clients', [ClientController::class, 'store'])->name('api.clients.s
 Route::get('/clients/{uuid}/pets', [PetController::class, 'getByClient'])->name('clients.pets');
 Route::get('/veterinarians/specializations', [VeterinarianController::class, 'getSpecializations'])->name('veterinarians.specializations');
 Route::get('/veterinarians', [VeterinarianController::class, 'index'])->name('veterinarians.all');
+Route::get('/veterinarians/{uuid}/holidays', [VeterinarianController::class, 'getHolidays'])->name('veterinarians.holidays');
