@@ -821,7 +821,7 @@ const Prescriptions = ({
                                     <div className="mt-2 space-y-1 text-sm text-gray-600">
                                         <p><span className="font-medium">{t('common.dosage')}:</span> {prescription.dosage}</p>
                                         <p><span className="font-medium">{t('common.frequency')}:</span> {prescription.frequency}</p>
-                                        <p><span className="font-medium">{t('common.duration')}:</span> {prescription.duration} {t('common.days')}</p>
+                                        <p><span className="font-medium">{t('common.duration')}:</span> {prescription.duration} {t('common.days_label')}</p>
                                         {prescription.instructions && (
                                             <p><span className="font-medium">{t('common.instructions')}:</span> {prescription.instructions}</p>
                                         )}

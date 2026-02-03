@@ -63,7 +63,10 @@ export default function Login() {
 
   return (
     <InertiaLocaleProvider>
-      <Page title={t('common.login')}>
+      <Page 
+        title={t('common.metadata_titles.login')}
+        description={t("common.page_descriptions.login") || "Sign in to access your veterinary clinic management system."}
+      >
 
           <main className="min-h-100vh flex">
             <div className="hidden w-full place-items-center lg:grid">

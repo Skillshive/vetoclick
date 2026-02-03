@@ -9,7 +9,10 @@ export default function Index({species, filters}: SpeciesManagementPageProps) {
     
     return (
         <MainLayout>
-            <Page title={t('common.species_management')}>
+            <Page 
+              title={t('common.metadata_titles.species_index')}
+              description={t("common.page_descriptions.species_index") || "Manage animal species and breeds. Organize your veterinary clinic's species database."}
+            >
                 <SpeciesDatatable species={species} filters={filters} />
             </Page>
         </MainLayout>

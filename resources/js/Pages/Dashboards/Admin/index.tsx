@@ -2,6 +2,7 @@
 import { Page } from "@/components/shared/Page";
 import MainLayout from "@/layouts/MainLayout";
 import { usePage } from "@inertiajs/react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Overview } from "./Overview";
 import { Statistics } from "./Statistics";
 import { Projects } from "./Projects";
@@ -62,6 +63,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard() {
   const { props } = usePage();
+  const { t } = useTranslation();
   
   // Demo data for development
   const demoStats = {
@@ -171,7 +173,10 @@ export default function AdminDashboard() {
 
   return (
     <MainLayout>
-      <Page title="Admin Dashboard">
+      <Page 
+        title={t("common.metadata_titles.admin_dashboard") || "Admin Dashboard"}
+        description={t("common.admin_dashboard.page_description") || "Monitor system statistics, manage users, track revenue, and oversee all aspects of your veterinary clinic operations."}
+      >
         <div className="overflow-hidden pb-8">
           <div className="transition-content mt-4 grid grid-cols-12 gap-4 px-(--margin-x) sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
             <Overview 

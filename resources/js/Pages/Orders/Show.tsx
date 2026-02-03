@@ -109,7 +109,10 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
     if (error || !order) {
         return (
             <MainLayout>
-                <Page title={t("common.order_details") || "Order Details"}>
+                <Page 
+                  title={t("common.metadata_titles.orders_show") || "Order Details"}
+                  description={t("common.page_descriptions.orders_show") || "View complete order details including items, pricing, and customer information."}
+                >
                     <div className="transition-content px-(--margin-x) pb-6">
                         <div className="text-center py-8">
                             <p className="text-red-500">{error || t('common.order_not_found')}</p>
@@ -232,7 +235,10 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
 
     return (
        <MainLayout>
-             <Page title={t("common.order_details") || "Order Details"}>
+             <Page 
+               title={t("common.metadata_titles.orders_show") || "Order Details"}
+               description={t("common.page_descriptions.orders_show") || "View complete order details including items, pricing, and customer information."}
+             >
                <div className="transition-content px-(--margin-x) pb-6">
                  <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
                    <div className="flex items-center gap-1">

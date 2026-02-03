@@ -295,7 +295,10 @@ const EditOrder: React.FC<EditOrderProps> = ({ order, suppliers, products: initi
 
     return (
        <MainLayout>
-             <Page title={t("common.edit_order") || "Edit Order"}>
+             <Page 
+               title={t("common.metadata_titles.orders_edit") || "Edit Order"}
+               description={t("common.page_descriptions.orders_edit") || "Edit order details including products, quantities, and status."}
+             >
                <div className="transition-content px-(--margin-x) pb-6">
                  <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
                    <div className="flex items-center gap-1">

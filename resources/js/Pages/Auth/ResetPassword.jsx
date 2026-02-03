@@ -6,6 +6,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
 
 export default function ResetPassword({ token, email }) {
+    const { t } = useTranslation();
     const { data, setData, post, processing, errors, reset } = useForm({
         token: token,
         email: email,
@@ -23,7 +24,9 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <GuestLayout>
-            <Head title="Reset Password" />
+            <Head title={t('common.metadata_titles.reset_password') || "Reset Password"}>
+                <meta name="description" content="Reset your password by providing your email address." />
+            </Head>
 
             <form onSubmit={submit}>
                 <div>

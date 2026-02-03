@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import MainLayout from "@/Layouts/MainLayout";
+import { Page } from "@/components/shared/Page";
 import { DataTable, DataTableRef } from "@/Components/shared/table/DataTable";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/Components/common/Toast/ToastContext";
@@ -175,6 +176,10 @@ export default function Index({
 
     return (
         <MainLayout>
+            <Page 
+                title={t("common.metadata_titles.roles_index") || "Roles"}
+                description={t("common.page_descriptions.roles_index") || "Manage user roles and permissions. Control access to different features and sections."}
+            >
       <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
         <div className="transition-content w-full pb-5">
           <DataTable<Role>
@@ -274,6 +279,7 @@ export default function Index({
                 permissions={permissions}
                 permissionGroups={permissionGroups}
             />
+            </Page>
         </MainLayout>
     );
 }

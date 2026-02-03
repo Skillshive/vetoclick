@@ -408,7 +408,10 @@ export default function UserDashboard() {
 
   return (
     <MainLayout>
-      <Page title={t("common.user_dashboard.page_title") || "My Dashboard"}>
+      <Page 
+        title={t("common.metadata_titles.user_dashboard") || "My Dashboard"}
+        description={t("common.user_dashboard.page_description") || "View your upcoming appointments, manage your pets, and access your medical records all in one place."}
+      >
         <div
           {...rtlProps}
           className={clsx("overflow-hidden", rtlProps.className)}

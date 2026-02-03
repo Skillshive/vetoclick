@@ -9,6 +9,7 @@ import { useRTL } from "@/hooks/useRTL";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
 import MainLayout from "@/layouts/MainLayout";
+import { Page } from "@/components/shared/Page";
 import { PlusIcon, TrashIcon, ClockIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Timepicker } from "@/components/shared/form/Timepicker";
 
@@ -494,6 +495,10 @@ export default function Availabilities() {
 
   return (
     <MainLayout>
+      <Page 
+        title={t("common.metadata_titles.settings_availabilities") || "Availabilities"}
+        description={t("common.page_descriptions.settings_availabilities") || "Set your working hours and availability schedule for appointments."}
+      >
       <div className="transition-content px-(--margin-x) pb-6 my-5" dir={isRtl ? 'rtl' : 'ltr'}>
         <Card className="p-6 sm:p-8">
           <div className="mb-8 border-b border-gray-200 dark:border-dark-600 pb-6">
@@ -728,6 +733,7 @@ export default function Availabilities() {
           )}
         </Card>
       </div>
+      </Page>
     </MainLayout>
   );
 }

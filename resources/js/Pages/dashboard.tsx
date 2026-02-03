@@ -9,7 +9,10 @@ export default function Dashboard() {
 
   return (
     <MainLayout>
-      <Page title={t('common.dashboard')}>
+      <Page 
+        title={t('common.metadata_titles.dashboard')}
+        description={t("common.page_descriptions.dashboard") || "Access your personalized dashboard with quick overview of appointments, statistics, and activities."}
+      >
         <div className={`transition-content w-full px-(--margin-x) pt-5 lg:pt-6 ${isRtl ? 'rtl' : 'ltr'}`}>
           <div className="mb-6">
             <h1 className={`text-2xl font-bold text-gray-900 dark:text-white ${isRtl ? 'text-right' : 'text-left'}`}>

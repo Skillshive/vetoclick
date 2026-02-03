@@ -191,7 +191,10 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
   
   return (
     <MainLayout>
-      <Page title={t("common.edit_blog")}>
+      <Page 
+        title={t("common.metadata_titles.blogs_edit")}
+        description={t("common.page_descriptions.blogs_edit") || "Edit existing blog post content, images, and metadata."}
+      >
         <div className="transition-content px-(--margin-x) pb-6">
           <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
             <div className="flex items-center gap-1">

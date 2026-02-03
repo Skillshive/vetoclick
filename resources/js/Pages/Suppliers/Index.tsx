@@ -1,5 +1,6 @@
 import MainLayout from '@/layouts/MainLayout';
 import { DataTable, DataTableRef } from '@/components/shared/table/DataTable';
+import { Page } from '@/components/shared/Page';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSupplierTable } from './datatable/hooks';
 import { createColumns } from './datatable/columns';
@@ -201,7 +202,12 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
         }
     }, [sorting]);
 
-    return <MainLayout>
+    return (
+        <MainLayout>
+            <Page 
+                title={t("common.metadata_titles.suppliers_index") || "Suppliers"}
+                description={t("common.page_descriptions.suppliers_index") || "Manage supplier information. Track supplier contacts and product relationships."}
+            >
                 <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
             <div className="transition-content w-full pb-5">
                 <DataTable<Supplier>
@@ -272,5 +278,7 @@ export default function Index({suppliers, filters, old, errors}: SuppliersDatata
             confirmLoading={confirmSingleDeleteLoading}
             state="pending"
         />
-    </MainLayout>
+            </Page>
+        </MainLayout>
+    );
 }

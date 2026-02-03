@@ -196,7 +196,10 @@ const SubscriptionPlanForm = ({ plan, featureGroups = [], allFeatures = [] ,errr
 
   return (
     <MainLayout>
-    <Page title={isEditing ? t('common.edit_subscription_plan') : t('common.create_subscription_plan')}>
+    <Page 
+      title={isEditing ? t('common.metadata_titles.subscription_plans_edit') : t('common.metadata_titles.subscription_plans_create')}
+      description={isEditing ? (t("common.page_descriptions.subscription_plans_edit") || "Edit subscription plan details including features and pricing.") : (t("common.page_descriptions.subscription_plans_create") || "Create a new subscription plan with pricing, features, and usage limits.")}
+    >
       <div className="transition-content grid w-full grid-rows-[auto_1fr] px-(--margin-x) pb-8">
       <div className="my-5">
               <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />

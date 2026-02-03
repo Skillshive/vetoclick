@@ -211,7 +211,12 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
     const normalizedParentCategories = Array.isArray(parentCategories) ? parentCategories : parentCategories?.data || [];
     const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
 
-    return <MainLayout>
+    return (
+        <MainLayout>
+            <Page 
+              title={t('common.metadata_titles.category_blogs_index') || 'Blog Categories'}
+              description={t("common.page_descriptions.category_blogs_index") || "Organize blog posts into categories for better content management."}
+            >
         <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
             <div className="transition-content w-full pb-5">
                 <DataTable<CategoryBlog>
@@ -293,5 +298,7 @@ export default function Index({categoryBlogs, parentCategories, filters, old, er
             confirmLoading={confirmSingleDeleteLoading}
             state={singleDeleteError ? "error" : singleDeleteSuccess ? "success" : "pending"}
         />
-    </MainLayout>
+            </Page>
+        </MainLayout>
+    );
 }

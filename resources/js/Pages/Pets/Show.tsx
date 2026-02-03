@@ -223,7 +223,10 @@ export default function Show({ pet, consultations: initialConsultations, vaccina
 
   return (
     <MainLayout>
-      <Page title={pet.name}>
+      <Page 
+        title={pet.name || t("common.metadata_titles.pets_show")}
+        description={t("common.page_descriptions.pets_show") || "View complete pet profile including medical records, vaccinations, and appointment history."}
+      >
         <div className="transition-content px-(--margin-x) pb-6">
           {/* Header */}
           <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">

@@ -1,5 +1,6 @@
 import MainLayout from '@/layouts/MainLayout';
 import { DataTable, DataTableRef } from '@/components/shared/table/DataTable';
+import { Page } from '@/components/shared/Page';
 import { ProductManagementPageProps, Product } from "./datatable/types";
 import { useTranslation } from '@/hooks/useTranslation';
 import { useProductTable } from './datatable/hooks';
@@ -354,7 +355,12 @@ export default function Index({products, categories, filters, old, errors}: Prod
     const medicationProducts = products.data.filter(product => product.type === 1).length;
     const vaccineProducts = products.data.filter(product => product.type === 2).length;
 
-    return <MainLayout>
+    return (
+        <MainLayout>
+            <Page 
+                title={t("common.metadata_titles.products_index") || "Products"}
+                description={t("common.page_descriptions.products_index") || "Manage your product inventory. View stock levels, prices, and product details."}
+            >
         <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
         <div
         className={clsx(
@@ -698,5 +704,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
                 }
             }}
         />
-    </MainLayout>
+            </Page>
+        </MainLayout>
+    );
 }

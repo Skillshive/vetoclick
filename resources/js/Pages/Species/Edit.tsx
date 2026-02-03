@@ -251,7 +251,10 @@ export default function SpeciesEdit({ species }: SpeciesEditPageProps) {
 
   return (
     <MainLayout>
-      <Page title={`${t('common.edit_species')} - ${specie.name}`}>
+      <Page 
+        title={`${t('common.metadata_titles.species_edit')} - ${specie.name}`}
+        description={t("common.page_descriptions.species_edit") || "Edit species information including name, description, and related breeds."}
+      >
         <div className="transition-content px-(--margin-x) pb-6 my-5">
           <div className="grid grid-cols-12 place-content-start gap-4 sm:gap-5 lg:gap-6">
             <div className="col-span-12 lg:col-span-8">

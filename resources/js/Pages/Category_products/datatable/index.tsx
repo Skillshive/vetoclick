@@ -199,7 +199,7 @@ export default function CategoryProductDatatable({ categoryProducts: categoryPro
 
   return (
     <>
-    <Page title={t('common.category_products')}>
+    <Page title={t('common.metadata_titles.category_products_index')}>
       <div className="transition-content w-full pb-5">
         <div
           className={clsx(

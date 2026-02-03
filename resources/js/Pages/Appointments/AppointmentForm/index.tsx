@@ -67,6 +67,7 @@ interface AppointmentFormPageProps {
   clientId?: string;
   userPersonalInfo?: UserPersonalInfo;
   userPets?: UserPet[];
+  minDate?: string;
 }
 
 const AppointmentForm = ({ 
@@ -74,7 +75,8 @@ const AppointmentForm = ({
   selectedVetId, 
   clientId,
   userPersonalInfo,
-  userPets = []
+  userPets = [],
+  minDate
 }: AppointmentFormPageProps) => {
   const { t } = useTranslation();
   const { isRtl } = useLocaleContext();
@@ -191,7 +193,10 @@ const AppointmentForm = ({
 
   return (
     <MainLayout>
-      <Page title={t("common.new_appointment")}>
+      <Page 
+        title={t("common.metadata_titles.appointments_create")}
+        description={t("common.page_descriptions.appointments_create") || "Create a new appointment by selecting a client, pet, appointment type, and scheduling date and time."}
+      >
         <div className={clsx("transition-content grid w-full grid-rows-[auto_1fr] px-(--margin-x) pb-8", isRtl && "rtl")} dir={isRtl ? 'rtl' : 'ltr'}>
           <div className={clsx("flex items-center gap-1 py-4")}>
             <div>
@@ -208,6 +213,7 @@ const AppointmentForm = ({
             clientId={clientId}
             userPersonalInfo={userPersonalInfo}
             userPets={userPets}
+            minDate={minDate}
           >
             <div
               className={clsx(

@@ -195,7 +195,10 @@ export default function ReceptionistDashboard() {
 
   return (
     <MainLayout>
-      <Page title={t("common.receptionist_dashboard") || "Receptionist Dashboard"}>
+      <Page 
+        title={t("common.metadata_titles.receptionist_dashboard") || "Receptionist Dashboard"}
+        description={t("common.receptionist_dashboard.page_description") || "Manage appointment requests, schedule appointments, and handle daily clinic operations efficiently."}
+      >
         <div className="transition-content w-full px-(--margin-x) pb-8">
           <div className="mt-4 grid grid-cols-12 gap-4 sm:mt-5 sm:gap-5 lg:mt-6 lg:gap-6">
             {/* Main Content Column */}

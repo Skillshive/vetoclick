@@ -1,5 +1,6 @@
 import MainLayout from '@/layouts/MainLayout';
 import { DataTable, DataTableRef } from '@/components/shared/table/DataTable';
+import { Page } from '@/components/shared/Page';
 import { AppointmentPageProps, Appointment } from "./datatable/types";
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAppointmentTable } from './datatable/hooks';
@@ -367,7 +368,12 @@ export default function Index({appointments, filters, vets, clients, statuses, o
     const onSiteAppointments = appointments.data.filter(appointment => !appointment.is_video_conseil).length;
 
 
-    return <MainLayout>
+    return (
+        <MainLayout>
+            <Page 
+                title={t("common.metadata_titles.appointments_index") || "Appointments"}
+                description={t("common.page_descriptions.appointments_index") || "View and manage all appointments. Filter, search, and track appointment statuses."}
+            >
         <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
         <div
         className={clsx(
@@ -536,5 +542,7 @@ export default function Index({appointments, filters, vets, clients, statuses, o
             onClose={() => setReportModalOpen(false)} 
             appointment={selectedAppointment} 
         />
-    </MainLayout>
+            </Page>
+        </MainLayout>
+    );
 }

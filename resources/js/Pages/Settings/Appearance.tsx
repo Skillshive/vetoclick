@@ -74,7 +74,10 @@ export default function Appearance() {
   return (
     <MainLayout>
       
-      <Page title={t("common.appearance.title")}>
+      <Page 
+        title={t("common.metadata_titles.settings_appearance")}
+        description={t("common.page_descriptions.settings_appearance") || "Customize the appearance of your application including themes and display preferences."}
+      >
         <div className="transition-content grid w-full grid-rows-[auto_1fr] px-(--margin-x) pb-8">
     <Card className="px-8 py-6 mt-4">
     <div className="w-full max-w-3xl 2xl:max-w-5xl">

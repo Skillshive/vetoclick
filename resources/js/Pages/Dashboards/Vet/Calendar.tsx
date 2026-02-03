@@ -378,7 +378,10 @@ export default function Calendar({ events: initialEvents = [], error: initialErr
 
   return (
     <MainLayout>
-      <Page title={t('common.calendar') || 'Calendar'}>
+      <Page 
+        title={t('common.metadata_titles.calendar') || 'Calendar'}
+        description={t('common.calendar_page_description') || 'View and manage your appointments in a calendar view. Schedule, reschedule, and track all your veterinary appointments.'}
+      >
         <div className="transition-content px-(--margin-x) pb-6 mt-4">
           {/* Calendar Header - Matching Image Design */}
           <div className="flex items-center justify-between gap-4 mb-6">

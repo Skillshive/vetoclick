@@ -58,7 +58,10 @@ export default function Index({
 
   return (
     <MainLayout>
-      <Page title={t('common.pets') || 'Pets'}>
+      <Page 
+        title={t('common.metadata_titles.pets_index') || 'Pets'}
+        description={t("common.page_descriptions.pets_index") || "Manage all pets in the system. View pet profiles, medical records, and owner information."}
+      >
         <div className="transition-content px-(--margin-x) pb-6 my-5">
           {/* Header with Search and Create Button */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

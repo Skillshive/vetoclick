@@ -1,5 +1,6 @@
 import MainLayout from '@/layouts/MainLayout';
 import { DataTable, DataTableRef } from '@/components/shared/table/DataTable';
+import { Page } from '@/components/shared/Page';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useClientTable } from './datatable/hooks';
 import { createColumns } from './datatable/columns';
@@ -225,6 +226,10 @@ export default function Index({clients, filters, old, errors}: ClientsDatatableP
 
     return (
         <MainLayout>
+            <Page 
+                title={t("common.metadata_titles.clients_index") || "Clients"}
+                description={t("common.page_descriptions.clients_index") || "Manage your client database. View, add, edit, and organize client information."}
+            >
             <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
                 <div className="transition-content w-full pb-5">
                     <DataTable<Client>
@@ -307,6 +312,7 @@ export default function Index({clients, filters, old, errors}: ClientsDatatableP
                 confirmLoading={confirmSingleDeleteLoading}
                 state="pending"
             />
+            </Page>
         </MainLayout>
     );
 }

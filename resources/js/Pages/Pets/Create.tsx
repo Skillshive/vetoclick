@@ -247,7 +247,10 @@ console.log('breedOptions',breedOptions);
 
   return (
     <MainLayout>
-      <Page title={t("common.add_pet") || "Add Pet"}>
+      <Page 
+        title={t("common.metadata_titles.pets_create") || "Add Pet"}
+        description={t("common.page_descriptions.pets_create") || "Add a new pet to the system with owner information and basic details."}
+      >
         <div className="transition-content px-(--margin-x) pb-6">
           <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
             <div className="flex items-center gap-1">

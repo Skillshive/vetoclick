@@ -68,7 +68,10 @@ export default function Index({
 
   return (
     <MainLayout>
-            <Page title={t('common.blogs')}>
+            <Page 
+              title={t('common.metadata_titles.blogs_index')}
+              description={t("common.page_descriptions.blogs_index") || "Manage blog posts. Create, edit, and publish articles for your veterinary clinic."}
+            >
           <div className="transition-content px-(--margin-x) pb-6 my-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

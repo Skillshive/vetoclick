@@ -310,7 +310,10 @@ export default function Register() {
 
   return (
     <InertiaLocaleProvider>
-      <Page title={t('common.register') || 'Register'}>
+      <Page 
+        title={t('common.metadata_titles.register') || 'Register'}
+        description={t("common.page_descriptions.register") || "Create a new account to access the veterinary clinic management system."}
+      >
         <main className="min-h-100vh flex">
           <div className="hidden w-full place-items-center lg:grid">
             <div className="w-full max-w-lg p-6">

@@ -210,7 +210,10 @@ export default function CRMAnalytics() {
 
   return (
     <MainLayout>
-      <Page title={t("common.vet_dashboard.page_title")}>
+      <Page 
+        title={t("common.metadata_titles.vet_dashboard")}
+        description={t("common.vet_dashboard.page_description") || "Manage your appointments, view statistics, and track your veterinary practice performance."}
+      >
         <div
           {...rtlProps}
           className={clsx("overflow-hidden pb-8", rtlProps.className)}

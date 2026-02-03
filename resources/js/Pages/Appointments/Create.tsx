@@ -26,13 +26,14 @@ interface CreateAppointmentPageProps {
     veterinarians?: Veterinarian[];
     selectedVetId?: string;
     clientId?: string;
+    minDate?: string;
 }
 
 const CreateAppointment: React.FC = () => {
     const { showToast } = useToast();
     const { t } = useTranslation();
     const { props } = usePage<CreateAppointmentPageProps>();
-    const { veterinarians = [], selectedVetId, clientId } = props;
+    const { veterinarians = [], selectedVetId, clientId, minDate } = props;
     const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof AppointmentFormValues, string>>>({});
 
     // Find the selected veterinarian by UUID
@@ -127,7 +128,10 @@ const CreateAppointment: React.FC = () => {
         : null;
     return (
        <MainLayout>
-             <Page title={t("common.new_appointment")}>
+             <Page 
+               title={t("common.metadata_titles.appointments_create")}
+               description={t("common.page_descriptions.appointments_create") || "Create a new appointment by selecting a client, pet, appointment type, and scheduling date and time."}
+             >
                <div className="transition-content px-(--margin-x) pb-6">
                  <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
                    <div className="flex items-center gap-1">
@@ -232,7 +236,7 @@ const CreateAppointment: React.FC = () => {
                                     className="rounded-xl"
                                     isRequired={true}
                                     prefix={<CalendarIcon className="size-4.5" />}
-                                    min={new Date()}
+                                    min={minDate ? new Date(minDate) : new Date()}
                                 />
                                 {(validationErrors.appointment_date || validationErrors.start_time) && (
                                     <p className="text-red-500 text-sm mt-1">

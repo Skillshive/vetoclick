@@ -9,6 +9,7 @@ import { useToast } from "@/Components/common/Toast/ToastContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { passwordFormSchema } from "@/schemas/passwordSchema";
 import MainLayout from "@/layouts/MainLayout";
+import { Page } from "@/components/shared/Page";
 
 export default function Sessions() {
   const { t } = useTranslation();
@@ -75,6 +76,10 @@ export default function Sessions() {
 
   return (
     <MainLayout>
+      <Page 
+        title={t("common.metadata_titles.settings_sessions") || "Sessions"}
+        description={t("common.page_descriptions.settings_sessions") || "View and manage active sessions. Monitor login activity and security."}
+      >
       <div className="transition-content px-(--margin-x) pb-6 my-5">
         <Card className="px-8 py-6 mt-4">
           <div className="w-full max-w-3xl 2xl:max-w-5xl">
@@ -224,6 +229,7 @@ export default function Sessions() {
           </div>
         </Card>
       </div>
+      </Page>
     </MainLayout>
   );
 }

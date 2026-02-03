@@ -8,7 +8,10 @@ export default function Index({categoryProducts, parentCategories, filters}: Cat
     const { t } = useTranslation();
 
 return <MainLayout>
-          <Page title={t('common.category_products')}>
+          <Page 
+            title={t('common.metadata_titles.category_products_index')}
+            description={t("common.page_descriptions.category_products_index") || "Organize products into categories. Manage product categorization and hierarchy."}
+          >
             <CategoryProductDatatable
               categoryProducts={categoryProducts}
               parentCategories={parentCategories.data}

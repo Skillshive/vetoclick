@@ -43,7 +43,10 @@ const Show = ({ blog }: ShowProps) => {
 
   return (
     <MainLayout>
-      <Page title={blog.title}>
+      <Page 
+        title={blog.title || t("common.metadata_titles.blogs_show")}
+        description={t("common.page_descriptions.blogs_show") || "View blog post details including content, author, and publication date."}
+      >
         <div className="transition-content px-(--margin-x) pb-6">
           <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
             <div className="flex items-center gap-4">

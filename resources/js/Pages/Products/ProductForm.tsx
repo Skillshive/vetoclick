@@ -114,7 +114,10 @@ const ProductForm = ({ product, categories }: ProductFormPageProps) => {
   ];
   return (
     <MainLayout>
-      <Page title={isEditing ? t('common.edit_product') : t('common.create_product')}>
+      <Page 
+        title={isEditing ? t('common.metadata_titles.products_edit') : t('common.metadata_titles.products_create')}
+        description={isEditing ? (t("common.page_descriptions.products_edit") || "Edit product information including details, pricing, and stock.") : (t("common.page_descriptions.products_create") || "Create a new product with details, pricing, and stock information.")}
+      >
         <div className={clsx("transition-content grid w-full grid-rows-[auto_1fr] px-(--margin-x) pb-8", isRtl && "rtl")} dir={isRtl ? 'rtl' : 'ltr'}>
         <div className={clsx("flex items-center gap-1 py-4")}>
               <div className={"text-right" }>

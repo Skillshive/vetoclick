@@ -336,7 +336,10 @@ console.log('data', data);
 
   return (
     <MainLayout>
-      <Page title={t("common.edit_pet") || "Edit Pet"}>
+      <Page 
+        title={t("common.metadata_titles.pets_edit") || "Edit Pet"}
+        description={t("common.page_descriptions.pets_edit") || "Update pet information including medical history and owner details."}
+      >
         <div className="transition-content px-(--margin-x) pb-6">
           <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
             <div className="flex items-center gap-1">

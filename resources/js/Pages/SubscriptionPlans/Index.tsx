@@ -151,7 +151,10 @@ export default function Index({
 
   return (
     <MainLayout>
-      <Page title={t('common.subscription_plans')}>
+      <Page 
+        title={t('common.metadata_titles.subscription_plans_index')}
+        description={t("common.page_descriptions.subscription_plans_index") || "Manage subscription plans. Configure pricing, features, and limits for different plans."}
+      >
         <div className="transition-content px-(--margin-x) pb-6 my-5">
           {/* Header with Search and Create Button */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">

@@ -461,7 +461,10 @@ export default function General({ user, isVeterinarian, veterinaryInfo, phoneVer
 
   return (
         <MainLayout>
-    <Page title={t('common.profile')}>
+    <Page 
+      title={t('common.metadata_titles.settings_general')}
+      description={t("common.page_descriptions.settings_general") || "Manage your profile settings, personal information, and account preferences."}
+    >
   <div className="transition-content px-(--margin-x) pb-6 my-5">
                   <div className="grid grid-cols-12 gap-4">
         <Card className="col-span-12 lg:col-span-8 px-8 py-6 mt-4">

@@ -2,6 +2,7 @@ import MainLayout from '@/layouts/MainLayout';
 import { DataTable, DataTableRef } from '@/components/shared/table/DataTable';
 import { OrderPageProps, Order } from "./datatable/types";
 import { useTranslation } from '@/hooks/useTranslation';
+import { Page } from '@/components/shared/Page';
 import { useOrderTable } from './datatable/hooks';
 import { Toolbar } from './datatable/Toolbar';
 import { useToast } from '@/Components/common/Toast/ToastContext';
@@ -463,8 +464,13 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
         setBulkDeleteModalOpen(true);
     };
 
-    return <MainLayout>
-        <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
+    return (
+        <MainLayout>
+            <Page 
+                title={t("common.metadata_titles.orders_index") || "Orders"}
+                description={t("common.page_descriptions.orders_index") || "View and manage all orders. Track order status, payments, and delivery information."}
+            >
+                <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
         <div
         className={clsx(
           "transition-content flex items-center justify-between gap-4",
@@ -725,6 +731,8 @@ export default function Index({orders, filters, suppliers, statistics, old, erro
                 }
             }}
         />
-    </MainLayout>
+            </Page>
+        </MainLayout>
+    );
 }
 

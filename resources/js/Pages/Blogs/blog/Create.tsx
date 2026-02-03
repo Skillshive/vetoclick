@@ -166,7 +166,10 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
 
   return (
     <MainLayout>
-      <Page title={t("common.new_blog")}>
+      <Page 
+        title={t("common.metadata_titles.blogs_create")}
+        description={t("common.page_descriptions.blogs_create") || "Create a new blog post with content, images, and category assignment."}
+      >
         <div className="transition-content px-(--margin-x) pb-6">
           <div className="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
             <div className="flex items-center gap-1">

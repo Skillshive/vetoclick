@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import MainLayout from "@/Layouts/MainLayout";
+import { Page } from "@/components/shared/Page";
 import { DataTable, DataTableRef } from "@/Components/shared/table/DataTable";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/Components/common/Toast/ToastContext";
@@ -140,6 +141,10 @@ export default function Index({
 
   return (
     <MainLayout>
+      <Page 
+        title={t("common.metadata_titles.users_index") || "Users"}
+        description={t("common.page_descriptions.users_index") || "Manage system users including veterinarians, receptionists, and administrators."}
+      >
       <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
         <div className="transition-content w-full pb-5">
           <DataTable<User>
@@ -228,6 +233,7 @@ export default function Index({
         roles={roles}
         veterinarians={veterinarians}
       />
+      </Page>
     </MainLayout>
   );
 }

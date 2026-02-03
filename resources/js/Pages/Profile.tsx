@@ -313,7 +313,10 @@ console.log('page?.props?.flash',page?.props?.flash);
 
   return (
         <MainLayout>
-    <Page title={t('common.profile')}>
+    <Page 
+      title={t('common.metadata_titles.profile')}
+      description={t("common.page_descriptions.profile") || "View and edit your profile information, change password, and manage account settings."}
+    >
   <div className="transition-content px-(--margin-x) pb-6 my-5">
                   <div className="grid grid-cols-12 place-content-start gap-4 sm:gap-5 lg:gap-6">
                     <div className="col-span-12 lg:col-span-8">
