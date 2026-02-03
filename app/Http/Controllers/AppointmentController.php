@@ -240,6 +240,7 @@ class AppointmentController extends Controller
     public function create(Request $request): Response
     {
         $vetId = $request->query('vet_id');
+        $minDate = $request->query('min_date');
         $user = Auth::user();
         $client = $user ? $user->client : null;
         
@@ -327,6 +328,7 @@ class AppointmentController extends Controller
             'clientId' => $client ? $client->uuid : null,
             'userPersonalInfo' => $userPersonalInfo,
             'userPets' => $pets,
+            'minDate' => $minDate,
         ]);
     }
 
