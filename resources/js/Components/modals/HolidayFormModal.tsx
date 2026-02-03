@@ -13,22 +13,11 @@ import { z } from 'zod';
 // Declare route helper
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
-// Holiday form schema
-const holidaySchema = z.object({
-  start_date: z.string().min(1, 'Start date is required'),
-  end_date: z.string().min(1, 'End date is required'),
-  reason: z.string().optional(),
-}).refine((data) => {
-  if (data.start_date && data.end_date) {
-    return new Date(data.end_date) >= new Date(data.start_date);
-  }
-  return true;
-}, {
-  message: 'End date must be after start date',
-  path: ['end_date'],
-});
-
-type HolidayFormData = z.infer<typeof holidaySchema>;
+type HolidayFormData = {
+  start_date: string;
+  end_date: string;
+  reason?: string;
+};
 
 interface HolidayFormModalProps {
   isOpen: boolean;
@@ -53,10 +42,47 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
     reason: holiday?.reason || '',
   });
 
+  // Create schema with translations
+  const holidaySchema = z.object({
+    start_date: z.string().min(1, t('common.start_date_and_time_required')),
+    end_date: z.string().min(1, t('common.end_date_and_time_required')),
+    reason: z.string().optional(),
+  }).refine((data) => {
+    if (data.start_date && data.end_date) {
+      return new Date(data.end_date) >= new Date(data.start_date);
+    }
+    return true;
+  }, {
+    message: t('common.end_date_and_time_must_be_after_start_date_and_time'),
+    path: ['end_date'],
+  });
+
+  // Helper function to parse datetime string as local time
+  const parseLocalDateTime = (dateString: string): Date | null => {
+    if (!dateString) return null;
+    
+    // If the string is in "YYYY-MM-DD HH:mm:ss" format, parse it as local time
+    const dateTimeMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+    if (dateTimeMatch) {
+      const [, year, month, day, hour, minute, second] = dateTimeMatch;
+      return new Date(
+        parseInt(year, 10),
+        parseInt(month, 10) - 1, // Month is 0-indexed
+        parseInt(day, 10),
+        parseInt(hour, 10),
+        parseInt(minute, 10),
+        parseInt(second, 10)
+      );
+    }
+    
+    // Fallback to standard Date parsing
+    return new Date(dateString);
+  };
+
   useEffect(() => {
     if (holiday) {
-      const start = holiday.start_date ? new Date(holiday.start_date) : null;
-      const end = holiday.end_date ? new Date(holiday.end_date) : null;
+      const start = holiday.start_date ? parseLocalDateTime(holiday.start_date) : null;
+      const end = holiday.end_date ? parseLocalDateTime(holiday.end_date) : null;
       setStartDate(start ? [start] : []);
       setEndDate(end ? [end] : []);
       setData({
@@ -111,14 +137,28 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
   const handleStartDateChange = (dates: Date[]) => {
     setStartDate(dates);
     if (dates[0]) {
-      const dateStr = dates[0].toISOString().split('T')[0];
-      setData(prev => ({ ...prev, start_date: dateStr }));
-      validateField('start_date', dateStr);
+      // Format as Y-m-d H:i:s for backend
+      const year = dates[0].getFullYear();
+      const month = String(dates[0].getMonth() + 1).padStart(2, '0');
+      const day = String(dates[0].getDate()).padStart(2, '0');
+      const hours = String(dates[0].getHours()).padStart(2, '0');
+      const minutes = String(dates[0].getMinutes()).padStart(2, '0');
+      const seconds = String(dates[0].getSeconds()).padStart(2, '0');
+      const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      setData(prev => ({ ...prev, start_date: dateTimeStr }));
+      validateField('start_date', dateTimeStr);
       
       // If end date is before new start date, update end date
       if (endDate[0] && dates[0] > endDate[0]) {
         setEndDate(dates);
-        setData(prev => ({ ...prev, end_date: dateStr }));
+        const endYear = dates[0].getFullYear();
+        const endMonth = String(dates[0].getMonth() + 1).padStart(2, '0');
+        const endDay = String(dates[0].getDate()).padStart(2, '0');
+        const endHours = String(dates[0].getHours()).padStart(2, '0');
+        const endMinutes = String(dates[0].getMinutes()).padStart(2, '0');
+        const endSeconds = String(dates[0].getSeconds()).padStart(2, '0');
+        const endDateTimeStr = `${endYear}-${endMonth}-${endDay} ${endHours}:${endMinutes}:${endSeconds}`;
+        setData(prev => ({ ...prev, end_date: endDateTimeStr }));
       }
     } else {
       setData(prev => ({ ...prev, start_date: '' }));
@@ -128,9 +168,16 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
   const handleEndDateChange = (dates: Date[]) => {
     setEndDate(dates);
     if (dates[0]) {
-      const dateStr = dates[0].toISOString().split('T')[0];
-      setData(prev => ({ ...prev, end_date: dateStr }));
-      validateField('end_date', dateStr);
+      // Format as Y-m-d H:i:s for backend
+      const year = dates[0].getFullYear();
+      const month = String(dates[0].getMonth() + 1).padStart(2, '0');
+      const day = String(dates[0].getDate()).padStart(2, '0');
+      const hours = String(dates[0].getHours()).padStart(2, '0');
+      const minutes = String(dates[0].getMinutes()).padStart(2, '0');
+      const seconds = String(dates[0].getSeconds()).padStart(2, '0');
+      const dateTimeStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      setData(prev => ({ ...prev, end_date: dateTimeStr }));
+      validateField('end_date', dateTimeStr);
     } else {
       setData(prev => ({ ...prev, end_date: '' }));
     }
@@ -174,7 +221,7 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
       if (response.data.success) {
         showToast({
           type: 'success',
-          message: response.data.message || t('common.holiday_created_successfully') || 'Holiday created successfully',
+          message: response.data.message || t('common.holiday_created_successfully'),
           duration: 3000,
         });
         setValidationErrors({});
@@ -188,11 +235,11 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
         onClose();
         onSuccess?.();
       } else {
-        throw new Error(response.data.message || t('common.failed_to_create_holiday') || 'Failed to create holiday');
+        throw new Error(response.data.message || t('common.failed_to_create_holiday'));
       }
     })
     .catch((error: any) => {
-      const errorMessage = error.response?.data?.message || error.message || t('common.failed_to_create_holiday') || 'Failed to create holiday';
+      const errorMessage = error.response?.data?.message || error.message || t('common.failed_to_create_holiday');
       showToast({
         type: 'error',
         message: errorMessage,
@@ -244,8 +291,8 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
 
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                   {isEditing
-                    ? t('common.edit_holiday_info') || 'Edit holiday information'
-                    : t('common.create_new_holiday') || 'Create a new holiday period'
+                    ? t('common.edit_holiday_info')
+                    : t('common.create_new_holiday')
                   }
                 </p>
                 <form onSubmit={handleSubmit} className="mt-6">
@@ -254,16 +301,18 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                          {t('common.start_date') || 'Start Date'}
+                          {t('common.start_date_and_time')}
                           <span className="text-red-500 mx-1">*</span>
                         </label>
                         <DatePicker
                           value={startDate}
                           onChange={handleStartDateChange}
                           options={{
-                            dateFormat: "Y-m-d",
+                            enableTime: true,
+                            dateFormat: "Y-m-d H:i",
+                            time_24hr: true,
                           }}
-                          placeholder={t('common.select_date') || 'Select start date'}
+                          placeholder={t('common.select_date_and_time')}
                           className={validationErrors.start_date ? 'border-red-500' : ''}
                         />
                         {validationErrors.start_date && (
@@ -272,17 +321,19 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                          {t('common.end_date') || 'End Date'}
+                          {t('common.end_date_and_time')}
                           <span className="text-red-500 mx-1">*</span>
                         </label>
                         <DatePicker
                           value={endDate}
                           onChange={handleEndDateChange}
                           options={{
-                            dateFormat: "Y-m-d",
+                            enableTime: true,
+                            dateFormat: "Y-m-d H:i",
+                            time_24hr: true,
                             minDate: startDate[0] || new Date(),
                           }}
-                          placeholder={t('common.select_date') || 'Select end date'}
+                          placeholder={t('common.select_date_and_time')}
                           className={validationErrors.end_date ? 'border-red-500' : ''}
                         />
                         {validationErrors.end_date && (
@@ -294,13 +345,13 @@ export default function HolidayFormModal({ isOpen, onClose, holiday, errors, onS
                     {/* Reason Field */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                        {t('common.holiday_reason') || 'Reason (Optional)'}
+                        {t('common.holiday_reason')}
                       </label>
                       <Input
                         type="text"
                         value={data.reason}
                         onChange={(e) => handleFieldChange('reason', e.target.value)}
-                        placeholder={t('common.holiday_reason') || 'Enter holiday reason'}
+                        placeholder={t('common.enter_holiday_reason')}
                         className={validationErrors.reason ? 'border-red-500' : ''}
                         leftIcon={<CalendarIcon className="size-4" />}
                       />
