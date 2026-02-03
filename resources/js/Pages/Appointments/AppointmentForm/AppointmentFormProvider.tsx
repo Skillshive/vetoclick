@@ -133,6 +133,7 @@ interface AppointmentFormProviderProps {
   clientId?: string;
   userPersonalInfo?: UserPersonalInfo;
   userPets?: UserPet[];
+  minDate?: string;
 }
 
 export function AppointmentFormProvider({
@@ -142,6 +143,7 @@ export function AppointmentFormProvider({
   clientId: initialClientId,
   userPersonalInfo,
   userPets = [],
+  minDate,
 }: AppointmentFormProviderProps) {
   // Initialize state with user data if available
   const getInitialState = (): FormState => {
@@ -152,8 +154,8 @@ export function AppointmentFormProvider({
       state.formData.personalInfo = {
         firstname: userPersonalInfo.firstname || "",
         lastname: userPersonalInfo.lastname || "",
-        email: userPersonalInfo.email || "", // Logged-in users always have email
-        phone: userPersonalInfo.phone || "", // Logged-in users always have phone
+        email: userPersonalInfo.email || "", 
+        phone: userPersonalInfo.phone || "", 
         address: userPersonalInfo.address || "",
         city: userPersonalInfo.city || "",
         postal_code: userPersonalInfo.postal_code || "",
@@ -204,6 +206,7 @@ export function AppointmentFormProvider({
         clientId,
         setClientId,
         userPets,
+        minDate,
       }}
     >
       {children}

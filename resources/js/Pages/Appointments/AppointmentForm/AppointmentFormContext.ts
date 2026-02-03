@@ -90,6 +90,7 @@ export interface AppointmentFormContextType {
   clientId?: string;
   setClientId?: (clientId: string) => void;
   userPets?: UserPet[];
+  minDate?: string;
 }
 
 export const [AppointmentFormContextProvider, useAppointmentFormContext] =
