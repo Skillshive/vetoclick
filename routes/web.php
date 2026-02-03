@@ -167,7 +167,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'permission:availability.view'])->prefix('availability')->controller(AvailabilityController::class)->group(function () {
     Route::post('/', 'store')->middleware('permission:availability.create')->name('availability.store');
     Route::get('/current-week', 'getCurrentWeek')->name('availability.getCurrentWeek');
-    Route::put('/{uuid}', 'update')->middleware('permission:availability.update')->name('availability.update');
+    Route::put('/{uuid}', 'update')->middleware('permission:availability.edit')->name('availability.update');
     Route::delete('/{uuid}', 'destroy')->middleware('permission:availability.delete')->name('availability.destroy');
     Route::post('/check', 'checkAvailability')->name('availability.check');
 });
