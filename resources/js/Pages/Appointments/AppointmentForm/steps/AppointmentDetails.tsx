@@ -67,6 +67,7 @@ export function AppointmentDetails({
   const [isLoadingTimes, setIsLoadingTimes] = useState(false);
   const [timeValidationError, setTimeValidationError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [holidays, setHolidays] = useState<Array<{ start_date: string; end_date: string; reason: string }>>([]);
 
   // Reset form with context data when component mounts or context data changes
   // This ensures data persists when navigating back to this step
@@ -88,6 +89,45 @@ export function AppointmentDetails({
       }
     }
   }, [appointmentFormCtx.selectedVetId, appointmentFormCtx.state.formData.appointmentDetails.veterinary_id, setValue, getValues]);
+
+  // Fetch veterinarian holidays to disable dates in the date picker
+  useEffect(() => {
+    const vetId = watchedValues.veterinary_id;
+    
+    if (!vetId) {
+      setHolidays([]);
+      return;
+    }
+
+    const fetchHolidays = async () => {
+      try {
+        const response = await fetch(`/api/veterinarians/${vetId}/holidays`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'same-origin',
+        });
+
+        const result = await response.json();
+        
+        console.log('Fetched holidays:', result);
+        
+        if (result.success && result.data) {
+          setHolidays(result.data);
+          console.log('Holidays set:', result.data);
+        } else {
+          setHolidays([]);
+        }
+      } catch (error) {
+        console.error('Error fetching veterinarian holidays:', error);
+        setHolidays([]);
+      }
+    };
+
+    fetchHolidays();
+  }, [watchedValues.veterinary_id]);
 
   // Fetch available times when vet or date changes
   const fetchAvailableTimes = useCallback(async (vetId: string, date: string) => {
@@ -480,7 +520,33 @@ export function AppointmentDetails({
             options={{
               enableTime: true,
               dateFormat: "Y-m-d H:i",
-              minDate: new Date(),
+              minDate: appointmentFormCtx.minDate ? new Date(appointmentFormCtx.minDate) : new Date(),
+              disable: [
+                (date: Date) => {
+                  // Check if this date falls within any holiday period
+                  // We disable the entire day if any part of it overlaps with a holiday
+                  const checkDate = new Date(date);
+                  checkDate.setHours(0, 0, 0, 0);
+                  const checkDateEnd = new Date(date);
+                  checkDateEnd.setHours(23, 59, 59, 999);
+                  
+                  const isDisabled = holidays.some((holiday) => {
+                    const holidayStart = new Date(holiday.start_date);
+                    const holidayEnd = new Date(holiday.end_date);
+                    
+                    // Check if the day overlaps with the holiday period
+                    const overlaps = checkDate <= holidayEnd && checkDateEnd >= holidayStart;
+                    
+                    if (overlaps) {
+                      console.log('Disabling date:', date, 'due to holiday:', holiday);
+                    }
+                    
+                    return overlaps;
+                  });
+                  
+                  return isDisabled;
+                }
+              ],
             }}
             placeholder={t('common.select_date_and_time')}
             label={t('common.date_and_time')}
