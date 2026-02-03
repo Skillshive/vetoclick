@@ -528,11 +528,18 @@ return [
     // Holiday translations
     'holidays' => 'Holidays',
     'add_holiday' => 'Add Holiday',
+    'edit_holiday' => 'Edit Holiday',
     'holiday_date' => 'Holiday Date',
     'start_date' => 'Start Date',
     'end_date' => 'End Date',
+    'start_date_and_time' => 'Start Date & Time',
+    'end_date_and_time' => 'End Date & Time',
+    'start_date_and_time_required' => 'Start date and time is required',
+    'end_date_and_time_required' => 'End date and time is required',
     'end_date_must_be_after_start_date' => 'End date must be after start date',
+    'end_date_and_time_must_be_after_start_date_and_time' => 'End date and time must be after start date and time',
     'holiday_reason' => 'Reason (Optional)',
+    'enter_holiday_reason' => 'Enter holiday reason',
     'holiday_created_successfully' => 'Holiday added successfully',
     'holiday_deleted_successfully' => 'Holiday removed successfully',
     'holiday_already_exists' => 'A holiday already exists for this date range',
@@ -543,6 +550,8 @@ return [
     'failed_to_fetch_holidays' => 'Failed to fetch holidays',
     'holiday_not_found' => 'Holiday not found',
     'upcoming_holidays' => 'Upcoming Holidays',
+    'edit_holiday_info' => 'Edit holiday information',
+    'create_new_holiday' => 'Create a new holiday period',
 
         "menu" => [
             "dashboard" => "Dashboard",
@@ -1266,6 +1275,7 @@ return [
 
     'user_dashboard' => [
         'page_title' => 'My Dashboard',
+        'page_description' => 'View your upcoming appointments, manage your pets, and access your medical records all in one place.',
         'upcoming_appointments' => 'Upcoming Appointments',
         'recent_appointments' => 'Recent Appointments',
         'my_pets' => 'My Pets',
@@ -1310,8 +1320,17 @@ return [
         'no_prescriptions' => 'No prescriptions',
         'no_doctors' => 'No doctors found',
     ],
+    'admin_dashboard' => [
+        'page_title' => 'Admin Dashboard',
+        'page_description' => 'Monitor system statistics, manage users, track revenue, and oversee all aspects of your veterinary clinic operations.',
+    ],
+    'receptionist_dashboard' => [
+        'page_title' => 'Receptionist Dashboard',
+        'page_description' => 'Manage appointment requests, schedule appointments, and handle daily clinic operations efficiently.',
+    ],
     'vet_dashboard' => [
         'page_title' => 'CRM Analytics Dashboard',
+        'page_description' => 'Manage your appointments, view statistics, and track your veterinary practice performance.',
         'appointments_overview' => 'Appointments Overview',
         'form' => [
             'schedule_new_appointment' => 'Schedule New Appointment',
@@ -1825,6 +1844,7 @@ return [
     
     // Calendar translations
     'calendar' => 'Calendar',
+    'calendar_page_description' => 'View and manage your appointments in a calendar view. Schedule, reschedule, and track all your veterinary appointments.',
     'my_appointments' => 'My Appointments',
     'month' => 'Month',
     'week' => 'Week',
@@ -2054,6 +2074,8 @@ return [
     'pet_selected' => 'Pet Selected',
     'neutered_status' => 'Neutered Status',
     'veterinarian_not_available_at_requested_time' => 'Veterinarian is not available at the requested time',
+    'veterinarian_on_holiday_during_requested_time' => 'Veterinarian is on holiday/break from :start to :end. Please select a different time.',
+    'veterinarian_has_scheduled_breaks' => 'Veterinarian has scheduled breaks (dates are disabled)',
     'appointment_time_conflict' => 'The requested appointment time conflicts with an existing appointment',
     'appointment_time_available' => 'Appointment time is available',
     'loading_available_times' => 'Loading available times...',
@@ -2193,4 +2215,122 @@ return [
     'checking' => 'Checking...',
     'profile_updated_successfully' => 'Profile updated successfully',
     'on_holiday' => 'On Holiday',
+
+    'days_label' => 'days',
+
+    // Page descriptions
+    'page_descriptions' => [
+        'appointments_index' => 'View and manage all appointments. Filter, search, and track appointment statuses.',
+        'appointments_create' => 'Create a new appointment by selecting a client, pet, appointment type, and scheduling date and time.',
+        'clients_index' => 'Manage your client database. View, add, edit, and organize client information.',
+        'products_index' => 'Manage your product inventory. View stock levels, prices, and product details.',
+        'orders_index' => 'View and manage all orders. Track order status, payments, and delivery information.',
+        'orders_create' => 'Create a new order by selecting products and quantities.',
+        'orders_edit' => 'Edit order details including products, quantities, and status.',
+        'orders_show' => 'View complete order details including items, pricing, and customer information.',
+        'pets_index' => 'Manage all pets in the system. View pet profiles, medical records, and owner information.',
+        'pets_create' => 'Add a new pet to the system with owner information and basic details.',
+        'pets_edit' => 'Update pet information including medical history and owner details.',
+        'pets_show' => 'View complete pet profile including medical records, vaccinations, and appointment history.',
+        'users_index' => 'Manage system users including veterinarians, receptionists, and administrators.',
+        'roles_index' => 'Manage user roles and permissions. Control access to different features and sections.',
+        'species_index' => 'Manage animal species and breeds. Organize your veterinary clinic\'s species database.',
+        'species_edit' => 'Edit species information including name, description, and related breeds.',
+        'suppliers_index' => 'Manage supplier information. Track supplier contacts and product relationships.',
+        'category_products_index' => 'Organize products into categories. Manage product categorization and hierarchy.',
+        'category_blogs_index' => 'Organize blog posts into categories for better content management.',
+        'blogs_index' => 'Manage blog posts. Create, edit, and publish articles for your veterinary clinic.',
+        'blogs_create' => 'Create a new blog post with content, images, and category assignment.',
+        'blogs_edit' => 'Edit existing blog post content, images, and metadata.',
+        'blogs_show' => 'View blog post details including content, author, and publication date.',
+        'subscription_plans_index' => 'Manage subscription plans. Configure pricing, features, and limits for different plans.',
+        'subscription_plans_create' => 'Create a new subscription plan with pricing, features, and usage limits.',
+        'subscription_plans_edit' => 'Edit subscription plan details including features and pricing.',
+        'settings_general' => 'Manage your profile settings, personal information, and account preferences.',
+        'settings_appearance' => 'Customize the appearance of your application including themes and display preferences.',
+        'settings_availabilities' => 'Set your working hours and availability schedule for appointments.',
+        'settings_holidays' => 'Manage holidays and time off. Set dates when you are unavailable for appointments.',
+        'settings_sessions' => 'View and manage active sessions. Monitor login activity and security.',
+        'profile' => 'View and edit your profile information, change password, and manage account settings.',
+        'login' => 'Sign in to access your veterinary clinic management system.',
+        'register' => 'Create a new account to access the veterinary clinic management system.',
+        'reset_password' => 'Reset your password by providing your email address.',
+        'dashboard' => 'Access your personalized dashboard with quick overview of appointments, statistics, and activities.',
+        'breeds_index' => 'Manage animal breeds for each species. View breed details, characteristics, and related information.',
+    ],
+
+    // Metadata titles for all pages
+    'metadata_titles' => [
+        // Dashboard pages
+        'admin_dashboard' => 'Admin Dashboard',
+        'user_dashboard' => 'My Dashboard',
+        'vet_dashboard' => 'CRM Analytics Dashboard',
+        'receptionist_dashboard' => 'Receptionist Dashboard',
+        'calendar' => 'Calendar',
+        
+        // Appointments
+        'appointments_index' => 'Appointments',
+        'appointments_create' => 'New Appointment',
+        
+        // Clients
+        'clients_index' => 'Clients',
+        
+        // Products
+        'products_index' => 'Products',
+        'products_create' => 'Create Product',
+        'products_edit' => 'Edit Product',
+        
+        // Orders
+        'orders_index' => 'Orders',
+        'orders_create' => 'New Order',
+        'orders_edit' => 'Edit Order',
+        'orders_show' => 'Order Details',
+        
+        // Pets
+        'pets_index' => 'Pets',
+        'pets_create' => 'Add Pet',
+        'pets_edit' => 'Edit Pet',
+        'pets_show' => 'Pet Details',
+        
+        // Users & Roles
+        'users_index' => 'Users',
+        'roles_index' => 'Roles',
+        
+        // Species
+        'species_index' => 'Species Management',
+        'species_edit' => 'Edit Species',
+        'breeds_index' => 'Breeds',
+        
+        // Suppliers
+        'suppliers_index' => 'Suppliers',
+        
+        // Categories
+        'category_products_index' => 'Product Categories',
+        'category_blogs_index' => 'Blog Categories',
+        
+        // Blogs
+        'blogs_index' => 'Blogs',
+        'blogs_create' => 'New Blog',
+        'blogs_edit' => 'Edit Blog',
+        'blogs_show' => 'Blog Post',
+        
+        // Subscription Plans
+        'subscription_plans_index' => 'Subscription Plans',
+        'subscription_plans_create' => 'Create Subscription Plan',
+        'subscription_plans_edit' => 'Edit Subscription Plan',
+        
+        // Settings
+        'settings_general' => 'Profile',
+        'settings_appearance' => 'Appearance',
+        'settings_availabilities' => 'Availabilities',
+        'settings_holidays' => 'Holidays',
+        'settings_sessions' => 'Sessions',
+        
+        // Profile & Auth
+        'profile' => 'Profile',
+        'login' => 'Login',
+        'register' => 'Register',
+        'reset_password' => 'Reset Password',
+        'dashboard' => 'Dashboard',
+    ],
 ];

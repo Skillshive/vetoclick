@@ -1143,6 +1143,7 @@ return [
     'new_appointment' => 'Nouveau rendez-vous',
     'user_dashboard' => [
         'page_title' => 'Mon Tableau de Bord',
+        'page_description' => 'Consultez vos rendez-vous à venir, gérez vos animaux et accédez à vos dossiers médicaux en un seul endroit.',
         'upcoming_appointments' => 'Rendez-vous à venir',
         'recent_appointments' => 'Rendez-vous récents',
         'my_pets' => 'Mes Animaux',
@@ -1187,8 +1188,17 @@ return [
         'no_prescriptions' => 'No prescriptions',
         'no_doctors' => 'No doctors found'
     ],
+    'admin_dashboard' => [
+        'page_title' => 'Tableau de Bord Administrateur',
+        'page_description' => 'Surveillez les statistiques du système, gérez les utilisateurs, suivez les revenus et supervisez tous les aspects des opérations de votre clinique vétérinaire.',
+    ],
+    'receptionist_dashboard' => [
+        'page_title' => 'Tableau de Bord Réceptionniste',
+        'page_description' => 'Gérez les demandes de rendez-vous, planifiez les rendez-vous et gérez efficacement les opérations quotidiennes de la clinique.',
+    ],
     'vet_dashboard' => [
         'page_title' => 'Tableau de Bord Analytique CRM',
+        'page_description' => 'Gérez vos rendez-vous, consultez les statistiques et suivez les performances de votre pratique vétérinaire.',
         'appointments_overview' => 'Aperçu des Rendez-vous',
         'form' => [
             'schedule_new_appointment' => 'Planifier un Nouveau Rendez-vous',
@@ -1652,6 +1662,7 @@ return [
     'resend_otp' => 'Renvoyer OTP',
     'verify_otp' => 'Vérifier OTP',
     'calendar' => 'Calendrier',
+    'calendar_page_description' => 'Consultez et gérez vos rendez-vous en vue calendrier. Planifiez, reprogrammez et suivez tous vos rendez-vous vétérinaires.',
     'my_appointments' => 'Mes Rendez-vous',
     'week' => 'Semaine',
     'day' => 'Jour',
@@ -1707,6 +1718,8 @@ return [
     'pet_selected' => 'Animal Sélectionné',
     'neutered_status' => 'Statut de la castration',
     'veterinarian_not_available_at_requested_time' => 'Le vétérinaire n\'est pas disponible à l\'heure demandée',
+    'veterinarian_on_holiday_during_requested_time' => 'Le vétérinaire est en congé/pause du :start au :end. Veuillez sélectionner une autre heure.',
+    'veterinarian_has_scheduled_breaks' => 'Le vétérinaire a des pauses programmées (dates désactivées)',
     'appointment_time_conflict' => 'L\'heure de rendez-vous demandée entre en conflit avec un rendez-vous existant',
     'appointment_time_available' => 'L\'heure du rendez-vous est disponible',
     'loading_available_times' => 'Chargement des heures disponibles...',
@@ -1766,10 +1779,17 @@ return [
     'checking' => 'Vérification...',
     'holidays' => 'Holidays',
     'add_holiday' => 'Add Holiday',
+    'edit_holiday' => 'Modifier les vacances',
     'holiday_date' => 'Holiday Date',
     'end_date' => 'End Date',
+    'start_date_and_time' => 'Date et heure de début',
+    'end_date_and_time' => 'Date et heure de fin',
+    'start_date_and_time_required' => 'La date et l\'heure de début sont requises',
+    'end_date_and_time_required' => 'La date et l\'heure de fin sont requises',
     'end_date_must_be_after_start_date' => 'End date must be after start date',
+    'end_date_and_time_must_be_after_start_date_and_time' => 'La date et l\'heure de fin doivent être après la date et l\'heure de début',
     'holiday_reason' => 'Reason (Optional)',
+    'enter_holiday_reason' => 'Entrez la raison des vacances',
     'holiday_created_successfully' => 'Holiday added successfully',
     'holiday_deleted_successfully' => 'Holiday removed successfully',
     'holiday_already_exists' => 'A holiday already exists for this date range',
@@ -1780,6 +1800,8 @@ return [
     'failed_to_fetch_holidays' => 'Failed to fetch holidays',
     'holiday_not_found' => 'Holiday not found',
     'upcoming_holidays' => 'Upcoming Holidays',
+    'edit_holiday_info' => 'Modifier les informations sur les vacances',
+    'create_new_holiday' => 'Créer une nouvelle période de vacances',
     'password_info' => 'The password will be generated automatically (lastname + \\\\\"@\\\\\" + current year)',
     'no_users' => 'No users found',
     'appointment_created' => 'Appointment created successfully',
@@ -1843,4 +1865,122 @@ return [
     'reason' => 'Raison',
     'profile_updated_successfully' => 'Profil mis à jour avec succès',
     'on_holiday' => 'En Vacances',
+
+    // Page descriptions
+    'page_descriptions' => [
+        'appointments_index' => 'Consultez et gérez tous les rendez-vous. Filtrez, recherchez et suivez les statuts des rendez-vous.',
+        'appointments_create' => 'Créez un nouveau rendez-vous en sélectionnant un client, un animal, un type de rendez-vous et en planifiant la date et l\'heure.',
+        'clients_index' => 'Gérez votre base de données clients. Consultez, ajoutez, modifiez et organisez les informations des clients.',
+        'products_index' => 'Gérez votre inventaire de produits. Consultez les niveaux de stock, les prix et les détails des produits.',
+        'orders_index' => 'Consultez et gérez toutes les commandes. Suivez le statut des commandes, les paiements et les informations de livraison.',
+        'orders_create' => 'Créez une nouvelle commande en sélectionnant des produits et des quantités.',
+        'orders_edit' => 'Modifiez les détails de la commande, y compris les produits, les quantités et le statut.',
+        'orders_show' => 'Consultez les détails complets de la commande, y compris les articles, les prix et les informations client.',
+        'pets_index' => 'Gérez tous les animaux dans le système. Consultez les profils des animaux, les dossiers médicaux et les informations du propriétaire.',
+        'pets_create' => 'Ajoutez un nouvel animal au système avec les informations du propriétaire et les détails de base.',
+        'pets_edit' => 'Mettez à jour les informations de l\'animal, y compris les antécédents médicaux et les détails du propriétaire.',
+        'pets_show' => 'Consultez le profil complet de l\'animal, y compris les dossiers médicaux, les vaccinations et l\'historique des rendez-vous.',
+        'users_index' => 'Gérez les utilisateurs du système, y compris les vétérinaires, les réceptionnistes et les administrateurs.',
+        'roles_index' => 'Gérez les rôles et les permissions des utilisateurs. Contrôlez l\'accès aux différentes fonctionnalités et sections.',
+        'species_index' => 'Gérez les espèces animales et les races. Organisez la base de données des espèces de votre clinique vétérinaire.',
+        'species_edit' => 'Modifiez les informations sur les espèces, y compris le nom, la description et les races associées.',
+        'suppliers_index' => 'Gérez les informations des fournisseurs. Suivez les contacts des fournisseurs et les relations avec les produits.',
+        'category_products_index' => 'Organisez les produits en catégories. Gérez la catégorisation et la hiérarchie des produits.',
+        'category_blogs_index' => 'Organisez les articles de blog en catégories pour une meilleure gestion du contenu.',
+        'blogs_index' => 'Gérez les articles de blog. Créez, modifiez et publiez des articles pour votre clinique vétérinaire.',
+        'blogs_create' => 'Créez un nouvel article de blog avec du contenu, des images et une attribution de catégorie.',
+        'blogs_edit' => 'Modifiez le contenu, les images et les métadonnées d\'un article de blog existant.',
+        'blogs_show' => 'Consultez les détails de l\'article de blog, y compris le contenu, l\'auteur et la date de publication.',
+        'subscription_plans_index' => 'Gérez les plans d\'abonnement. Configurez les prix, les fonctionnalités et les limites pour différents plans.',
+        'subscription_plans_create' => 'Créez un nouveau plan d\'abonnement avec des prix, des fonctionnalités et des limites d\'utilisation.',
+        'subscription_plans_edit' => 'Modifiez les détails du plan d\'abonnement, y compris les fonctionnalités et les prix.',
+        'settings_general' => 'Gérez les paramètres de votre profil, vos informations personnelles et vos préférences de compte.',
+        'settings_appearance' => 'Personnalisez l\'apparence de votre application, y compris les thèmes et les préférences d\'affichage.',
+        'settings_availabilities' => 'Définissez vos heures de travail et votre planning de disponibilité pour les rendez-vous.',
+        'settings_holidays' => 'Gérez les jours fériés et les congés. Définissez les dates où vous n\'êtes pas disponible pour les rendez-vous.',
+        'settings_sessions' => 'Consultez et gérez les sessions actives. Surveillez l\'activité de connexion et la sécurité.',
+        'profile' => 'Consultez et modifiez les informations de votre profil, changez votre mot de passe et gérez les paramètres de votre compte.',
+        'login' => 'Connectez-vous pour accéder à votre système de gestion de clinique vétérinaire.',
+        'register' => 'Créez un nouveau compte pour accéder au système de gestion de clinique vétérinaire.',
+        'reset_password' => 'Réinitialisez votre mot de passe en fournissant votre adresse e-mail.',
+        'dashboard' => 'Accédez à votre tableau de bord personnalisé avec un aperçu rapide des rendez-vous, des statistiques et des activités.',
+        'products_create' => 'Créez un nouveau produit avec des détails, des prix et des informations de stock.',
+        'products_edit' => 'Modifiez les informations du produit, y compris les détails, les prix et le stock.',
+        'breeds_index' => 'Gérez les races d\'animaux pour chaque espèce. Consultez les détails des races, leurs caractéristiques et les informations associées.',
+    ],
+
+    // Metadata titles for all pages
+    'metadata_titles' => [
+        // Dashboard pages
+        'admin_dashboard' => 'Tableau de Bord Administrateur',
+        'user_dashboard' => 'Mon Tableau de Bord',
+        'vet_dashboard' => 'Tableau de Bord Analytique CRM',
+        'receptionist_dashboard' => 'Tableau de Bord Réceptionniste',
+        'calendar' => 'Calendrier',
+        
+        // Appointments
+        'appointments_index' => 'Rendez-vous',
+        'appointments_create' => 'Nouveau Rendez-vous',
+        
+        // Clients
+        'clients_index' => 'Clients',
+        
+        // Products
+        'products_index' => 'Produits',
+        'products_create' => 'Créer un Produit',
+        'products_edit' => 'Modifier le Produit',
+        
+        // Orders
+        'orders_index' => 'Commandes',
+        'orders_create' => 'Nouvelle Commande',
+        'orders_edit' => 'Modifier la Commande',
+        'orders_show' => 'Détails de la Commande',
+        
+        // Pets
+        'pets_index' => 'Animaux',
+        'pets_create' => 'Ajouter un Animal',
+        'pets_edit' => 'Modifier l\'Animal',
+        'pets_show' => 'Détails de l\'Animal',
+        
+        // Users & Roles
+        'users_index' => 'Utilisateurs',
+        'roles_index' => 'Rôles',
+        
+        // Species
+        'species_index' => 'Gestion des Espèces',
+        'species_edit' => 'Modifier l\'Espèce',
+        'breeds_index' => 'Races',
+        
+        // Suppliers
+        'suppliers_index' => 'Fournisseurs',
+        
+        // Categories
+        'category_products_index' => 'Catégories de Produits',
+        'category_blogs_index' => 'Catégories de Blog',
+        
+        // Blogs
+        'blogs_index' => 'Blogs',
+        'blogs_create' => 'Nouveau Blog',
+        'blogs_edit' => 'Modifier le Blog',
+        'blogs_show' => 'Article de Blog',
+        
+        // Subscription Plans
+        'subscription_plans_index' => 'Plans d\'Abonnement',
+        'subscription_plans_create' => 'Créer un Plan d\'Abonnement',
+        'subscription_plans_edit' => 'Modifier le Plan d\'Abonnement',
+        
+        // Settings
+        'settings_general' => 'Profil',
+        'settings_appearance' => 'Apparence',
+        'settings_availabilities' => 'Disponibilités',
+        'settings_holidays' => 'Jours Fériés',
+        'settings_sessions' => 'Sessions',
+        
+        // Profile & Auth
+        'profile' => 'Profil',
+        'login' => 'Connexion',
+        'register' => 'S\'inscrire',
+        'reset_password' => 'Réinitialiser le Mot de Passe',
+        'dashboard' => 'Tableau de Bord',
+    ],
 ];

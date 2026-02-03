@@ -1179,12 +1179,21 @@ return [
         'no_prescriptions' => 'No prescriptions',
         'no_doctors' => 'No doctors found'
     ],
+    'admin_dashboard' => [
+        'page_title' => 'لوحة تحكم المسؤول',
+        'page_description' => 'راقب إحصائيات النظام وإدارة المستخدمين وتتبع الإيرادات والإشراف على جميع جوانب عمليات عيادتك البيطرية.',
+    ],
+    'receptionist_dashboard' => [
+        'page_title' => 'لوحة تحكم الاستقبال',
+        'page_description' => 'إدارة طلبات المواعيد وجدولة المواعيد والتعامل بكفاءة مع العمليات اليومية للعيادة.',
+    ],
     'vet_dashboard' => [
+        'page_title' => 'لوحة تحليلات CRM',
+        'page_description' => 'إدارة مواعيدك وعرض الإحصائيات وتتبع أداء ممارستك البيطرية.',
         'projects' => [
             'no_appointments_today' => 'لا يوجد مواعيد اليوم',
             'today_appointments' => 'مواعيد اليوم'
         ],
-        'page_title' => 'لوحة تحليلات CRM',
         'appointments_overview' => 'نظرة عامة على المواعيد',
         'form' => [
             'schedule_new_appointment' => 'جدولة موعد جديد',
@@ -1636,6 +1645,7 @@ return [
     'resend_otp' => 'إعادة إرسال الرمز',
     'verify_otp' => 'تحقق من الرمز',
     'calendar' => 'التقويم',
+    'calendar_page_description' => 'عرض وإدارة مواعيدك في عرض التقويم. جدولة وإعادة جدولة وتتبع جميع مواعيدك البيطرية.',
     'my_appointments' => 'مواعيدي',
     'week' => 'أسبوع',
     'day' => 'يوم',
@@ -1696,6 +1706,8 @@ return [
     'veterinarian' => 'طبيب بيطري',
     'neutered_status' => 'حالة التهجين',
     'veterinarian_not_available_at_requested_time' => 'الطبيب البيطري غير متاح في الوقت المطلوب',
+    'veterinarian_on_holiday_during_requested_time' => 'الطبيب البيطري في إجازة/استراحة من :start إلى :end. يرجى اختيار وقت آخر.',
+    'veterinarian_has_scheduled_breaks' => 'لدى الطبيب البيطري فترات راحة مجدولة (التواريخ معطلة)',
     'appointment_time_conflict' => 'وقت الموعد المطلوب يتعارض مع موعد موجود',
     'appointment_time_available' => 'وقت الموعد متاح',
     'loading_available_times' => 'جاري تحميل الأوقات المتاحة...',
@@ -1746,10 +1758,17 @@ return [
     'no_category_products_found' => 'No category products found',
     'holidays' => 'Holidays',
     'add_holiday' => 'Add Holiday',
+    'edit_holiday' => 'تعديل العطلة',
     'holiday_date' => 'Holiday Date',
     'end_date' => 'End Date',
+    'start_date_and_time' => 'تاريخ ووقت البداية',
+    'end_date_and_time' => 'تاريخ ووقت النهاية',
+    'start_date_and_time_required' => 'تاريخ ووقت البداية مطلوبان',
+    'end_date_and_time_required' => 'تاريخ ووقت النهاية مطلوبان',
     'end_date_must_be_after_start_date' => 'End date must be after start date',
+    'end_date_and_time_must_be_after_start_date_and_time' => 'يجب أن يكون تاريخ ووقت النهاية بعد تاريخ ووقت البداية',
     'holiday_reason' => 'Reason (Optional)',
+    'enter_holiday_reason' => 'أدخل سبب العطلة',
     'holiday_created_successfully' => 'Holiday added successfully',
     'holiday_deleted_successfully' => 'Holiday removed successfully',
     'holiday_already_exists' => 'A holiday already exists for this date range',
@@ -1760,6 +1779,8 @@ return [
     'failed_to_fetch_holidays' => 'Failed to fetch holidays',
     'holiday_not_found' => 'Holiday not found',
     'upcoming_holidays' => 'Upcoming Holidays',
+    'edit_holiday_info' => 'تعديل معلومات العطلة',
+    'create_new_holiday' => 'إنشاء فترة عطلة جديدة',
     'password_info' => 'The password will be generated automatically (lastname + \\\\\"@\\\\\" + current year)',
     'no_users' => 'No users found',
     'permissions_breadcrumb' => 'Permissions',
@@ -1843,4 +1864,122 @@ return [
     'reason' => 'السبب',
     'profile_updated_successfully' => 'تم تحديث الملف الشخصي بنجاح',
     'on_holiday' => 'في عطلة',
+
+    // Page descriptions
+    'page_descriptions' => [
+        'appointments_index' => 'عرض وإدارة جميع المواعيد. تصفية والبحث وتتبع حالات المواعيد.',
+        'appointments_create' => 'إنشاء موعد جديد عن طريق اختيار عميل وحيوان أليف ونوع الموعد وتحديد التاريخ والوقت.',
+        'clients_index' => 'إدارة قاعدة بيانات العملاء. عرض وإضافة وتعديل وتنظيم معلومات العملاء.',
+        'products_index' => 'إدارة مخزون المنتجات. عرض مستويات المخزون والأسعار وتفاصيل المنتجات.',
+        'orders_index' => 'عرض وإدارة جميع الطلبات. تتبع حالة الطلب والمدفوعات ومعلومات التسليم.',
+        'orders_create' => 'إنشاء طلب جديد عن طريق اختيار المنتجات والكميات.',
+        'orders_edit' => 'تعديل تفاصيل الطلب بما في ذلك المنتجات والكميات والحالة.',
+        'orders_show' => 'عرض تفاصيل الطلب الكاملة بما في ذلك العناصر والأسعار ومعلومات العميل.',
+        'pets_index' => 'إدارة جميع الحيوانات الأليفة في النظام. عرض ملفات الحيوانات الأليفة والسجلات الطبية ومعلومات المالك.',
+        'pets_create' => 'إضافة حيوان أليف جديد إلى النظام مع معلومات المالك والتفاصيل الأساسية.',
+        'pets_edit' => 'تحديث معلومات الحيوان الأليف بما في ذلك التاريخ الطبي وتفاصيل المالك.',
+        'pets_show' => 'عرض ملف الحيوان الأليف الكامل بما في ذلك السجلات الطبية واللقاحات وتاريخ المواعيد.',
+        'users_index' => 'إدارة مستخدمي النظام بما في ذلك الأطباء البيطريين والاستقبال والمسؤولين.',
+        'roles_index' => 'إدارة أدوار المستخدمين والأذونات. التحكم في الوصول إلى الميزات والأقسام المختلفة.',
+        'species_index' => 'إدارة أنواع الحيوانات والسلالات. تنظيم قاعدة بيانات الأنواع في عيادتك البيطرية.',
+        'species_edit' => 'تعديل معلومات الأنواع بما في ذلك الاسم والوصف والسلالات ذات الصلة.',
+        'suppliers_index' => 'إدارة معلومات الموردين. تتبع جهات اتصال الموردين وعلاقات المنتجات.',
+        'category_products_index' => 'تنظيم المنتجات في فئات. إدارة تصنيف المنتجات والتسلسل الهرمي.',
+        'category_blogs_index' => 'تنظيم مقالات المدونة في فئات لإدارة أفضل للمحتوى.',
+        'blogs_index' => 'إدارة مقالات المدونة. إنشاء وتعديل ونشر المقالات لعيادتك البيطرية.',
+        'blogs_create' => 'إنشاء مقال مدونة جديد مع المحتوى والصور وتعيين الفئة.',
+        'blogs_edit' => 'تعديل محتوى مقال المدونة الحالي والصور والبيانات الوصفية.',
+        'blogs_show' => 'عرض تفاصيل مقال المدونة بما في ذلك المحتوى والمؤلف وتاريخ النشر.',
+        'subscription_plans_index' => 'إدارة خطط الاشتراك. تكوين الأسعار والميزات والحدود للخطط المختلفة.',
+        'subscription_plans_create' => 'إنشاء خطة اشتراك جديدة مع الأسعار والميزات وحدود الاستخدام.',
+        'subscription_plans_edit' => 'تعديل تفاصيل خطة الاشتراك بما في ذلك الميزات والأسعار.',
+        'settings_general' => 'إدارة إعدادات ملفك الشخصي ومعلوماتك الشخصية وتفضيلات الحساب.',
+        'settings_appearance' => 'تخصيص مظهر التطبيق بما في ذلك السمات وتفضيلات العرض.',
+        'settings_availabilities' => 'تعيين ساعات عملك وجدول التوفر للمواعيد.',
+        'settings_holidays' => 'إدارة العطلات والإجازات. تعيين التواريخ التي لا تكون فيها متاحاً للمواعيد.',
+        'settings_sessions' => 'عرض وإدارة الجلسات النشطة. مراقبة نشاط تسجيل الدخول والأمان.',
+        'profile' => 'عرض وتعديل معلومات ملفك الشخصي وتغيير كلمة المرور وإدارة إعدادات الحساب.',
+        'login' => 'تسجيل الدخول للوصول إلى نظام إدارة العيادة البيطرية.',
+        'register' => 'إنشاء حساب جديد للوصول إلى نظام إدارة العيادة البيطرية.',
+        'reset_password' => 'إعادة تعيين كلمة المرور عن طريق تقديم عنوان بريدك الإلكتروني.',
+        'dashboard' => 'الوصول إلى لوحة التحكم الشخصية مع نظرة سريعة على المواعيد والإحصائيات والأنشطة.',
+        'products_create' => 'إنشاء منتج جديد مع التفاصيل والأسعار ومعلومات المخزون.',
+        'products_edit' => 'تعديل معلومات المنتج بما في ذلك التفاصيل والأسعار والمخزون.',
+        'breeds_index' => 'إدارة سلالات الحيوانات لكل نوع. عرض تفاصيل السلالات وخصائصها والمعلومات ذات الصلة.',
+    ],
+
+    // Metadata titles for all pages
+    'metadata_titles' => [
+        // Dashboard pages
+        'admin_dashboard' => 'لوحة تحكم المسؤول',
+        'user_dashboard' => 'لوحة التحكم الخاصة بي',
+        'vet_dashboard' => 'لوحة تحليلات CRM',
+        'receptionist_dashboard' => 'لوحة تحكم الاستقبال',
+        'calendar' => 'التقويم',
+        
+        // Appointments
+        'appointments_index' => 'المواعيد',
+        'appointments_create' => 'موعد جديد',
+        
+        // Clients
+        'clients_index' => 'العملاء',
+        
+        // Products
+        'products_index' => 'المنتجات',
+        'products_create' => 'إنشاء منتج',
+        'products_edit' => 'تعديل المنتج',
+        
+        // Orders
+        'orders_index' => 'الطلبات',
+        'orders_create' => 'طلب جديد',
+        'orders_edit' => 'تعديل الطلب',
+        'orders_show' => 'تفاصيل الطلب',
+        
+        // Pets
+        'pets_index' => 'الحيوانات الأليفة',
+        'pets_create' => 'إضافة حيوان أليف',
+        'pets_edit' => 'تعديل الحيوان الأليف',
+        'pets_show' => 'تفاصيل الحيوان الأليف',
+        
+        // Users & Roles
+        'users_index' => 'المستخدمون',
+        'roles_index' => 'الأدوار',
+        
+        // Species
+        'species_index' => 'إدارة الأنواع',
+        'species_edit' => 'تعديل النوع',
+        'breeds_index' => 'السلالات',
+        
+        // Suppliers
+        'suppliers_index' => 'الموردون',
+        
+        // Categories
+        'category_products_index' => 'فئات المنتجات',
+        'category_blogs_index' => 'فئات المدونة',
+        
+        // Blogs
+        'blogs_index' => 'المدونات',
+        'blogs_create' => 'مدونة جديدة',
+        'blogs_edit' => 'تعديل المدونة',
+        'blogs_show' => 'مقال المدونة',
+        
+        // Subscription Plans
+        'subscription_plans_index' => 'خطط الاشتراك',
+        'subscription_plans_create' => 'إنشاء خطة اشتراك',
+        'subscription_plans_edit' => 'تعديل خطة الاشتراك',
+        
+        // Settings
+        'settings_general' => 'الملف الشخصي',
+        'settings_appearance' => 'المظهر',
+        'settings_availabilities' => 'التوفر',
+        'settings_holidays' => 'العطلات',
+        'settings_sessions' => 'الجلسات',
+        
+        // Profile & Auth
+        'profile' => 'الملف الشخصي',
+        'login' => 'تسجيل الدخول',
+        'register' => 'تسجيل',
+        'reset_password' => 'إعادة تعيين كلمة المرور',
+        'dashboard' => 'لوحة التحكم',
+    ],
 ];
