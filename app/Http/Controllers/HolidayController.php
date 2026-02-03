@@ -28,8 +28,8 @@ class HolidayController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'start_date' => 'required|date|after_or_equal:today',
-                'end_date' => 'required|date|after_or_equal:start_date',
+                'start_date' => 'required|date_format:Y-m-d H:i:s|after_or_equal:now',
+                'end_date' => 'required|date_format:Y-m-d H:i:s|after_or_equal:start_date',
                 'reason' => 'nullable|string|max:255',
             ]);
 
@@ -78,8 +78,8 @@ class HolidayController extends Controller
                 'data' => [
                     'uuid' => $holiday->uuid,
                     'veterinarian_id' => $holiday->veterinarian_id,
-                    'start_date' => $holiday->start_date->format('Y-m-d'),
-                    'end_date' => $holiday->end_date->format('Y-m-d'),
+                    'start_date' => $holiday->start_date->format('Y-m-d H:i:s'),
+                    'end_date' => $holiday->end_date->format('Y-m-d H:i:s'),
                     'reason' => $holiday->reason,
                     'created_at' => $holiday->created_at,
                     'updated_at' => $holiday->updated_at,
@@ -142,14 +142,18 @@ class HolidayController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$user->veterinary) {
+            $veterinary = $user->veterinary;
+            
+            if (!$veterinary || !$veterinary->id) {
                 return response()->json([
                     'success' => false,
                     'message' => __('common.veterinary_profile_not_found')
                 ], 404);
             }
 
-            $holidays = $this->holidayService->getByVeterinarian($user->veterinary->id);
+            $veterinaryId = $veterinary->id;
+
+            $holidays = $this->holidayService->getByVeterinarian($veterinaryId);
 
             return response()->json([
                 'success' => true,
@@ -157,8 +161,8 @@ class HolidayController extends Controller
                     return [
                         'uuid' => $holiday->uuid,
                         'veterinarian_id' => $holiday->veterinarian_id,
-                        'start_date' => $holiday->start_date->format('Y-m-d'),
-                        'end_date' => $holiday->end_date->format('Y-m-d'),
+                        'start_date' => $holiday->start_date ? $holiday->start_date->format('Y-m-d H:i:s') : null,
+                        'end_date' => $holiday->end_date ? $holiday->end_date->format('Y-m-d H:i:s') : null,
                         'reason' => $holiday->reason,
                         'created_at' => $holiday->created_at,
                         'updated_at' => $holiday->updated_at,

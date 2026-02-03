@@ -66,24 +66,25 @@ class HolidayService
      */
     public function getUpcomingHolidays(int $veterinarianId, int $months = 3): Collection
     {
-        $today = Carbon::today();
-        $endDate = Carbon::today()->addMonths($months);
+        $now = Carbon::now();
+        $endDate = Carbon::now()->addMonths($months);
 
         return Holiday::where('veterinarian_id', $veterinarianId)
-            ->where('end_date', '>=', $today)
+            ->where('end_date', '>=', $now)
             ->where('start_date', '<=', $endDate)
             ->orderBy('start_date', 'asc')
             ->get();
     }
 
     /**
-     * Check if a date is a holiday for a veterinarian
+     * Check if a date/time is a holiday for a veterinarian
      */
-    public function isHoliday(int $veterinarianId, string $date): bool
+    public function isHoliday(int $veterinarianId, string $dateTime): bool
     {
+        $checkDateTime = Carbon::parse($dateTime);
         return Holiday::where('veterinarian_id', $veterinarianId)
-            ->where('start_date', '<=', $date)
-            ->where('end_date', '>=', $date)
+            ->where('start_date', '<=', $checkDateTime)
+            ->where('end_date', '>=', $checkDateTime)
             ->exists();
     }
 
