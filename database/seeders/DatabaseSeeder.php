@@ -4,8 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Veterinary;
-use Spatie\Permission\Models\Role;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,8 +13,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         $vet = User::create(
             ['firstname' => 'Veterinarian',
             'lastname' => 'Veterinarian',
@@ -32,9 +28,8 @@ class DatabaseSeeder extends Seeder
         ]
         );
 
-        // First, seed roles and permissions
         $this->call([
-            RolePermissionSeeder::class, // Add our comprehensive role and permission seeder
+            RolePermissionSeeder::class, 
         ]);
 
         Veterinary::create([
@@ -45,11 +40,9 @@ class DatabaseSeeder extends Seeder
             'user_id' => $vet->id,
         ]);
 
-        // Assign veterinarian role to the user
         $vet->assignRole('veterinarian');
         $admin->assignRole('admin');
 
-        // Seed other data
         $this->call([
             UserSeeder::class,
             SpeciesSeeder::class,
