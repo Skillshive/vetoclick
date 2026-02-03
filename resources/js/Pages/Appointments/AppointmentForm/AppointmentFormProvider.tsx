@@ -28,7 +28,7 @@ const initialState: FormState = {
       species_id: "",
       sex: 0,
       neutered_status: 0,
-      dob: "",
+      approximate_age: "",
       microchip_ref: "",
       weight_kg: undefined,
       bcs: undefined,
@@ -102,7 +102,7 @@ interface UserPet {
   uuid: string;
   name: string;
   breed_id: string;
-  species_id?: number;
+  species_id?: string;
   breed_name?: string;
   species_name?: string;
   sex: number;

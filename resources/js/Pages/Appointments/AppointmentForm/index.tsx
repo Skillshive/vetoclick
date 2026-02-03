@@ -37,7 +37,7 @@ interface UserPet {
   uuid: string;
   name: string;
   breed_id: string;
-  species_id?: number;
+  species_id?: string;
   breed_name?: string;
   species_name?: string;
   sex: number;

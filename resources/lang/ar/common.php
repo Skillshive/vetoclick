@@ -1718,6 +1718,8 @@ return [
     'address_placeholder' => 'أدخل عنوانك',
     'city_placeholder' => 'أدخل اسم المدينة',
     'postal_code_placeholder' => 'أدخل الرمز البريدي',
+    'approximate_age' => 'العمر التقريبي',
+    'approximate_age_placeholder' => 'مثال: سنتان، 6 أشهر، إلخ',
     'verify_phone' => 'تحقق من رقم الهاتف',
     'enter_otp' => 'أدخل رمز التحقق',
     'financial_overview' => 'نظرة مالية',

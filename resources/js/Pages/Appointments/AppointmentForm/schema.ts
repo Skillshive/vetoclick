@@ -16,11 +16,11 @@ export type PersonalInfoType = z.infer<typeof personalInfoSchema>;
 // Pet Info Schema
 export const petInfoSchema = z.object({
   name: z.string().min(1, "validation.pet_name_required"),
-  breed_id: z.string().min(1, "validation.breed_required"),
+  breed_id: z.string().optional(),
   species_id: z.string().optional(),
   sex: z.number().min(0).max(1),
   neutered_status: z.number().min(0).max(1),
-  dob: z.string().min(1, "validation.dob_required"),
+  approximate_age: z.string().optional(),
   microchip_ref: z.string().optional(),
   weight_kg: z.number().optional(),
   bcs: z.number().optional(),

@@ -1720,6 +1720,8 @@ return [
     'veterinarian_not_available_at_requested_time' => 'Le vétérinaire n\'est pas disponible à l\'heure demandée',
     'veterinarian_on_holiday_during_requested_time' => 'Le vétérinaire est en congé/pause du :start au :end. Veuillez sélectionner une autre heure.',
     'veterinarian_has_scheduled_breaks' => 'Le vétérinaire a des pauses programmées (dates désactivées)',
+    'approximate_age' => 'Âge approximatif',
+    'approximate_age_placeholder' => 'ex: 2 ans, 6 mois, etc.',
     'appointment_time_conflict' => 'L\'heure de rendez-vous demandée entre en conflit avec un rendez-vous existant',
     'appointment_time_available' => 'L\'heure du rendez-vous est disponible',
     'loading_available_times' => 'Chargement des heures disponibles...',

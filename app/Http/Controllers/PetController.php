@@ -252,10 +252,10 @@ class PetController extends Controller
             $petData = [
                 'client_id' => $clientId,
                 'name' => $validated['name'],
-                'breed_id' => $validated['breed_id'],
+                'breed_id' => $validated['breed_id'] ?? null,
                 'sex' => $validated['sex'] ?? 0,
                 'neutered_status' => $validated['neutered_status'] ?? false,
-                'dob' => $validated['dob'],
+                'dob' => $validated['dob'] ?? null,
                 'microchip_ref' => $validated['microchip_ref'] ?? null,
                 'profile_img' => $validated['profile_img'] ?? null,
                 'weight_kg' => $validated['weight_kg'] ?? null,

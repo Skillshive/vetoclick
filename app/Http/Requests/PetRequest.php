@@ -30,7 +30,7 @@ class PetRequest extends FormRequest
         return [
             'client_id' => 'nullable|exists:clients,id', // UUID of client (for receptionist creating pets)
             'name' => 'required|string|max:100',
-            'breed_id' => 'required|exists:breeds,id',
+            'breed_id' => 'nullable|exists:breeds,id',
             'sex' => 'required|integer|in:0,1',
             'neutered_status' => 'nullable|boolean',
             'dob' => 'nullable|date',

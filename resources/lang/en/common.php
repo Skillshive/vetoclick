@@ -2076,6 +2076,8 @@ return [
     'veterinarian_not_available_at_requested_time' => 'Veterinarian is not available at the requested time',
     'veterinarian_on_holiday_during_requested_time' => 'Veterinarian is on holiday/break from :start to :end. Please select a different time.',
     'veterinarian_has_scheduled_breaks' => 'Veterinarian has scheduled breaks (dates are disabled)',
+    'approximate_age' => 'Approximate Age',
+    'approximate_age_placeholder' => 'e.g., 2 years, 6 months, etc.',
     'appointment_time_conflict' => 'The requested appointment time conflicts with an existing appointment',
     'appointment_time_available' => 'Appointment time is available',
     'loading_available_times' => 'Loading available times...',

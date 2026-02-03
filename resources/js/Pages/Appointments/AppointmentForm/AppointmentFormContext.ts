@@ -23,11 +23,11 @@ export interface PersonalInfoType {
 
 export interface PetInfoType {
   name: string;
-  breed_id: string;
+  breed_id?: string;
   species_id?: string;
   sex: number;
   neutered_status: number;
-  dob: string;
+  approximate_age?: string;
   microchip_ref?: string;
   weight_kg?: number;
   bcs?: number;

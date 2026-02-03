@@ -1,6 +1,6 @@
 // Import Dependencies
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import clsx from "clsx";
 
@@ -11,7 +11,6 @@ import { PetInfoType, petInfoSchema } from "../schema";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLocaleContext } from "@/contexts/locale/context";
 import ReactSelect from "@/components/ui/ReactSelect";
-import { DatePicker } from "@/components/shared/form/Datepicker";
 import { PreviewImg } from "@/components/shared/PreviewImg";
 import { 
   UserIcon,
@@ -51,7 +50,6 @@ export function PetInfo({
   const [species, setSpecies] = useState<Species[]>([]);
   const [breeds, setBreeds] = useState<Breed[]>([]);
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null);
-  const [dob, setDob] = useState<Date | null>(null);
   
   const userPets = appointmentFormCtx.userPets || [];
   const hasExistingPets = userPets.length > 0;
@@ -94,17 +92,6 @@ export function PetInfo({
   }, [reset, appointmentFormCtx.state.formData.petInfo]);
   const watchedImage = watch("profile_img");
   const watchedPreviewImage = watch("previewImage");
-  const watchedDob = watch("dob");
-
-  // Initialize dob from form data
-  useEffect(() => {
-    if (watchedDob && !dob) {
-      const date = new Date(watchedDob);
-      if (!isNaN(date.getTime())) {
-        setDob(date);
-      }
-    }
-  }, [watchedDob, dob]);
 
   // Fetch species on mount
   useEffect(() => {
@@ -170,7 +157,7 @@ export function PetInfo({
       if (!appointmentFormCtx.state.stepStatus.petInfo.isDone) {
         const currentValues = getValues();
         // Only save if we have valid data (not empty form)
-        if (currentValues.name && currentValues.breed_id) {
+        if (currentValues.name) {
           appointmentFormCtx.dispatch({
             type: "SET_FORM_DATA",
             payload: { petInfo: currentValues },
@@ -209,7 +196,21 @@ export function PetInfo({
       
       setValue('sex', selectedPet.sex ?? 0);
       setValue('neutered_status', selectedPet.neutered_status ?? 0);
-      setValue('dob', selectedPet.dob || '');
+      // Convert dob to approximate_age if available (for existing pets)
+      if (selectedPet.dob) {
+        const dobDate = new Date(selectedPet.dob);
+        if (!isNaN(dobDate.getTime())) {
+          const ageInYears = Math.floor((new Date().getTime() - dobDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+          const ageInMonths = Math.floor((new Date().getTime() - dobDate.getTime()) / (30.44 * 24 * 60 * 60 * 1000));
+          if (ageInYears > 0) {
+            setValue('approximate_age', `${ageInYears} ${ageInYears === 1 ? 'year' : 'years'}`);
+          } else if (ageInMonths > 0) {
+            setValue('approximate_age', `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}`);
+          } else {
+            setValue('approximate_age', 'Less than 1 month');
+          }
+        }
+      }
       setValue('microchip_ref', selectedPet.microchip_ref || '');
       setValue('weight_kg', selectedPet.weight_kg);
       setValue('bcs', selectedPet.bcs);
@@ -218,14 +219,6 @@ export function PetInfo({
       
       if (selectedPet.profile_img) {
         setValue('previewImage', selectedPet.profile_img);
-      }
-      
-      // Set DOB date picker
-      if (selectedPet.dob) {
-        const date = new Date(selectedPet.dob);
-        if (!isNaN(date.getTime())) {
-          setDob(date);
-        }
       }
       
       // Trigger validation to ensure form is valid
@@ -245,7 +238,7 @@ export function PetInfo({
     setSelectedSpecies(null);
     setValue('sex', 0);
     setValue('neutered_status', 0);
-    setValue('dob', '');
+    setValue('approximate_age', '');
     setValue('microchip_ref', '');
     setValue('weight_kg', undefined);
     setValue('bcs', undefined);
@@ -253,7 +246,6 @@ export function PetInfo({
     setValue('notes', '');
     setValue('profile_img', null);
     setValue('previewImage', null);
-    setDob(null);
   };
 
   const onSubmit = (data: PetInfoType) => {
@@ -270,7 +262,7 @@ export function PetInfo({
           species_id: selectedPet.species_id,
           sex: selectedPet.sex ?? 0,
           neutered_status: selectedPet.neutered_status ?? 0,
-          dob: selectedPet.dob,
+          approximate_age: data.approximate_age || '',
           microchip_ref: selectedPet.microchip_ref || '',
           weight_kg: selectedPet.weight_kg,
           bcs: selectedPet.bcs,
@@ -325,7 +317,7 @@ export function PetInfo({
           species_id: selectedPet.species_id,
           sex: selectedPet.sex ?? 0,
           neutered_status: selectedPet.neutered_status ?? 0,
-          dob: selectedPet.dob || '',
+          approximate_age: '',
           microchip_ref: selectedPet.microchip_ref || '',
           weight_kg: toNumberOrUndefined(selectedPet.weight_kg),
           bcs: toNumberOrUndefined(selectedPet.bcs),
@@ -357,7 +349,7 @@ export function PetInfo({
           setTimeout(() => {
             const savedPetInfo = appointmentFormCtx.state.formData.petInfo;
             
-            if (!savedPetInfo?.name || !savedPetInfo?.breed_id) {
+            if (!savedPetInfo?.name) {
               return; 
             }
             
@@ -529,7 +521,7 @@ export function PetInfo({
         {/* Species and Breed */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ReactSelect
-            isRequired={true}
+            isRequired={false}
             options={speciesOptions}
             value={speciesOptions.find(opt => opt.value === selectedSpecies) || null}
             onChange={(option: any) => {
@@ -543,7 +535,7 @@ export function PetInfo({
             leftIcon={<PawPrintIcon className="size-4.5" />}
           />
           <ReactSelect
-            isRequired={true}
+            isRequired={false}
             options={breedOptions}
             value={breedOptions.find(opt => opt.value === watchedValues.breed_id) || null}
             onChange={(option: any) => {
@@ -581,46 +573,15 @@ export function PetInfo({
             leftIcon={<UserIcon className="size-4.5" />}
           />
 
-                {/* Date of Birth */}
+                {/* Approximate Age */}
         <div className="flex justify-between flex-col">
-          <span className="input-label">
-            {t('common.date_of_birth')}
-            <span className="text-error mx-1">*</span>
-          </span>
-          <Controller
-            name="dob"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => {
-              const fieldValue = field.value ? new Date(field.value) : null;
-              return (
-                <DatePicker
-                  value={fieldValue && !isNaN(fieldValue.getTime()) ? [fieldValue] : []}
-                  onChange={(dates: Date[]) => {
-                    const date = dates[0] || null;
-                    setDob(date);
-                    if (date) {
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      field.onChange(`${year}-${month}-${day}`);
-                    } else {
-                      field.onChange('');
-                    }
-                  }}
-                  placeholder={t('common.select_date')}
-                  options={{
-                    dateFormat: "Y-m-d",
-                    maxDate: new Date(),
-                  }}
-                  required
-                />
-              );
-            }}
+          <Input
+            {...register("approximate_age")}
+            label={t('common.approximate_age') || 'Approximate Age'}
+            leftIcon={<CalendarIcon className="h-5 w-5" />}
+            error={translateError(errors?.approximate_age?.message)}
+            placeholder={t('common.approximate_age_placeholder') || 'e.g., 2 years, 6 months, etc.'}
           />
-          {errors?.dob && (
-            <p className="text-red-500 text-sm mt-1">{translateError(errors.dob.message)}</p>
-          )}
         </div>
         </div>
 

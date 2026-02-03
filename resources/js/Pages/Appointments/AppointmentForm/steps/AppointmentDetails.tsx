@@ -243,14 +243,13 @@ export function AppointmentDetails({
       // Get all form data from context
       const { personalInfo, petInfo } = appointmentFormCtx.state.formData;
       
-      if (!petInfo || !petInfo.name || !petInfo.breed_id) {
+      if (!petInfo || !petInfo.name) {
         console.error('Pet info validation failed:', {
           petInfoExists: !!petInfo,
           hasName: !!petInfo?.name,
-          hasBreedId: !!petInfo?.breed_id,
           petInfo: petInfo
         });
-        throw new Error('Pet information is incomplete. Please ensure pet name and breed are selected.');
+        throw new Error('Pet information is incomplete. Please ensure pet name is provided.');
       }
       
       // Step 1: Handle client creation or update
@@ -331,11 +330,11 @@ export function AppointmentDetails({
         const petData = new FormData();
         petData.append('client_id', clientId);
         petData.append('name', petInfo.name);
-        petData.append('breed_id', petInfo.breed_id);
+        if (petInfo.breed_id) petData.append('breed_id', petInfo.breed_id);
         if (petInfo.species_id) petData.append('species_id', petInfo.species_id);
         petData.append('sex', String(petInfo.sex));
         petData.append('neutered_status', String(petInfo.neutered_status));
-        petData.append('dob', petInfo.dob);
+        if (petInfo.approximate_age) petData.append('approximate_age', petInfo.approximate_age);
         if (petInfo.microchip_ref) petData.append('microchip_ref', petInfo.microchip_ref);
         if (petInfo.weight_kg !== undefined) petData.append('weight_kg', String(petInfo.weight_kg));
         if (petInfo.bcs !== undefined) petData.append('bcs', String(petInfo.bcs));
