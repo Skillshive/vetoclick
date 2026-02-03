@@ -135,10 +135,18 @@ class VeterinarianController extends Controller
             if ($availability === 'On Holiday') {
                 $holiday = $this->getCurrentHoliday($vet);
                 if ($holiday) {
+                    // Get the day after holiday ends
+                    $availableFromDate = Carbon::parse($holiday->end_date)->addDay()->startOfDay();
+                    $dayOfWeek = strtolower($availableFromDate->format('l'));
+                    
+                    // Get availability start time for that day
+                    $availabilityStartTime = $this->getAvailabilityStartTimeForDay($vet, $dayOfWeek);
+                    
                     $holidayInfo = [
-                        'start_date' => $holiday->start_date->format('Y-m-d'),
-                        'end_date' => $holiday->end_date->format('Y-m-d'),
-                        'reason' => $holiday->reason,
+                        'start_date' => $holiday->start_date->format('Y-m-d H:i:s'),
+                        'end_date' => $holiday->end_date->format('Y-m-d H:i:s'),
+                        'available_from_date' => $availableFromDate->format('Y-m-d'),
+                        'available_from_time' => $availabilityStartTime, // e.g., "09:00:00" or null
                     ];
                 }
             }
@@ -347,5 +355,37 @@ class VeterinarianController extends Controller
 
         // Otherwise closed
         return 'Closed';
+    }
+
+    /**
+     * Get the earliest start time for a specific day of the week
+     */
+    private function getAvailabilityStartTimeForDay($vet, $dayOfWeek)
+    {
+        // Map day names to match database format (lowercase)
+        $dayMap = [
+            'monday' => 'monday',
+            'tuesday' => 'tuesday',
+            'wednesday' => 'wednesday',
+            'thursday' => 'thursday',
+            'friday' => 'friday',
+            'saturday' => 'saturday',
+            'sunday' => 'sunday',
+        ];
+        
+        $dayName = $dayMap[strtolower($dayOfWeek)] ?? strtolower($dayOfWeek);
+        
+        $schedules = $vet->availabilitySchedules()
+            ->where('day_of_week', $dayName)
+            ->where('is_break', false)
+            ->orderBy('start_time', 'asc')
+            ->get();
+        
+        if ($schedules->isEmpty()) {
+            return null;
+        }
+        
+        // Return the earliest start time for that day
+        return $schedules->first()->start_time;
     }
 }
