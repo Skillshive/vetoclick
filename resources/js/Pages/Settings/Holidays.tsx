@@ -8,6 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/Components/common/Toast/ToastContext";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import MainLayout from "@/layouts/MainLayout";
+import { Page } from "@/components/shared/Page";
 import { useHolidayTable } from "./Holidays/datatable/hooks";
 import { createColumns } from "./Holidays/datatable/columns";
 import { Toolbar } from "./Holidays/datatable/Toolbar";
@@ -241,6 +242,10 @@ export default function Holidays() {
 
   return (
     <MainLayout>
+      <Page 
+        title={t("common.metadata_titles.settings_holidays") || "Holidays"}
+        description={t("common.page_descriptions.settings_holidays") || "Manage holidays and time off. Set dates when you are unavailable for appointments."}
+      >
       <div className="transition-content grid grid-cols-1 grid-rows-[auto_1fr] px-(--margin-x) py-4">
         <div className="transition-content w-full pb-5">
           {/* DataTable */}
@@ -336,6 +341,7 @@ export default function Holidays() {
         holiday={selectedHoliday}
         onSuccess={handleModalSuccess}
       />
+      </Page>
     </MainLayout>
   );
 }

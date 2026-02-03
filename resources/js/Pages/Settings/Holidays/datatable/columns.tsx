@@ -36,7 +36,7 @@ export const createColumns = ({ onDeleteRow, t }: ColumnsProps): ColumnDef<Holid
       const start = new Date(row.start_date);
       const end = new Date(row.end_date);
       const diffTime = Math.abs(end.getTime() - start.getTime());
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      return diffTime; 
     },
     header: t('common.duration') || "Duration",
     cell: DaysCountCell,
