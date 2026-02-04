@@ -142,7 +142,7 @@ export function AppointmentDetails({
 
     try {
       const response = await fetch(
-        route('appointments.available-times') + `?veterinary_id=${vetId}&appointment_date=${date}&duration_minutes=30`,
+        route('appointments.available-times') + `?veterinary_id=${vetId}&appointment_date=${date}&duration_minutes=30&max_suggestions=50`,
         {
           method: 'GET',
           headers: {
@@ -161,7 +161,6 @@ export function AppointmentDetails({
         setAvailableTimes([]);
       }
     } catch (error) {
-      console.error('Error fetching available times:', error);
       setAvailableTimes([]);
     } finally {
       setIsLoadingTimes(false);
@@ -182,14 +181,12 @@ export function AppointmentDetails({
     }
   }, [watchedValues.veterinary_id, watchedValues.appointment_date, fetchAvailableTimes]);
 
-  // Validate selected time when it changes
   useEffect(() => {
     const vetId = watchedValues.veterinary_id;
     const date = watchedValues.appointment_date;
     const time = watchedValues.start_time;
 
     if (vetId && date && time && availableTimes.length > 0) {
-      // Check if selected time is in available times
       const isAvailable = availableTimes.includes(time);
       
       if (!isAvailable) {
@@ -200,7 +197,6 @@ export function AppointmentDetails({
         setShowSuggestions(false);
       }
     } else if (vetId && date && time && availableTimes.length === 0 && !isLoadingTimes) {
-      // No available times found
       setTimeValidationError(t('common.veterinarian_not_available_at_requested_time'));
       setShowSuggestions(false);
     } else {
@@ -240,27 +236,16 @@ export function AppointmentDetails({
 
   const onSubmit = async (data: AppointmentDetailsType) => {
     try {
-      // Get all form data from context
       const { personalInfo, petInfo } = appointmentFormCtx.state.formData;
       
       if (!petInfo || !petInfo.name) {
-        console.error('Pet info validation failed:', {
-          petInfoExists: !!petInfo,
-          hasName: !!petInfo?.name,
-          petInfo: petInfo
-        });
         throw new Error('Pet information is incomplete. Please ensure pet name is provided.');
       }
       
       // Step 1: Handle client creation or update
       let clientId: string = appointmentFormCtx.clientId || '';
       const veterinaryId = data.veterinary_id || appointmentFormCtx.selectedVetId;
-      console.log('clientId', clientId);
-      console.log('veterinaryId', veterinaryId);
-      console.log('personalInfo', personalInfo);
-      console.log('petInfo', petInfo);
-      console.log('data', data);
-      console.log('appointmentFormCtx', appointmentFormCtx);
+      
       if (personalInfo) {
         if (!veterinaryId) {
           throw new Error('Veterinarian must be selected before creating client');
@@ -403,7 +388,6 @@ export function AppointmentDetails({
           setFinished(true);
         },
         onError: (errors: any) => {
-          console.error('Error creating appointment:', errors);
           appointmentFormCtx.dispatch({
             type: "SET_STEP_ERRORS",
             payload: { appointmentDetails: true },
@@ -415,7 +399,6 @@ export function AppointmentDetails({
         },
       });
     } catch (error: any) {
-      console.error('Error in submission process:', error);
       appointmentFormCtx.dispatch({
         type: "SET_STEP_ERRORS",
         payload: { appointmentDetails: true },
