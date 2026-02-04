@@ -179,24 +179,25 @@ export function PetInfo({
   // Handle selecting an existing pet
   const handleSelectExistingPet = async (petUuid: string) => {
     const selectedPet = userPets.find(p => p.uuid === petUuid);
+    
     if (selectedPet) {
       setSelectedPetId(petUuid);
       setCreateNewPet(false);
       
-      // Pre-fill form with selected pet data (all UUIDs now)
       setValue('pet_id', selectedPet.uuid || '');
       setValue('name', selectedPet.name || '');
       setValue('breed_id', selectedPet.breed_id || '');
       
-      // Handle species_id - should already be a UUID string
       if (selectedPet.species_id) {
         setValue('species_id', selectedPet.species_id);
         setSelectedSpecies(selectedPet.species_id);
+      } else {
+        setValue('species_id', '');
+        setSelectedSpecies(null);
       }
       
       setValue('sex', selectedPet.sex ?? 0);
       setValue('neutered_status', selectedPet.neutered_status ?? 0);
-      // Convert dob to approximate_age if available (for existing pets)
       if (selectedPet.dob) {
         const dobDate = new Date(selectedPet.dob);
         if (!isNaN(dobDate.getTime())) {
@@ -210,6 +211,8 @@ export function PetInfo({
             setValue('approximate_age', 'Less than 1 month');
           }
         }
+      } else {
+        setValue('approximate_age', '');
       }
       setValue('microchip_ref', selectedPet.microchip_ref || '');
       setValue('weight_kg', selectedPet.weight_kg);
@@ -219,10 +222,34 @@ export function PetInfo({
       
       if (selectedPet.profile_img) {
         setValue('previewImage', selectedPet.profile_img);
+      } else {
+        setValue('previewImage', null);
       }
       
-      // Trigger validation to ensure form is valid
-      const isFormValid = await trigger();
+      await trigger();
+      const currentFormValues = getValues();
+
+      const petDataForContext: PetInfoType = {
+        pet_id: selectedPet.uuid,
+        name: selectedPet.name || '',
+        breed_id: selectedPet.breed_id || '',
+        species_id: selectedPet.species_id || '',
+        sex: selectedPet.sex ?? 0,
+        neutered_status: selectedPet.neutered_status ?? 0,
+        approximate_age: currentFormValues.approximate_age || '',
+        microchip_ref: selectedPet.microchip_ref || '',
+        weight_kg: selectedPet.weight_kg,
+        bcs: selectedPet.bcs,
+        color: selectedPet.color || '',
+        notes: selectedPet.notes || '',
+        profile_img: null,
+        previewImage: selectedPet.profile_img || null,
+      };
+
+      appointmentFormCtx.dispatch({
+        type: "SET_FORM_DATA",
+        payload: { petInfo: petDataForContext },
+      });
     }
   };
 
@@ -295,71 +322,90 @@ export function PetInfo({
   const onError = (errors: any) => {
   };
 
-  const handleManualSubmit = async () => {
+  const handleManualSubmit = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     if (selectedPetId && !createNewPet) {
       const selectedPet = userPets.find(p => p.uuid === selectedPetId);
-      if (selectedPet) {
-        const currentValues = getValues();
+      
+      if (!selectedPet) {
+        return;
+      }
+      
+      if (!selectedPet.name || selectedPet.name.trim() === '') {
+        return;
+      }
+      
+      const currentValues = getValues();
         
-        const toNumberOrUndefined = (value: any): number | undefined => {
-          if (value === null || value === undefined || value === '') {
-            return undefined;
-          }
-          const num = typeof value === 'string' ? parseFloat(value) : Number(value);
-          return isNaN(num) ? undefined : num;
-        };
-        
-        // Build pet data from selected pet with proper type conversions
-        const petData: PetInfoType = {
-          pet_id: selectedPet.uuid,
-          name: selectedPet.name || '',
-          breed_id: selectedPet.breed_id || '',
-          species_id: selectedPet.species_id,
-          sex: selectedPet.sex ?? 0,
-          neutered_status: selectedPet.neutered_status ?? 0,
-          approximate_age: '',
-          microchip_ref: selectedPet.microchip_ref || '',
-          weight_kg: toNumberOrUndefined(selectedPet.weight_kg),
-          bcs: toNumberOrUndefined(selectedPet.bcs),
-          color: selectedPet.color || '',
-          notes: selectedPet.notes || '',
-          profile_img: currentValues.profile_img,
-          previewImage: selectedPet.profile_img || currentValues.previewImage,
-        };
-        
-        
-        try {
-          petInfoSchema.parse(petData);
-
-          appointmentFormCtx.dispatch({
-            type: "SET_FORM_DATA",
-            payload: { petInfo: petData },
-          });
-          
-          appointmentFormCtx.dispatch({
-            type: "SET_STEP_STATUS",
-            payload: {
-              petInfo: {
-                isDone: true,
-                hasErrors: false,
-              },
-            },
-          });
-          
-          setTimeout(() => {
-            const savedPetInfo = appointmentFormCtx.state.formData.petInfo;
-            
-            if (!savedPetInfo?.name) {
-              return; 
-            }
-            
-            setCurrentStep((prev) => prev + 1);
-          }, 0);
-        } catch (validationError) {
+      const toNumberOrUndefined = (value: any): number | undefined => {
+        if (value === null || value === undefined || value === '') {
+          return undefined;
         }
+        const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+        return isNaN(num) ? undefined : num;
+      };
+        
+      const petData: PetInfoType = {
+        pet_id: selectedPet.uuid,
+        name: selectedPet.name || '',
+        breed_id: selectedPet.breed_id || '',
+        species_id: selectedPet.species_id || '',
+        sex: selectedPet.sex ?? 0,
+        neutered_status: selectedPet.neutered_status ?? 0,
+        approximate_age: '',
+        microchip_ref: selectedPet.microchip_ref || '',
+        weight_kg: toNumberOrUndefined(selectedPet.weight_kg),
+        bcs: toNumberOrUndefined(selectedPet.bcs),
+        color: selectedPet.color || '',
+        notes: selectedPet.notes || '',
+        profile_img: currentValues.profile_img,
+        previewImage: selectedPet.profile_img || currentValues.previewImage,
+      };
+        
+      try {
+        petInfoSchema.parse(petData);
+
+        setValue('pet_id', petData.pet_id || '');
+        setValue('name', petData.name);
+        setValue('breed_id', petData.breed_id || '');
+        setValue('species_id', petData.species_id || '');
+        setValue('sex', petData.sex);
+        setValue('neutered_status', petData.neutered_status);
+        setValue('approximate_age', petData.approximate_age || '');
+        setValue('microchip_ref', petData.microchip_ref || '');
+        setValue('weight_kg', petData.weight_kg);
+        setValue('bcs', petData.bcs);
+        setValue('color', petData.color || '');
+        setValue('notes', petData.notes || '');
+        setValue('profile_img', petData.profile_img);
+        setValue('previewImage', petData.previewImage || '');
+
+        await trigger();
+
+        appointmentFormCtx.dispatch({
+          type: "SET_FORM_DATA",
+          payload: { petInfo: petData },
+        });
+          
+        appointmentFormCtx.dispatch({
+          type: "SET_STEP_STATUS",
+          payload: {
+            petInfo: {
+              isDone: true,
+              hasErrors: false,
+            },
+          },
+        });
+          
+        setCurrentStep((prev) => prev + 1);
+      } catch (validationError) {
+        // Validation error handled silently
       }
     } else {
-      // For new pets, use normal form submission
       handleSubmit(onSubmit, onError)();
     }
   };
@@ -617,8 +663,8 @@ export function PetInfo({
 
         {/* Show form fields if existing pet is selected or creating new pet */}
         {(!createNewPet && selectedPetId) && (
-          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-            <p className={clsx("text-sm text-green-800 dark:text-green-200", isRtl ? "text-right" : "text-left")}>
+          <div className="mb-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
+            <p className={clsx("text-sm text-primary-800 dark:text-primary-200", isRtl ? "text-right" : "text-left")}>
               {t('common.pet_selected') || 'Pet selected. You can proceed to the next step or edit details below.'}
             </p>
           </div>
