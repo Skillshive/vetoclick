@@ -1,6 +1,7 @@
 import { XMarkIcon, CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
 import clsx from 'clsx';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Notification {
   id: string;
@@ -41,7 +42,7 @@ export function NotificationToast({ notification, onClose }: NotificationToastPr
   };
 
   const Icon = icons[notification.type];
-
+  const { t } = useTranslation();
   // Add wrapper for fixed right bottom positioning
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -54,7 +55,7 @@ export function NotificationToast({ notification, onClose }: NotificationToastPr
         <div className="flex items-start gap-3">
           <Icon className="mt-0.5 size-5 shrink-0" />
           <div className="flex-1">
-            <h4 className="font-semibold">{notification.title}</h4>
+            <h4 className="font-semibold">{t(notification.title)}</h4>
             <p className="mt-1 text-sm opacity-90">{notification.message}</p>
           </div>
           <button
