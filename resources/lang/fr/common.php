@@ -1985,4 +1985,7 @@ return [
         'reset_password' => 'Réinitialiser le Mot de Passe',
         'dashboard' => 'Tableau de Bord',
     ],
+
+    'appointment_create_error' => 'Échec de la création du rendez-vous',
+
 ];

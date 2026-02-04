@@ -2335,4 +2335,5 @@ return [
         'reset_password' => 'Reset Password',
         'dashboard' => 'Dashboard',
     ],
+    'appointment_create_error' => 'Failed to create appointment',
 ];
