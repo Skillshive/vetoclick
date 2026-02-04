@@ -20,8 +20,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Http\Requests\ClientAppointmentRequest;
+use App\Jobs\DownloadMeetingRecordingJob;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class AppointmentController extends Controller
 {
@@ -186,21 +188,21 @@ class AppointmentController extends Controller
             
             if ($request->header('X-Inertia')) {
                 return back()
-                    ->withErrors(['error' => $errorMessage ?: __('common.error')])
+                    ->withErrors(['error' =>  __('common.error')])
                     ->with('suggestions', $suggestions);
             }
             
             if ($request->wantsJson() || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'error' => $errorMessage ?: __('common.error'),
-                    'message' => $errorMessage ?: __('common.error'),
+                    'error' =>  __('common.error'),
+                    'message' =>  __('common.error'),
                     'suggestions' => $suggestions,
                 ], 400);
             }
             
             return back()
-                ->withErrors(['error' => $errorMessage ?: __('common.error')])
+                ->withErrors(['error' => __('common.error')])
                 ->with('suggestions', $suggestions);
         }
     }
@@ -479,14 +481,14 @@ class AppointmentController extends Controller
             }
 
             // Get appointment date and time
-            $appointmentDate = $appointment->appointment_date instanceof \Carbon\Carbon 
+            $appointmentDate = $appointment->appointment_date instanceof Carbon 
                 ? $appointment->appointment_date->format('Y-m-d')
-                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
+                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
             
             // Handle time format (stored as time string H:i:s or H:i)
             $startTime = is_string($appointment->start_time) 
                 ? substr($appointment->start_time, 0, 5) // Get HH:MM from HH:MM:SS
-                : \Carbon\Carbon::parse($appointment->start_time)->format('H:i');
+                : Carbon::parse($appointment->start_time)->format('H:i');
 
             // Validate if meeting can be accessed
             $accessCheck = $this->jitsiMeetService->canAccessMeeting($appointmentDate, $startTime);
@@ -543,20 +545,15 @@ class AppointmentController extends Controller
             // For Inertia requests, return back with success
             return redirect()->back()->with('success', __('common.appointment_accepted_success'));
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error accepting appointment', [
-                'uuid' => $uuid,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+
             if (request()->wantsJson() || request()->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'error' => $e->getMessage() ?: __('common.error'),
-                    'message' => $e->getMessage() ?: __('common.error')
+                    'error' => __('common.error'),
+                    'message' => __('common.error')
                 ], 400);
             }
-            return back()->withErrors(['error' => $e->getMessage() ?: __('common.error')]);
+            return back()->withErrors(['error' => __('common.error')]);
         }
     }
 
@@ -583,14 +580,14 @@ class AppointmentController extends Controller
             }
 
             // Get appointment date and time
-            $appointmentDate = $appointment->appointment_date instanceof \Carbon\Carbon 
+            $appointmentDate = $appointment->appointment_date instanceof Carbon 
                 ? $appointment->appointment_date->format('Y-m-d')
-                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
+                : (is_string($appointment->appointment_date) ? $appointment->appointment_date : Carbon::parse($appointment->appointment_date)->format('Y-m-d'));
             
             // Handle time format (stored as time string H:i:s or H:i)
             $startTime = is_string($appointment->start_time) 
                 ? substr($appointment->start_time, 0, 5) // Get HH:MM from HH:MM:SS
-                : \Carbon\Carbon::parse($appointment->start_time)->format('H:i');
+                : Carbon::parse($appointment->start_time)->format('H:i');
 
             $accessCheck = $this->jitsiMeetService->canAccessMeeting($appointmentDate, $startTime);
 
@@ -614,24 +611,16 @@ class AppointmentController extends Controller
     private function autoCreateConsultationOnJoin(Appointment $appointment): ?Consultation
     {
         try {
-            // Only create consultation if meeting has started
             if (!$appointment->meeting_started_at) {
                 return null;
             }
 
-            // Check if consultation already exists
             if ($appointment->consultation) {
-                \Illuminate\Support\Facades\Log::info('Consultation already exists', [
-                    'appointment_uuid' => $appointment->uuid,
-                    'consultation_id' => $appointment->consultation->id
-                ]);
                 return $appointment->consultation;
             }
 
-            // Get veterinarian_id from appointment
             $veterinarian = $appointment->veterinary ? $appointment->veterinary->id : null;
 
-            // Create consultation from appointment
             $consultation = Consultation::create([
                 'veterinarian_id' => $veterinarian,
                 'appointment_id' => $appointment->id,
@@ -643,18 +632,8 @@ class AppointmentController extends Controller
                 'status' => ConsultationStatus::IN_PROGRESS->value,
             ]);
 
-            \Illuminate\Support\Facades\Log::info('Consultation auto-created on join', [
-                'appointment_uuid' => $appointment->uuid,
-                'consultation_id' => $consultation->id,
-                'consultation_uuid' => $consultation->uuid
-            ]);
-
             return $consultation;
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to auto-create consultation on join', [
-                'appointment_uuid' => $appointment->uuid,
-                'error' => $e->getMessage()
-            ]);
             return null;
         }
     }
@@ -759,10 +738,11 @@ class AppointmentController extends Controller
     public function getAvailableTimes(Request $request): JsonResponse
     {
         try {
-            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            $validator = Validator::make($request->all(), [
                 'veterinary_id' => 'required|string',
                 'appointment_date' => 'required|date',
                 'duration_minutes' => 'nullable|integer|min:15|max:240',
+                'max_suggestions' => 'nullable|integer|min:1|max:100',
             ]);
 
             if ($validator->fails()) {
@@ -776,6 +756,7 @@ class AppointmentController extends Controller
             $veterinaryId = $request->input('veterinary_id');
             $appointmentDate = $request->input('appointment_date');
             $durationMinutes = $request->input('duration_minutes', 30);
+            $maxSuggestions = $request->input('max_suggestions', 10);
 
             // Get veterinarian
             $veterinarian = Veterinary::where('uuid', $veterinaryId)->first();
@@ -791,7 +772,8 @@ class AppointmentController extends Controller
             $suggestions = $this->appointmentService->getAvailableTimeSuggestions(
                 $veterinarian->id,
                 $appointmentDate,
-                $durationMinutes
+                $durationMinutes,
+                $maxSuggestions
             );
 
             return response()->json([
@@ -803,7 +785,7 @@ class AppointmentController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => __('common.error'),
-                'message' => $e->getMessage(),
+                'message' => __('common.error'),
                 'suggestions' => []
             ], 500);
         }
@@ -832,7 +814,7 @@ class AppointmentController extends Controller
             // If recording_url is provided, download and store it locally
             if ($validated['recording_url'] && !empty($validated['recording_url'])) {
                 // Dispatch job to download and store the recording
-                \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid);
+                DownloadMeetingRecordingJob::dispatch($uuid);
                 
                 // Also save the original URL in case download fails
                 $appointment->update([
@@ -879,7 +861,7 @@ class AppointmentController extends Controller
 
             if ($recordingUrl) {
                 // Dispatch job to download and store the recording
-                \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid);
+               DownloadMeetingRecordingJob::dispatch($uuid);
                 
                 $appointment->update([
                     'video_recording_url' => $recordingUrl,
@@ -897,10 +879,6 @@ class AppointmentController extends Controller
             ], 400);
 
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Jitsi recording webhook error', [
-                'uuid' => $uuid,
-                'error' => $e->getMessage()
-            ]);
 
             return response()->json([
                 'success' => false,
@@ -914,13 +892,10 @@ class AppointmentController extends Controller
      */
     public function trackMeetingStart(string $uuid): JsonResponse
     {
-        try {
-            \Illuminate\Support\Facades\Log::info('trackMeetingStart called', ['uuid' => $uuid]);
-            
+        try {            
             $appointment = $this->appointmentService->getByUuid($uuid);
 
             if (!$appointment) {
-                \Illuminate\Support\Facades\Log::error('Appointment not found in trackMeetingStart', ['uuid' => $uuid]);
                 return response()->json([
                     'success' => false,
                     'message' => __('common.appointment_not_found')
@@ -936,72 +911,47 @@ class AppointmentController extends Controller
             // If already started, this ensures we have a timestamp of when it actually started
             if (!$appointment->meeting_started_at) {
                 $updates['meeting_started_at'] = now();
-                \Illuminate\Support\Facades\Log::info('Setting meeting_started_at', ['uuid' => $uuid, 'time' => now()]);
             }
             
             // Track client attendance
             if ($isClient && !$appointment->client_attended_meeting) {
                 $updates['client_attended_meeting'] = true;
                 $updates['client_joined_at'] = now();
-                \Illuminate\Support\Facades\Log::info('Client attendance tracked', ['uuid' => $uuid]);
             } elseif (!$isClient && $user) {
                 // Vet or other user joining - ensure meeting_started_at is set
                 if (!$appointment->meeting_started_at) {
                     $updates['meeting_started_at'] = now();
                 }
-                \Illuminate\Support\Facades\Log::info('Vet/user joining meeting', [
-                    'uuid' => $uuid, 
-                    'user_id' => $user->id,
-                    'is_vet' => $user->veterinary ? true : false
-                ]);
             }
             
             if (!empty($updates)) {
-                $result = $appointment->update($updates);
-                $appointment->refresh(); // Refresh to get updated values
-                \Illuminate\Support\Facades\Log::info('Appointment updated', [
-                    'uuid' => $uuid, 
-                    'updates' => $updates,
-                    'update_result' => $result,
-                    'meeting_started_at' => $appointment->meeting_started_at,
-                    'client_attended_meeting' => $appointment->client_attended_meeting,
-                    'client_joined_at' => $appointment->client_joined_at
-                ]);
+               $appointment->update($updates);
+                $appointment->refresh(); 
                 
-                // Auto-create consultation when user joins
                 $this->autoCreateConsultationOnJoin($appointment);
                 
-                // Schedule recording download jobs based on appointment end time (fallback if endMeetingOnLeave isn't called)
-                // Only schedule if meeting just started (first time)
                 if (isset($updates['meeting_started_at']) && !$appointment->video_recording_url) {
                     try {
-                        // Calculate when the meeting should end
-                        $appointmentDate = \Carbon\Carbon::parse($appointment->appointment_date);
-                        $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $appointment->end_time);
+                        $appointmentDate = Carbon::parse($appointment->appointment_date);
+                        $endTime = Carbon::createFromFormat('H:i:s', $appointment->end_time);
                         $appointmentEndDateTime = $appointmentDate->copy()
                             ->setTime($endTime->hour, $endTime->minute, $endTime->second);
                         
-                        // Schedule jobs: 2, 5, and 10 minutes after appointment end time
                         $delay1 = now()->diffInSeconds($appointmentEndDateTime->copy()->addMinutes(2), false);
                         $delay2 = now()->diffInSeconds($appointmentEndDateTime->copy()->addMinutes(5), false);
                         $delay3 = now()->diffInSeconds($appointmentEndDateTime->copy()->addMinutes(10), false);
                         
                         // Only schedule if the delay is positive (future time)
                         if ($delay1 > 0) {
-                            \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay1));
+                            DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay1));
                         }
                         if ($delay2 > 0) {
-                            \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay2));
+                            DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay2));
                         }
                         if ($delay3 > 0) {
-                            \App\Jobs\DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay3));
+                            DownloadMeetingRecordingJob::dispatch($uuid)->delay(now()->addSeconds($delay3));
                         }
-                        
-                        \Illuminate\Support\Facades\Log::info('Recording download jobs scheduled (fallback)', [
-                            'uuid' => $uuid,
-                            'appointment_end' => $appointmentEndDateTime,
-                            'delays' => [$delay1, $delay2, $delay3]
-                        ]);
+
                     } catch (Exception $e) {
                         \Illuminate\Support\Facades\Log::error('Failed to schedule recording jobs (fallback)', [
                             'uuid' => $uuid,
@@ -1009,9 +959,7 @@ class AppointmentController extends Controller
                         ]);
                     }
                 }
-            } else {
-                \Illuminate\Support\Facades\Log::info('No updates needed', ['uuid' => $uuid]);
-            }
+            } 
 
             return response()->json([
                 'success' => true,
@@ -1020,14 +968,9 @@ class AppointmentController extends Controller
                 'appointment' => new AppointmentResource($appointment->fresh())
             ]);
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error('trackMeetingStart error', [
-                'uuid' => $uuid,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to track meeting start: ' . $e->getMessage()
+                'message' => 'Failed to track meeting start'
             ], 500);
         }
     }
