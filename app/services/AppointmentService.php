@@ -634,7 +634,6 @@ class AppointmentService implements ServiceInterface
             return [];
         }
         
-        // Get existing appointments for this date
         $existingAppointments = Appointment::where('veterinarian_id', $veterinarianId)
             ->where('appointment_date', $appointmentDate)
             ->where('status', '!=', 'cancelled')
@@ -643,6 +642,7 @@ class AppointmentService implements ServiceInterface
                 return [
                     'start' => Carbon::parse($apt->start_time)->format('H:i'),
                     'end' => Carbon::parse($apt->end_time)->format('H:i'),
+                    'id' => $apt->id,
                 ];
             })
             ->toArray();
@@ -666,7 +666,6 @@ class AppointmentService implements ServiceInterface
                 $timeSlotStart = $currentTime->format('H:i');
                 $timeSlotEnd = $currentTime->copy()->addMinutes($durationMinutes)->format('H:i');
                 
-                // Check if this time slot conflicts with existing appointments
                 $hasConflict = false;
                 foreach ($existingAppointments as $existing) {
                     $existingStart = Carbon::parse($existing['start']);
@@ -674,7 +673,6 @@ class AppointmentService implements ServiceInterface
                     $slotStartCarbon = Carbon::parse($timeSlotStart);
                     $slotEndCarbon = Carbon::parse($timeSlotEnd);
                     
-                    // Check for overlap
                     if ($slotStartCarbon->lt($existingEnd) && $slotEndCarbon->gt($existingStart)) {
                         $hasConflict = true;
                         break;
@@ -695,7 +693,7 @@ class AppointmentService implements ServiceInterface
                     $suggestions[] = $timeSlotStart;
                     
                     if (count($suggestions) >= $maxSuggestions) {
-                        break 2; // Break out of both loops
+                        break 2;
                     }
                 }
                 
