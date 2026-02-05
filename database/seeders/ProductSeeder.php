@@ -59,7 +59,7 @@ class ProductSeeder extends Seeder
             }
             
             // Ensure type is a valid ProductType value
-            $productType = in_array($productType, [1, 2, 3, 4]) ? $productType : ProductType::MEDICATION->value;
+            $productType = in_array($productType, [1, 2, 3, 4, 5]) ? $productType : ProductType::MEDICATION->value;
 
             Product::create([
                 'uuid' => Str::uuid(),
