@@ -9,7 +9,7 @@ import { useToast } from '@/Components/common/Toast/ToastContext';
 import { ConfirmModal } from '@/components/shared/ConfirmModal';
 import { RTLModal } from '@/components/ui/RTLModal';
 import { DatePicker } from '@/components/shared/form/Datepicker';
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { Button, Card, Badge } from '@/components/ui';
 import { 
@@ -195,16 +195,22 @@ export default function Index({products, categories, filters, old, errors}: Prod
         onViewLots: handleViewLots,
     });
 
-    // Handle flash messages
+    // Handle flash messages - use ref to prevent duplicate toasts
+    const flashHandledRef = React.useRef<string>('');
     useEffect(() => {
-        if (props.flash?.success) {
+        const successKey = props.flash?.success ? `success-${props.flash.success}` : '';
+        const errorKey = props.flash?.error ? `error-${props.flash.error}` : '';
+        
+        if (props.flash?.success && flashHandledRef.current !== successKey) {
+            flashHandledRef.current = successKey;
             showToast({
                 type: 'success',
                 message: props.flash.success,
                 duration: 3000,
             });
         }
-        if (props.flash?.error) {
+        if (props.flash?.error && flashHandledRef.current !== errorKey) {
+            flashHandledRef.current = errorKey;
             showToast({
                 type: 'error',
                 message: props.flash.error,

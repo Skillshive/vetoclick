@@ -49,6 +49,7 @@ export function Toolbar({
     { value: '2', label: t('common.product_type_vaccine') },
     { value: '3', label: t('common.product_type_supplement') },
     { value: '4', label: t('common.product_type_equipment') },
+    { value: '5', label: t('common.product_type_food') },
   ];
 
   // Product status options for filtering with translations

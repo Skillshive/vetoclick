@@ -25,7 +25,7 @@ export const basicInfoSchema = z.object({
 // Category & Type Schema
 export const categoryTypeSchema = z.object({
   category_product_id: z.string().min(1, "validation.product_category_required"),
-  type: z.number().min(1).max(4, "validation.product_type_invalid"),
+  type: z.number().min(1).max(5, "validation.product_type_invalid"),
 });
 
 // Medical Details Schema

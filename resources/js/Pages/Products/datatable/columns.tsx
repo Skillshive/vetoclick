@@ -128,6 +128,7 @@ export function createColumns(
             case 2: return t('common.product_type_vaccine');
             case 3: return t('common.product_type_supplement');
             case 4: return t('common.product_type_equipment');
+            case 5: return t('common.product_type_food');
             default: return 'N/A';
           }
         };
