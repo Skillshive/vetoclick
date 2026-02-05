@@ -55,8 +55,16 @@ export function VaccineInfo({
 
   // Reset form when context data changes
   useEffect(() => {
-    reset(productFormCtx.state.formData.vaccineInfo);
-  }, [productFormCtx.state.formData.vaccineInfo, reset]);
+    const vaccineInfo = productFormCtx.state.formData.vaccineInfo;
+    reset(vaccineInfo, { keepDefaultValues: false });
+  }, [
+    productFormCtx.state.formData.vaccineInfo.expiry_date,
+    productFormCtx.state.formData.vaccineInfo.manufacturer,
+    productFormCtx.state.formData.vaccineInfo.batch_number,
+    productFormCtx.state.formData.vaccineInfo.dosage_ml,
+    productFormCtx.state.formData.vaccineInfo.vaccine_instructions,
+    reset
+  ]);
 
   const handleSaveSchedules = (schedules: any[]) => {
     productFormCtx.dispatch({
@@ -121,29 +129,38 @@ export function VaccineInfo({
           <Controller
             name="expiry_date"
             control={control}
-            render={({ field }) => (
-              <DatePicker
-                value={field.value || ""}
-                label={t('common.products.form.vaccine_info.expiry_date')}
-                leftIcon={<CalendarIcon className="h-5 w-5" />}
-                error={translateError(errors?.expiry_date?.message)}
-                onChange={(date: Date[]) => {
-                  // DatePicker returns Date[] even for single dates
-                  if (date && date.length > 0 && date[0]) {
-                    // Format as YYYY-MM-DD for backend
-                    const year = date[0].getFullYear();
-                    const month = String(date[0].getMonth() + 1).padStart(2, '0');
-                    const day = String(date[0].getDate()).padStart(2, '0');
-                    field.onChange(`${year}-${month}-${day}`);
-                  } else {
-                    field.onChange("");
-                  }
-                }}
-                options={{
-                  dateFormat: "Y-m-d",
-                }}
-              />
-            )}
+            render={({ field }) => {
+              // Ensure value is properly formatted string or empty
+              const dateValue = field.value && typeof field.value === 'string' && field.value.trim() !== '' 
+                ? field.value 
+                : undefined;
+              
+              return (
+                <DatePicker
+                  key={`expiry-date-${dateValue || 'empty'}`}
+                  value={dateValue}
+                  label={t('common.products.form.vaccine_info.expiry_date')}
+                  leftIcon={<CalendarIcon className="h-5 w-5" />}
+                  error={translateError(errors?.expiry_date?.message)}
+                  onChange={(date: Date[]) => {
+                    // DatePicker returns Date[] even for single dates
+                    if (date && date.length > 0 && date[0]) {
+                      // Format as YYYY-MM-DD for backend
+                      const year = date[0].getFullYear();
+                      const month = String(date[0].getMonth() + 1).padStart(2, '0');
+                      const day = String(date[0].getDate()).padStart(2, '0');
+                      field.onChange(`${year}-${month}-${day}`);
+                    } else {
+                      field.onChange("");
+                    }
+                  }}
+                  options={{
+                    dateFormat: "Y-m-d",
+                    allowInput: false,
+                  }}
+                />
+              );
+            }}
           />
           <Input
             {...register("dosage_ml", { valueAsNumber: true })}

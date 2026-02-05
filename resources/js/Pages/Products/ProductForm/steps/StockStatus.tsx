@@ -237,11 +237,8 @@ export function StockStatus({
       router.post(submitRoute, submitData, {
         forceFormData: true,
         onSuccess: () => {
-          showToast({
-            type: 'success',
-            message: t('common.products.form.stock_status.create_success'),
-            duration: 3000,
-          });
+          // Don't show toast here - the backend will redirect with a flash message
+          // which will be handled by the Index page to avoid duplicate toasts
           setFinished(true);
         },
         onError: (errors: any) => {
