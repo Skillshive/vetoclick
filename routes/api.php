@@ -51,6 +51,7 @@ Route::prefix('products')->controller(ProductController::class)->group(function 
 
 Route::prefix('blogs')->controller(BlogController::class)->group(function () {
     Route::get('/', 'apiIndex');
+    Route::get('/author/{authorUuid}', 'apiGetByAuthor');
     Route::get('/{uuid}', 'apiShow');
 });
 
