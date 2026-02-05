@@ -8,6 +8,7 @@ enum ProductType: int
     case VACCINE = 2;
     case SUPPLEMENT = 3;
     case EQUIPMENT = 4;
+    case FOOD = 5;
 
     public function text()
     {
@@ -16,6 +17,7 @@ enum ProductType: int
             self::VACCINE => 'vaccine',
             self::SUPPLEMENT => 'supplement',
             self::EQUIPMENT => 'equipment',
+            self::FOOD => 'food',
         };
     }
 
@@ -26,6 +28,7 @@ enum ProductType: int
             self::VACCINE->value => self::VACCINE->text(),
             self::SUPPLEMENT->value => self::SUPPLEMENT->text(),
             self::EQUIPMENT->value => self::EQUIPMENT->text(),
+            self::FOOD->value => self::FOOD->text(),
         ];
     }
 
@@ -36,6 +39,7 @@ enum ProductType: int
             self::VACCINE => true,
             self::SUPPLEMENT => false,
             self::EQUIPMENT => false,
+            self::FOOD => false,
         };
     }
 }
