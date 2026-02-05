@@ -59,6 +59,7 @@ export function CategoryType({
     { value: 2, label: t('common.products.form.category_type.vaccine') },
     { value: 3, label: t('common.products.form.category_type.supplement') },
     { value: 4, label: t('common.products.form.category_type.equipment') },
+    { value: 5, label: t('common.products.form.category_type.food') },
   ];
 
   // Get categories from database via context
@@ -85,7 +86,21 @@ export function CategoryType({
       type: "SET_STEP_STATUS",
       payload: { categoryType: { isDone: true } },
     });
-    setCurrentStep(2);
+    
+    // Skip Medical Details and Vaccine Info for food products (type 5)
+    if (data.type === 5) {
+      // Mark medicalDetails and vaccineInfo as done to skip them
+      productFormCtx.dispatch({
+        type: "SET_STEP_STATUS",
+        payload: { 
+          medicalDetails: { isDone: true },
+          vaccineInfo: { isDone: true }
+        },
+      });
+      setCurrentStep(4); // Go directly to StockStatus
+    } else {
+      setCurrentStep(2); // Go to MedicalDetails
+    }
   };
 
   // Save current form data to context when component unmounts
