@@ -24,6 +24,7 @@ class CategoryBlog extends Model
         'name',
         'desp',
         'parent_category_id',
+        'vet_id',
     ];
 
     public function parentCategory()

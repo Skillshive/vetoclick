@@ -7,22 +7,59 @@ use App\DTOs\CategoryBlogDto;
 use App\Interfaces\ServiceInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class CategoryBlogService implements ServiceInterface
 {
+    /**
+     * Get the vet's user ID for the current authenticated user
+     * - If user is a veterinarian, return their own user ID
+     * - If user is a receptionist, return the veterinary's user ID they work for
+     */
+    private function getVetUserId(): ?int
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return null;
+        }
+
+        $veterinary = $user->scopedVeterinary();
+        if ($veterinary) {
+            return $veterinary->user_id;
+        }
+
+        return null;
+    }
+
     public function query()
     {
-        return CategoryBlog::with('parentCategory');
+        $vetUserId = $this->getVetUserId();
+        
+        $query = CategoryBlog::with('parentCategory');
+        
+        if ($vetUserId) {
+            $query->where('vet_id', $vetUserId);
+        }
+        
+        return $query;
     }
     /**
      * Get category blog by UUID
+     * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
      */
     public function getByUuid(string $uuid): ?CategoryBlog
     {
-        return CategoryBlog::with(['parentCategory', 'childCategories'])
-            ->where('uuid', $uuid)
-            ->first();
+        $vetUserId = $this->getVetUserId();
+        
+        $query = CategoryBlog::with(['parentCategory', 'childCategories'])
+            ->where('uuid', $uuid);
+        
+        if ($vetUserId) {
+            $query->where('vet_id', $vetUserId);
+        }
+        
+        return $query->first();
     }
 
     /**
@@ -35,12 +72,20 @@ class CategoryBlogService implements ServiceInterface
 
     /**
      * Get all category blogs as collection
+     * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
      */
     public function getAllAsCollection(): Collection
     {
-        return CategoryBlog::with(['parentCategory', 'childCategories'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $vetUserId = $this->getVetUserId();
+        
+        $query = CategoryBlog::with(['parentCategory', 'childCategories'])
+            ->orderBy('created_at', 'desc');
+        
+        if ($vetUserId) {
+            $query->where('vet_id', $vetUserId);
+        }
+        
+        return $query->get();
     }
 
     /**
@@ -49,15 +94,28 @@ class CategoryBlogService implements ServiceInterface
     public function create(CategoryBlogDto $dto): CategoryBlog
     {
         try {
+            $vetUserId = $this->getVetUserId();
+            
+            // Validate parent category belongs to the same vet
+            $parentCategoryId = null;
+            if ($dto->parent_category_id) {
+                $parentCategory = $this->getByUuid($dto->parent_category_id);
+                if (!$parentCategory) {
+                    throw new Exception("Parent category not found or does not belong to this vet");
+                }
+                $parentCategoryId = $parentCategory->id;
+            }
+            
             $categoryBlog =  CategoryBlog::create([
                   "name" => $dto->name,
                   "desp" => $dto->desp,
-                  "parent_category_id" => $dto->parent_category_id ? $this->getByUuid($dto->parent_category_id)->id : null,
+                  "parent_category_id" => $parentCategoryId,
+                  "vet_id" => $vetUserId,
             ]);
 
             return $categoryBlog->load(['parentCategory', 'childCategories']);
         } catch (Exception $e) {
-            throw new Exception("Failed to create category blog");
+            throw new Exception("Failed to create category blog: " . $e->getMessage());
         }
     }
 
@@ -74,16 +132,26 @@ class CategoryBlogService implements ServiceInterface
                 return null;
             }
 
+            // Validate parent category belongs to the same vet
+            $parentCategoryId = null;
+            if ($dto->parent_category_id) {
+                $parentCategory = $this->getByUuid($dto->parent_category_id);
+                if (!$parentCategory) {
+                    throw new Exception("Parent category not found or does not belong to this vet");
+                }
+                $parentCategoryId = $parentCategory->id;
+            }
+
             $categoryBlog->update([
                 "name" => $dto->name,
                 "desp" => $dto->desp,
-                "parent_category_id" => $dto->parent_category_id ? $this->getByUuid($dto->parent_category_id)->id : null,
+                "parent_category_id" => $parentCategoryId,
             ]);
 
             $categoryBlog->refresh();
             return $categoryBlog->fresh(['parentCategory', 'childCategories']);
         } catch (Exception $e) {
-            throw new Exception("Failed to update category blog");
+            throw new Exception("Failed to update category blog: " . $e->getMessage());
         }
     }
 
@@ -106,17 +174,27 @@ class CategoryBlogService implements ServiceInterface
     }
     /**
      * Search categories by name
+     * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
      */
     public function searchByName(string $searchTerm): Collection
     {
-        return CategoryBlog::with(['parentCategory', 'childCategories'])
-            ->where('name', 'LIKE', '%' . $searchTerm . '%')
-             ->orWhere('dsep', 'LIKE', '%' . $searchTerm . '%')
+        $vetUserId = $this->getVetUserId();
+        
+        $query = CategoryBlog::with(['parentCategory', 'childCategories'])
+            ->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('desp', 'LIKE', '%' . $searchTerm . '%');
+            })
             ->orWhereHas('parentCategory', function ($query) use ($searchTerm) {
                 $query->where('name', 'LIKE', '%' . $searchTerm . '%')
-                ->orWhere('dsep', 'LIKE', '%' . $searchTerm . '%');
-            })
-            ->get();
+                ->orWhere('desp', 'LIKE', '%' . $searchTerm . '%');
+            });
+        
+        if ($vetUserId) {
+            $query->where('vet_id', $vetUserId);
+        }
+        
+        return $query->get();
     }
 
     /**
@@ -138,11 +216,27 @@ class CategoryBlogService implements ServiceInterface
 
     public function getAllWithoutPagination(): Collection
     {
-        return CategoryBlog::whereNull('parent_category_id')->get();
+        $vetUserId = $this->getVetUserId();
+        
+        $query = CategoryBlog::whereNull('parent_category_id');
+        
+        if ($vetUserId) {
+            $query->where('vet_id', $vetUserId);
+        }
+        
+        return $query->get();
     }
 
     public function getAllForExport(): Collection
     {
-        return CategoryBlog::get();
+        $vetUserId = $this->getVetUserId();
+        
+        $query = CategoryBlog::query();
+        
+        if ($vetUserId) {
+            $query->where('vet_id', $vetUserId);
+        }
+        
+        return $query->get();
     }
 }
