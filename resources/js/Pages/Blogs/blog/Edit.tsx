@@ -139,7 +139,25 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
   });
   const [publishDate, setPublishDate] = useState(() => {
     const value = (blog as any).publish_date;
-    return value || '';
+    if (value) {
+      // If it's a datetime string, extract just the date part (YYYY-MM-DD)
+      const dateStr = value.toString();
+      if (dateStr.includes('T')) {
+        return dateStr.split('T')[0];
+      }
+      // If it's already in YYYY-MM-DD format, return as is
+      if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return dateStr;
+      }
+      // Try to parse and format as date
+      try {
+        const date = new Date(value);
+        return date.toISOString().slice(0, 10);
+      } catch {
+        return '';
+      }
+    }
+    return '';
   });
   
   const categoryOptions = category_blogs.map(category => ({
@@ -486,16 +504,15 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                         onChange={(dates: Date[]) => {
                           if (dates && dates.length > 0) {
                             const date = new Date(dates[0]);
-                            const formattedDate = date.toISOString().slice(0, 16);
+                            const formattedDate = date.toISOString().slice(0, 10);
                             setPublishDate(formattedDate);
                           } else {
                             setPublishDate('');
                           }
                         }}
                         options={{
-                          enableTime: true,
-                          dateFormat: "Y-m-d H:i",
-                          time_24hr: true,
+                          enableTime: false,
+                          dateFormat: "Y-m-d",
                           allowInput: false,
                         }}
                         placeholder={t('common.publish_date') || "Select publish date"}

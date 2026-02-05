@@ -379,16 +379,15 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
                       onChange={(dates: Date[]) => {
                         if (dates && dates.length > 0) {
                           const date = new Date(dates[0]);
-                          const formattedDate = date.toISOString().slice(0, 16);
+                          const formattedDate = date.toISOString().slice(0, 10);
                           setPublishDate(formattedDate);
                         } else {
                           setPublishDate('');
                         }
                       }}
                       options={{
-                        enableTime: true,
-                        dateFormat: "Y-m-d H:i",
-                        time_24hr: true,
+                        enableTime: false,
+                        dateFormat: "Y-m-d",
                         allowInput: false,
                       }}
                       placeholder={t('common.publish_date') || "Select publish date"}
