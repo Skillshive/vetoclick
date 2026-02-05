@@ -194,7 +194,8 @@ return [
                 'medication' => 'دواء',
                 'vaccine' => 'لقاح',
                 'supplement' => 'مكمل غذائي',
-                'equipment' => 'معدات'
+                'equipment' => 'معدات',
+                'food' => 'طعام'
             ],
             'medical_details' => [
                 'dosage_form' => 'شكل الجرعة',
@@ -294,6 +295,7 @@ return [
     'product_type_vaccine' => 'لقاح',
     'product_type_supplement' => 'مكمل غذائي',
     'product_type_equipment' => 'معدات',
+    'product_type_food' => 'طعام',
     'product_status_available' => 'متوفر',
     'product_status_out_of_stock' => 'نفذ من المخزون',
     'product_status_on_order' => 'تحت الطلب',
@@ -968,6 +970,12 @@ return [
     'blog_update_error' => 'فشل في تحديث المدونة',
     'blog_delete_error' => 'فشل في حذف المدونة',
     'blog_not_found' => 'المدونة غير موجودة',
+    'publish_immediately' => 'نشر فوراً',
+    'featured_post' => 'مقال مميز',
+    'publishing_settings' => 'إعدادات النشر',
+    'publish_date' => 'تاريخ النشر',
+    'reading_time' => 'وقت القراءة',
+    'author' => 'المؤلف',
     'confirm_delete_blog' => 'هل أنت متأكد أنك تريد حذف هذه المدونة؟',
     'this_action_cannot_be_undone' => 'هذا الإجراء لا يمكن التراجع عنه.',
     'today' => 'اليوم',

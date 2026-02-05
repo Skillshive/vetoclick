@@ -382,5 +382,9 @@ return [
     'password_required' => 'The password is required.',  
     'password_string' => 'The password must be a valid text.',  
     'password_min' => 'The password must be at least 8 characters.',  
-    'password_confirmed' => 'The password confirmation does not match.',  
+    'password_confirmed' => 'The password confirmation does not match.', 
+    'name_max' => 'The name must not exceed 255 characters.', 
+    'name_min' => 'The name must be at least 2 characters.', 
+    'name_string' => 'The name must be a valid text.', 
+    'name_unique' => 'The name has already been taken.', 
 ];

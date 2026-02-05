@@ -154,6 +154,7 @@ return [
     'product_type_vaccine' => 'Vaccine',
     'product_type_supplement' => 'Supplement',
     'product_type_equipment' => 'Equipment',
+    'product_type_food' => 'Food',
     
     // Product status
     'product_status_available' => 'Available',
@@ -1059,6 +1060,12 @@ return [
     'blog_updated_success' => 'Blog updated successfully',
     'blog_deleted_success' => 'Blog deleted successfully',
     'blog_create_error' => 'Failed to create blog',
+    'publish_immediately' => 'Publish Immediately',
+    'featured_post' => 'Featured Post',
+    'publishing_settings' => 'Publishing Settings',
+    'publish_date' => 'Publish Date',
+    'reading_time' => 'Reading Time',
+    'author' => 'Author',
     'blog_update_error' => 'Failed to update blog',
     'blog_delete_error' => 'Failed to delete blog',
     'blog_not_found' => 'Blog not found',
@@ -1963,6 +1970,7 @@ return [
                 'vaccine' => 'Vaccine',
                 'supplement' => 'Supplement',
                 'equipment' => 'Equipment',
+                'food' => 'Food',
             ],
             'medical_details' => [
                 'dosage_form' => 'Dosage Form',

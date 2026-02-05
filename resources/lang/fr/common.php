@@ -193,7 +193,8 @@ return [
                 'medication' => 'Médicament',
                 'vaccine' => 'Vaccin',
                 'supplement' => 'Complément',
-                'equipment' => 'Équipement'
+                'equipment' => 'Équipement',
+                'food' => 'Nourriture'
             ],
             'medical_details' => [
                 'dosage_form' => 'Forme Posologique',
@@ -294,6 +295,7 @@ return [
     'product_type_vaccine' => 'Vaccin',
     'product_type_supplement' => 'Complément',
     'product_type_equipment' => 'Équipement',
+    'product_type_food' => 'Nourriture',
     'product_status_available' => 'Disponible',
     'product_status_out_of_stock' => 'Rupture de stock',
     'product_status_on_order' => 'Sur commande',
@@ -975,6 +977,12 @@ return [
     'blog_update_error' => 'Échec de la mise à jour du blog',
     'blog_delete_error' => 'Échec de la suppression du blog',
     'blog_not_found' => 'Blog introuvable',
+    'publish_immediately' => 'Publier immédiatement',
+    'featured_post' => 'Article en vedette',
+    'publishing_settings' => 'Paramètres de publication',
+    'publish_date' => 'Date de publication',
+    'reading_time' => 'Temps de lecture',
+    'author' => 'Auteur',
     'confirm_delete_blog' => 'Êtes-vous sûr de vouloir supprimer ce blog ?',
     'this_action_cannot_be_undone' => 'Cette action ne peut pas être annulée.',
     'today' => 'Aujourd\'hui',
