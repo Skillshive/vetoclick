@@ -30,6 +30,11 @@ class Blog extends Model
         'meta_keywords',
         'category_blog_id',
         'tags',
+        'is_published',
+        'is_featured',
+        'publish_date',
+        'reading_time',
+        'author_id',
     ];
 
 
@@ -37,6 +42,11 @@ class Blog extends Model
     public function categoryBlog()
     {
         return $this->belongsTo(CategoryBlog::class, 'category_blog_id')->withTrashed();
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
     }
 
   

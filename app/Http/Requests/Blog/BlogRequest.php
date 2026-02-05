@@ -30,7 +30,11 @@ class BlogRequest extends FormRequest
             'meta_desc' => 'required|string|max:1000',
             'meta_keywords' => 'required|string|max:500',
             'category_blog_id' => 'required|string|exists:category_blogs,uuid',
-            'tags' => 'required|string|max:1000'
+            'tags' => 'required|string|max:1000',
+            'is_published' => 'nullable|boolean',
+            'is_featured' => 'nullable|boolean',
+            'publish_date' => 'nullable|date',
+            'author_id' => 'nullable|integer|exists:users,id',
         ];
 
         // For update requests, make fields sometimes required instead of always required
@@ -43,6 +47,10 @@ class BlogRequest extends FormRequest
             $rules['meta_keywords'] = 'sometimes|string|max:500';
             $rules['category_blog_id'] = 'sometimes|string|exists:category_blogs,uuid';
             $rules['tags'] = 'sometimes|string|max:1000';
+            $rules['is_published'] = 'sometimes|boolean';
+            $rules['is_featured'] = 'sometimes|boolean';
+            $rules['publish_date'] = 'sometimes|date';
+            $rules['author_id'] = 'sometimes|integer|exists:users,id';
         }
 
         return $rules;

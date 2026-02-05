@@ -66,6 +66,18 @@ class BlogResource extends JsonResource
                 ];
             }),
             'category_blog_id' => $this->category_blog_id,
+            'is_published' => $this->is_published ?? false,
+            'is_featured' => $this->is_featured ?? false,
+            'publish_date' => $this->publish_date ? (is_string($this->publish_date) ? $this->publish_date : $this->publish_date->toISOString()) : null,
+            'reading_time' => $this->reading_time,
+            'author' => $this->when($this->author, function () {
+                return [
+                    'id' => $this->author?->id,
+                    'name' => $this->author?->name,
+                    'email' => $this->author?->email,
+                ];
+            }),
+            'author_id' => $this->author_id,
             'created_at' => $this->created_at ? $this->created_at->toISOString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toISOString() : null,
         ];

@@ -14,6 +14,7 @@ use App\Http\Resources\Blog\BlogResource;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class BlogController extends Controller
 {
@@ -40,8 +41,20 @@ class BlogController extends Controller
                 $blogs = $this->blogService->getAll($perPage);
             }
 
-            // Get category blogs for filters
-            $categoryBlogs = CategoryBlog::all();
+            // Get category blogs for filters - filtered by vet_id
+            $user = Auth::user();
+            $vetUserId = null;
+            
+            if ($user) {
+                $veterinary = $user->scopedVeterinary();
+                if ($veterinary) {
+                    $vetUserId = $veterinary->user_id;
+                }
+            }
+            
+            $categoryBlogs = $vetUserId 
+                ? CategoryBlog::where('vet_id', $vetUserId)->get()
+                : collect();
 
             $categoryBlogsResource = CategoryBlogResource::collection($categoryBlogs);
             return Inertia::render('Blogs/blog/Index', [
@@ -79,8 +92,20 @@ class BlogController extends Controller
 
     public function create(): Response
     {
-        // Get category blogs for the form
-        $categoryBlogs = CategoryBlog::all();
+        // Get category blogs for the form - filtered by vet_id
+        $user = Auth::user();
+        $vetUserId = null;
+        
+        if ($user) {
+            $veterinary = $user->scopedVeterinary();
+            if ($veterinary) {
+                $vetUserId = $veterinary->user_id;
+            }
+        }
+        
+        $categoryBlogs = $vetUserId 
+            ? CategoryBlog::where('vet_id', $vetUserId)->get()
+            : collect();
 
         $categoryBlogsResource = CategoryBlogResource::collection($categoryBlogs);
         return Inertia::render('Blogs/blog/Create', [
@@ -128,8 +153,21 @@ class BlogController extends Controller
                 ]);
             }
 
-            // Get category blogs for the form
-            $categoryBlogs = CategoryBlog::all();
+            // Get category blogs for the form - filtered by vet_id
+            $user = Auth::user();
+            $vetUserId = null;
+            
+            if ($user) {
+                $veterinary = $user->scopedVeterinary();
+                if ($veterinary) {
+                    $vetUserId = $veterinary->user_id;
+                }
+            }
+            
+            $categoryBlogs = $vetUserId 
+                ? CategoryBlog::where('vet_id', $vetUserId)->get()
+                : collect();
+            
             $blogResource = new BlogResource($blog);
             $categoryBlogsResource = CategoryBlogResource::collection($categoryBlogs);
             return Inertia::render('Blogs/blog/Edit', [
@@ -164,6 +202,7 @@ class BlogController extends Controller
      */
     public function update(BlogRequest $request, string $uuid)
     {
+     //   dd($request->all());
         try {
             $blog = $this->blogService->getByUuid($uuid);
 
@@ -222,8 +261,21 @@ class BlogController extends Controller
             $perPage = $request->input('per_page', 15);
             $blogs = $this->blogService->searchByTitle($request->title, $perPage);
 
-            // Get category blogs for filters
-            $categoryBlogs = CategoryBlog::all();
+            // Get category blogs for filters - filtered by vet_id
+            $user = Auth::user();
+            $vetUserId = null;
+            
+            if ($user) {
+                $veterinary = $user->scopedVeterinary();
+                if ($veterinary) {
+                    $vetUserId = $veterinary->user_id;
+                }
+            }
+            
+            $categoryBlogs = $vetUserId 
+                ? CategoryBlog::where('vet_id', $vetUserId)->get()
+                : collect();
+            
             $categoryBlogsResource = CategoryBlogResource::collection($categoryBlogs);
             return Inertia::render('Blog/Index', [
                 'blogs' => [

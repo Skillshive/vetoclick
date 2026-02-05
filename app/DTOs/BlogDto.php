@@ -24,6 +24,11 @@ class BlogDto extends DTO implements DTOInterface
         public ?string $category_blog_uuid = null,
         public ?int $category_blog_id = null,
         public string $tags = '',
+        public bool $is_published = false,
+        public bool $is_featured = false,
+        public ?string $publish_date = null,
+        public ?int $reading_time = null,
+        public ?int $author_id = null,
         public ?string $created_at = null,
         public ?string $updated_at = null,
         public ?string $deleted_at = null
@@ -40,9 +45,14 @@ class BlogDto extends DTO implements DTOInterface
             $categoryBlogId = $categoryBlog ? $categoryBlog->id : null;
         }
 
+        // Calculate reading time from body (average reading speed: 200 words per minute)
+        $body = $request->input('body', '');
+        $wordCount = str_word_count(strip_tags($body));
+        $readingTime = $wordCount > 0 ? max(1, ceil($wordCount / 200)) : null;
+
         return new self(
             title: $request->input('title', ''),
-            body: $request->input('body', ''),
+            body: $body,
             caption: $request->input('caption', ''),
             image_file: $request->file('image_file'),
             remove_existing_image: $request->boolean('remove_existing_image'),
@@ -51,7 +61,12 @@ class BlogDto extends DTO implements DTOInterface
             meta_keywords: $request->input('meta_keywords', ''),
             category_blog_uuid: $categoryBlogUuid,
             category_blog_id: $categoryBlogId,
-            tags: $request->input('tags', '')
+            tags: $request->input('tags', ''),
+            is_published: $request->boolean('is_published', false),
+            is_featured: $request->boolean('is_featured', false),
+            publish_date: $request->input('publish_date'),
+            reading_time: $readingTime,
+            author_id: $request->input('author_id') ? (int)$request->input('author_id') : null
         );
     }
 
@@ -90,6 +105,11 @@ class BlogDto extends DTO implements DTOInterface
             'meta_keywords' => $this->meta_keywords,
             'category_blog_id' => $this->category_blog_id,
             'tags' => $this->tags,
+            'is_published' => $this->is_published,
+            'is_featured' => $this->is_featured,
+            'publish_date' => $this->publish_date,
+            'reading_time' => $this->reading_time,
+            'author_id' => $this->author_id,
         ];
     }
 
@@ -176,6 +196,26 @@ class BlogDto extends DTO implements DTOInterface
 
         if (!empty($this->tags)) {
             $data['tags'] = $this->tags;
+        }
+
+        if (isset($this->is_published)) {
+            $data['is_published'] = $this->is_published;
+        }
+
+        if (isset($this->is_featured)) {
+            $data['is_featured'] = $this->is_featured;
+        }
+
+        if ($this->publish_date !== null) {
+            $data['publish_date'] = $this->publish_date;
+        }
+
+        if ($this->reading_time !== null) {
+            $data['reading_time'] = $this->reading_time;
+        }
+
+        if ($this->author_id !== null) {
+            $data['author_id'] = $this->author_id;
         }
 
         return $data;
