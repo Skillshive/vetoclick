@@ -26,7 +26,7 @@ class BlogService implements ServiceInterface
     {
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])->orderBy('created_at', 'desc');
+        $query = Blog::with(['image', 'categoryBlog', 'author'])->orderBy('created_at', 'desc');
         
         if ($vetUserId) {
             $query->where('author_id', $vetUserId);
@@ -43,7 +43,7 @@ class BlogService implements ServiceInterface
     {
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])->where('id', $id);
+        $query = Blog::with(['image', 'categoryBlog', 'author'])->where('id', $id);
         
         if ($vetUserId) {
             $query->where('author_id', $vetUserId);
@@ -60,7 +60,7 @@ class BlogService implements ServiceInterface
     {
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
                  ->where('uuid', $uuid);
         
         if ($vetUserId) {
@@ -230,7 +230,7 @@ class BlogService implements ServiceInterface
     {
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
             ->where('title', 'LIKE', "%{$title}%")
             ->orderBy('created_at', 'desc');
         
@@ -245,7 +245,7 @@ class BlogService implements ServiceInterface
     {
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
             ->where('category_blog_id', $categoryId)
             ->orderBy('created_at', 'desc');
         
@@ -264,7 +264,7 @@ class BlogService implements ServiceInterface
     {
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
             ->latest();
         
         if ($vetUserId) {
@@ -282,7 +282,7 @@ class BlogService implements ServiceInterface
     {
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
             ->where('category_blog_id', $categoryId)
             ->where('uuid', '!=', $excludeUuid)
             ->latest();
@@ -307,7 +307,7 @@ class BlogService implements ServiceInterface
 
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
             ->where('created_at', '<', $currentBlog->created_at)
             ->orderBy('created_at', 'desc');
         
@@ -331,7 +331,7 @@ class BlogService implements ServiceInterface
 
         $vetUserId = $this->getVetUserId();
         
-        $query = Blog::with(['image', 'categoryBlog'])
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
             ->where('created_at', '>', $currentBlog->created_at)
             ->orderBy('created_at', 'asc');
         

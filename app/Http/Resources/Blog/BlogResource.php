@@ -71,10 +71,15 @@ class BlogResource extends JsonResource
             'publish_date' => $this->publish_date ? (is_string($this->publish_date) ? $this->publish_date : $this->publish_date->toISOString()) : null,
             'reading_time' => $this->reading_time,
             'author' => $this->when($this->author, function () {
+                $author = $this->author;
+                $name = trim(($author->firstname ?? '') . ' ' . ($author->lastname ?? ''));
+                if (empty($name)) {
+                    $name = $author->email ?? 'Unknown Author';
+                }
                 return [
-                    'id' => $this->author?->id,
-                    'name' => $this->author?->name,
-                    'email' => $this->author?->email,
+                    'id' => $author->id,
+                    'name' => $name,
+                    'email' => $author->email,
                 ];
             }),
             'author_id' => $this->author_id,
