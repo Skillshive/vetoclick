@@ -1,28 +1,19 @@
 import { Table } from '@tanstack/react-table';
 import { Product, Category } from './types';
 import { Button, Input } from '@/components/ui';
-import { HiPlus, HiSearch, HiDownload, HiPrinter } from 'react-icons/hi';
-import { ChevronUpDownIcon, EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
-import { TbUpload } from 'react-icons/tb';
+import {  HiSearch } from 'react-icons/hi';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useBreakpointsContext } from '@/contexts/breakpoint/context';
-import { DateFilter } from '@/components/shared/table/DateFilter';
-import { FacedtedFilter } from '@/components/shared/table/FacedtedFilter';
-import { RangeFilter } from '@/components/shared/table/RangeFilter';
 import { TableSettings } from '@/components/shared/table/TableSettings';
 import { ResponsiveFilter } from '@/components/shared/table/ResponsiveFilter';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import clsx from 'clsx';
-import { CSSProperties, useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
-import { ViewColumnsIcon } from '@heroicons/react/24/outline';
+import { ViewColumnsIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
 import { BiCategory } from "react-icons/bi";
-import { MdCategory, MdOutlineCategory } from 'react-icons/md';
-import { FaFilter } from 'react-icons/fa6';
-import { CiFilter } from 'react-icons/ci';
-import { Filter, TypeIcon, TypeOutline } from 'lucide-react';
+import { MdOutlineCategory } from 'react-icons/md';
+import { Filter } from 'lucide-react';
+import { CSSProperties } from 'react';
 
 declare const route: (name: string, params?: any, absolute?: boolean) => string;
 
@@ -43,7 +34,6 @@ export function Toolbar({
   const { isXs } = useBreakpointsContext();
   const isFullScreenEnabled = table.getState().tableSettings?.enableFullScreen;
 
-  // Product type options for filtering with translations
   const productTypeOptions = [
     { value: '1', label: t('common.product_type_medication') },
     { value: '2', label: t('common.product_type_vaccine') },
@@ -52,7 +42,6 @@ export function Toolbar({
     { value: '5', label: t('common.product_type_food') },
   ];
 
-  // Product status options for filtering with translations
   const productStatusOptions = [
     { value: '1', label: t('common.product_status_available') },
     { value: '2', label: t('common.product_status_out_of_stock') },
@@ -132,8 +121,16 @@ export function Toolbar({
             <SearchInput table={table} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
             <Filters table={table} categories={categories} productTypeOptions={productTypeOptions} productStatusOptions={productStatusOptions} />
           </div>
-
+          
           <div className="flex shrink-0 space-x-2">
+            <Button
+              onClick={() => router.visit(route('products.create'))}
+              color="primary"
+              className="h-8 gap-2 px-3 text-xs"
+            >
+              <PlusIcon className="size-4" />
+              <span>{t('common.create_product')}</span>
+            </Button>
             <ResponsiveFilter
               anchor={{ to: "bottom end", gap: 12 }}
               buttonContent={

@@ -346,9 +346,7 @@ export default function Index({products, categories, filters, old, errors}: Prod
         });
     };
 
-    const handleCreate = () => {
-        router.visit(route('products.create'));
-      };
+
 
     const bulkDeleteState = bulkDeleteError ? "error" : bulkDeleteSuccess ? "success" : "pending";
     const singleDeleteState = singleDeleteError ? "error" : singleDeleteSuccess ? "success" : "pending";
@@ -380,13 +378,6 @@ export default function Index({products, categories, filters, old, errors}: Prod
           </h2>
         </div>
         
-        <Button
-          onClick={handleCreate}
-          className="h-8 space-x-1.5 rounded-md px-3 text-xs"
-          color="primary"
-        >
-          <PlusSmallIcon className="size-4" />
-        </Button>
       </div>
             {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6 2xl:gap-6">
