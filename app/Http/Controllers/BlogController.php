@@ -379,4 +379,46 @@ class BlogController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get blogs by author UUID (API endpoint)
+     */
+    public function apiGetByAuthor(string $authorUuid, Request $request)
+    {
+        try {
+            $page = $request->input('page', 1);
+            $perPage = $request->input('per_page', 15);
+            
+            // For public API, only return published blogs
+            $blogs = $this->blogService->getByAuthorUuid($authorUuid, $perPage, true);
+            
+            // Get author info
+            $author = \App\Models\User::where('uuid', $authorUuid)->first();
+            $authorName = 'Unknown Author';
+            if ($author) {
+                $name = trim(($author->firstname ?? '') . ' ' . ($author->lastname ?? ''));
+                $authorName = !empty($name) ? $name : ($author->email ?? 'Unknown Author');
+            }
+            
+            return response()->json([
+                'success' => true,
+                'author' => [
+                    'uuid' => $authorUuid,
+                    'name' => $authorName,
+                ],
+                'data' => BlogResource::collection($blogs->items())->toArray(request()),
+                'pagination' => [
+                    'currentPage' => $blogs->currentPage(),
+                    'totalPages' => $blogs->lastPage(),
+                    'perPage' => $blogs->perPage(),
+                    'total' => $blogs->total(),
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => __('common.blog_retrieve_error')
+            ], 500);
+        }
+    }
 }

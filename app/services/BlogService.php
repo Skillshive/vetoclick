@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\BlogDto;
 use App\Models\Blog;
 use App\Interfaces\ServiceInterface;
+use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -269,6 +270,37 @@ class BlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('author_id', $vetUserId);
+        }
+        
+        return $query->paginate($perPage);
+    }
+
+    /**
+     * Get blogs by author UUID
+     * For frontend/public access, pass $publishedOnly = true to only return published blogs
+     */
+    public function getByAuthorUuid(string $authorUuid, int $perPage = 15, bool $publishedOnly = true): LengthAwarePaginator
+    {
+        // Get the author user by UUID
+        $author = User::where('uuid', $authorUuid)->first();
+        
+        if (!$author) {
+            // Return empty paginator if author not found
+            return new LengthAwarePaginator(
+                collect([]),
+                0,
+                $perPage,
+                1
+            );
+        }
+        
+        $query = Blog::with(['image', 'categoryBlog', 'author'])
+            ->where('author_id', $author->id)
+            ->orderBy('created_at', 'desc');
+        
+        // Filter by published status for frontend/public access
+        if ($publishedOnly) {
+            $query->where('is_published', 1);
         }
         
         return $query->paginate($perPage);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Blog;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -65,7 +66,7 @@ class BlogResource extends JsonResource
                     'name' => $this->categoryBlog?->name,
                 ];
             }),
-            'category_blog_id' => $this->category_blog_id,
+            'category_blog_id' => $this->categoryBlog?->uuid,
             'is_published' => $this->is_published ?? false,
             'is_featured' => $this->is_featured ?? false,
             'publish_date' => $this->publish_date ? (is_string($this->publish_date) ? $this->publish_date : $this->publish_date->toISOString()) : null,
@@ -76,13 +77,17 @@ class BlogResource extends JsonResource
                 if (empty($name)) {
                     $name = $author->email ?? 'Unknown Author';
                 }
+                $uuid = $author->uuid;
+                if (empty($uuid) && $author->id) {
+                    $authorWithUuid = User::select('uuid')->find($author->id);
+                    $uuid = $authorWithUuid->uuid ?? null;
+                }
                 return [
-                    'id' => $author->id,
+                    'uuid' => $uuid,
                     'name' => $name,
                     'email' => $author->email,
                 ];
             }),
-            'author_id' => $this->author_id,
             'created_at' => $this->created_at ? $this->created_at->toISOString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toISOString() : null,
         ];
