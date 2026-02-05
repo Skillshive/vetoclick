@@ -21,8 +21,9 @@ class BlogService implements ServiceInterface
     /**
      * Get all blogs with optional pagination
      * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
+     * For frontend/public access, pass $publishedOnly = true to only return published blogs
      */
-    public function getAll(int $perPage = 15): LengthAwarePaginator
+    public function getAll(int $perPage = 15, bool $publishedOnly = false): LengthAwarePaginator
     {
         $vetUserId = $this->getVetUserId();
         
@@ -30,6 +31,11 @@ class BlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('author_id', $vetUserId);
+        }
+        
+        // Filter by published status for frontend/public access
+        if ($publishedOnly) {
+            $query->where('is_published', 1);
         }
         
         return $query->paginate($perPage);
@@ -55,8 +61,9 @@ class BlogService implements ServiceInterface
     /**
      * Get blog by UUID
      * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
+     * For frontend/public access, only returns published blogs
      */
-    public function getByUuid(string $uuid): ?Blog
+    public function getByUuid(string $uuid, bool $publishedOnly = false): ?Blog
     {
         $vetUserId = $this->getVetUserId();
         
@@ -65,6 +72,11 @@ class BlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('author_id', $vetUserId);
+        }
+        
+        // Filter by published status for frontend/public access
+        if ($publishedOnly) {
+            $query->where('is_published', 1);
         }
         
         return $query->first();
@@ -225,8 +237,9 @@ class BlogService implements ServiceInterface
     /**
      * Search blogs by title
      * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
+     * For frontend/public access, pass $publishedOnly = true to only return published blogs
      */
-    public function searchByTitle(string $title, int $perPage = 15): LengthAwarePaginator
+    public function searchByTitle(string $title, int $perPage = 15, bool $publishedOnly = false): LengthAwarePaginator
     {
         $vetUserId = $this->getVetUserId();
         
@@ -236,6 +249,11 @@ class BlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('author_id', $vetUserId);
+        }
+        
+        // Filter by published status for frontend/public access
+        if ($publishedOnly) {
+            $query->where('is_published', 1);
         }
         
         return $query->paginate($perPage);
@@ -277,8 +295,9 @@ class BlogService implements ServiceInterface
     /**
      * Get related blogs by category (excluding current blog)
      * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
+     * For frontend/public access, only returns published blogs
      */
-    public function getRelatedByCategory(int $categoryId, string $excludeUuid, int $limit = 3): Collection
+    public function getRelatedByCategory(int $categoryId, string $excludeUuid, int $limit = 3, bool $publishedOnly = false): Collection
     {
         $vetUserId = $this->getVetUserId();
         
@@ -291,16 +310,22 @@ class BlogService implements ServiceInterface
             $query->where('author_id', $vetUserId);
         }
         
+        // Filter by published status for frontend/public access
+        if ($publishedOnly) {
+            $query->where('is_published', 1);
+        }
+        
         return $query->take($limit)->get();
     }
 
     /**
      * Get previous blog (older than current)
      * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
+     * For frontend/public access, only returns published blogs
      */
-    public function getPrevious(string $currentUuid): ?Blog
+    public function getPrevious(string $currentUuid, bool $publishedOnly = false): ?Blog
     {
-        $currentBlog = $this->getByUuid($currentUuid);
+        $currentBlog = $this->getByUuid($currentUuid, $publishedOnly);
         if (!$currentBlog) {
             return null;
         }
@@ -315,16 +340,22 @@ class BlogService implements ServiceInterface
             $query->where('author_id', $vetUserId);
         }
         
+        // Filter by published status for frontend/public access
+        if ($publishedOnly) {
+            $query->where('is_published', 1);
+        }
+        
         return $query->first();
     }
 
     /**
      * Get next blog (newer than current)
      * Filtered by the current vet's user ID (works for both veterinarians and receptionists)
+     * For frontend/public access, only returns published blogs
      */
-    public function getNext(string $currentUuid): ?Blog
+    public function getNext(string $currentUuid, bool $publishedOnly = false): ?Blog
     {
-        $currentBlog = $this->getByUuid($currentUuid);
+        $currentBlog = $this->getByUuid($currentUuid, $publishedOnly);
         if (!$currentBlog) {
             return null;
         }
@@ -337,6 +368,11 @@ class BlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('author_id', $vetUserId);
+        }
+        
+        // Filter by published status for frontend/public access
+        if ($publishedOnly) {
+            $query->where('is_published', 1);
         }
         
         return $query->first();

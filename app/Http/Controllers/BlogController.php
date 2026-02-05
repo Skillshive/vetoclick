@@ -313,7 +313,8 @@ class BlogController extends Controller
             $page = $request->input('page', 1);
             $perPage = $request->input('per_page', 10);
             
-            $blogs = $this->blogService->getAll($perPage);
+            // For public API, only return published blogs
+            $blogs = $this->blogService->getAll($perPage, true);
             
             return response()->json([
                 'success' => true,
@@ -339,7 +340,8 @@ class BlogController extends Controller
     public function apiShow(string $uuid)
     {
         try {
-            $blog = $this->blogService->getByUuid($uuid);
+            // For public API, only return published blogs
+            $blog = $this->blogService->getByUuid($uuid, true);
 
             if (!$blog) {
                 return response()->json([
@@ -348,19 +350,20 @@ class BlogController extends Controller
                 ], 404);
             }
 
-            // Get related blogs from same category
+            // Get related blogs from same category (only published)
             $relatedBlogs = collect([]);
             if ($blog->category_blog_id) {
                 $relatedBlogs = $this->blogService->getRelatedByCategory(
                     $blog->category_blog_id,
                     $blog->uuid,
-                    3
+                    3,
+                    true // Only published blogs
                 );
             }
 
-            // Get previous and next blogs
-            $previousBlog = $this->blogService->getPrevious($blog->uuid);
-            $nextBlog = $this->blogService->getNext($blog->uuid);
+            // Get previous and next blogs (only published)
+            $previousBlog = $this->blogService->getPrevious($blog->uuid, true);
+            $nextBlog = $this->blogService->getNext($blog->uuid, true);
 
             return response()->json([
                 'success' => true,
