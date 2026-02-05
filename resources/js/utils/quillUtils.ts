@@ -1,4 +1,5 @@
 import Quill from "quill";
+import type { Delta as DeltaStatic } from "quill";
 
 /**
  * Converts an HTML string to a Quill Delta object.
@@ -7,7 +8,7 @@ import Quill from "quill";
  * @returns The Quill Delta representation of the HTML.
  * @throws If the input HTML is not a string.
  */
-export function htmlToDelta(html: string) {
+export function htmlToDelta(html: string): DeltaStatic {
   if (typeof html !== "string") {
     throw new TypeError("The input HTML must be a string.");
   }
@@ -42,6 +43,46 @@ export function htmlToDelta(html: string) {
   }
 
   return delta;
+}
+
+/**
+ * Converts a Quill Delta object to an HTML string.
+ *
+ * @param delta The Quill Delta object to convert.
+ * @returns The HTML representation of the Delta.
+ */
+export function deltaToHtml(delta: DeltaStatic | null | undefined): string {
+  if (!delta || !delta.ops) {
+    return "";
+  }
+
+  // Create a temporary container
+  const container = document.createElement("div");
+  Object.assign(container.style, {
+    position: "absolute",
+    visibility: "hidden",
+    height: "0",
+  });
+  document.body.appendChild(container);
+
+  let html;
+  try {
+    // Initialize Quill instance
+    const quill = new Quill(container, {
+      theme: "snow",
+    });
+
+    // Set the Delta content
+    quill.setContents(delta);
+    
+    // Get HTML
+    html = quill.root.innerHTML;
+  } finally {
+    // Ensure cleanup
+    container.remove();
+  }
+
+  return html;
 }
 
 /**

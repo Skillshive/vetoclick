@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { router } from "@inertiajs/react";
 import { Page } from "@/components/shared/Page";
 import { Button, Card, Input, Textarea } from "@/components/ui";
+import { Switch } from "@/components/ui/Form/Switch";
+import { DatePicker } from "@/components/shared/form/Datepicker";
 import { CoverImageUpload } from "@/components/shared/form/CoverImageUpload";
 import { Tags } from "@/components/shared/form/Tags";
+import { UncontrolledTextEditor } from "@/components/shared/form/UncontrolledTextEditor";
 import ReactSelect from "@/components/ui/ReactSelect";
 import MainLayout from "@/layouts/MainLayout";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -17,7 +20,12 @@ import {
   FolderIcon,
   GlobeAltIcon,
   TagIcon,
-  KeyIcon
+  KeyIcon,
+  CalendarIcon,
+  UserIcon,
+  ClockIcon,
+  StarIcon,
+  EyeIcon
 } from "@heroicons/react/24/outline";
 
 interface TagItem {
@@ -60,6 +68,11 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
   const [tags, setTags] = useState<TagItem[]>([]);
   const [metaKeywords, setMetaKeywords] = useState<TagItem[]>([]);
   const [processing, setProcessing] = useState(false);
+  
+  // Additional blog fields
+  const [isPublished, setIsPublished] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [publishDate, setPublishDate] = useState<string>('');
   
   const categoryOptions = category_blogs.map(category => ({
     value: category.uuid,
@@ -121,6 +134,13 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
     const metaKeywordsString = metaKeywords.map(keyword => keyword.value).join(',');
     formData.append('meta_keywords', metaKeywordsString);
     
+    // Add additional fields
+    formData.append('is_published', isPublished ? '1' : '0');
+    formData.append('is_featured', isFeatured ? '1' : '0');
+    if (publishDate) {
+      formData.append('publish_date', publishDate);
+    }
+    
     if (imageFile) {
       formData.append('image_file', imageFile);
     }
@@ -163,6 +183,31 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
     { title: t('common.blogs'), path: route('blogs.index') },
     { title: t('common.new_blog')},
   ];
+
+  const quillModules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ 'font': [] }],
+      [{ 'size': [] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }],
+      [{ 'align': [] }],
+      ['link', 'image', 'video', 'formula'],
+      ['blockquote', 'code-block'],
+      ['clean']
+    ],
+    clipboard: {
+      matchVisual: false,
+    },
+  }), []);
+
+  const handleEditorChange = useCallback((html: string, _delta: any, _quill: any) => {
+    setData(prevData => ({ ...prevData, body: html }));
+  }, []);
 
   return (
     <MainLayout>
@@ -212,46 +257,54 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
                                 {t('common.general_information')}
                 </h3>
                 <div className="mt-5 space-y-5">
-                                        <Input
-                                            label={t('common.title')}
-                      placeholder={t('common.enter_blog_title')}
-                                            value={data.title}
-                      onChange={(e) => setData({ ...data, title: e.target.value })}
-                      error={validationErrors.title}
-                      leftIcon={<DocumentTextIcon className="h-5 w-5" />}
-                                            required
+                  <Input
+                    label={t('common.title')}
+                    placeholder={t('common.enter_blog_title')}
+                    value={data.title}
+                    onChange={(e) => setData({ ...data, title: e.target.value })}
+                    error={validationErrors.title}
+                    leftIcon={<DocumentTextIcon className="h-5 w-5" />}
+                    required
                   />
 
                   <Input
                     label={t('common.caption')}
-                      placeholder={t('common.enter_blog_caption')}
-                      value={data.caption}
-                      onChange={(e) => setData({ ...data, caption: e.target.value })}
-                      error={validationErrors.caption}
-                      leftIcon={<ChatBubbleBottomCenterTextIcon className="h-5 w-5" />}
-                      required
-                    />
+                    placeholder={t('common.enter_blog_caption')}
+                    value={data.caption}
+                    onChange={(e) => setData({ ...data, caption: e.target.value })}
+                    error={validationErrors.caption}
+                    leftIcon={<ChatBubbleBottomCenterTextIcon className="h-5 w-5" />}
+                    required
+                  />
 
-                    <Textarea
-                      label={t('common.body')}
-                      placeholder={t('common.enter_blog_body')}
-                      value={data.body}
-                      onChange={(e) => setData({ ...data, body: e.target.value })}
-                      error={validationErrors.body}
-                      rows={6}
-                      required
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('common.body')} <span className="text-red-500">*</span>
+                      </label>
+                      <UncontrolledTextEditor
+                        onChange={handleEditorChange}
+                        placeholder={t('common.enter_blog_body') || "Write your blog content here..."}
+                        modules={quillModules}
+                        error={validationErrors.body}
+                        classNames={{
+                          container: "min-h-[300px]"
+                        }}
+                      />
+                      {validationErrors.body && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.body}</p>
+                      )}
+                    </div>
 
-                    <CoverImageUpload
-                      label={t('common.cover_image')}
-                      value={imageFile}
-                      existingImage={null}
-                      onChange={setImageFile}
-                      error={validationErrors.image_file}
-                      classNames={{
-                        box: "mt-1.5",
-                      }}
-                    />
+                  <CoverImageUpload
+                    label={t('common.cover_image')}
+                    value={imageFile}
+                    existingImage={null}
+                    onChange={setImageFile}
+                    error={validationErrors.image_file}
+                    classNames={{
+                      box: "mt-1.5",
+                    }}
+                  />
                 </div>
               </Card>
             </div>
@@ -287,6 +340,61 @@ const Create = ({ category_blogs = [] }: CreateProps) => {
                     error={validationErrors.tags}
                     leftIcon={<TagIcon className="h-5 w-5" />}
                   />
+              </Card>
+
+              <Card className="p-4 sm:px-5">
+                <h6 className="dark:text-dark-100 text-base font-medium text-gray-800 mb-4">
+                  {t('common.publishing_settings')}
+                </h6>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <EyeIcon className="h-5 w-5" />
+                      {t('common.publish_immediately')}
+                    </label>
+                    <Switch
+                      checked={isPublished}
+                      onChange={(e) => setIsPublished(e.target.checked)}
+                      color="primary"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <StarIcon className="h-5 w-5" />
+                      {t('common.featured_post')}
+                    </label>
+                    <Switch
+                      checked={isFeatured}
+                      onChange={(e) => setIsFeatured(e.target.checked)}
+                      color="primary"
+                    />
+                  </div>
+
+                  <div>
+                    <DatePicker
+                      label={t('common.publish_date')}
+                      value={publishDate}
+                      onChange={(dates: Date[]) => {
+                        if (dates && dates.length > 0) {
+                          const date = new Date(dates[0]);
+                          const formattedDate = date.toISOString().slice(0, 16);
+                          setPublishDate(formattedDate);
+                        } else {
+                          setPublishDate('');
+                        }
+                      }}
+                      options={{
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        time_24hr: true,
+                        allowInput: false,
+                      }}
+                      placeholder={t('common.publish_date') || "Select publish date"}
+                    />
+                  </div>
+                </div>
               </Card>
 
               <Card className="p-4 sm:px-5">

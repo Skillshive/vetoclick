@@ -116,6 +116,9 @@ const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(
       const container = containerRef.current;
       if (!container) return;
 
+      // Clear any existing content first
+      container.innerHTML = "";
+
       const editorContainer = container.appendChild(
         container.ownerDocument.createElement("div"),
       );
@@ -147,10 +150,15 @@ const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(
       });
 
       return () => {
-        quill.off(Quill.events.TEXT_CHANGE);
-        quill.off(Quill.events.SELECTION_CHANGE);
-        quillRef.current = null;
-        container.innerHTML = "";
+        if (quillRef.current) {
+          quill.off(Quill.events.TEXT_CHANGE);
+          quill.off(Quill.events.SELECTION_CHANGE);
+          quillRef.current = null;
+        }
+        // Clean up the container completely
+        if (container) {
+          container.innerHTML = "";
+        }
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [readOnly, modules, placeholder]);
@@ -168,8 +176,13 @@ const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(
 
         const diff = currentContent.diff(value);
 
+        // Only update if there's a meaningful difference to avoid re-renders
         if (diff && diff?.ops?.length > 0) {
-          quillRef.current.setContents(value);
+          const selection = quillRef.current.getSelection();
+          quillRef.current.setContents(value, 'silent');
+          if (selection) {
+            quillRef.current.setSelection(selection);
+          }
         }
       }
     }, [value]);

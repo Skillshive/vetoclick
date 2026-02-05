@@ -22,6 +22,16 @@ export interface Blog {
   category_blog?: CategoryBlog;
   tags: string;
   created_at: string;
+  is_published?: boolean;
+  is_featured?: boolean;
+  publish_date?: string;
+  reading_time?: number;
+  author_id?: string;
+  author?: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 export interface BlogFormData {
   title: string;

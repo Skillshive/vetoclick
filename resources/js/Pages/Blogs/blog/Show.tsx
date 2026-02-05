@@ -101,7 +101,7 @@ const Show = ({ blog }: ShowProps) => {
                     <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
                       {blog.caption}
                     </p>
-                    <div className="prose max-w-none dark:prose-invert">
+                    <div className="prose prose-lg max-w-none dark:prose-invert">
                       <div dangerouslySetInnerHTML={{ __html: blog.body }} />
                     </div>
                   </div>

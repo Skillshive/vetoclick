@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { router } from "@inertiajs/react";
 import { Page } from "@/components/shared/Page";
 import { Button, Card, Input, Textarea } from "@/components/ui";
+import { Switch } from "@/components/ui/Form/Switch";
+import { DatePicker } from "@/components/shared/form/Datepicker";
 import { CoverImageUpload } from "@/components/shared/form/CoverImageUpload";
 import { Tags } from "@/components/shared/form/Tags";
+import { UncontrolledTextEditor } from "@/components/shared/form/UncontrolledTextEditor";
+import Quill from "quill";
+
+// Get Delta class and type from Quill
+const Delta = Quill.import("delta");
+type DeltaStatic = ReturnType<InstanceType<typeof Quill>['getContents']>;
 import ReactSelect from "@/components/ui/ReactSelect";
 import MainLayout from "@/layouts/MainLayout";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -12,13 +20,17 @@ import { useToast } from "@/Components/common/Toast/ToastContext";
 import { getImageUrl } from "@/utils/imageHelper";
 import { BlogFormData, CategoryBlog, Blog } from "./types";
 import { BreadcrumbItem, Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { htmlToDelta, deltaToHtml } from "@/utils/quillUtils";
 import { 
   DocumentTextIcon, 
   ChatBubbleBottomCenterTextIcon, 
   FolderIcon,
   GlobeAltIcon,
   TagIcon,
-  KeyIcon
+  KeyIcon,
+  CalendarIcon,
+  StarIcon,
+  EyeIcon
 } from "@heroicons/react/24/outline";
 
 interface TagItem {
@@ -61,24 +73,74 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
   const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [tags, setTags] = useState<TagItem[]>(() => {
     if (blog.tags) {
-      return blog.tags.split(',').map(tag => ({
+      // Handle different types: string, array, or null
+      let tagsArray: string[] = [];
+      const tagsValue = blog.tags as any;
+      if (typeof tagsValue === 'string') {
+        tagsArray = tagsValue.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag);
+      } else if (Array.isArray(tagsValue)) {
+        tagsArray = tagsValue.map((tag: any) => typeof tag === 'string' ? tag.trim() : String(tag)).filter((tag: string) => tag);
+      }
+      
+      return tagsArray.map(tag => ({
         id: Math.random().toString(36).substr(2, 9),
-        value: tag.trim()
-      })).filter(tag => tag.value);
+        value: tag
+      }));
     }
     return [];
   });
   const [metaKeywords, setMetaKeywords] = useState<TagItem[]>(() => {
     if (blog.meta_keywords) {
-      return blog.meta_keywords.split(',').map(keyword => ({
+      // Handle different types: string, array, or null
+      let keywordsArray: string[] = [];
+      const keywordsValue = blog.meta_keywords as any;
+      if (typeof keywordsValue === 'string') {
+        keywordsArray = keywordsValue.split(',').map((keyword: string) => keyword.trim()).filter((keyword: string) => keyword);
+      } else if (Array.isArray(keywordsValue)) {
+        keywordsArray = keywordsValue.map((keyword: any) => typeof keyword === 'string' ? keyword.trim() : String(keyword)).filter((keyword: string) => keyword);
+      }
+      
+      return keywordsArray.map(keyword => ({
         id: Math.random().toString(36).substr(2, 9),
-        value: keyword.trim()
-      })).filter(keyword => keyword.value);
+        value: keyword
+      }));
     }
     return [];
   });
 
   const [processing, setProcessing] = useState(false);
+  
+  // Rich text editor state - convert existing HTML body to Delta for initial value
+  const initialBodyDelta = useMemo<DeltaStatic>(() => {
+    if (blog.body) {
+      try {
+        return htmlToDelta(blog.body);
+      } catch {
+        return new Delta();
+      }
+    }
+    return new Delta();
+  }, [blog.body]);
+  
+  // Additional blog fields - handle different data types from backend
+  const [isPublished, setIsPublished] = useState(() => {
+    const value = (blog as any).is_published;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value === '1' || value === 'true';
+    if (typeof value === 'number') return value === 1;
+    return false;
+  });
+  const [isFeatured, setIsFeatured] = useState(() => {
+    const value = (blog as any).is_featured;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value === '1' || value === 'true';
+    if (typeof value === 'number') return value === 1;
+    return false;
+  });
+  const [publishDate, setPublishDate] = useState(() => {
+    const value = (blog as any).publish_date;
+    return value || '';
+  });
   
   const categoryOptions = category_blogs.map(category => ({
     value: category.uuid,
@@ -110,7 +172,13 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const result = blogFormSchema.safeParse(data);
+    // Update data.tags with current tags before validation
+    const dataWithTags = {
+      ...data,
+      tags: tags.map(tag => tag.value).join(',')
+    };
+
+    const result = blogFormSchema.safeParse(dataWithTags);
     if (!result.success) {
         const errors = result.error.flatten().fieldErrors;
         setValidationErrors({
@@ -139,8 +207,24 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
     formData.append('category_blog_id', data.category_blog_id);
     formData.append('tags', tags.map(tag => tag.value).join(','));
     
+    // Add additional fields
+    formData.append('is_published', isPublished ? '1' : '0');
+    formData.append('is_featured', isFeatured ? '1' : '0');
+    if (publishDate) {
+      formData.append('publish_date', publishDate);
+    }
+    
+    // Handle image upload/removal
     if (imageFile) {
+        // New image uploaded
         formData.append('image_file', imageFile);
+        formData.append('remove_existing_image', '0');
+    } else if (removeExistingImage) {
+        // User explicitly removed the image
+        formData.append('remove_existing_image', '1');
+    } else {
+        // Keep existing image - send flag to indicate we want to keep it
+        formData.append('remove_existing_image', '0');
     }
 
     router.post(route('blogs.update', blog.uuid), formData as any, {
@@ -188,6 +272,31 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
     { title: t('common.blogs'), path: route('blogs.index') },
     { title: t('common.edit_blog')},
   ];
+
+  const quillModules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ 'font': [] }],
+      [{ 'size': [] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }],
+      [{ 'align': [] }],
+      ['link', 'image', 'video', 'formula'],
+      ['blockquote', 'code-block'],
+      ['clean']
+    ],
+    clipboard: {
+      matchVisual: false,
+    },
+  }), []);
+
+  const handleEditorChange = useCallback((html: string, _delta: any, _quill: any) => {
+    setData(prevData => ({ ...prevData, body: html }));
+  }, []);
   
   return (
     <MainLayout>
@@ -257,15 +366,24 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                       required
                     />
 
-                    <Textarea
-                      label={t('common.body')}
-                      placeholder={t('common.enter_blog_body')}
-                      value={data.body}
-                      onChange={(e) => setData({ ...data, body: e.target.value })}
-                      error={validationErrors.body}
-                      rows={6}
-                      required
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('common.body')} <span className="text-red-500">*</span>
+                      </label>
+                      <UncontrolledTextEditor
+                        defaultValue={initialBodyDelta}
+                        onChange={handleEditorChange}
+                        placeholder={t('common.enter_blog_body') || "Write your blog content here..."}
+                        modules={quillModules}
+                        error={validationErrors.body}
+                        classNames={{
+                          container: "min-h-[300px]"
+                        }}
+                      />
+                      {validationErrors.body && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.body}</p>
+                      )}
+                    </div>
 
                     <CoverImageUpload
                       label={t('common.cover_image')}
@@ -273,11 +391,14 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                       existingImage={removeExistingImage ? null : (imageFile ? null : (blog.image?.path ? getImageUrl(blog.image.path, "/assets/default/image-placeholder.jpg") : null))}
                       onChange={(file) => {
                         setImageFile(file);
-                        if (!file && blog.image?.path && !removeExistingImage) {
-                          setRemoveExistingImage(true);
-                        }
                         if (file) {
+                          // New file uploaded - keep existing image logic, but we're replacing it
                           setRemoveExistingImage(false);
+                        } else {
+                          // File removed - if there was an existing image, mark it for removal
+                          if (blog.image?.path && !removeExistingImage) {
+                            setRemoveExistingImage(true);
+                          }
                         }
                       }}
                       error={validationErrors.image_file}
@@ -316,10 +437,71 @@ const Edit = ({ blog, category_blogs = [] }: EditProps) => {
                     label={t('common.tags')}
                     placeholder={t('common.enter_tags')}
                     value={tags}
-                    onChange={setTags}
+                    onChange={(newTags) => {
+                      setTags(newTags);
+                      // Clear validation error when tags change
+                      if (validationErrors.tags) {
+                        setValidationErrors(prev => ({ ...prev, tags: undefined }));
+                      }
+                    }}
                     error={validationErrors.tags}
                     leftIcon={<TagIcon className="h-5 w-5" />}
                   />
+                </Card>
+
+                <Card className="p-4 sm:px-5">
+                  <h6 className="dark:text-dark-100 text-base font-medium text-gray-800 mb-4">
+                    {t('common.publishing_settings')}
+                  </h6>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <EyeIcon className="h-5 w-5" />
+                        {t('common.publish_immediately')}
+                      </label>
+                      <Switch
+                        checked={isPublished}
+                        onChange={(e) => setIsPublished(e.target.checked)}
+                        color="primary"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <StarIcon className="h-5 w-5" />
+                        {t('common.featured_post')}
+                      </label>
+                      <Switch
+                        checked={isFeatured}
+                        onChange={(e) => setIsFeatured(e.target.checked)}
+                        color="primary"
+                      />
+                    </div>
+
+                    <div>
+                      <DatePicker
+                        label={t('common.publish_date')}
+                        value={publishDate}
+                        onChange={(dates: Date[]) => {
+                          if (dates && dates.length > 0) {
+                            const date = new Date(dates[0]);
+                            const formattedDate = date.toISOString().slice(0, 16);
+                            setPublishDate(formattedDate);
+                          } else {
+                            setPublishDate('');
+                          }
+                        }}
+                        options={{
+                          enableTime: true,
+                          dateFormat: "Y-m-d H:i",
+                          time_24hr: true,
+                          allowInput: false,
+                        }}
+                        placeholder={t('common.publish_date') || "Select publish date"}
+                      />
+                    </div>
+                  </div>
                 </Card>
 
                 <Card className="p-4 sm:px-5">
