@@ -8,14 +8,6 @@ import BoxIcon from "@/assets/dualicons/box.svg?react";
 import LampIcon from "@/assets/dualicons/lamp.svg?react";
 import Calendar from "@/assets/dualicons/schedul.svg?react";
 import Money from "@/assets/dualicons/money.svg?react";
-import { 
-  UserIcon, 
-  PaintBrushIcon, 
-  CalendarIcon,
-  CalendarDaysIcon,
-  CreditCardIcon,
-  Cog6ToothIcon,
-} from "@heroicons/react/24/outline";
 
 const menuConfig: MenuConfig[] = [
   {
