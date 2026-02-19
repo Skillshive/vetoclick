@@ -12,8 +12,6 @@ import {
     CheckCircle, 
     AlertCircle, 
     History,
-    Edit2,
-    Trash2,
     Pill,
     AlertTriangle
 } from 'lucide-react';
@@ -331,32 +329,6 @@ const Notes = ({
             <div className="p-4 bg-gray-50 dark:bg-dark-600 border-b border-gray-200 dark:border-dark-500">
                 <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-3">{t('common.add_note')}</h5>
                 <div className="space-y-3">
-                    <div>
-                        <label htmlFor="note_date" className="block text-sm font-medium text-gray-700 mb-1.5">
-                            {t('common.visit_date')}
-                            <span className="text-red-500 mx-1">*</span>
-                        </label>
-                        <DatePicker
-                            value={noteForm.date}
-                            onChange={(dates: Date[]) => {
-                                if (dates && dates.length > 0) {
-                                    const date = dates[0];
-                                    const year = date.getFullYear();
-                                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                                    const day = String(date.getDate()).padStart(2, '0');
-                                    setNoteForm((prev: any) => ({ ...prev, date: `${year}-${month}-${day}` }));
-                                } else {
-                                    setNoteForm((prev: any) => ({ ...prev, date: '' }));
-                                }
-                            }}
-                            placeholder={t('common.visit_date')}
-                            className="rounded-xl"
-                            hasCalenderIcon={true}
-                            options={{
-                                dateFormat: 'Y-m-d',
-                            }}
-                        />
-                    </div>
                     <div>
                         <label htmlFor="visit_type" className="block text-sm font-medium text-gray-700 mb-1.5">
                             {t('common.visit_type')}
@@ -899,7 +871,16 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
 
     // Handlers for toggling forms
     const handleToggleVaccinationForm = () => setShowForms(prev => ({ ...prev, vaccination: !prev.vaccination }));
-    const handleToggleNoteForm = () => setShowForms(prev => ({ ...prev, note: !prev.note }));
+    const handleToggleNoteForm = () => {
+        setShowForms(prev => {
+            const next = { ...prev, note: !prev.note };
+            if (next.note) {
+                const today = new Date().toISOString().slice(0, 10);
+                setNoteForm(f => ({ ...f, date: today }));
+            }
+            return next;
+        });
+    };
     const handleToggleAllergyForm = () => setShowForms(prev => ({ ...prev, allergy: !prev.allergy }));
     const handleTogglePrescriptionForm = () => setShowForms(prev => ({ ...prev, prescription: !prev.prescription }));
     
@@ -1018,7 +999,7 @@ const PetDetailModal: React.FC<PetDetailModalProps> = ({ isOpen, onClose, appoin
                 body: JSON.stringify({
                     pet_uuid: pet.uuid,
                     consultation_id: consultationId || null,
-                    date: noteForm.date,
+                    date: new Date().toISOString().slice(0, 10),
                     visit_type: noteForm.visit_type,
                     notes: noteForm.notes,
                 }),
