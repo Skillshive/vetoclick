@@ -2,11 +2,11 @@
 
 namespace App\common;
 
-use App\Interfaces\DtoInterface;
+use App\Interfaces\DTOInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-abstract class DTO implements DtoInterface
+abstract class DTO implements DTOInterface
 {
     // public static function fromJson($data)
     // {
