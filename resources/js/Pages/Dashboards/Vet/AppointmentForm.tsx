@@ -319,6 +319,22 @@ export const AppointmentForm = () => {
     value: pet.uuid,
   }));
 
+  const petId = watchedValues.pet_id;
+  const hasPet = typeof petId === 'string' && petId.trim().length > 0;
+
+  const isFormComplete =
+    startDate?.length > 0 &&
+    startDate[0] != null &&
+    !!watchedValues.client_id &&
+    hasPet &&
+    !!watchedValues.appointment_type &&
+    !timeValidationError;
+
+  const isSubmitDisabled =
+    isSubmitting ||
+    isDisabled ||
+    !isFormComplete;
+
   return (
     <Card className="h-fit pb-4">
       <div className="px-4 py-3">
@@ -546,7 +562,7 @@ export const AppointmentForm = () => {
               </div>
             )}
           />
-          <Button type="submit"  className="w-full" disabled={isSubmitting || isDisabled} color="primary">
+          <Button type="submit" className="w-full" disabled={isSubmitDisabled} color="primary">
             {isSubmitting 
               ? t('common.submitting') || 'Submitting...' 
               : t('common.vet_dashboard.form.schedule_appointment')}
