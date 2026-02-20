@@ -10,6 +10,7 @@ import { FaCar, FaPlane, FaRocket, FaCrown, FaStar, FaGem, FaPaw } from "react-i
 
 interface SubscriptionPlanCardProps {
   plan: SubscriptionPlan;
+  allFeatures?: Array<{ uuid: string; name?: Record<string, string> | string; [key: string]: any }>;
   onEdit: () => void;
   onDelete: () => void;
   onToggle?: (plan: SubscriptionPlan) => void;
@@ -17,7 +18,7 @@ interface SubscriptionPlanCardProps {
   isDeleting?: boolean;
 }
 
-export function SubscriptionPlanCard({ plan, onEdit, onDelete, onToggle, isToggling = false, isDeleting = false }: SubscriptionPlanCardProps) {
+export function SubscriptionPlanCard({ plan, allFeatures = [], onEdit, onDelete, onToggle, isToggling = false, isDeleting = false }: SubscriptionPlanCardProps) {
   const { t, locale } = useTranslation();
   const { isRtl } = useLocaleContext();
   const [localIsActive, setLocalIsActive] = useState(plan.is_active);
@@ -58,6 +59,16 @@ export function SubscriptionPlanCard({ plan, onEdit, onDelete, onToggle, isToggl
     }
     return [];
   };
+
+  const getFeatureDisplayName = (feature: { name?: Record<string, string> | string; [key: string]: any }) => {
+    if (!feature?.name) return '';
+    if (typeof feature.name === 'object') {
+      return feature.name[locale] || feature.name.en || feature.name.ar || feature.name.fr || (feature.name as Record<string, string>).en || '';
+    }
+    return String(feature.name);
+  };
+
+  const planFeatureUuids = new Set((plan.features || []).map((f: any) => f.uuid));
 
   const getPlanIcon = (plan: SubscriptionPlan) => {
     // Use sort_order to determine icon, with popular plans getting crown
@@ -167,20 +178,52 @@ export function SubscriptionPlanCard({ plan, onEdit, onDelete, onToggle, isToggl
         )}
       </div>
 
-      {/* Features */}
+      {/* Features: show all features with check if plan has it, else X */}
       <div className={clsx("mt-8 space-y-4", isRtl ? "text-right" : "text-left")}>
-        {translateFeatures(plan.features).slice(0, 6).map((feature: string, index: number) => (
-          <div key={index} className={clsx("flex items-start gap-3", isRtl && "flex-row-reverse")}>
-            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary-600/10 text-primary-600 dark:bg-primary-400/10 dark:text-primary-400">
-              <CheckIcon className="size-4" />
-            </div>
-            <span className="font-medium text-sm text-gray-700 dark:text-gray-300">{feature}</span>
-          </div>
-        ))}
-        {translateFeatures(plan.features).length > 6 && (
-          <div className="text-sm text-primary-600 dark:text-primary-400 font-medium text-center pt-2">
-            +{translateFeatures(plan.features).length - 6} {t('common.more_features')}
-          </div>
+        {allFeatures.length > 0 ? (
+          allFeatures.map((feature: any) => {
+            const hasFeature = planFeatureUuids.has(feature.uuid);
+            const displayName = getFeatureDisplayName(feature);
+            if (!displayName) return null;
+            return (
+              <div key={feature.uuid} className={clsx("flex items-start gap-3", isRtl && "flex-row-reverse")}>
+                <div
+                  className={clsx(
+                    "flex size-6 shrink-0 items-center justify-center rounded-full",
+                    hasFeature
+                      ? "bg-primary-600/10 text-primary-600 dark:bg-primary-400/10 dark:text-primary-400"
+                      : "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                  )}
+                >
+                  {hasFeature ? <CheckIcon className="size-4" /> : <XMarkIcon className="size-4" />}
+                </div>
+                <span
+                  className={clsx(
+                    "font-medium text-sm",
+                    hasFeature ? "text-gray-700 dark:text-gray-300" : "text-gray-500 dark:text-gray-400"
+                  )}
+                >
+                  {displayName}
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <>
+            {translateFeatures(plan.features).slice(0, 6).map((feature: string, index: number) => (
+              <div key={index} className={clsx("flex items-start gap-3", isRtl && "flex-row-reverse")}>
+                <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary-600/10 text-primary-600 dark:bg-primary-400/10 dark:text-primary-400">
+                  <CheckIcon className="size-4" />
+                </div>
+                <span className="font-medium text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+              </div>
+            ))}
+            {translateFeatures(plan.features).length > 6 && (
+              <div className="text-sm text-primary-600 dark:text-primary-400 font-medium text-center pt-2">
+                +{translateFeatures(plan.features).length - 6} {t('common.more_features')}
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -225,6 +225,7 @@ export default function Index({
                   <SubscriptionPlanCard
                     key={plan.uuid}
                     plan={plan}
+                    allFeatures={allFeatures}
                     onEdit={() => {
                       // @ts-ignore
                       router.visit(route('subscription-plans.edit', plan.uuid));
