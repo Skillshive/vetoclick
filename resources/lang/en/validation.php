@@ -387,4 +387,5 @@ return [
     'name_min' => 'The name must be at least 2 characters.', 
     'name_string' => 'The name must be a valid text.', 
     'name_unique' => 'The name has already been taken.', 
+    'avg_weight_max'=> 'The average weight must not exceed 100 kg.',
 ];
