@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\SubscriptionPlan;
 use App\Models\Veterinary;
 use App\Models\Consultation;
 use App\Enums\OrderStatus;
@@ -110,19 +111,30 @@ class AdminDashboardController extends Controller
                 }),
         ];
 
-        $topSoldPacks = OrderProduct::select('product_id', DB::raw('SUM(quantity) as total_quantity'))
-            ->whereYear('created_at', Carbon::now()->year)
-            ->groupBy('product_id')
-            ->orderByDesc('total_quantity')
-            ->with('product')
+        // Top Sold Packs: count of veterinarians per subscription plan (by subscription_plan_id)
+        $locale = app()->getLocale();
+        $counts = Veterinary::select('subscription_plan_id', DB::raw('COUNT(*) as quantity'))
+            ->groupBy('subscription_plan_id')
+            ->orderByDesc('quantity')
             ->limit(5)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'name' => $item->product?->name ?? 'Unknown',
-                    'quantity' => (int) $item->total_quantity,
-                ];
-            });
+            ->get();
+        $planIds = $counts->pluck('subscription_plan_id')->filter()->unique()->values()->all();
+        $plansById = SubscriptionPlan::whereIn('id', $planIds)->get()->keyBy('id');
+        $topSoldPacks = $counts->map(function ($row) use ($locale, $plansById) {
+            $name = 'No plan';
+            if ($row->subscription_plan_id) {
+                $plan = $plansById->get($row->subscription_plan_id);
+                if ($plan && is_array($plan->name)) {
+                    $name = $plan->name[$locale] ?? $plan->name['en'] ?? 'Unknown';
+                } elseif ($plan) {
+                    $name = $plan->name;
+                }
+            }
+            return [
+                'name' => $name,
+                'quantity' => (int) $row->quantity,
+            ];
+        });
 
         $rawYearlyRevenue = Order::select(
                 DB::raw('MONTH(order_date) as month'),
