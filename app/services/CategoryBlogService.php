@@ -40,6 +40,9 @@ class CategoryBlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('vet_id', $vetUserId);
+        } else {
+            // Never show all: when user has no vet scope (e.g. admin), show only global (unassigned) categories
+            $query->whereNull('vet_id');
         }
         
         return $query;
@@ -57,6 +60,8 @@ class CategoryBlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('vet_id', $vetUserId);
+        } else {
+            $query->whereNull('vet_id');
         }
         
         return $query->first();
@@ -83,6 +88,8 @@ class CategoryBlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('vet_id', $vetUserId);
+        } else {
+            $query->whereNull('vet_id');
         }
         
         return $query->get();
@@ -192,6 +199,8 @@ class CategoryBlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('vet_id', $vetUserId);
+        } else {
+            $query->whereNull('vet_id');
         }
         
         return $query->get();
@@ -222,6 +231,8 @@ class CategoryBlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('vet_id', $vetUserId);
+        } else {
+            $query->whereNull('vet_id');
         }
         
         return $query->get();
@@ -235,6 +246,8 @@ class CategoryBlogService implements ServiceInterface
         
         if ($vetUserId) {
             $query->where('vet_id', $vetUserId);
+        } else {
+            $query->whereNull('vet_id');
         }
         
         return $query->get();
