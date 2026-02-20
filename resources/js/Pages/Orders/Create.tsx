@@ -361,7 +361,7 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
 
                             <div>
                                 <DatePicker
-                                    selected={data.order_date ? new Date(data.order_date) : null}
+                                    value={data.order_date || ''}
                                     onChange={(dates: Date[]) => {
                                         if (dates && dates.length > 0) {
                                             setData('order_date', dates[0].toISOString().split('T')[0]);
@@ -445,7 +445,7 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
                             </div>
                             <div>
                                 <DatePicker
-                                    selected={data.payment_due_date ? new Date(data.payment_due_date) : null}
+                                    value={data.payment_due_date || ''}
                                     onChange={(dates: Date[]) => {
                                         if (dates && dates.length > 0) {
                                             setData('payment_due_date', dates[0].toISOString().split('T')[0]);
@@ -465,7 +465,7 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
 
                             <div>
                                 <DatePicker
-                                    selected={data.confirmed_delivery_date ? new Date(data.confirmed_delivery_date) : null}
+                                    value={data.confirmed_delivery_date || ''}
                                     onChange={(dates: Date[]) => {
                                         if (dates && dates.length > 0) {
                                             setData('confirmed_delivery_date', dates[0].toISOString().split('T')[0]);
