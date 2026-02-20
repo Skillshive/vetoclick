@@ -4,6 +4,7 @@
 use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::post('uploads/images/upload', function (Request $request) {
     $image = app(ImageService::class)->saveImage($request->file('upload'), 'files/');
@@ -32,3 +33,18 @@ Route::get('storage/uploads/images/{path?}', function (Request $request, ImageSe
 })
     ->where('path', '.*')
     ->name('stream.image_from_upload');
+
+// Serve blog images through Laravel (avoids 403 when public/storage symlink is not followed by PHP built-in server)
+Route::get('storage/blogs/{path}', function (string $path) {
+    $fullPath = 'blogs/' . $path;
+    if (!Storage::disk('public')->exists($fullPath)) {
+        abort(404);
+    }
+    $file = Storage::disk('public')->get($fullPath);
+    $mime = Storage::disk('public')->mimeType($fullPath) ?: 'image/png';
+
+    return response($file, 200, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*')->name('storage.blogs');
