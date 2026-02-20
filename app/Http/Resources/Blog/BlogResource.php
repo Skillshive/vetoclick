@@ -54,9 +54,11 @@ class BlogResource extends JsonResource
             'meta_keywords' => $this->meta_keywords,
             'tags' => $this->parseTags($this->tags),
             'image' => $this->when($this->image, function () {
+                $path = $this->image?->path;
                 return [
                     'id' => $this->image?->id,
-                    'path' => $this->image?->path,
+                    'path' => $path,
+                    'url' => $path ? asset('storage/' . $path) : null,
                     'alt' => $this->image?->name,
                 ];
             }),

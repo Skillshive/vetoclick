@@ -6,7 +6,6 @@ import { useToast } from "@/Components/common/Toast/ToastContext";
 import { useConfirm } from "@/Components/common/Confirm/ConfirmContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MdCategory } from "react-icons/md";
-import { getImageUrl } from "@/utils/imageHelper";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import 'dayjs/locale/ar';
@@ -77,12 +76,20 @@ export function BlogCard({
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const target = e.target as HTMLImageElement;
     if (!target.src.includes('data:image/svg+xml')) {
-      // target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOUNBM0FGIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4K';
-    target.src = "/assets/1.png";
+      target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600' fill='none'%3E%3Crect width='800' height='600' fill='%23f3f4f6'/%3E%3Ctext x='400' y='300' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='24'%3ENo Image%3C/text%3E%3C/svg%3E";
     }
   };
 
-  const imageUrl = getImageUrl(blog.image?.path || null, "/images/1.png");
+  // Prefer API url; otherwise build URL from path (e.g. "blogs/1771546158.png" -> "/storage/blogs/1771546158.png")
+  const rawPath = blog.image?.path;
+  const path = rawPath?.replace(/^\/*storage\/?/, "") ?? null; // avoid double "storage/" if ever present
+  const imageUrl =
+    blog.image?.url ||
+    (path
+      ? typeof window !== "undefined"
+        ? `${window.location.origin}/storage/${path}`
+        : `/storage/${path}`
+      : "/images/1.png");
 
   const formatDate = (dateString: string) => {
     // Map locale codes to dayjs locale codes
