@@ -336,6 +336,7 @@ Route::middleware(['auth', 'verified', 'permission:appointments.view'])->group(f
             Route::get('', 'index')->name('index');
             Route::get('calendar', 'calendar')->middleware('permission:appointments.calendar')->name('calendar');
             Route::get('available-times', 'getAvailableTimes')->name('available-times');
+            Route::get('client-booked-dates', 'getClientBookedDates')->name('client-booked-dates');
             Route::post('{uuid}/create-consultation', 'createConsultation')->middleware('permission:consultations.create')->name('create-consultation');
             Route::post('{uuid}/cancel', 'cancel')->middleware('permission:appointments.cancel')->name('cancel');
             Route::post('{uuid}/report', 'report')->middleware('permission:appointments.report')->name('report');
