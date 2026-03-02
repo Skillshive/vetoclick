@@ -77,7 +77,7 @@ export function Statistics({ statistics }: StatisticsProps) {
   return (
       <div className="grid grid-cols-2 gap-3">
         {stats.map((stat) => (
-             <Card className="p-3 lg:p-4">
+             <Card skin="shadow" className="p-3 lg:p-4">
              <div className="flex justify-between gap-1">
                <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
                  {stat.value}

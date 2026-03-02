@@ -69,7 +69,7 @@ function MyDoctorsPanel() {
   }, []);
 
   return (
-    <Card className="h-full px-4 py-4 sm:px-5">
+    <Card skin="shadow" className="h-full px-4 py-4 sm:px-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-dark-50">
           {t("common.user_dashboard.my_doctors") || "My Doctors"}
@@ -152,7 +152,7 @@ function PrescriptionsPanel() {
     handleRefreshData();
   }, []);
   return (
-    <Card className="h-full px-4 py-4 sm:px-5">
+    <Card skin="shadow" className="h-full px-4 py-4 sm:px-5">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-dark-50">
           {t("common.user_dashboard.prescriptions") || "Prescriptions"}
@@ -258,7 +258,7 @@ function RecentActivityPanel() {
   }, []);
 
   return (
-    <Card className="h-full px-4 py-4 sm:px-5">
+    <Card skin="shadow" className="h-full px-4 py-4 sm:px-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-dark-50">
           {t("common.user_dashboard.recent_activity") || "Recent Activity"}
