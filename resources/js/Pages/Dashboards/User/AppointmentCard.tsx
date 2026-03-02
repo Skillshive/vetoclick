@@ -10,7 +10,7 @@ import clsx from "clsx";
 import { useState, useEffect } from "react";
 
 // Local Imports
-import { Avatar, Badge, Box, Button } from "@/components/ui";
+import { Avatar, Badge, Button, Card } from "@/components/ui";
 import { Appointment } from "@/pages/Appointments/datatable/types";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -239,9 +239,9 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
   };
 
   return (
-    <Box
-      className=
-        "border-l-primary-500 dark:border-l-primary-900/20 flex flex-col justify-between border-4 border-transparent px-4 py-5 w-80 shrink-0"
+    <Card
+      skin="shadow"
+      className="flex flex-col justify-between px-4 py-5 w-80 shrink-0 space-y-4"
     >
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -286,7 +286,7 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
         </Badge>
       </div>
 
-      <div className="mt-6 space-y-2">
+      <div className="mt-2 space-y-2">
         <div className="flex items-center gap-2">
           <CalendarIcon className="size-4 text-gray-400 dark:text-dark-300" />
           <p className="dark:text-dark-100 text-sm font-medium text-gray-800">
@@ -321,7 +321,7 @@ export function AppointmentCard({ appointment }: AppointmentCardProps) {
           )}
         </div>
       ) : null}
-    </Box>
+    </Card>
   );
 }
 
