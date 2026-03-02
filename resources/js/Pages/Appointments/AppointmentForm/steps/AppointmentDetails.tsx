@@ -7,7 +7,7 @@ import { router } from "@inertiajs/react";
 import { SingleValue } from "react-select";
 
 // Local Imports
-import { Button, Input, Textarea, Switch } from "@/components/ui";
+import { Button, Input, Textarea, Radio } from "@/components/ui";
 import { useAppointmentFormContext } from "../AppointmentFormContext";
 import { AppointmentDetailsType, appointmentDetailsSchema } from "../schema";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -68,6 +68,7 @@ export function AppointmentDetails({
   const [timeValidationError, setTimeValidationError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [holidays, setHolidays] = useState<Array<{ start_date: string; end_date: string; reason: string }>>([]);
+  const [clientBookedDates, setClientBookedDates] = useState<string[]>([]);
 
   // Reset form with context data when component mounts or context data changes
   // This ensures data persists when navigating back to this step
@@ -128,6 +129,46 @@ export function AppointmentDetails({
 
     fetchHolidays();
   }, [watchedValues.veterinary_id]);
+
+  // Fetch dates when client already has a non-cancelled appointment (disable in date picker)
+  useEffect(() => {
+    const clientId = appointmentFormCtx.clientId;
+    const vetId = watchedValues.veterinary_id;
+    const email = appointmentFormCtx.state.formData.personalInfo?.email;
+
+    if (!clientId && (!vetId || !email)) {
+      setClientBookedDates([]);
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (clientId) params.set('client_id', clientId);
+    if (vetId) params.set('veterinary_id', vetId);
+    if (email) params.set('email', email);
+
+    const fetchBookedDates = async () => {
+      try {
+        const response = await fetch(
+          route('appointments.client-booked-dates') + `?${params.toString()}`,
+          {
+            method: 'GET',
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+          }
+        );
+        const result = await response.json();
+        if (result.success && Array.isArray(result.dates)) {
+          setClientBookedDates(result.dates);
+        } else {
+          setClientBookedDates([]);
+        }
+      } catch {
+        setClientBookedDates([]);
+      }
+    };
+
+    fetchBookedDates();
+  }, [appointmentFormCtx.clientId, watchedValues.veterinary_id, appointmentFormCtx.state.formData.personalInfo?.email]);
 
   // Fetch available times when vet or date changes
   const fetchAvailableTimes = useCallback(async (vetId: string, date: string) => {
@@ -413,245 +454,283 @@ export function AppointmentDetails({
   return (
     <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
       <div className="mt-6 space-y-4">
-        {/* Veterinarian Selection */}
-        <ReactSelect
-          id="veterinary_id"
-          label={t('common.veterinarian')}
-          leftIcon={<UserIcon className="h-5 w-5" />}
-          value={selectedVeterinarianOption}
-          onChange={(option) => {
-            const selectedOption = option as SingleValue<{ value: string; label: string }>;
-            if (selectedOption) {
-              setValue('veterinary_id', selectedOption.value);
-            } else {
-              setValue('veterinary_id', '');
-            }
-          }}
-          options={[
-            { value: '', label: t('common.select_veterinarian') },
-            ...veterinarianOptions
-          ]}
-          placeholder={t('common.select_veterinarian')}
-          error={!!errors?.veterinary_id}
-          isRequired={true}
-        />
-        {errors?.veterinary_id && (
-          <p className="text-red-500 text-sm mt-1">{translateError(errors.veterinary_id.message)}</p>
-        )}
-
-        {/* Appointment Type */}
-        <div>
-          <label htmlFor="appointment_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {t('common.appointment_type')}
-            <span className="text-red-500 mx-1">*</span>
-          </label>
-          <ReactSelect
-            id="appointment_type"
-            value={
-              watchedValues.appointment_type
-                ? {
-                    value: watchedValues.appointment_type,
-                    label: appointmentOptions?.find(appointment => appointment.value === watchedValues.appointment_type)?.label || ''
-                  }
-                : null
-            }
-            onChange={(option) => {
-              const selectedOption = option as SingleValue<{ value: string; label: string }>;
-              if (selectedOption) {
-                setValue('appointment_type', selectedOption.value);
-              } else {
-                setValue('appointment_type', '');
-              }
-            }}
-            options={[
-              { value: '', label: t('common.no_appointment_type') },
-              ...appointmentOptions?.map((appointment) => ({
-                value: appointment.value,
-                label: appointment.label
-              })) || []
-            ]}
-            placeholder={t('common.appointment_type')}
-            error={!!errors?.appointment_type}
-            leftIcon={<CalendarCogIcon className="size-4.5" />}
-            isRequired={true}
-          />
-          {errors?.appointment_type && (
-            <p className="text-red-500 text-sm mt-1">{translateError(errors.appointment_type.message)}</p>
-          )}
-        </div>
-
-        {/* Date and Time */}
-        <div>
-          <DatePicker
-            value={watchedValues.appointment_date && watchedValues.start_time ? [new Date(`${watchedValues.appointment_date}T${watchedValues.start_time}`)] : []}
-            onChange={(dates: Date[]) => {
-              if (dates && dates.length > 0) {
-                const date = dates[0];
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const dateStr = `${year}-${month}-${day}`;
-                const timeStr = date.toTimeString().split(' ')[0].substring(0, 5);
-                setValue('appointment_date', dateStr);
-                setValue('start_time', timeStr);
-              } else {
-                setValue('appointment_date', '');
-                setValue('start_time', '');
-              }
-            }}
-            options={{
-              enableTime: true,
-              dateFormat: "Y-m-d H:i",
-              minDate: appointmentFormCtx.minDate ? new Date(appointmentFormCtx.minDate) : new Date(),
-              disable: [
-                (date: Date) => {
-                  // Check if this date falls within any holiday period
-                  // We disable the entire day if any part of it overlaps with a holiday
-                  const checkDate = new Date(date);
-                  checkDate.setHours(0, 0, 0, 0);
-                  const checkDateEnd = new Date(date);
-                  checkDateEnd.setHours(23, 59, 59, 999);
-                  
-                  const isDisabled = holidays.some((holiday) => {
-                    const holidayStart = new Date(holiday.start_date);
-                    const holidayEnd = new Date(holiday.end_date);
-                    
-                    // Check if the day overlaps with the holiday period
-                    const overlaps = checkDate <= holidayEnd && checkDateEnd >= holidayStart;
-                    
-                    if (overlaps) {
-                      console.log('Disabling date:', date, 'due to holiday:', holiday);
-                    }
-                    
-                    return overlaps;
-                  });
-                  
-                  return isDisabled;
+        {/* Veterinarian + Appointment Type: 2 in row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <ReactSelect
+              id="veterinary_id"
+              label={t('common.veterinarian')}
+              leftIcon={<UserIcon className="h-5 w-5" />}
+              value={selectedVeterinarianOption}
+              onChange={(option) => {
+                const selectedOption = option as SingleValue<{ value: string; label: string }>;
+                if (selectedOption) {
+                  setValue('veterinary_id', selectedOption.value);
+                } else {
+                  setValue('veterinary_id', '');
                 }
-              ],
-            }}
-            placeholder={t('common.select_date_and_time')}
-            label={t('common.date_and_time')}
-            className="rounded-xl"
-            required
-          />
-          {(errors?.appointment_date || errors?.start_time) && (
-            <p className="text-red-500 text-sm mt-1">
-              {translateError(errors.appointment_date?.message || errors.start_time?.message)}
-            </p>
-          )}
-          
-          {/* Loading indicator */}
-          {isLoadingTimes && watchedValues.veterinary_id && watchedValues.appointment_date && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              {t('common.loading_available_times') || 'Loading available times...'}
-            </p>
-          )}
-          
-          {/* Time validation error and suggestions */}
-          {timeValidationError && (
-            <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400 mb-2">
-                {timeValidationError}
-              </p>
-              
-              {showSuggestions && availableTimes.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('common.available_times_suggestions') || 'Available times:'}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {availableTimes.map((time) => {
-                      // Create a ref to the DatePicker's onChange handler
-                      const handleTimeSelect = () => {
-                        if (watchedValues.appointment_date) {
-                          // Create a date object with the selected date and time
-                          const [hours, minutes] = time.split(':');
-                          const selectedDate = new Date(watchedValues.appointment_date);
-                          selectedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-                          
-                          // Update form values
-                          setValue('appointment_date', watchedValues.appointment_date);
-                          setValue('start_time', time);
-                          
-                          setTimeValidationError(null);
-                          setShowSuggestions(false);
-                        }
-                      };
-                      
-                      return (
-                        <button
-                          key={time}
-                          type="button"
-                          onClick={handleTimeSelect}
-                          className="px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
-                        >
-                          {time}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {availableTimes.length === 0 && !isLoadingTimes && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('common.no_available_times')}
-                </p>
-              )}
-            </div>
-          )}
-          
-          {/* Show available times count when time is valid */}
-          {!timeValidationError && availableTimes.length > 0 && watchedValues.start_time && (
-            <p className="text-sm text-primary-600 dark:text-primary-400 mt-2">
-              {t('common.time_available')}
-            </p>
-          )}
+              }}
+              options={[
+                { value: '', label: t('common.select_veterinarian') },
+                ...veterinarianOptions
+              ]}
+              placeholder={t('common.select_veterinarian')}
+              error={!!errors?.veterinary_id}
+              isRequired={true}
+            />
+            {errors?.veterinary_id && (
+              <p className="text-red-500 text-sm mt-1">{translateError(errors.veterinary_id.message)}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="appointment_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              {t('common.appointment_type')}
+              <span className="text-red-500 mx-1">*</span>
+            </label>
+            <ReactSelect
+              id="appointment_type"
+              value={
+                watchedValues.appointment_type
+                  ? {
+                      value: watchedValues.appointment_type,
+                      label: appointmentOptions?.find(appointment => appointment.value === watchedValues.appointment_type)?.label || ''
+                    }
+                  : null
+              }
+              onChange={(option) => {
+                const selectedOption = option as SingleValue<{ value: string; label: string }>;
+                if (selectedOption) {
+                  setValue('appointment_type', selectedOption.value);
+                } else {
+                  setValue('appointment_type', '');
+                }
+              }}
+              options={[
+                { value: '', label: t('common.no_appointment_type') },
+                ...appointmentOptions?.map((appointment) => ({
+                  value: appointment.value,
+                  label: appointment.label
+                })) || []
+              ]}
+              placeholder={t('common.appointment_type')}
+              error={!!errors?.appointment_type}
+              leftIcon={<CalendarCogIcon className="size-4.5" />}
+              isRequired={true}
+            />
+            {errors?.appointment_type && (
+              <p className="text-red-500 text-sm mt-1">{translateError(errors.appointment_type.message)}</p>
+            )}
+          </div>
         </div>
 
-        {/* Reason for Visit */}
-        <Input
-          {...register("reason_for_visit")}
-          type="text"
-          placeholder={t('common.reason_for_visit_placeholder')}
-          label={t('common.reason_for_visit')}
-          className="rounded-xl"
-          prefix={<InformationCircleIcon className="size-4.5" />}
-        />
-        {errors?.reason_for_visit && (
-          <p className="text-red-500 text-sm mt-1">{translateError(errors.reason_for_visit.message)}</p>
-        )}
-
-        {/* Video Consultation Toggle */}
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-500">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${watchedValues.is_video_conseil ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-200 dark:bg-dark-500'}`}>
-              {watchedValues.is_video_conseil ? (
-                <VideoCameraIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
-              ) : (
-                <HomeIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-800 dark:text-dark-100">
-                {watchedValues.is_video_conseil 
-                  ? t('common.vet_dashboard.form.online_consultation') || 'Online Consultation'
-                  : t('common.vet_dashboard.form.in_person_visit') || 'In-Person Visit'}
-              </label>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {watchedValues.is_video_conseil
-                  ? t('common.vet_dashboard.form.online_consultation_desc') || 'Video call appointment'
-                  : t('common.vet_dashboard.form.in_person_visit_desc') || 'Physical visit to clinic'}
+        {/* Date & Time + Reason for Visit: 2 in row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <DatePicker
+              value={watchedValues.appointment_date && watchedValues.start_time ? [new Date(`${watchedValues.appointment_date}T${watchedValues.start_time}`)] : []}
+              onChange={(dates: Date[]) => {
+                if (dates && dates.length > 0) {
+                  const date = dates[0];
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  const dateStr = `${year}-${month}-${day}`;
+                  const timeStr = date.toTimeString().split(' ')[0].substring(0, 5);
+                  setValue('appointment_date', dateStr);
+                  setValue('start_time', timeStr);
+                } else {
+                  setValue('appointment_date', '');
+                  setValue('start_time', '');
+                }
+              }}
+              options={{
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: appointmentFormCtx.minDate ? new Date(appointmentFormCtx.minDate) : new Date(),
+                disable: [
+                  (date: Date) => {
+                    // Disable days when client already has a non-cancelled appointment (one per day unless cancelled)
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const dateStr = `${y}-${m}-${d}`;
+                    if (clientBookedDates.includes(dateStr)) return true;
+                    // Check if this date falls within any holiday period
+                    const checkDate = new Date(date);
+                    checkDate.setHours(0, 0, 0, 0);
+                    const checkDateEnd = new Date(date);
+                    checkDateEnd.setHours(23, 59, 59, 999);
+                    return holidays.some((holiday) => {
+                      const holidayStart = new Date(holiday.start_date);
+                      const holidayEnd = new Date(holiday.end_date);
+                      return checkDate <= holidayEnd && checkDateEnd >= holidayStart;
+                    });
+                  }
+                ],
+              }}
+              placeholder={t('common.select_date_and_time')}
+              label={t('common.date_and_time')}
+              className="rounded-xl"
+              required
+            />
+            {(errors?.appointment_date || errors?.start_time) && (
+              <p className="text-red-500 text-sm mt-1">
+                {translateError(errors.appointment_date?.message || errors.start_time?.message)}
               </p>
-            </div>
+            )}
+            
+            {/* Loading indicator */}
+            {isLoadingTimes && watchedValues.veterinary_id && watchedValues.appointment_date && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                {t('common.loading_available_times') || 'Loading available times...'}
+              </p>
+            )}
+            
+            {/* Time validation error and suggestions */}
+            {timeValidationError && (
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+                  {timeValidationError}
+                </p>
+                
+                {showSuggestions && availableTimes.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('common.available_times_suggestions') || 'Available times:'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableTimes.map((time) => {
+                        // Create a ref to the DatePicker's onChange handler
+                        const handleTimeSelect = () => {
+                          if (watchedValues.appointment_date) {
+                            // Create a date object with the selected date and time
+                            const [hours, minutes] = time.split(':');
+                            const selectedDate = new Date(watchedValues.appointment_date);
+                            selectedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                            
+                            // Update form values
+                            setValue('appointment_date', watchedValues.appointment_date);
+                            setValue('start_time', time);
+                            
+                            setTimeValidationError(null);
+                            setShowSuggestions(false);
+                          }
+                        };
+                        
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={handleTimeSelect}
+                            className="px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
+                          >
+                            {time}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {availableTimes.length === 0 && !isLoadingTimes && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('common.no_available_times')}
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Show available times count when time is valid */}
+            {!timeValidationError && availableTimes.length > 0 && watchedValues.start_time && (
+              <p className="text-sm text-primary-600 dark:text-primary-400 mt-2">
+                {t('common.time_available')}
+              </p>
+            )}
           </div>
-          <Switch
-            checked={watchedValues.is_video_conseil}
-            onChange={(e) => setValue('is_video_conseil', e.target.checked)}
-            color="primary"
-            variant="basic"
-          />
+          <div>
+            <Input
+              {...register("reason_for_visit")}
+              type="text"
+              placeholder={t('common.reason_for_visit_placeholder')}
+              label={t('common.reason_for_visit')}
+              className="rounded-xl"
+              prefix={<InformationCircleIcon className="size-4.5" />}
+            />
+            {errors?.reason_for_visit && (
+              <p className="text-red-500 text-sm mt-1">{translateError(errors.reason_for_visit.message)}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Visit type: In-person or Online (radio) */}
+        <div>
+          <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {t('common.visit_type')}
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <label
+              className={clsx(
+                "flex items-center justify-between gap-3 p-4 rounded-lg border cursor-pointer transition-colors",
+                !watchedValues.is_video_conseil
+                  ? "bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800"
+                  : "bg-gray-50 dark:bg-dark-600 border-gray-200 dark:border-dark-500 hover:border-gray-300 dark:hover:border-dark-400"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gray-200 dark:bg-dark-500">
+                  <HomeIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
+                </div>
+                <div>
+                  <span className="block text-sm font-medium text-gray-800 dark:text-dark-100">
+                    {t('common.vet_dashboard.form.in_person_visit') || 'In-person Visit'}
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('common.vet_dashboard.form.in_person_visit_desc') || 'Physical visit to clinic'}
+                  </p>
+                </div>
+              </div>
+              <Radio
+                name="is_video_conseil"
+                value="false"
+                checked={!watchedValues.is_video_conseil}
+                onChange={() => setValue('is_video_conseil', false)}
+                color="primary"
+                variant="basic"
+                className="shrink-0"
+              />
+            </label>
+            <label
+              className={clsx(
+                "flex items-center justify-between gap-3 p-4 rounded-lg border cursor-pointer transition-colors",
+                watchedValues.is_video_conseil
+                  ? "bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800"
+                  : "bg-gray-50 dark:bg-dark-600 border-gray-200 dark:border-dark-500 hover:border-gray-300 dark:hover:border-dark-400"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gray-200 dark:bg-dark-500">
+                  <VideoCameraIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
+                </div>
+                <div>
+                  <span className="block text-sm font-medium text-gray-800 dark:text-dark-100">
+                    {t('common.vet_dashboard.form.online_consultation') || 'Online Consultation'}
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('common.vet_dashboard.form.online_consultation_desc') || 'Video call appointment'}
+                  </p>
+                </div>
+              </div>
+              <Radio
+                name="is_video_conseil"
+                value="true"
+                checked={!!watchedValues.is_video_conseil}
+                onChange={() => setValue('is_video_conseil', true)}
+                color="primary"
+                variant="basic"
+                className="shrink-0"
+              />
+            </label>
+          </div>
         </div>
 
         {/* Appointment Notes */}
