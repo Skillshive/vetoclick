@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Appointment;
+use App\Models\Client;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateAppointmentRequest extends FormRequest
@@ -54,7 +56,24 @@ class CreateAppointmentRequest extends FormRequest
             'client_id' => 'required|string|exists:clients,uuid',
             'pet_id' => 'nullable|string|exists:pets,uuid',
             'appointment_type' => 'required|string',
-            'appointment_date' => 'required|date|after_or_equal:today',
+            'appointment_date' => [
+                'required',
+                'date',
+                'after_or_equal:today',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $client = Client::where('uuid', $this->input('client_id'))->first();
+                    if (! $client) {
+                        return;
+                    }
+                    $hasExisting = Appointment::where('client_id', $client->id)
+                        ->whereDate('appointment_date', $value)
+                        ->where('status', '!=', 'cancelled')
+                        ->exists();
+                    if ($hasExisting) {
+                        $fail(__('validation.client_has_appointment_that_day'));
+                    }
+                },
+            ],
             'start_time' => 'required|date_format:H:i',
             'is_video_conseil' => 'sometimes|boolean',
             'reason_for_visit' => 'nullable|string|max:500',
