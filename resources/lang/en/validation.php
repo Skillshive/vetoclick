@@ -294,6 +294,7 @@ return [
 
     'appointment_date_required' => 'The appointment date is required.',
     'appointment_date_date' => 'The appointment date must be a valid date.',
+    'client_has_appointment_that_day' => 'You already have an appointment on this day. Cancel the existing one first to book another.',
 
     'start_time_required' => 'The start time is required.',
     'start_time_date_format' => 'The start time must be in the format HH:MM.',

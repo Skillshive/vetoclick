@@ -293,6 +293,7 @@ return [
 
     'appointment_date_required' => 'تاريخ الموعد مطلوب.',
     'appointment_date_date' => 'يجب أن يكون تاريخ الموعد تاريخاً صالحاً.',
+    'client_has_appointment_that_day' => 'لديك بالفعل موعد في هذا اليوم. قم بإلغائه أولاً لحجز موعد آخر.',
 
     'start_time_required' => 'وقت البدء مطلوب.',
     'start_time_date_format' => 'يجب أن يكون وقت البدء بصيغة ساعة:دقيقة (HH:MM).',

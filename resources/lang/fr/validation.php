@@ -292,6 +292,7 @@ return [
 
     'appointment_date_required' => 'La date du rendez-vous est obligatoire.',
     'appointment_date_date' => 'La date du rendez-vous doit être une date valide.',
+    'client_has_appointment_that_day' => 'Vous avez déjà un rendez-vous ce jour-là. Annulez-le d\'abord pour en prendre un autre.',
 
     'start_time_required' => 'L\'heure de début est obligatoire.',
     'start_time_date_format' => 'L\'heure de début doit être au format HH:MM.',
