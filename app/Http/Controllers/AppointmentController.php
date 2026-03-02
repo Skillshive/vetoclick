@@ -792,6 +792,59 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Get dates when the client already has a non-cancelled appointment (to disable in date picker).
+     * Prevents clients from booking two appointments on the same day unless one is cancelled.
+     */
+    public function getClientBookedDates(Request $request): JsonResponse
+    {
+        try {
+            $clientId = $request->query('client_id');
+            $veterinaryId = $request->query('veterinary_id');
+            $email = $request->query('email');
+
+            $client = null;
+
+            if (!empty($clientId)) {
+                $client = Client::where('uuid', $clientId)->first();
+            } elseif (!empty($veterinaryId) && !empty($email)) {
+                $veterinarian = Veterinary::where('uuid', $veterinaryId)->first();
+                if ($veterinarian) {
+                    $client = Client::where('veterinarian_id', $veterinarian->id)
+                        ->where('email', $email)
+                        ->first();
+                }
+            }
+
+            if (!$client) {
+                return response()->json([
+                    'success' => true,
+                    'dates' => [],
+                ]);
+            }
+
+            $dates = Appointment::where('client_id', $client->id)
+                ->where('status', '!=', 'cancelled')
+                ->get()
+                ->pluck('appointment_date')
+                ->map(fn ($d) => $d instanceof \Carbon\Carbon ? $d->format('Y-m-d') : $d)
+                ->unique()
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'dates' => $dates,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => __('common.error'),
+                'dates' => [],
+            ], 500);
+        }
+    }
+
+    /**
      * Save video recording URL for an appointment
      * Can be called manually or via webhook
      */
