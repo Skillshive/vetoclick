@@ -23,7 +23,7 @@ export function UpcomingAppointments({ appointments = [] }: UpcomingAppointments
   const displayAppointments = appointments.slice(0, 5);
 
   return (
-    <Card className="px-4 pb-4 sm:px-5">
+    <Card skin="shadow" className="px-4 pb-4 sm:px-5">
       <div className="flex h-14 min-w-0 items-center justify-between py-3">
         <h2 className="font-medium tracking-wide text-gray-800 dark:text-dark-100">
           {t("common.user_dashboard.upcoming_appointments") || "Upcoming Appointments"}
