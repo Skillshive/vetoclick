@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button,  Card, Switch } from "@/components/ui";
-import { CalendarIcon, HomeIcon, PlusIcon, VideoCameraIcon, UserPlusIcon } from "@heroicons/react/24/outline";
+import { Button, Card, Radio } from "@/components/ui";
+import { CalendarIcon, PlusIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { PawPrint } from "lucide-react";
 import { DatePicker } from "@/components/shared/form/Datepicker";
 import ReactSelect from "@/components/ui/ReactSelect";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { useToast } from "@/components/common/Toast/ToastContext";
 import ReceptionistClientModal from "./modals/ReceptionistClientModal";
 import { AddPetModal } from "./modals/AddPetModal";
@@ -21,6 +21,10 @@ interface QuickScheduleProps {
 export function QuickSchedule({ clients: initialClients, veterinaryId }: QuickScheduleProps) {
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { props } = usePage();
+  const csrfToken = (props as { csrf_token?: string }).csrf_token
+    ?? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+    ?? '';
   const [loading, setLoading] = useState(false);
   const [showClientModal, setShowClientModal] = useState(false);
   const [showPetModal, setShowPetModal] = useState(false);
@@ -205,7 +209,7 @@ export function QuickSchedule({ clients: initialClients, veterinaryId }: QuickSc
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'X-CSRF-TOKEN': csrfToken,
         },
         credentials: 'same-origin',
         body: JSON.stringify({
@@ -336,6 +340,7 @@ export function QuickSchedule({ clients: initialClients, veterinaryId }: QuickSc
               options={{
                 enableTime: true,
                 dateFormat: 'Y-m-d H:i',
+                minDate: new Date(),
               }}
               placeholder={t('common.vet_dashboard.form.select_date_time') || 'Select date and time'}
               className="w-full"
@@ -405,6 +410,7 @@ export function QuickSchedule({ clients: initialClients, veterinaryId }: QuickSc
         <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   {t('common.vet_dashboard.form.appointment_type')}
+                  <span className="text-red-500 mx-1">*</span>
                 </label>
                 <ReactSelect
                   value={formData.appointment_type ? { value: formData.appointment_type, label: appointmentOptions.find(option => option.value === formData.appointment_type)?.label || '' } : null}
@@ -430,39 +436,41 @@ export function QuickSchedule({ clients: initialClients, veterinaryId }: QuickSc
           />
         </div>
 
-        {/* Video Consultation */}
-       
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-500">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${formData.is_video_conseil ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-200 dark:bg-dark-500'}`}>
-                    {formData.is_video_conseil ? (
-                      <VideoCameraIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
-                    ) : (
-                      <HomeIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-800 dark:text-dark-100">
-                      {formData.is_video_conseil 
-                        ? t('common.vet_dashboard.form.online_consultation') || 'Online Consultation'
-                        : t('common.vet_dashboard.form.in_person_visit') || 'In-Person Visit'}
-                    </label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {formData.is_video_conseil
-                        ? t('common.vet_dashboard.form.online_consultation_desc') || 'Video call appointment'
-                        : t('common.vet_dashboard.form.in_person_visit_desc') || 'Physical visit to clinic'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={formData.is_video_conseil}
-                  onChange={(e) =>
-                    setFormData({ ...formData, is_video_conseil: e.target.checked })
-                  }
-                  color="primary"
-                  variant="basic"
-                />
-              </div>
+        {/* Visit type: In-person or Online (radio) */}
+        <div>
+          <span className="block text-xs-plus font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {t('common.visit_type')}
+            <span className="text-red-500 mx-1">*</span>
+          </span>
+          <div className="flex flex-wrap gap-4">
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <Radio
+                name="is_video_conseil"
+                value="false"
+                checked={!formData.is_video_conseil}
+                onChange={() => setFormData({ ...formData, is_video_conseil: false })}
+                color="primary"
+                variant="basic"
+              />
+              <span className="text-sm text-gray-800 dark:text-dark-100">
+                {t('common.vet_dashboard.form.in_person_visit') || 'In-person Visit'}
+              </span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <Radio
+                name="is_video_conseil"
+                value="true"
+                checked={!!formData.is_video_conseil}
+                onChange={() => setFormData({ ...formData, is_video_conseil: true })}
+                color="primary"
+                variant="basic"
+              />
+              <span className="text-sm text-gray-800 dark:text-dark-100">
+                {t('common.vet_dashboard.form.online_consultation') || 'Online Consultation'}
+              </span>
+            </label>
+          </div>
+        </div>
         {/* Submit Button */}
         <Button
           type="submit"
