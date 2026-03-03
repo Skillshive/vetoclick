@@ -73,8 +73,8 @@ function RequestCard({ appointment, onAccept, onReject, isProcessing }: RequestC
       </div>
 
       {/* Time & Action Buttons */}
-      <div className="mt-4 flex items-center justify-between border-t border-gray-100 dark:border-dark-600 pt-3">
-        <div className="flex items-center gap-2 text-sm">
+      <div className="mt-4 flex items-center justify-between gap-4 border-t border-gray-100 dark:border-dark-600 pt-3">
+        <div className="flex items-center gap-2 text-sm min-w-0">
           <ClockIcon className="size-4 text-gray-500 dark:text-gray-400" />
           <span className="font-semibold text-gray-800 dark:text-dark-100">
           {formatDate(appointment.appointment_date)} - {appointment.start_time}
