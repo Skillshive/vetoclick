@@ -49,7 +49,7 @@ const menuConfig: MenuConfig[] = [
     permission: 'pets.view',
   },
   {
-    id: 'pets',
+    id: 'species',
     title: 'common.menu.species',
     icon: PetIcon,
     path: route('species.index'),
@@ -155,7 +155,7 @@ const menuConfig: MenuConfig[] = [
     permission: 'clients.view',
   },
   {
-    id: 'users',
+    id: 'users-management',
     title: 'common.menu.users_management',
     icon: UserGroupIcon,
     type: 'group',
