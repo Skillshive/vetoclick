@@ -323,6 +323,11 @@ return [
     'more' => 'More',
     'export_csv' => 'Export CSV',
     'export_pdf' => 'Export PDF',
+    'download_pdf' => 'Download PDF',
+    'preview_pdf' => 'Preview PDF',
+    'pdf_generated_on' => 'Generated on',
+    'pdf_no_products' => 'No products',
+    'pdf_footer_auto' => 'This document was generated automatically.',
     'print' => 'Print',
     'download_template' => 'Download Template',
 
