@@ -23,7 +23,13 @@ interface RequestCardProps {
 
 function RequestCard({ appointment, onAccept, onReject, isProcessing }: RequestCardProps) {
   const { t } = useTranslation();
-  
+
+  const formatDate = (date: Date | string | undefined): string => {
+    if (date == null) return '';
+    const d = date instanceof Date ? date : new Date(date);
+    return Number.isNaN(d.getTime()) ? String(date) : d.toLocaleDateString(undefined, { dateStyle: 'short' });
+  };
+
   return (
     <Box className="min-w-[280px] max-w-xs border-l-error border-4 border-transparent px-4 py-4 cursor-pointer hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-4">
@@ -71,7 +77,7 @@ function RequestCard({ appointment, onAccept, onReject, isProcessing }: RequestC
         <div className="flex items-center gap-2 text-sm">
           <ClockIcon className="size-4 text-gray-500 dark:text-gray-400" />
           <span className="font-semibold text-gray-800 dark:text-dark-100">
-          {appointment.appointment_date} - {appointment.start_time} 
+          {formatDate(appointment.appointment_date)} - {appointment.start_time}
           </span>
         </div>
         
