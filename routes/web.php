@@ -280,6 +280,7 @@ Route::middleware(['auth', 'verified', 'permission:orders.view'])->group(functio
             Route::put('{uuid}/update', 'update')->middleware('permission:orders.edit')->name('update');
             Route::delete('{uuid}/delete', 'destroy')->middleware('permission:orders.delete')->name('destroy');
             Route::get('{uuid}/show', 'show')->name('show');
+            Route::get('{uuid}/pdf', 'pdf')->name('pdf');
             Route::post('{uuid}/confirm', 'confirm')->middleware('permission:orders.confirm')->name('confirm');
             Route::post('{uuid}/receive', 'receive')->middleware('permission:orders.receive')->name('receive');
             Route::post('{uuid}/cancel', 'cancel')->middleware('permission:orders.cancel')->name('cancel');

@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\Product\ProductApiResource;
 use App\Models\Lot;
 use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\File;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+
 class OrderController extends Controller
 {
     protected OrderService $orderService;
@@ -132,6 +137,50 @@ class OrderController extends Controller
                 'error' => __('common.order_retrieve_error')
             ]);
         }
+    }
+
+    /**
+     * Order PDF: preview (inline) or download. Locale from query for user-selected language.
+     * For Arabic, enable remote resources so the view can load an Arabic-capable font.
+     */
+    public function pdf(Request $request, string $uuid): SymfonyResponse
+    {
+        $locale = $request->query('locale');
+        if ($locale && in_array($locale, ['en', 'fr', 'ar'], true)) {
+            App::setLocale($locale);
+        }
+        $preview = $request->boolean('preview');
+
+        $order = $this->orderService->getByUuid($uuid);
+        if (! $order) {
+            abort(404, __('common.order_not_found'));
+        }
+
+        // Arabic is not supported in PDF — fall back to French
+        if (App::getLocale() === 'ar') {
+            App::setLocale('fr');
+        }
+
+        $locale = App::getLocale();
+
+        $orderResource = new OrderResource($order);
+        $data = [
+            'order' => $orderResource->toArray(request()),
+            'generatedAt' => now()->format('d/m/Y H:i'),
+            'currency' => __('common.currency') ?: 'MAD',
+            'locale' => $locale,
+        ];
+
+        $pdf = Pdf::loadView('orders.pdf', $data, [], 'UTF-8');
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'order-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $order->reference ?? $order->uuid) . '.pdf';
+
+        if ($preview) {
+            return $pdf->stream($filename);
+        }
+
+        return $pdf->download($filename);
     }
 
     /**
