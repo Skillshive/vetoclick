@@ -1,6 +1,6 @@
 import MainLayout from '@/layouts/MainLayout';
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import clsx from 'clsx';
 import { Button, Card, Badge } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -9,6 +9,8 @@ import { useToast } from '@/components/common/Toast/ToastContext';
 import { Page } from '@/components/shared/Page';
 import { BreadcrumbItem, Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { ConfirmModal } from '@/components/shared/ConfirmModal';
+import { Fragment } from 'react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { 
     CalendarIcon, 
     BuildingStorefrontIcon, 
@@ -22,7 +24,9 @@ import {
     CalculatorIcon,
     ShoppingCartIcon,
     CheckCircleIcon,
-    XCircleIcon
+    XCircleIcon,
+    PrinterIcon,
+    ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { ListOrderedIcon } from 'lucide-react';
 
@@ -87,7 +91,9 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
     const { t } = useTranslation();
     const { isRtl } = useLocaleContext();
     const { showToast } = useToast();
-    
+    const { props } = usePage();
+    const currentLocale = (props as { locale?: { current?: string } }).locale?.current ?? 'en';
+
     // Receive modal state
     const [receiveModalOpen, setReceiveModalOpen] = useState(false);
     const [receiveSuccess, setReceiveSuccess] = useState(false);
@@ -249,7 +255,7 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
                        </p>
                      </div>
                    </div>
-                   <div className="flex gap-2">
+                   <div className="flex flex-wrap items-center gap-2">
                      <Button
                         variant="outlined"
                         onClick={() => router.visit(route('orders.index'))}
@@ -258,50 +264,117 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, error }) => {
                         <ArrowLeftIcon className="size-4" />
                         {t('common.back')}
                      </Button>
-                     {canModify && (
-                        <Button
-                            variant="filled"
-                            color="primary"
-                            onClick={() => router.visit(route('orders.edit', order.uuid))}
-                            className="flex items-center gap-2"
+                     <Menu as="div" className="relative inline-block text-left">
+                        <MenuButton
+                           as={Button}
+                           variant="outlined"
+                           className="inline-flex items-center gap-2"
                         >
-                            <PencilIcon className="size-4" />
-                            {t('common.edit')}
-                        </Button>
-                     )}
-                     {canConfirm && (
-                        <Button
-                            variant="filled"
-                            color="info"
-                            onClick={() => setConfirmOrderModalOpen(true)}
-                            className="flex items-center gap-2"
+                           {t('common.actions') || 'Actions'}
+                           <ChevronDownIcon className="size-4" />
+                        </MenuButton>
+                        <Transition
+                           as={Fragment}
+                           enter="transition ease-out duration-100"
+                           enterFrom="opacity-0 scale-95"
+                           enterTo="opacity-100 scale-100"
+                           leave="transition ease-in duration-75"
+                           leaveFrom="opacity-100 scale-100"
+                           leaveTo="opacity-0 scale-95"
                         >
-                            <CheckCircleIcon className="size-4" />
-                            {t('common.confirm')}
-                        </Button>
-                     )}
-                     {canReceive && (
-                        <Button
-                            variant="filled"
-                            color="success"
-                            onClick={() => setReceiveModalOpen(true)}
-                            className="flex items-center gap-2"
-                        >
-                            <CheckCircleIcon className="size-4" />
-                            {t('common.receive')}
-                        </Button>
-                     )}
-                     {canCancel && (
-                        <Button
-                            variant="filled"
-                            color="warning"
-                            onClick={() => setCancelModalOpen(true)}
-                            className="flex items-center gap-2"
-                        >
-                            <XCircleIcon className="size-4" />
-                            {t('common.cancel_order')}
-                        </Button>
-                     )}
+                           <MenuItems className="absolute end-0 z-50 mt-2 min-w-[12rem] origin-top-right rounded-lg border border-gray-300 bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none dark:border-dark-500 dark:bg-dark-700 dark:ring-dark-400/50 rtl:start-0 rtl:end-auto">
+                              <MenuItem>
+                                 {({ focus }) => (
+                                    <a
+                                       href={`${route('orders.pdf', order.uuid)}?preview=1&locale=${currentLocale}`}
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       className={clsx(
+                                          'flex w-full items-center gap-2 px-3 py-2 text-sm',
+                                          focus ? 'bg-gray-100 dark:bg-dark-600' : '',
+                                          'text-gray-700 dark:text-dark-100'
+                                       )}
+                                    >
+                                       <PrinterIcon className="size-4 shrink-0" />
+                                       {t('common.preview_pdf') || 'Preview PDF'}
+                                    </a>
+                                 )}
+                              </MenuItem>
+                              {canModify && (
+                                 <MenuItem>
+                                    {({ focus }) => (
+                                       <button
+                                          type="button"
+                                          onClick={() => router.visit(route('orders.edit', order.uuid))}
+                                          className={clsx(
+                                             'flex w-full items-center gap-2 px-3 py-2 text-sm text-start',
+                                             focus ? 'bg-gray-100 dark:bg-dark-600' : '',
+                                             'text-gray-700 dark:text-dark-100'
+                                          )}
+                                       >
+                                          <PencilIcon className="size-4 shrink-0" />
+                                          {t('common.edit')}
+                                       </button>
+                                    )}
+                                 </MenuItem>
+                              )}
+                              {canConfirm && (
+                                 <MenuItem>
+                                    {({ focus }) => (
+                                       <button
+                                          type="button"
+                                          onClick={() => setConfirmOrderModalOpen(true)}
+                                          className={clsx(
+                                             'flex w-full items-center gap-2 px-3 py-2 text-sm text-start',
+                                             focus ? 'bg-gray-100 dark:bg-dark-600' : '',
+                                             'text-gray-700 dark:text-dark-100'
+                                          )}
+                                       >
+                                          <CheckCircleIcon className="size-4 shrink-0" />
+                                          {t('common.confirm')}
+                                       </button>
+                                    )}
+                                 </MenuItem>
+                              )}
+                              {canReceive && (
+                                 <MenuItem>
+                                    {({ focus }) => (
+                                       <button
+                                          type="button"
+                                          onClick={() => setReceiveModalOpen(true)}
+                                          className={clsx(
+                                             'flex w-full items-center gap-2 px-3 py-2 text-sm text-start',
+                                             focus ? 'bg-gray-100 dark:bg-dark-600' : '',
+                                             'text-gray-700 dark:text-dark-100'
+                                          )}
+                                       >
+                                          <CheckCircleIcon className="size-4 shrink-0" />
+                                          {t('common.receive')}
+                                       </button>
+                                    )}
+                                 </MenuItem>
+                              )}
+                              {canCancel && (
+                                 <MenuItem>
+                                    {({ focus }) => (
+                                       <button
+                                          type="button"
+                                          onClick={() => setCancelModalOpen(true)}
+                                          className={clsx(
+                                             'flex w-full items-center gap-2 px-3 py-2 text-sm text-start',
+                                             focus ? 'bg-gray-100 dark:bg-dark-600' : '',
+                                             'text-red-600 dark:text-red-400'
+                                          )}
+                                       >
+                                          <XCircleIcon className="size-4 shrink-0" />
+                                          {t('common.cancel_order')}
+                                       </button>
+                                    )}
+                                 </MenuItem>
+                              )}
+                           </MenuItems>
+                        </Transition>
+                     </Menu>
                    </div>
                  </div>
 
