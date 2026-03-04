@@ -1,7 +1,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DatePicker } from '@/components/shared/form/Datepicker';
-import { Card, Button, Switch } from '@/components/ui';
+import { Card, Button, Radio } from '@/components/ui';
 import Select from 'react-select';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -531,34 +531,39 @@ export const AppointmentForm = () => {
             name="is_video_conseil"
             control={control}
             render={({ field }) => (
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-600 rounded-lg border border-gray-200 dark:border-dark-500">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${field.value ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-200 dark:bg-dark-500'}`}>
-                    {field.value ? (
-                      <VideoCameraIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
-                    ) : (
-                      <HomeIcon className="w-5 h-5 text-primary-600 dark:text-gray-400" />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-800 dark:text-dark-100">
-                      {field.value 
-                        ? t('common.vet_dashboard.form.online_consultation') || 'Online Consultation'
-                        : t('common.vet_dashboard.form.in_person_visit') || 'In-Person Visit'}
-                    </label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {field.value
-                        ? t('common.vet_dashboard.form.online_consultation_desc') || 'Video call appointment'
-                        : t('common.vet_dashboard.form.in_person_visit_desc') || 'Physical visit to clinic'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={field.value}
-                  onChange={(e) => field.onChange(e.target.checked)}
-                  color="primary"
-                  variant="basic"
-                />
+            <div>
+              <span className="block text-xs-plus font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('common.visit_type')}
+                <span className="text-red-500 mx-1">*</span>
+              </span>
+              <div className="flex flex-wrap gap-4">
+                <label className="inline-flex items-center gap-2 cursor-pointer">
+                  <Radio
+                    name={field.name}
+                    value="false"
+                    checked={!field.value}
+                    onChange={() => field.onChange(false)}
+                    color="primary"
+                    variant="basic"
+                  />
+                  <span className="text-sm text-gray-800 dark:text-dark-100">
+                    {t('common.vet_dashboard.form.in_person_visit') || 'In-person Visit'}
+                  </span>
+                </label>
+                <label className="inline-flex items-center gap-2 cursor-pointer">
+                  <Radio
+                    name={field.name}
+                    value="true"
+                    checked={!!field.value}
+                    onChange={() => field.onChange(true)}
+                    color="primary"
+                    variant="basic"
+                  />
+                  <span className="text-sm text-gray-800 dark:text-dark-100">
+                    {t('common.vet_dashboard.form.online_consultation') || 'Online Consultation'}
+                  </span>
+                </label>
+              </div>
               </div>
             )}
           />
