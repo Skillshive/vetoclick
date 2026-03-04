@@ -108,9 +108,13 @@ export function History() {
 
   return (
     <Card className="">
-
       <div className="p-2">
-        <Chart type="area" height="290" options={localizedOptions} series={localizedSeries} />
+        <Chart
+          type="bar"
+          height="290"
+          options={localizedOptions}
+          series={localizedSeries}
+        />
       </div>
     </Card>
   );
