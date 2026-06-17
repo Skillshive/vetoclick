@@ -83,6 +83,13 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
         products: [],
     });
 
+    const toLocalDateString = (date: Date): string => {
+        const year  = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day   = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
     // Calculate totals whenever products, discount, or shipping changes
     useEffect(() => {
         let subtotal = 0;
@@ -312,7 +319,6 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
                                         } 
                                     }}
                                     options={[
-                                        { value: '', label: t('common.select_supplier') || 'Select Supplier' },
                                         ...supplierOptions
                                     ]}
                                     placeholder={t('common.select_supplier') || 'Select Supplier'}
@@ -347,7 +353,6 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
                                         }
                                     }}
                                     options={[
-                                        { value: '', label: t('common.select_order_type') || 'Select Order Type' },
                                         ...orderTypeOptions,
                                     ]}
                                     placeholder={t('common.select_order_type') || 'Select Order Type'}
@@ -364,7 +369,7 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
                                     value={data.order_date || ''}
                                     onChange={(dates: Date[]) => {
                                         if (dates && dates.length > 0) {
-                                            setData('order_date', dates[0].toISOString().split('T')[0]);
+setData('order_date', toLocalDateString(dates[0]));
                                         } else {
                                             setData('order_date', '');
                                         }
@@ -433,7 +438,6 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
                                         }
                                     }}
                                     options={[
-                                        { value: '', label: t('common.select_payment_method') || 'Select Payment Method' },
                                         ...paymentMethodOptions
                                     ]}
                                     placeholder={t('common.select_payment_method') || 'Select Payment Method'}
@@ -448,7 +452,7 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
                                     value={data.payment_due_date || ''}
                                     onChange={(dates: Date[]) => {
                                         if (dates && dates.length > 0) {
-                                            setData('payment_due_date', dates[0].toISOString().split('T')[0]);
+                                            setData('payment_due_date', toLocalDateString(dates[0]));
                                         } else {
                                             setData('payment_due_date', '');
                                         }
@@ -468,7 +472,7 @@ const CreateOrder: React.FC<CreateOrderProps> = ({ suppliers, products: initialP
                                     value={data.confirmed_delivery_date || ''}
                                     onChange={(dates: Date[]) => {
                                         if (dates && dates.length > 0) {
-                                            setData('confirmed_delivery_date', dates[0].toISOString().split('T')[0]);
+                                            setData('confirmed_delivery_date', toLocalDateString(dates[0]));
                                         } else {
                                             setData('confirmed_delivery_date', '');
                                         }
